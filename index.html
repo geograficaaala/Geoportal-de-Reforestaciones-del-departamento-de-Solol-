@@ -24,14 +24,14 @@
       --text: rgba(11, 24, 38, .92);
       --muted: rgba(11, 24, 38, .62);
       --stroke: rgba(11, 24, 38, .10);
-      --card: rgba(255,255,255,.78);
-      --shadow: 0 18px 55px rgba(10,25,40,.12);
-      --radius: 24px;
+      --card: rgba(255,255,255,.80);
+      --shadow: 0 18px 60px rgba(10,25,40,.12);
+      --radius: 26px;
 
-      --mint: rgba(176,255,216,.70);
-      --sky: rgba(170,225,255,.70);
-      --rose: rgba(255,200,230,.62);
-      --butter: rgba(255,244,176,.65);
+      --mint: rgba(176,255,216,.62);
+      --sky: rgba(170,225,255,.60);
+      --rose: rgba(255,200,230,.54);
+      --butter: rgba(255,244,176,.56);
     }
 
     *{ box-sizing:border-box; }
@@ -44,18 +44,21 @@
       overflow-x:hidden;
     }
 
-    /* Fondo pastel */
+    /* Fondo pastel más “vivo” */
     .bg{
       position:fixed; inset:0; z-index:-2;
       background:
-        radial-gradient(900px 540px at 10% 10%, var(--mint), transparent 60%),
-        radial-gradient(860px 520px at 85% 15%, var(--sky), transparent 58%),
-        radial-gradient(800px 540px at 90% 78%, var(--rose), transparent 58%),
-        radial-gradient(760px 520px at 12% 84%, var(--butter), transparent 60%),
+        radial-gradient(900px 560px at 10% 10%, var(--mint), transparent 62%),
+        radial-gradient(860px 540px at 88% 12%, var(--sky), transparent 60%),
+        radial-gradient(820px 560px at 92% 82%, var(--rose), transparent 62%),
+        radial-gradient(780px 540px at 10% 88%, var(--butter), transparent 62%),
         linear-gradient(180deg, #ffffff, #fbfdff);
     }
 
-    .container{ max-width: 1180px; margin:0 auto; padding: 0 20px; }
+    .container{ max-width: 1200px; margin:0 auto; padding: 0 20px; }
+
+    /* Para que los anchors no queden tapados por el header */
+    section, main { scroll-margin-top: 88px; }
 
     /* Header */
     header{
@@ -70,33 +73,22 @@
       gap: 14px;
     }
 
-    /* Logos (2) */
+    .brand{
+      display:flex; align-items:center; gap: 14px;
+      min-width: 280px;
+    }
     .logos{
-      display:flex; align-items:center; gap: 12px;
-      min-width: 260px;
+      display:flex; align-items:center; gap: 10px;
     }
-    .logoBox{
-      height: 52px;
-      width: 140px;           /* más grande */
-      border-radius: 18px;
-      background: rgba(255,255,255,.85);
-      border: 1px solid var(--stroke);
-      box-shadow: 0 10px 24px rgba(10,25,40,.10);
-      display:grid; place-items:center;
-      overflow:hidden;
-      padding: 6px 10px;
-    }
-    .logoBox img{
-      width: 100%;
-      height: 100%;
+    .logos img{
+      height: 44px;                 /* LOGOS GRANDES */
+      width: auto;
       object-fit: contain;
-      display:block;
+      filter: drop-shadow(0 10px 18px rgba(10,25,40,.10));
     }
-
     .brandText{
       display:flex; flex-direction:column;
       gap: 2px;
-      margin-left: 6px;
     }
     .title{
       font-weight: 950;
@@ -110,15 +102,24 @@
       font-weight: 750;
     }
 
+    nav{
+      display:flex; gap:16px; align-items:center;
+      padding: 8px 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 999px;
+      background: rgba(255,255,255,.55);
+      box-shadow: 0 10px 22px rgba(10,25,40,.06);
+    }
     nav a{
       text-decoration:none;
       color: var(--muted);
-      font-weight: 850;
-      font-size: 14px;
+      font-weight: 900;
+      font-size: 13px;
     }
     nav a:hover{ color: var(--text); }
 
     .actions{ display:flex; gap: 10px; align-items:center; }
+
     .btn{
       appearance:none;
       border: 1px solid var(--stroke);
@@ -126,7 +127,7 @@
       border-radius: 16px;
       padding: 10px 14px;
       cursor:pointer;
-      font-weight: 900;
+      font-weight: 950;
       box-shadow: 0 10px 22px rgba(10,25,40,.08);
       transition: transform .12s ease;
       white-space:nowrap;
@@ -139,106 +140,148 @@
 
     @media (max-width: 980px){
       nav{ display:none; }
-      .logoBox{ width: 120px; }
     }
     @media (max-width: 560px){
-      .logos{ min-width: unset; gap: 8px; }
-      .logoBox{ width: 104px; height: 46px; }
-      .actions .btn{ padding: 9px 12px; }
+      .brand{ min-width: unset; }
+      .logos img{ height: 40px; }
+      .btn{ padding: 9px 12px; }
     }
 
-    /* HERO: menos alto para que no quede “vacío” */
-    .hero{
-      padding: 44px 0 26px;
+    /* HERO (ya no queda vacío) */
+    main.hero{
+      padding: 34px 0 18px;
     }
-    .hero-grid{
+    .heroGrid{
       display:grid;
-      grid-template-columns: 1.25fr .75fr;
+      grid-template-columns: 1.1fr .9fr;
       gap: 18px;
-      align-items: start;
+      align-items: stretch;
     }
     @media (max-width: 980px){
-      .hero-grid{ grid-template-columns: 1fr; }
+      .heroGrid{ grid-template-columns: 1fr; }
     }
 
     h1{
-      margin: 0;
-      font-size: 54px;
-      line-height: 1.03;
+      margin:0;
+      font-size: clamp(38px, 4vw, 56px);
+      line-height: 1.05;
       letter-spacing: -0.045em;
     }
-    @media (max-width: 560px){
-      h1{ font-size: 40px; }
-    }
-
     .lead{
       margin-top: 14px;
       color: var(--muted);
       font-size: 16px;
       line-height: 1.75;
-      max-width: 68ch;
+      max-width: 70ch;
     }
 
-    .badge-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
-    .badge{
+    .pillRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
+    .pill{
       display:inline-flex; align-items:center; gap:8px;
       padding: 8px 12px;
       border-radius: 999px;
       border: 1px solid var(--stroke);
       background: rgba(255,255,255,.72);
       font-size: 12px;
-      font-weight: 900;
-      color: rgba(11,24,38,.75);
+      font-weight: 950;
+      color: rgba(11,24,38,.74);
     }
 
-    .hero-actions{ margin-top: 18px; display:flex; gap: 10px; flex-wrap:wrap; }
+    .ctaRow{ margin-top: 16px; display:flex; gap: 10px; flex-wrap:wrap; }
 
-    /* Card */
+    /* Card base */
     .card{
       border-radius: var(--radius);
       background: var(--card);
       border: 1px solid var(--stroke);
       box-shadow: var(--shadow);
-      padding: 18px;
+      overflow:hidden;
+    }
+    .cardPad{ padding: 18px; }
+
+    /* Mini map preview */
+    .miniWrap{
+      display:grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 420px;
+    }
+    .miniHeader{
+      padding: 16px 16px 10px;
+      border-bottom: 1px solid var(--stroke);
+      background:
+        radial-gradient(520px 220px at 10% 0%, var(--mint), transparent 60%),
+        radial-gradient(520px 220px at 90% 20%, var(--sky), transparent 60%),
+        rgba(255,255,255,.60);
+    }
+    .miniHeader .k{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      font-weight: 950;
+    }
+    .miniHeader .m{
+      margin-top:6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      font-weight: 700;
     }
 
-    .kpis{
+    #miniMap{
+      height: 260px;
+      width: 100%;
+    }
+
+    .kpiGrid{
       display:grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
+      gap: 10px;
+      padding: 14px 16px 16px;
+      background: rgba(255,255,255,.62);
     }
     .kpi{
       border-radius: 18px;
       border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.72);
+      background: rgba(255,255,255,.74);
       padding: 12px;
     }
     .kpi .l{ font-size:12px; font-weight: 900; color: var(--muted); }
     .kpi .v{ margin-top: 6px; font-size: 22px; font-weight: 950; letter-spacing:-.02em; }
     .kpi .s{ margin-top: 4px; font-size:12px; color: var(--muted); font-weight: 700; }
 
-    /* Secciones */
-    .section{ padding: 26px 0 42px; }
-    .section h2{ margin:0; font-size: 28px; letter-spacing:-.02em; }
-    .section p{ margin: 10px 0 0; color: var(--muted); line-height:1.65; }
+    /* Sección explorar */
+    section.section{ padding: 22px 0 44px; }
+    .sectionTitle{
+      display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
+      flex-wrap:wrap;
+    }
+    .sectionTitle h2{
+      margin:0;
+      font-size: 28px;
+      letter-spacing:-.02em;
+    }
+    .sectionTitle p{
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-weight: 700;
+      max-width: 70ch;
+    }
 
-    .grid{
-      margin-top: 18px;
+    .tiles{
+      margin-top: 16px;
       display:grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 14px;
     }
     @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
+      .tiles{ grid-template-columns: 1fr; }
     }
 
     .tile{
+      padding: 18px;
       border-radius: var(--radius);
       border: 1px solid var(--stroke);
       background: rgba(255,255,255,.82);
       box-shadow: var(--shadow);
-      padding: 18px;
       cursor:pointer;
       transition: transform .12s ease;
       position: relative;
@@ -252,13 +295,13 @@
         radial-gradient(520px 240px at 95% 30%, var(--sky), transparent 58%),
         radial-gradient(520px 240px at 80% 110%, var(--rose), transparent 58%),
         radial-gradient(520px 240px at 10% 110%, var(--butter), transparent 58%);
-      opacity: .78;
+      opacity: .80;
       z-index: -1;
     }
     .tile:hover{ transform: translateY(-2px); }
     .tile h3{ margin: 12px 0 6px; font-size: 18px; }
-    .tile p{ margin:0; color: var(--muted); font-size: 14px; line-height:1.55; }
-    .pill{
+    .tile p{ margin:0; color: var(--muted); font-size: 14px; line-height:1.55; font-weight:700; }
+    .tag{
       display:inline-flex;
       padding: 7px 10px;
       border-radius: 999px;
@@ -266,17 +309,11 @@
       background: rgba(255,255,255,.75);
       font-size: 12px;
       font-weight: 950;
-      color: rgba(11,24,38,.70);
+      color: rgba(11,24,38,.72);
     }
 
-    .panel{
-      border-radius: var(--radius);
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.85);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .panel-head{
+    /* Panels */
+    .panelHead{
       padding: 16px;
       display:flex;
       align-items:center;
@@ -284,14 +321,18 @@
       gap: 12px;
       border-bottom: 1px solid var(--stroke);
       flex-wrap: wrap;
+      background: rgba(255,255,255,.62);
     }
-    .panel-head .right{ display:flex; gap:10px; flex-wrap:wrap; }
-    .meta{ font-size: 13px; color: var(--muted); font-weight: 700; margin-top: 4px; }
+    .panelHead .meta{
+      font-size: 13px; color: var(--muted); font-weight: 750; margin-top:4px;
+    }
+    .panelHead .right{ display:flex; gap:10px; flex-wrap:wrap; }
+
     .hidden{ display:none; }
 
-    #map{ height: 560px; } /* un poco más alto */
+    #map{ height: 640px; }
     @media (max-width: 560px){
-      #map{ height: 520px; }
+      #map{ height: 560px; }
     }
 
     footer{
@@ -299,7 +340,7 @@
       padding: 22px 0 40px;
       color: var(--muted);
       font-size: 13px;
-      font-weight: 700;
+      font-weight: 750;
     }
 
     code{ background: rgba(11,24,38,.06); padding: 2px 6px; border-radius: 10px; border: 1px solid rgba(11,24,38,.08); }
@@ -311,12 +352,9 @@
 
   <header>
     <div class="container nav">
-      <!-- 2 logos + texto -->
-      <div class="logos">
-        <div class="logoBox" title="BOSQUE">
+      <div class="brand">
+        <div class="logos" aria-label="Logos">
           <img src="BOSQUE.png" alt="BOSQUE" onerror="this.style.display='none'">
-        </div>
-        <div class="logoBox" title="CODEMA">
           <img src="CODEMA%20(2).png" alt="CODEMA" onerror="this.style.display='none'">
         </div>
         <div class="brandText">
@@ -328,54 +366,63 @@
       <nav aria-label="Navegación">
         <a href="#inicio">Inicio</a>
         <a href="#explorar">Explorar</a>
+        <a href="#mapa">Mapa</a>
+        <a href="#tablero">Tablero</a>
+        <a href="#informes">Informes</a>
       </nav>
 
       <div class="actions">
-        <button class="btn" id="btnExplore">Explorar</button>
-        <button class="btn primary" id="btnMapa">Mapa</button>
+        <button class="btn" onclick="scrollToId('explorar')">Explorar</button>
+        <button class="btn primary" onclick="openSection('mapa')">Abrir mapa</button>
       </div>
     </div>
   </header>
 
   <main id="inicio" class="hero">
     <div class="container">
-      <div class="hero-grid">
-        <section>
-          <h1>
-            Reforestación visible<br>
-            con <span style="background:linear-gradient(90deg,#49e6a7,#63d7ff,#ffb6de,#ffe68c);-webkit-background-clip:text;background-clip:text;color:transparent;">datos y mapas</span>.
-          </h1>
-          <p class="lead">
-            Explora reforestaciones registradas en campo: puntos georreferenciados, tracks (cuando existan),
-            participación y datos para auditoría y transparencia.
-          </p>
+      <div class="heroGrid">
+        <section class="card">
+          <div class="cardPad">
+            <h1>
+              Reforestación visible<br>
+              con <span style="background:linear-gradient(90deg,#49e6a7,#63d7ff,#ffb6de,#ffe68c);-webkit-background-clip:text;background-clip:text;color:transparent;">datos y mapas</span>.
+            </h1>
+            <p class="lead">
+              Consulta pública para explorar reforestaciones registradas en campo:
+              puntos georreferenciados, tracks (si existen), participación comunitaria e información para transparencia.
+            </p>
 
-          <div class="badge-row">
-            <span class="badge">🌿 Público</span>
-            <span class="badge">🛰️ Satélite</span>
-            <span class="badge">🗺️ Mapa</span>
-            <span class="badge">📊 Tablero</span>
-            <span class="badge">📄 Informes</span>
-          </div>
+            <div class="pillRow">
+              <span class="pill">🛰️ Satélite</span>
+              <span class="pill">🗺️ Mapa interactivo</span>
+              <span class="pill">📊 Tablero</span>
+              <span class="pill">📄 Informes</span>
+            </div>
 
-          <div class="hero-actions">
-            <button class="btn primary" id="btnEmpezar">Empezar a explorar</button>
-            <button class="btn" onclick="scrollToId('explorar')">Ver secciones</button>
+            <div class="ctaRow">
+              <button class="btn primary" onclick="openSection('mapa')">Ver mapa completo</button>
+              <button class="btn" onclick="scrollToId('explorar')">Ver secciones</button>
+            </div>
+
+            <div style="margin-top:14px;color:var(--muted);font-weight:700;font-size:13px;line-height:1.6;">
+              Tip: cuando subamos <code>data/puntos.geojson</code>, el mapa y los indicadores se llenan solos.
+            </div>
           </div>
         </section>
 
-        <aside class="card" aria-label="Indicadores">
-          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
-            <div>
-              <div style="font-weight:950;font-size:16px;">Indicadores</div>
-              <div style="margin-top:6px;color:var(--muted);font-size:13px;line-height:1.55;">
-                Se llenan cuando exista <code>data/resumen.json</code>.
-              </div>
+        <!-- Mini mapa + KPIs (se ve vivo desde el inicio) -->
+        <aside class="card miniWrap" aria-label="Vista rápida">
+          <div class="miniHeader">
+            <div class="k">
+              <div>Vista rápida (satélite)</div>
+              <span class="tag">preview</span>
             </div>
-            <span class="pill">pastel</span>
+            <div class="m">Este es un mini-mapa. Abre el mapa completo para ver los puntos y filtros.</div>
           </div>
 
-          <div class="kpis">
+          <div id="miniMap" aria-label="Mini mapa"></div>
+
+          <div class="kpiGrid">
             <div class="kpi">
               <div class="l">Boletas</div>
               <div class="v" id="kpiBoletas">—</div>
@@ -404,26 +451,28 @@
 
   <section id="explorar" class="section">
     <div class="container">
-      <h2>Explorar el portal</h2>
-      <p>Elige una sección. Se abrirá debajo cuando hagas clic.</p>
+      <div class="sectionTitle">
+        <div>
+          <h2>Explorar el portal</h2>
+          <p>Elige una sección. Se abre aquí mismo (sin mandarte a otra página).</p>
+        </div>
+      </div>
 
-      <div class="grid">
+      <div class="tiles">
         <div class="tile" onclick="openSection('mapa')">
-          <span class="pill">Puntos · tracks · satélite</span>
+          <span class="tag">🛰️ Satélite · puntos</span>
           <h3>Mapa</h3>
-          <p>Explora reforestaciones en el mapa y abre cada registro para ver detalles.</p>
+          <p>Reforestaciones georreferenciadas, con vista satelital y popups por registro.</p>
         </div>
-
         <div class="tile" onclick="openSection('tablero')">
-          <span class="pill">Gráficas · tabla</span>
+          <span class="tag">📊 Indicadores</span>
           <h3>Tablero</h3>
-          <p>Indicadores por municipio e institución, con resúmenes bonitos.</p>
+          <p>Resumen por municipio, institución y especies (lo conectamos cuando tengamos datos).</p>
         </div>
-
         <div class="tile" onclick="openSection('informes')">
-          <span class="pill">PDF · CSV</span>
+          <span class="tag">📄 Descargas</span>
           <h3>Informes</h3>
-          <p>Reportes mensuales/trimestrales y descargas públicas.</p>
+          <p>PDF/CSV automáticos (mensual/trimestral) publicados desde el repositorio.</p>
         </div>
       </div>
     </div>
@@ -432,11 +481,11 @@
   <!-- MAPA -->
   <section id="mapa" class="section hidden">
     <div class="container">
-      <div class="panel">
-        <div class="panel-head">
+      <div class="card">
+        <div class="panelHead">
           <div>
             <div style="font-weight:950;font-size:18px;">Mapa interactivo (satélite)</div>
-            <div class="meta">Busca <code>data/puntos.geojson</code> y <code>data/tracks.geojson</code>.</div>
+            <div class="meta">Cargará <code>data/puntos.geojson</code> y <code>data/tracks.geojson</code>.</div>
           </div>
           <div class="right">
             <button class="btn" id="btnFit">Ajustar vista</button>
@@ -444,7 +493,7 @@
           </div>
         </div>
         <div id="map"></div>
-        <div id="mapMsg" style="padding:16px;color:var(--muted);display:none;font-weight:700;"></div>
+        <div id="mapMsg" style="padding:16px;color:var(--muted);display:none;font-weight:750;"></div>
       </div>
     </div>
   </section>
@@ -452,20 +501,20 @@
   <!-- TABLERO -->
   <section id="tablero" class="section hidden">
     <div class="container">
-      <div class="panel">
-        <div class="panel-head">
+      <div class="card">
+        <div class="panelHead">
           <div>
             <div style="font-weight:950;font-size:18px;">Tablero</div>
-            <div class="meta">Placeholder (luego lo conectamos a tus datos reales).</div>
+            <div class="meta">Placeholder bonito (cuando conectemos datos, se vuelve real).</div>
           </div>
           <div class="right">
             <button class="btn" onclick="closeSection('tablero')">Cerrar</button>
           </div>
         </div>
-        <div style="padding:16px;">
+        <div class="cardPad">
           <canvas id="chartDemo" height="120"></canvas>
-          <div style="margin-top:10px;color:var(--muted);font-size:13px;line-height:1.6;font-weight:700;">
-            En el siguiente paso lo conectamos a <code>/data</code>.
+          <div style="margin-top:10px;color:var(--muted);font-size:13px;line-height:1.6;font-weight:750;">
+            Próximo paso: alimentar esto desde KoBo (API/exports) y guardar resultados en <code>/data</code>.
           </div>
         </div>
       </div>
@@ -475,18 +524,18 @@
   <!-- INFORMES -->
   <section id="informes" class="section hidden">
     <div class="container">
-      <div class="panel">
-        <div class="panel-head">
+      <div class="card">
+        <div class="panelHead">
           <div>
             <div style="font-weight:950;font-size:18px;">Informes</div>
-            <div class="meta">Aquí irán PDFs/CSVs generados automáticamente.</div>
+            <div class="meta">Aquí pondremos PDFs/CSVs que se puedan descargar públicamente.</div>
           </div>
           <div class="right">
             <button class="btn" onclick="closeSection('informes')">Cerrar</button>
           </div>
         </div>
-        <div style="padding:16px;color:var(--muted);line-height:1.7;font-weight:700;">
-          Próximo paso: automatizar la generación de reportes desde KoBo y publicarlos en este portal.
+        <div class="cardPad" style="color:var(--muted);font-weight:750;line-height:1.7;">
+          Próximo paso: generar informes automáticamente y publicarlos en <code>/reports</code>.
         </div>
       </div>
     </div>
@@ -500,7 +549,7 @@
   </footer>
 
   <script>
-    // Datos (los crearemos después)
+    // Datos (los agregaremos luego)
     const DATA_SUMMARY = "data/resumen.json";
     const DATA_POINTS  = "data/puntos.geojson";
     const DATA_TRACKS  = "data/tracks.geojson";
@@ -508,13 +557,13 @@
     const $ = (id) => document.getElementById(id);
 
     function scrollToId(id){ $(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
+    window.scrollToId = scrollToId;
 
-    // Secciones (landing)
     function openSection(id){
       ["mapa","tablero","informes"].forEach(s => $(s).classList.add("hidden"));
       $(id).classList.remove("hidden");
       history.replaceState(null,"","#"+id);
-      setTimeout(()=>scrollToId(id), 30);
+      setTimeout(()=>scrollToId(id), 20);
 
       if (id === "mapa") initMapOnce();
       if (id === "tablero") initChartOnce();
@@ -527,19 +576,18 @@
     window.openSection = openSection;
     window.closeSection = closeSection;
 
-    $("btnExplore").addEventListener("click", ()=>scrollToId("explorar"));
-    $("btnMapa").addEventListener("click", ()=>openSection("mapa"));
-    $("btnEmpezar").addEventListener("click", ()=>scrollToId("explorar"));
-
+    // Año footer
     $("year").textContent = new Date().getFullYear();
 
     window.addEventListener("load", ()=>{
       const hash = (location.hash||"").replace("#","");
       if (["mapa","tablero","informes"].includes(hash)) openSection(hash);
+
+      initMiniMap();
       loadKPIs();
     });
 
-    // KPIs
+    // KPIs (si existe resumen.json)
     async function loadKPIs(){
       try{
         const res = await fetch(DATA_SUMMARY, { cache:"no-store" });
@@ -556,51 +604,70 @@
       catch { return String(n); }
     }
 
-    // MAPA: satélite + opción calles
-    let mapInited = false;
-    let map, pointsLayer;
+    // Capas base (satélite / calles)
+    function makeBaseLayers(){
+      const streets = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
+      });
+
+      const satellite = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        { maxZoom: 19, attribution: "Tiles &copy; Esri" }
+      );
+
+      return { streets, satellite };
+    }
+
+    // Mini mapa en portada
+    let miniInited=false;
+    function initMiniMap(){
+      if (miniInited || !window.L) return;
+      miniInited = true;
+
+      const { satellite } = makeBaseLayers();
+      const mini = L.map("miniMap", {
+        zoomControl: false,
+        attributionControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        tap: false
+      });
+
+      satellite.addTo(mini);
+      mini.setView([14.74, -91.16], 11);
+
+      // Marcador “decorativo”
+      L.circleMarker([14.74, -91.16], { radius: 7, weight: 1, fillOpacity: .9 }).addTo(mini);
+    }
+
+    // Mapa principal
+    let mapInited=false, map, pointsLayer;
 
     async function initMapOnce(){
-      if (mapInited) return;
+      if (mapInited || !window.L) return;
       mapInited = true;
-
-      if (!window.L){
-        helpMap("Cargando librerías del mapa…");
-        return;
-      }
 
       map = L.map("map", { scrollWheelZoom:true });
 
-      // Capas base
-      const streets = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        attribution: "&copy; OpenStreetMap contributors"
-      });
+      const { streets, satellite } = makeBaseLayers();
 
-      // Satélite (Esri)
-      const satellite = L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        {
-          maxZoom: 19,
-          attribution: "Tiles &copy; Esri"
-        }
-      );
-
-      // Por defecto: satélite
+      // default: satélite
       satellite.addTo(map);
 
-      // Control para cambiar base layers
+      // selector
       L.control.layers(
         { "Satélite (Esri)": satellite, "Calles (OSM)": streets },
         null,
         { position: "topright" }
       ).addTo(map);
 
-      // Vista inicial Atitlán
+      // vista inicial
       map.setView([14.74, -91.16], 11);
 
-      // Botón ajustar vista
-      $("btnFit").addEventListener("click", () => {
+      $("btnFit")?.addEventListener("click", () => {
         if (pointsLayer) {
           const b = pointsLayer.getBounds();
           if (b.isValid()) map.fitBounds(b.pad(0.12));
@@ -609,7 +676,7 @@
         }
       });
 
-      // Puntos
+      // cargar puntos
       try{
         const pts = await fetch(DATA_POINTS, { cache:"no-store" }).then(r => r.ok ? r.json() : null);
         if (pts?.features?.length){
@@ -620,7 +687,7 @@
               layer.bindPopup(`
                 <div style="min-width:240px;font-family:Inter,Arial,sans-serif">
                   <div style="font-weight:900;margin-bottom:6px">Reforestación</div>
-                  <div style="font-size:12px;opacity:.92">
+                  <div style="font-size:12px;opacity:.92;line-height:1.55">
                     <div><b>Fecha:</b> ${p.fecha_actividad || "—"}</div>
                     <div><b>Municipios:</b> ${p.municipios || p.municipio || "—"}</div>
                     <div><b>Institución:</b> ${p.institucion_resp || "—"}</div>
@@ -634,13 +701,13 @@
           const b = pointsLayer.getBounds();
           if (b.isValid()) map.fitBounds(b.pad(0.12));
         } else {
-          helpMap("Aún no existe <code>data/puntos.geojson</code>. Cuando lo subas, el mapa se llenará.");
+          helpMap("Aún no existe <code>data/puntos.geojson</code>. Cuando lo subas, el mapa se llenará automáticamente.");
         }
       } catch(_){
         helpMap("No se pudo cargar <code>data/puntos.geojson</code>. Revisa que exista en tu repo.");
       }
 
-      // Tracks (opcional)
+      // tracks (opcional)
       try{
         const tr = await fetch(DATA_TRACKS, { cache:"no-store" }).then(r => r.ok ? r.json() : null);
         if (tr?.features?.length){
@@ -651,16 +718,16 @@
 
     function helpMap(html){
       const box = $("mapMsg");
+      if (!box) return;
       box.style.display = "block";
       box.innerHTML = html;
     }
 
     // Tablero demo
-    let chartInited = false;
+    let chartInited=false;
     function initChartOnce(){
-      if (chartInited) return;
+      if (chartInited || !window.Chart) return;
       chartInited = true;
-      if (!window.Chart) return;
 
       new Chart($("chartDemo"), {
         type: "bar",
