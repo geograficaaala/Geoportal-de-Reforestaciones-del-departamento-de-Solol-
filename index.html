@@ -2,742 +2,152 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Geoportal de Reforestación – Sololá</title>
-  <meta name="description" content="Portal público con mapa, tablero e informes de reforestación en Sololá." />
-
-  <!-- Fuente -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- Chart.js -->
-  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Observatorio Ambiental · Sololá</title>
   <style>
     :root{
-      --bg: #fbfdff;
-      --text: rgba(11, 24, 38, .92);
-      --muted: rgba(11, 24, 38, .62);
-      --stroke: rgba(11, 24, 38, .10);
-      --card: rgba(255,255,255,.80);
-      --shadow: 0 18px 60px rgba(10,25,40,.12);
-      --radius: 26px;
-
-      --mint: rgba(176,255,216,.62);
-      --sky: rgba(170,225,255,.60);
-      --rose: rgba(255,200,230,.54);
-      --butter: rgba(255,244,176,.56);
+      --bg1:#e9fff2; --bg2:#e7f1ff; --bg3:#fff3dc;
+      --card:#ffffffcc; --ink:#15322a; --muted:#4b5b57;
+      --line: rgba(0,0,0,.08);
+      --r: 18px;
     }
-
-    *{ box-sizing:border-box; }
-    html, body{ height:100%; }
+    *{box-sizing:border-box}
     body{
-      margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      color: var(--text);
-      background: var(--bg);
-      overflow-x:hidden;
+      margin:0; font-family: system-ui, Segoe UI, Roboto, Arial;
+      color:var(--ink);
+      background: linear-gradient(120deg,var(--bg1),var(--bg2),var(--bg3));
+      min-height:100vh;
     }
-
-    /* Fondo pastel más “vivo” */
-    .bg{
-      position:fixed; inset:0; z-index:-2;
-      background:
-        radial-gradient(900px 560px at 10% 10%, var(--mint), transparent 62%),
-        radial-gradient(860px 540px at 88% 12%, var(--sky), transparent 60%),
-        radial-gradient(820px 560px at 92% 82%, var(--rose), transparent 62%),
-        radial-gradient(780px 540px at 10% 88%, var(--butter), transparent 62%),
-        linear-gradient(180deg, #ffffff, #fbfdff);
-    }
-
-    .container{ max-width: 1200px; margin:0 auto; padding: 0 20px; }
-
-    /* Para que los anchors no queden tapados por el header */
-    section, main { scroll-margin-top: 88px; }
-
-    /* Header */
     header{
-      position:sticky; top:0; z-index:30;
-      background: rgba(255,255,255,.65);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--stroke);
-    }
-    .nav{
-      display:flex; align-items:center; justify-content:space-between;
-      padding: 12px 0;
-      gap: 14px;
-    }
-
-    .brand{
-      display:flex; align-items:center; gap: 14px;
-      min-width: 280px;
-    }
-    .logos{
-      display:flex; align-items:center; gap: 10px;
-    }
-    .logos img{
-      height: 44px;                 /* LOGOS GRANDES */
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 10px 18px rgba(10,25,40,.10));
-    }
-    .brandText{
-      display:flex; flex-direction:column;
-      gap: 2px;
-    }
-    .title{
-      font-weight: 950;
-      letter-spacing:-.02em;
-      line-height:1.1;
-      font-size: 15px;
-    }
-    .subtitle{
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 750;
-    }
-
-    nav{
-      display:flex; gap:16px; align-items:center;
-      padding: 8px 12px;
-      border: 1px solid var(--stroke);
-      border-radius: 999px;
-      background: rgba(255,255,255,.55);
-      box-shadow: 0 10px 22px rgba(10,25,40,.06);
-    }
-    nav a{
-      text-decoration:none;
-      color: var(--muted);
-      font-weight: 900;
-      font-size: 13px;
-    }
-    nav a:hover{ color: var(--text); }
-
-    .actions{ display:flex; gap: 10px; align-items:center; }
-
-    .btn{
-      appearance:none;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.80);
-      border-radius: 16px;
-      padding: 10px 14px;
-      cursor:pointer;
-      font-weight: 950;
-      box-shadow: 0 10px 22px rgba(10,25,40,.08);
-      transition: transform .12s ease;
-      white-space:nowrap;
-    }
-    .btn:hover{ transform: translateY(-1px); }
-    .btn.primary{
-      border:none;
-      background: linear-gradient(135deg, rgba(125,235,255,.95), rgba(170,255,210,.95), rgba(255,206,236,.95));
-    }
-
-    @media (max-width: 980px){
-      nav{ display:none; }
-    }
-    @media (max-width: 560px){
-      .brand{ min-width: unset; }
-      .logos img{ height: 40px; }
-      .btn{ padding: 9px 12px; }
-    }
-
-    /* HERO (ya no queda vacío) */
-    main.hero{
-      padding: 34px 0 18px;
-    }
-    .heroGrid{
-      display:grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 18px;
-      align-items: stretch;
-    }
-    @media (max-width: 980px){
-      .heroGrid{ grid-template-columns: 1fr; }
-    }
-
-    h1{
-      margin:0;
-      font-size: clamp(38px, 4vw, 56px);
-      line-height: 1.05;
-      letter-spacing: -0.045em;
-    }
-    .lead{
-      margin-top: 14px;
-      color: var(--muted);
-      font-size: 16px;
-      line-height: 1.75;
-      max-width: 70ch;
-    }
-
-    .pillRow{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 14px; }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.72);
-      font-size: 12px;
-      font-weight: 950;
-      color: rgba(11,24,38,.74);
-    }
-
-    .ctaRow{ margin-top: 16px; display:flex; gap: 10px; flex-wrap:wrap; }
-
-    /* Card base */
-    .card{
-      border-radius: var(--radius);
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .cardPad{ padding: 18px; }
-
-    /* Mini map preview */
-    .miniWrap{
-      display:grid;
-      grid-template-rows: auto 1fr auto;
-      min-height: 420px;
-    }
-    .miniHeader{
-      padding: 16px 16px 10px;
-      border-bottom: 1px solid var(--stroke);
-      background:
-        radial-gradient(520px 220px at 10% 0%, var(--mint), transparent 60%),
-        radial-gradient(520px 220px at 90% 20%, var(--sky), transparent 60%),
-        rgba(255,255,255,.60);
-    }
-    .miniHeader .k{
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      font-weight: 950;
-    }
-    .miniHeader .m{
-      margin-top:6px;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.55;
-      font-weight: 700;
-    }
-
-    #miniMap{
-      height: 260px;
-      width: 100%;
-    }
-
-    .kpiGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      padding: 14px 16px 16px;
-      background: rgba(255,255,255,.62);
-    }
-    .kpi{
-      border-radius: 18px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.74);
-      padding: 12px;
-    }
-    .kpi .l{ font-size:12px; font-weight: 900; color: var(--muted); }
-    .kpi .v{ margin-top: 6px; font-size: 22px; font-weight: 950; letter-spacing:-.02em; }
-    .kpi .s{ margin-top: 4px; font-size:12px; color: var(--muted); font-weight: 700; }
-
-    /* Sección explorar */
-    section.section{ padding: 22px 0 44px; }
-    .sectionTitle{
-      display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
+      padding:18px 18px 0;
+      display:flex; align-items:center; justify-content:space-between; gap:14px;
       flex-wrap:wrap;
     }
-    .sectionTitle h2{
-      margin:0;
-      font-size: 28px;
-      letter-spacing:-.02em;
+    .brand h1{margin:0; font-size:18px}
+    .brand p{margin:0; color:var(--muted); font-size:13px}
+    nav{display:flex; gap:10px; flex-wrap:wrap}
+    a.btn{
+      text-decoration:none; color:var(--ink);
+      background:#fff; border:1px solid var(--line);
+      padding:10px 12px; border-radius:14px; font-size:13px;
+      box-shadow: 0 6px 20px rgba(0,0,0,.05);
     }
-    .sectionTitle p{
-      margin: 8px 0 0;
-      color: var(--muted);
-      line-height: 1.6;
-      font-weight: 700;
-      max-width: 70ch;
+    main{padding:18px; max-width:1100px; margin:0 auto}
+    .hero{
+      margin-top:10px;
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      padding:18px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.06);
+      display:grid; grid-template-columns: 1.2fr .8fr; gap:16px;
     }
-
-    .tiles{
-      margin-top: 16px;
-      display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
+    .hero h2{margin:0 0 6px; font-size:22px}
+    .hero .lead{margin:0; color:var(--muted); line-height:1.4}
+    .logos{
+      display:flex; gap:10px; justify-content:flex-end; align-items:center; flex-wrap:wrap;
     }
-    @media (max-width: 980px){
-      .tiles{ grid-template-columns: 1fr; }
+    .logos img{
+      height:64px; width:auto; border-radius:12px;
+      background:#fff; padding:8px; border:1px solid var(--line);
     }
-
-    .tile{
-      padding: 18px;
-      border-radius: var(--radius);
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.82);
-      box-shadow: var(--shadow);
-      cursor:pointer;
-      transition: transform .12s ease;
-      position: relative;
-      overflow:hidden;
+    .grid{
+      margin-top:16px;
+      display:grid; grid-template-columns: repeat(3, 1fr); gap:12px;
     }
-    .tile::before{
-      content:"";
-      position:absolute; inset:-2px;
-      background:
-        radial-gradient(520px 240px at 20% 0%, var(--mint), transparent 58%),
-        radial-gradient(520px 240px at 95% 30%, var(--sky), transparent 58%),
-        radial-gradient(520px 240px at 80% 110%, var(--rose), transparent 58%),
-        radial-gradient(520px 240px at 10% 110%, var(--butter), transparent 58%);
-      opacity: .80;
-      z-index: -1;
+    .card{
+      background: var(--card);
+      border:1px solid var(--line);
+      border-radius: var(--r);
+      padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.05);
     }
-    .tile:hover{ transform: translateY(-2px); }
-    .tile h3{ margin: 12px 0 6px; font-size: 18px; }
-    .tile p{ margin:0; color: var(--muted); font-size: 14px; line-height:1.55; font-weight:700; }
-    .tag{
-      display:inline-flex;
-      padding: 7px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.75);
-      font-size: 12px;
-      font-weight: 950;
-      color: rgba(11,24,38,.72);
+    .card h3{margin:0 0 6px; font-size:16px}
+    .card p{margin:0 0 10px; color:var(--muted); font-size:13px; line-height:1.35}
+    .kpis{display:grid; grid-template-columns: repeat(3, 1fr); gap:10px; margin-top:10px}
+    .kpi{background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px}
+    .kpi .n{font-size:18px; font-weight:700}
+    .kpi .t{font-size:12px; color:var(--muted)}
+    footer{padding:18px; color:var(--muted); font-size:12px; text-align:center}
+    @media (max-width: 900px){
+      .hero{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      .logos{justify-content:flex-start}
     }
-
-    /* Panels */
-    .panelHead{
-      padding: 16px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 12px;
-      border-bottom: 1px solid var(--stroke);
-      flex-wrap: wrap;
-      background: rgba(255,255,255,.62);
-    }
-    .panelHead .meta{
-      font-size: 13px; color: var(--muted); font-weight: 750; margin-top:4px;
-    }
-    .panelHead .right{ display:flex; gap:10px; flex-wrap:wrap; }
-
-    .hidden{ display:none; }
-
-    #map{ height: 640px; }
-    @media (max-width: 560px){
-      #map{ height: 560px; }
-    }
-
-    footer{
-      border-top: 1px solid var(--stroke);
-      padding: 22px 0 40px;
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 750;
-    }
-
-    code{ background: rgba(11,24,38,.06); padding: 2px 6px; border-radius: 10px; border: 1px solid rgba(11,24,38,.08); }
   </style>
 </head>
-
 <body>
-  <div class="bg"></div>
+<header>
+  <div class="brand">
+    <h1>Observatorio Ambiental · Sololá</h1>
+    <p>Portal público modular (Reforestación y futuros módulos ambientales)</p>
+  </div>
+  <nav>
+    <a class="btn" href="./apps/reforestacion/index.html">Reforestación</a>
+    <a class="btn" href="#proximos">Próximos módulos</a>
+  </nav>
+</header>
 
-  <header>
-    <div class="container nav">
-      <div class="brand">
-        <div class="logos" aria-label="Logos">
-          <img src="BOSQUE.png" alt="BOSQUE" onerror="this.style.display='none'">
-          <img src="CODEMA%20(2).png" alt="CODEMA" onerror="this.style.display='none'">
-        </div>
-        <div class="brandText">
-          <div class="title">Geoportal de Reforestación</div>
-          <div class="subtitle">Sololá · Consulta pública</div>
-        </div>
+<main>
+  <section class="hero">
+    <div>
+      <h2>Reforestación: mapa, indicadores e informes</h2>
+      <p class="lead">
+        Este portal reúne información geográfica y reportes para apoyar decisiones ambientales en el departamento de Sololá.
+        El módulo de Reforestación se alimentará continuamente con boletas KoBoToolbox.
+      </p>
+
+      <div class="kpis">
+        <div class="kpi"><div class="n" id="k_boletas">—</div><div class="t">Boletas</div></div>
+        <div class="kpi"><div class="n" id="k_plantas">—</div><div class="t">Plantas</div></div>
+        <div class="kpi"><div class="n" id="k_part">—</div><div class="t">Participantes</div></div>
       </div>
 
-      <nav aria-label="Navegación">
-        <a href="#inicio">Inicio</a>
-        <a href="#explorar">Explorar</a>
-        <a href="#mapa">Mapa</a>
-        <a href="#tablero">Tablero</a>
-        <a href="#informes">Informes</a>
-      </nav>
-
-      <div class="actions">
-        <button class="btn" onclick="scrollToId('explorar')">Explorar</button>
-        <button class="btn primary" onclick="openSection('mapa')">Abrir mapa</button>
-      </div>
+      <p class="lead" style="margin-top:10px;font-size:12px">
+        Última actualización: <span id="k_update">—</span>
+      </p>
     </div>
-  </header>
 
-  <main id="inicio" class="hero">
-    <div class="container">
-      <div class="heroGrid">
-        <section class="card">
-          <div class="cardPad">
-            <h1>
-              Reforestación visible<br>
-              con <span style="background:linear-gradient(90deg,#49e6a7,#63d7ff,#ffb6de,#ffe68c);-webkit-background-clip:text;background-clip:text;color:transparent;">datos y mapas</span>.
-            </h1>
-            <p class="lead">
-              Consulta pública para explorar reforestaciones registradas en campo:
-              puntos georreferenciados, tracks (si existen), participación comunitaria e información para transparencia.
-            </p>
-
-            <div class="pillRow">
-              <span class="pill">🛰️ Satélite</span>
-              <span class="pill">🗺️ Mapa interactivo</span>
-              <span class="pill">📊 Tablero</span>
-              <span class="pill">📄 Informes</span>
-            </div>
-
-            <div class="ctaRow">
-              <button class="btn primary" onclick="openSection('mapa')">Ver mapa completo</button>
-              <button class="btn" onclick="scrollToId('explorar')">Ver secciones</button>
-            </div>
-
-            <div style="margin-top:14px;color:var(--muted);font-weight:700;font-size:13px;line-height:1.6;">
-              Tip: cuando subamos <code>data/puntos.geojson</code>, el mapa y los indicadores se llenan solos.
-            </div>
-          </div>
-        </section>
-
-        <!-- Mini mapa + KPIs (se ve vivo desde el inicio) -->
-        <aside class="card miniWrap" aria-label="Vista rápida">
-          <div class="miniHeader">
-            <div class="k">
-              <div>Vista rápida (satélite)</div>
-              <span class="tag">preview</span>
-            </div>
-            <div class="m">Este es un mini-mapa. Abre el mapa completo para ver los puntos y filtros.</div>
-          </div>
-
-          <div id="miniMap" aria-label="Mini mapa"></div>
-
-          <div class="kpiGrid">
-            <div class="kpi">
-              <div class="l">Boletas</div>
-              <div class="v" id="kpiBoletas">—</div>
-              <div class="s">registros</div>
-            </div>
-            <div class="kpi">
-              <div class="l">Plantas</div>
-              <div class="v" id="kpiPlantas">—</div>
-              <div class="s">totales</div>
-            </div>
-            <div class="kpi">
-              <div class="l">Participantes</div>
-              <div class="v" id="kpiParticipantes">—</div>
-              <div class="s">personas</div>
-            </div>
-            <div class="kpi">
-              <div class="l">Actualización</div>
-              <div class="v" style="font-size:16px;" id="kpiActualizacion">—</div>
-              <div class="s">fecha</div>
-            </div>
-          </div>
-        </aside>
-      </div>
-    </div>
-  </main>
-
-  <section id="explorar" class="section">
-    <div class="container">
-      <div class="sectionTitle">
-        <div>
-          <h2>Explorar el portal</h2>
-          <p>Elige una sección. Se abre aquí mismo (sin mandarte a otra página).</p>
-        </div>
-      </div>
-
-      <div class="tiles">
-        <div class="tile" onclick="openSection('mapa')">
-          <span class="tag">🛰️ Satélite · puntos</span>
-          <h3>Mapa</h3>
-          <p>Reforestaciones georreferenciadas, con vista satelital y popups por registro.</p>
-        </div>
-        <div class="tile" onclick="openSection('tablero')">
-          <span class="tag">📊 Indicadores</span>
-          <h3>Tablero</h3>
-          <p>Resumen por municipio, institución y especies (lo conectamos cuando tengamos datos).</p>
-        </div>
-        <div class="tile" onclick="openSection('informes')">
-          <span class="tag">📄 Descargas</span>
-          <h3>Informes</h3>
-          <p>PDF/CSV automáticos (mensual/trimestral) publicados desde el repositorio.</p>
-        </div>
-      </div>
+    <div class="logos">
+      <img src="./assets/img/BOSQUE.png" alt="BOSQUE" onerror="this.style.display='none'">
+      <img src="./assets/img/CODEMA%20(2).png" alt="CODEMA" onerror="this.style.display='none'">
     </div>
   </section>
 
-  <!-- MAPA -->
-  <section id="mapa" class="section hidden">
-    <div class="container">
-      <div class="card">
-        <div class="panelHead">
-          <div>
-            <div style="font-weight:950;font-size:18px;">Mapa interactivo (satélite)</div>
-            <div class="meta">Cargará <code>data/puntos.geojson</code> y <code>data/tracks.geojson</code>.</div>
-          </div>
-          <div class="right">
-            <button class="btn" id="btnFit">Ajustar vista</button>
-            <button class="btn" onclick="closeSection('mapa')">Cerrar</button>
-          </div>
-        </div>
-        <div id="map"></div>
-        <div id="mapMsg" style="padding:16px;color:var(--muted);display:none;font-weight:750;"></div>
-      </div>
+  <section class="grid">
+    <div class="card">
+      <h3>Módulo: Reforestación</h3>
+      <p>Resumen, Geoportal (visor SIG pro), Dashboard e Informes.</p>
+      <a class="btn" href="./apps/reforestacion/index.html">Entrar al módulo</a>
+    </div>
+
+    <div class="card" id="proximos">
+      <h3>Próximos módulos</h3>
+      <p>Incendios forestales, fragmentación forestal y otras capas.</p>
+      <span class="btn" style="opacity:.6;cursor:default">En construcción</span>
+    </div>
+
+    <div class="card">
+      <h3>Datos</h3>
+      <p>Por ahora usamos datos de prueba. Luego conectamos KoBo con automatización.</p>
+      <a class="btn" href="./data/puntos.geojson">Ver puntos</a>
     </div>
   </section>
+</main>
 
-  <!-- TABLERO -->
-  <section id="tablero" class="section hidden">
-    <div class="container">
-      <div class="card">
-        <div class="panelHead">
-          <div>
-            <div style="font-weight:950;font-size:18px;">Tablero</div>
-            <div class="meta">Placeholder bonito (cuando conectemos datos, se vuelve real).</div>
-          </div>
-          <div class="right">
-            <button class="btn" onclick="closeSection('tablero')">Cerrar</button>
-          </div>
-        </div>
-        <div class="cardPad">
-          <canvas id="chartDemo" height="120"></canvas>
-          <div style="margin-top:10px;color:var(--muted);font-size:13px;line-height:1.6;font-weight:750;">
-            Próximo paso: alimentar esto desde KoBo (API/exports) y guardar resultados en <code>/data</code>.
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+<footer>© Observatorio Ambiental Sololá · GitHub Pages</footer>
 
-  <!-- INFORMES -->
-  <section id="informes" class="section hidden">
-    <div class="container">
-      <div class="card">
-        <div class="panelHead">
-          <div>
-            <div style="font-weight:950;font-size:18px;">Informes</div>
-            <div class="meta">Aquí pondremos PDFs/CSVs que se puedan descargar públicamente.</div>
-          </div>
-          <div class="right">
-            <button class="btn" onclick="closeSection('informes')">Cerrar</button>
-          </div>
-        </div>
-        <div class="cardPad" style="color:var(--muted);font-weight:750;line-height:1.7;">
-          Próximo paso: generar informes automáticamente y publicarlos en <code>/reports</code>.
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer>
-    <div class="container" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-      <div>© <span id="year"></span> Geoportal de Reforestación – Sololá</div>
-      <div>GitHub Pages · público</div>
-    </div>
-  </footer>
-
-  <script>
-    // Datos (los agregaremos luego)
-    const DATA_SUMMARY = "data/resumen.json";
-    const DATA_POINTS  = "data/puntos.geojson";
-    const DATA_TRACKS  = "data/tracks.geojson";
-
-    const $ = (id) => document.getElementById(id);
-
-    function scrollToId(id){ $(id)?.scrollIntoView({behavior:"smooth", block:"start"}); }
-    window.scrollToId = scrollToId;
-
-    function openSection(id){
-      ["mapa","tablero","informes"].forEach(s => $(s).classList.add("hidden"));
-      $(id).classList.remove("hidden");
-      history.replaceState(null,"","#"+id);
-      setTimeout(()=>scrollToId(id), 20);
-
-      if (id === "mapa") initMapOnce();
-      if (id === "tablero") initChartOnce();
-    }
-    function closeSection(id){
-      $(id).classList.add("hidden");
-      history.replaceState(null,"","#explorar");
-      setTimeout(()=>scrollToId("explorar"), 20);
-    }
-    window.openSection = openSection;
-    window.closeSection = closeSection;
-
-    // Año footer
-    $("year").textContent = new Date().getFullYear();
-
-    window.addEventListener("load", ()=>{
-      const hash = (location.hash||"").replace("#","");
-      if (["mapa","tablero","informes"].includes(hash)) openSection(hash);
-
-      initMiniMap();
-      loadKPIs();
-    });
-
-    // KPIs (si existe resumen.json)
-    async function loadKPIs(){
-      try{
-        const res = await fetch(DATA_SUMMARY, { cache:"no-store" });
-        if (!res.ok) return;
-        const j = await res.json();
-        if (j.boletas != null) $("kpiBoletas").textContent = fmt(j.boletas);
-        if (j.plantas != null) $("kpiPlantas").textContent = fmt(j.plantas);
-        if (j.participantes != null) $("kpiParticipantes").textContent = fmt(j.participantes);
-        if (j.actualizacion != null) $("kpiActualizacion").textContent = String(j.actualizacion);
-      }catch(_){}
-    }
-    function fmt(n){
-      try { return new Intl.NumberFormat("es-GT").format(Number(n)||0); }
-      catch { return String(n); }
-    }
-
-    // Capas base (satélite / calles)
-    function makeBaseLayers(){
-      const streets = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19, attribution: "&copy; OpenStreetMap contributors"
-      });
-
-      const satellite = L.tileLayer(
-        "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-        { maxZoom: 19, attribution: "Tiles &copy; Esri" }
-      );
-
-      return { streets, satellite };
-    }
-
-    // Mini mapa en portada
-    let miniInited=false;
-    function initMiniMap(){
-      if (miniInited || !window.L) return;
-      miniInited = true;
-
-      const { satellite } = makeBaseLayers();
-      const mini = L.map("miniMap", {
-        zoomControl: false,
-        attributionControl: false,
-        dragging: false,
-        scrollWheelZoom: false,
-        doubleClickZoom: false,
-        boxZoom: false,
-        keyboard: false,
-        tap: false
-      });
-
-      satellite.addTo(mini);
-      mini.setView([14.74, -91.16], 11);
-
-      // Marcador “decorativo”
-      L.circleMarker([14.74, -91.16], { radius: 7, weight: 1, fillOpacity: .9 }).addTo(mini);
-    }
-
-    // Mapa principal
-    let mapInited=false, map, pointsLayer;
-
-    async function initMapOnce(){
-      if (mapInited || !window.L) return;
-      mapInited = true;
-
-      map = L.map("map", { scrollWheelZoom:true });
-
-      const { streets, satellite } = makeBaseLayers();
-
-      // default: satélite
-      satellite.addTo(map);
-
-      // selector
-      L.control.layers(
-        { "Satélite (Esri)": satellite, "Calles (OSM)": streets },
-        null,
-        { position: "topright" }
-      ).addTo(map);
-
-      // vista inicial
-      map.setView([14.74, -91.16], 11);
-
-      $("btnFit")?.addEventListener("click", () => {
-        if (pointsLayer) {
-          const b = pointsLayer.getBounds();
-          if (b.isValid()) map.fitBounds(b.pad(0.12));
-        } else {
-          map.setView([14.74, -91.16], 11);
-        }
-      });
-
-      // cargar puntos
-      try{
-        const pts = await fetch(DATA_POINTS, { cache:"no-store" }).then(r => r.ok ? r.json() : null);
-        if (pts?.features?.length){
-          pointsLayer = L.geoJSON(pts, {
-            pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius:7, weight:1.2, fillOpacity:.9 }),
-            onEachFeature: (f, layer) => {
-              const p = f.properties || {};
-              layer.bindPopup(`
-                <div style="min-width:240px;font-family:Inter,Arial,sans-serif">
-                  <div style="font-weight:900;margin-bottom:6px">Reforestación</div>
-                  <div style="font-size:12px;opacity:.92;line-height:1.55">
-                    <div><b>Fecha:</b> ${p.fecha_actividad || "—"}</div>
-                    <div><b>Municipios:</b> ${p.municipios || p.municipio || "—"}</div>
-                    <div><b>Institución:</b> ${p.institucion_resp || "—"}</div>
-                    <div><b>Plantas:</b> ${p.total_plantas ?? "—"}</div>
-                  </div>
-                </div>
-              `);
-            }
-          }).addTo(map);
-
-          const b = pointsLayer.getBounds();
-          if (b.isValid()) map.fitBounds(b.pad(0.12));
-        } else {
-          helpMap("Aún no existe <code>data/puntos.geojson</code>. Cuando lo subas, el mapa se llenará automáticamente.");
-        }
-      } catch(_){
-        helpMap("No se pudo cargar <code>data/puntos.geojson</code>. Revisa que exista en tu repo.");
-      }
-
-      // tracks (opcional)
-      try{
-        const tr = await fetch(DATA_TRACKS, { cache:"no-store" }).then(r => r.ok ? r.json() : null);
-        if (tr?.features?.length){
-          L.geoJSON(tr, { style: ()=>({ weight:4, opacity:.85 }) }).addTo(map);
-        }
-      } catch(_){}
-    }
-
-    function helpMap(html){
-      const box = $("mapMsg");
-      if (!box) return;
-      box.style.display = "block";
-      box.innerHTML = html;
-    }
-
-    // Tablero demo
-    let chartInited=false;
-    function initChartOnce(){
-      if (chartInited || !window.Chart) return;
-      chartInited = true;
-
-      new Chart($("chartDemo"), {
-        type: "bar",
-        data: {
-          labels: ["Sololá", "Panajachel", "Santiago Atitlán", "Santa Cruz"],
-          datasets: [{ label: "Plantas (demo)", data: [1200, 900, 760, 420] }]
-        },
-        options: { plugins: { legend: { display:false } } }
-      });
-    }
-  </script>
+<script>
+  fetch('./data/resumen.json')
+    .then(r => r.ok ? r.json() : null)
+    .then(j => {
+      if(!j) return;
+      document.getElementById('k_boletas').textContent = j.kpis?.total_boletas ?? '—';
+      document.getElementById('k_plantas').textContent  = j.kpis?.total_plantas ?? '—';
+      document.getElementById('k_part').textContent     = j.kpis?.total_participantes ?? '—';
+      document.getElementById('k_update').textContent   = j.ultima_actualizacion ?? '—';
+    })
+    .catch(()=>{});
+</script>
 </body>
 </html>
