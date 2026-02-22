@@ -1,13 +1,264 @@
 <!doctype html>
-<html lang="es"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Geoportal · Reforestación</title>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Geoportal · Reforestación</title>
+
+  <!-- MapLibre -->
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <style>
+    :root{
+      --bg1:#e9fff2; --bg2:#e7f1ff; --bg3:#fff3dc;
+      --card:#ffffffee; --ink:#15322a; --muted:#4b5b57;
+      --line: rgba(0,0,0,.10);
+      --r: 18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;color:var(--ink);background:#fff}
+    header{
+      padding:12px 14px;
+      background: linear-gradient(120deg,var(--bg1),var(--bg2),var(--bg3));
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    }
+    header .ttl{font-weight:800}
+    header .sub{font-size:12px;color:var(--muted)}
+    .btns{display:flex;gap:8px;flex-wrap:wrap}
+    a.btn,button.btn{
+      text-decoration:none;color:var(--ink);
+      background:#fff;border:1px solid var(--line);
+      padding:8px 10px;border-radius:14px;font-size:13px;
+      box-shadow:0 6px 20px rgba(0,0,0,.05);
+      cursor:pointer;
+    }
+    #wrap{height:calc(100vh - 58px); display:grid; grid-template-columns: 320px 1fr;}
+    aside{
+      background: var(--card);
+      border-right:1px solid var(--line);
+      padding:12px;
+      overflow:auto;
+    }
+    #map{width:100%;height:100%}
+    .panel{
+      border:1px solid var(--line);
+      border-radius:16px;
+      background:#fff;
+      padding:10px;
+      margin-bottom:10px;
+    }
+    .panel h3{margin:0 0 8px;font-size:14px}
+    .small{font-size:12px;color:var(--muted);line-height:1.35}
+    .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+    .tog{display:flex;gap:8px;align-items:center}
+    .groupTitle{font-weight:700;font-size:13px;margin:10px 0 6px}
+    .legendDot{
+      display:inline-block;width:10px;height:10px;border-radius:50%;
+      background:#0a7f5a; border:1px solid rgba(0,0,0,.25); margin-right:8px;
+    }
+    .popup h4{margin:0 0 6px;font-size:14px}
+    .popup .kv{font-size:12px;margin:2px 0}
+    .popup .kv b{color:#1b3f35}
+    @media (max-width: 900px){
+      #wrap{grid-template-columns:1fr}
+      aside{display:none}
+    }
+    @media print{
+      header, aside{display:none !important}
+      #wrap{grid-template-columns:1fr;height:100vh}
+    }
+  </style>
 </head>
-<body style="margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#fff;">
-<div style="max-width:900px;margin:0 auto;padding:18px">
-  <a href="./index.html">← Volver</a>
-  <h1>Geoportal (siguiente paso)</h1>
-  <p>En el próximo paso lo hacemos PRO (mapa real + capas + popups + basemaps).</p>
-  <p>Datos: <a href="../../data/puntos.geojson">puntos.geojson</a></p>
+
+<body>
+<header>
+  <div>
+    <div class="ttl">Geoportal · Reforestación (Sololá)</div>
+    <div class="sub">Capas, popups, descargas e impresión simple · listo para KoBo</div>
+  </div>
+  <div class="btns">
+    <a class="btn" href="./index.html">← Volver</a>
+    <a class="btn" href="../../data/puntos.geojson" download>Descargar puntos (GeoJSON)</a>
+    <button class="btn" id="printBtn">Imprimir PDF</button>
+  </div>
+</header>
+
+<div id="wrap">
+  <aside>
+    <div class="panel">
+      <h3>Mapa base</h3>
+      <div class="small">Satélite por defecto. Cambia a calles si lo necesitas.</div>
+      <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn" id="baseSat">Satélite</button>
+        <button class="btn" id="baseOsm">Calles (OSM)</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Capas</h3>
+      <div class="groupTitle">Reforestación</div>
+      <div class="row">
+        <div class="tog">
+          <input type="checkbox" id="chkPuntos" checked />
+          <label for="chkPuntos" style="font-size:13px">Boletas (puntos)</label>
+        </div>
+        <span class="small" id="countPuntos">—</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3>Leyenda</h3>
+      <div class="small"><span class="legendDot"></span>Punto = boleta de reforestación</div>
+    </div>
+
+    <div class="panel">
+      <h3>Estado</h3>
+      <div class="small">Fuente: <code style="font-size:11px">data/puntos.geojson</code></div>
+      <div class="small">Luego conectamos KoBo para que este archivo se actualice solo.</div>
+    </div>
+  </aside>
+
+  <div id="map"></div>
 </div>
-</body></html>
+
+<script>
+  // --- Basemaps ---
+  // OSM style (libre)
+  const osmStyle = "https://demotiles.maplibre.org/style.json";
+
+  // Satélite: ESRI World Imagery como raster tiles
+  // (si un día quieres, cambiamos a otra fuente)
+  const satStyle = {
+    "version": 8,
+    "sources": {
+      "esri": {
+        "type": "raster",
+        "tiles": [
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+        ],
+        "tileSize": 256,
+        "attribution": "Esri"
+      }
+    },
+    "layers": [
+      { "id": "sat", "type": "raster", "source": "esri" }
+    ]
+  };
+
+  const map = new maplibregl.Map({
+    container: "map",
+    style: satStyle,
+    center: [-91.18, 14.77],   // Sololá aprox
+    zoom: 10
+  });
+
+  map.addControl(new maplibregl.NavigationControl(), "top-right");
+  map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: "metric" }));
+
+  // --- Capa KoBo (por ahora: puntos.geojson) ---
+  async function loadPuntos() {
+    const url = "../../data/puntos.geojson";
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error("No se pudo cargar puntos.geojson");
+    return await res.json();
+  }
+
+  function safe(v){
+    if(v === null || v === undefined) return "";
+    if(Array.isArray(v)) return v.join(", ");
+    return String(v);
+  }
+
+  map.on("load", async () => {
+    let geojson;
+    try{
+      geojson = await loadPuntos();
+    } catch(e){
+      console.error(e);
+      alert("No pude cargar data/puntos.geojson. Revisa que exista y sea válido.");
+      return;
+    }
+
+    map.addSource("puntos", { type: "geojson", data: geojson });
+
+    map.addLayer({
+      id: "puntos-circle",
+      type: "circle",
+      source: "puntos",
+      paint: {
+        "circle-radius": 6,
+        "circle-color": "#0a7f5a",
+        "circle-stroke-color": "rgba(0,0,0,0.35)",
+        "circle-stroke-width": 1
+      }
+    });
+
+    // contador
+    const n = (geojson.features || []).length;
+    document.getElementById("countPuntos").textContent = n + " pts";
+
+    // popup
+    map.on("click", "puntos-circle", (e) => {
+      const f = e.features?.[0];
+      if(!f) return;
+
+      const p = f.properties || {};
+      const html = `
+        <div class="popup">
+          <h4>Boleta ${safe(p.id)}</h4>
+          <div class="kv"><b>Fecha:</b> ${safe(p.fecha_actividad)}</div>
+          <div class="kv"><b>Municipio(s):</b> ${safe(p.municipios)}</div>
+          <div class="kv"><b>Comunidad:</b> ${safe(p.comunidad)}</div>
+          <div class="kv"><b>Sitio:</b> ${safe(p.sitio_nombre)}</div>
+          <div class="kv"><b>Institución(es):</b> ${safe(p.instituciones)}</div>
+          <div class="kv"><b>Total plantas:</b> ${safe(p.total_plantas)}</div>
+          <div class="kv"><b>Participantes:</b> ${safe(p.total_participantes)}</div>
+          ${p.observaciones ? `<div class="kv"><b>Obs.:</b> ${safe(p.observaciones)}</div>` : ""}
+        </div>
+      `;
+
+      new maplibregl.Popup({ closeButton: true, maxWidth: "320px" })
+        .setLngLat(e.lngLat)
+        .setHTML(html)
+        .addTo(map);
+    });
+
+    map.on("mouseenter", "puntos-circle", () => map.getCanvas().style.cursor = "pointer");
+    map.on("mouseleave", "puntos-circle", () => map.getCanvas().style.cursor = "");
+
+    // zoom a datos si hay puntos
+    if(n > 0){
+      const b = new maplibregl.LngLatBounds();
+      for(const ft of geojson.features){
+        if(ft.geometry?.type === "Point"){
+          const c = ft.geometry.coordinates;
+          if(Array.isArray(c) && c.length >= 2) b.extend([c[0], c[1]]);
+        }
+      }
+      if(!b.isEmpty()) map.fitBounds(b, { padding: 50, maxZoom: 14 });
+    }
+  });
+
+  // --- UI ---
+  document.getElementById("chkPuntos").addEventListener("change", (e)=>{
+    const vis = e.target.checked ? "visible" : "none";
+    if(map.getLayer("puntos-circle")) map.setLayoutProperty("puntos-circle", "visibility", vis);
+  });
+
+  document.getElementById("baseSat").addEventListener("click", ()=>{
+    map.setStyle(satStyle);
+    // recarga capa al cambiar estilo
+    map.once("styledata", ()=> location.reload());
+  });
+
+  document.getElementById("baseOsm").addEventListener("click", ()=>{
+    map.setStyle(osmStyle);
+    map.once("styledata", ()=> location.reload());
+  });
+
+  document.getElementById("printBtn").addEventListener("click", ()=> window.print());
+</script>
+</body>
+</html>
