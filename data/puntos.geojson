@@ -1,4 +1,36 @@
 {
   "type": "FeatureCollection",
-  "features": []
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.149564,
+          14.748101
+        ]
+      },
+      "properties": {
+        "id": "677293056",
+        "fecha_actividad": "2026-02-22",
+        "municipios": [
+          "panajachel"
+        ],
+        "comunidad": "Caserío San Luis",
+        "sitio_nombre": "Terreno de don Lenchi",
+        "instituciones": [
+          "amigos_lago_atitlan"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 23,
+        "tenencia": "privada",
+        "total_plantas": 100,
+        "total_participantes": 8,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    }
+  ]
 }
