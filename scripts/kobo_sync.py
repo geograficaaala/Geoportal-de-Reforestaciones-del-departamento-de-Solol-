@@ -22,7 +22,7 @@ DATE_FIELD_CANDIDATES = ["fecha_actividad", "_submission_time", "endtime", "star
 def utc_now_iso() -> str:
     return datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-def http_get_with_retries(url: str, headers: Dict[str, str], timeout: int = 180, tries: int = 6) -> requests.Response:
+def http_get_with_retries(url: str, headers: Dict[str, str], timeout: int = 180, tries: int = 7) -> requests.Response:
     last_err = None
     for i in range(tries):
         try:
@@ -53,6 +53,7 @@ def fetch_all_export_settings(headers: Dict[str, str]) -> List[Dict[str, Any]]:
     return out
 
 def build_data_csv_url(export_setting: Dict[str, Any]) -> str:
+    # Usar endpoint síncrono estable: .../export-settings/<ID>/data.csv
     settings_url = export_setting.get("url")
     if not settings_url:
         uid = export_setting.get("uid")
@@ -75,12 +76,7 @@ def truthy(v: Any) -> bool:
     return s in ("1", "true", "t", "yes", "y", "si", "sí")
 
 def multiselect_from_split_columns(row: Dict[str, Any], base: str) -> List[str]:
-    """
-    Si KoBo exporta select_multiple en columnas separadas:
-      base/choice = 1
-      base_choice = 1
-    devolvemos [choice, ...]
-    """
+    # Base/choice=1 o base_choice=1
     out = []
     for k, v in row.items():
         if k.startswith(base + "/") and truthy(v):
@@ -90,12 +86,9 @@ def multiselect_from_split_columns(row: Dict[str, Any], base: str) -> List[str]:
     return out
 
 def get_multiselect(row: Dict[str, Any], base: str) -> List[str]:
-    # 1) formato clásico: una columna con "a b c"
     if base in row and str(row.get(base) or "").strip():
         return split_multi_text(row.get(base))
-    # 2) formato columnas separadas
-    vals = multiselect_from_split_columns(row, base)
-    return vals
+    return multiselect_from_split_columns(row, base)
 
 def to_int(v: Any) -> int:
     try:
@@ -118,29 +111,35 @@ def iso_parse(v: Any) -> Optional[datetime.datetime]:
     except Exception:
         return None
 
+def sniff_dialect(text: str) -> csv.Dialect:
+    sample = text[:4096]
+    try:
+        d = csv.Sniffer().sniff(sample, delimiters=";,\t")
+        return d
+    except Exception:
+        # fallback común en ES: ;
+        d = csv.excel
+        d.delimiter = ";"
+        return d
+
 def find_geopoint_mode(headers: List[str]) -> Tuple[str, str, Optional[str]]:
-    """
-    Retorna:
-      ("combined", fieldname, None) si existe "ubicacion" = "lat lon ..."
-      ("split", lat_field, lon_field) si existen ubicacion_latitude / ubicacion_longitude (o con /)
-    """
     hset = set(headers)
     for root in GEOPOINT_ROOT_CANDIDATES:
+        # combinado: ubicacion = "lat lon ..."
         if root in hset:
             return ("combined", root, None)
 
-        # patrones comunes de KoBo cuando separa columnas
-        lat1, lon1 = f"{root}_latitude", f"{root}_longitude"
-        lat2, lon2 = f"{root}/latitude", f"{root}/longitude"
-        lat3, lon3 = f"{root}_lat", f"{root}_lon"
-        if lat1 in hset and lon1 in hset:
-            return ("split", lat1, lon1)
-        if lat2 in hset and lon2 in hset:
-            return ("split", lat2, lon2)
-        if lat3 in hset and lon3 in hset:
-            return ("split", lat3, lon3)
+        # separados (varios patrones)
+        cand_pairs = [
+            (f"{root}_latitude", f"{root}_longitude"),
+            (f"{root}/latitude", f"{root}/longitude"),
+            (f"_{root}_latitude", f"_{root}_longitude"),  # KoBo a veces crea _ubicacion_latitude
+        ]
+        for latf, lonf in cand_pairs:
+            if latf in hset and lonf in hset:
+                return ("split", latf, lonf)
 
-    raise RuntimeError(f"No encontré geopoint. Busqué raíces {GEOPOINT_ROOT_CANDIDATES} y patrones *_latitude/_longitude.")
+    raise RuntimeError(f"No encontré geopoint. Probé: {GEOPOINT_ROOT_CANDIDATES} y variantes *_latitude/_longitude.")
 
 def parse_coords(row: Dict[str, Any], mode: Tuple[str, str, Optional[str]]) -> Optional[List[float]]:
     kind, a, b = mode
@@ -152,7 +151,8 @@ def parse_coords(row: Dict[str, Any], mode: Tuple[str, str, Optional[str]]) -> O
         if len(parts) < 2:
             return None
         try:
-            lat = float(parts[0]); lon = float(parts[1])
+            lat = float(parts[0])
+            lon = float(parts[1])
             return [lon, lat]
         except Exception:
             return None
@@ -169,7 +169,6 @@ def parse_coords(row: Dict[str, Any], mode: Tuple[str, str, Optional[str]]) -> O
 def main():
     headers = {"Authorization": f"Token {TOKEN}"}
 
-    # 1) Buscar export-setting por nombre
     settings = fetch_all_export_settings(headers)
     export = None
     for it in settings:
@@ -180,20 +179,31 @@ def main():
     if export is None:
         raise RuntimeError(f"No encontré export-setting con name='{EXPORT_NAME}'.")
 
-    # 2) Descargar CSV estable
     csv_url = build_data_csv_url(export)
     r = http_get_with_retries(csv_url, headers=headers, timeout=240, tries=7)
     r.raise_for_status()
+
     text = r.content.decode("utf-8-sig", errors="replace")
 
-    reader = csv.DictReader(io.StringIO(text))
+    dialect = sniff_dialect(text)
+    reader = csv.DictReader(io.StringIO(text), dialect=dialect)
     rows = list(reader)
+
+    # Si el dialecto falló y quedó 1 sola columna, intenta con ';'
+    if rows and reader.fieldnames and len(reader.fieldnames) == 1:
+        dialect = csv.excel
+        dialect.delimiter = ";"
+        reader = csv.DictReader(io.StringIO(text), dialect=dialect)
+        rows = list(reader)
 
     os.makedirs("data", exist_ok=True)
 
     if not rows:
         geojson = {"type": "FeatureCollection", "features": []}
-        resumen = {"ultima_actualizacion": utc_now_iso(), "kpis": {"total_boletas": 0, "total_plantas": 0, "total_participantes": 0}}
+        resumen = {
+            "ultima_actualizacion": utc_now_iso(),
+            "kpis": {"total_boletas": 0, "total_plantas": 0, "total_participantes": 0},
+        }
         with open(OUT_GEOJSON, "w", encoding="utf-8") as f:
             json.dump(geojson, f, ensure_ascii=False, indent=2)
         with open(OUT_RESUMEN, "w", encoding="utf-8") as f:
@@ -238,8 +248,9 @@ def main():
             "total_plantas": to_int(row.get("total_plantas")),
             "total_participantes": to_int(row.get("total_participantes")),
             "autoriza_fotos": row.get("autoriza_fotos") or "",
-            "foto_sitio_url": row.get("foto_sitio") or "",
-            "foto_actividad_url": row.get("foto_actividad") or "",
+            # KoBo suele crear columnas *_URL
+            "foto_sitio_url": row.get("foto_sitio_URL") or row.get("foto_sitio") or "",
+            "foto_actividad_url": row.get("foto_actividad_URL") or row.get("foto_actividad") or "",
             "observaciones": row.get("observaciones") or "",
         }
 
