@@ -1,0 +1,34 @@
+{
+  "title": "Geoportal · Reforestación (Sololá)",
+  "kobo": {
+    "id": "kobo_boletas",
+    "title": "Boletas KoBo (puntos)",
+    "url": "../../data/puntos.geojson"
+  },
+  "groups": [
+    {
+      "name": "Reforestación",
+      "layers": [
+        {
+          "id": "areas_reforestadas",
+          "title": "Áreas reforestadas (polígonos)",
+          "type": "geojson",
+          "url": "../../data/areas_reforestadas.geojson",
+          "style": { "kind": "fill", "color": "#3fbf7f", "opacity": 0.25, "outline": "#2a8a5c", "width": 1.2 }
+        }
+      ]
+    },
+    {
+      "name": "Contexto",
+      "layers": [
+        {
+          "id": "limite_solola",
+          "title": "Límite departamental",
+          "type": "geojson",
+          "url": "../../data/limite_solola.geojson",
+          "style": { "kind": "line", "color": "#7ad6a3", "width": 2.0, "opacity": 0.9 }
+        }
+      ]
+    }
+  ]
+}
