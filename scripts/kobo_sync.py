@@ -4,13 +4,10 @@ import io
 import json
 import time
 import datetime
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-# =========================
-# CONFIG (desde Secrets)
-# =========================
 BASE = os.getenv("KOBO_BASE_URL", "https://kf.kobotoolbox.org").rstrip("/")
 TOKEN = os.environ["KOBO_TOKEN"]
 ASSET = os.environ["KOBO_ASSET_UID"]
@@ -19,60 +16,86 @@ EXPORT_NAME = os.getenv("KOBO_EXPORT_NAME", "portal_csv")
 OUT_GEOJSON = "data/puntos.geojson"
 OUT_RESUMEN = "data/resumen.json"
 
-# Campos típicos (ajustados a tu boleta)
-GEOPOINT_FIELD_CANDIDATES = ["ubicacion", "_geolocation", "geopoint", "location"]
-DATE_FIELD_CANDIDATES = [
-    "fecha_actividad",
-    "_submission_time",
-    "endtime",
-    "starttime",
-    "today",
-    "start",
-    "end",
-]
+GEOPOINT_ROOT_CANDIDATES = ["ubicacion", "_geolocation", "geopoint", "location"]
+DATE_FIELD_CANDIDATES = ["fecha_actividad", "_submission_time", "endtime", "starttime", "today", "start", "end"]
 
-TOTAL_PLANTAS_CANDIDATES = ["total_plantas"]
-TOTAL_PART_CANDIDATES = ["total_participantes"]
-
-# =========================
-# HELPERS
-# =========================
 def utc_now_iso() -> str:
     return datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-def first_existing_key(headers: List[str], candidates: List[str]) -> Optional[str]:
-    hset = set(headers)
-    for k in candidates:
-        if k in hset:
-            return k
-    return None
+def http_get_with_retries(url: str, headers: Dict[str, str], timeout: int = 180, tries: int = 6) -> requests.Response:
+    last_err = None
+    for i in range(tries):
+        try:
+            r = requests.get(url, headers=headers, timeout=timeout)
+            if r.status_code in (502, 503, 504):
+                raise requests.HTTPError(f"{r.status_code} temporary", response=r)
+            return r
+        except Exception as e:
+            last_err = e
+            time.sleep(min(30, 3 * (2 ** i)))
+    raise RuntimeError(f"Fallo al descargar tras reintentos. URL: {url}. Error: {last_err}")
 
-def parse_geopoint(v: Any) -> Optional[List[float]]:
-    """
-    KoBo CSV geopoint suele venir como: "lat lon alt acc" o "lat lon"
-    """
-    if v is None:
-        return None
-    s = str(v).strip()
-    if not s:
-        return None
-    parts = s.split()
-    if len(parts) < 2:
-        return None
-    try:
-        lat = float(parts[0])
-        lon = float(parts[1])
-        # GeoJSON usa [lon, lat]
-        return [lon, lat]
-    except Exception:
-        return None
+def fetch_all_export_settings(headers: Dict[str, str]) -> List[Dict[str, Any]]:
+    url = f"{BASE}/api/v2/assets/{ASSET}/export-settings/"
+    out: List[Dict[str, Any]] = []
+    while url:
+        r = http_get_with_retries(url, headers=headers, timeout=120, tries=5)
+        r.raise_for_status()
+        data = r.json()
+        if isinstance(data, dict) and "results" in data:
+            out.extend(data.get("results") or [])
+            url = data.get("next")
+        elif isinstance(data, list):
+            out.extend(data)
+            url = None
+        else:
+            url = None
+    return out
 
-def split_multi(v: Any) -> List[str]:
-    # select_multiple en CSV suele venir separado por espacios
+def build_data_csv_url(export_setting: Dict[str, Any]) -> str:
+    settings_url = export_setting.get("url")
+    if not settings_url:
+        uid = export_setting.get("uid")
+        if uid:
+            settings_url = f"/api/v2/assets/{ASSET}/export-settings/{uid}/"
+        else:
+            raise RuntimeError("El export-setting no trae 'url' ni 'uid'.")
+    if settings_url.startswith("/"):
+        settings_url = BASE + settings_url
+    return settings_url.rstrip("/") + "/data.csv"
+
+def split_multi_text(v: Any) -> List[str]:
     if v is None:
         return []
     s = str(v).strip()
     return s.split() if s else []
+
+def truthy(v: Any) -> bool:
+    s = str(v).strip().lower()
+    return s in ("1", "true", "t", "yes", "y", "si", "sí")
+
+def multiselect_from_split_columns(row: Dict[str, Any], base: str) -> List[str]:
+    """
+    Si KoBo exporta select_multiple en columnas separadas:
+      base/choice = 1
+      base_choice = 1
+    devolvemos [choice, ...]
+    """
+    out = []
+    for k, v in row.items():
+        if k.startswith(base + "/") and truthy(v):
+            out.append(k.split("/", 1)[1])
+        elif k.startswith(base + "_") and truthy(v):
+            out.append(k.split(base + "_", 1)[1])
+    return out
+
+def get_multiselect(row: Dict[str, Any], base: str) -> List[str]:
+    # 1) formato clásico: una columna con "a b c"
+    if base in row and str(row.get(base) or "").strip():
+        return split_multi_text(row.get(base))
+    # 2) formato columnas separadas
+    vals = multiselect_from_split_columns(row, base)
+    return vals
 
 def to_int(v: Any) -> int:
     try:
@@ -95,134 +118,97 @@ def iso_parse(v: Any) -> Optional[datetime.datetime]:
     except Exception:
         return None
 
-def http_get_with_retries(url: str, headers: Dict[str, str], timeout: int = 180, tries: int = 6) -> requests.Response:
+def find_geopoint_mode(headers: List[str]) -> Tuple[str, str, Optional[str]]:
     """
-    Reintentos para manejar 502/503/504 o latencia de KoBo.
+    Retorna:
+      ("combined", fieldname, None) si existe "ubicacion" = "lat lon ..."
+      ("split", lat_field, lon_field) si existen ubicacion_latitude / ubicacion_longitude (o con /)
     """
-    last_err = None
-    for i in range(tries):
+    hset = set(headers)
+    for root in GEOPOINT_ROOT_CANDIDATES:
+        if root in hset:
+            return ("combined", root, None)
+
+        # patrones comunes de KoBo cuando separa columnas
+        lat1, lon1 = f"{root}_latitude", f"{root}_longitude"
+        lat2, lon2 = f"{root}/latitude", f"{root}/longitude"
+        lat3, lon3 = f"{root}_lat", f"{root}_lon"
+        if lat1 in hset and lon1 in hset:
+            return ("split", lat1, lon1)
+        if lat2 in hset and lon2 in hset:
+            return ("split", lat2, lon2)
+        if lat3 in hset and lon3 in hset:
+            return ("split", lat3, lon3)
+
+    raise RuntimeError(f"No encontré geopoint. Busqué raíces {GEOPOINT_ROOT_CANDIDATES} y patrones *_latitude/_longitude.")
+
+def parse_coords(row: Dict[str, Any], mode: Tuple[str, str, Optional[str]]) -> Optional[List[float]]:
+    kind, a, b = mode
+    if kind == "combined":
+        v = row.get(a)
+        if v is None:
+            return None
+        parts = str(v).strip().split()
+        if len(parts) < 2:
+            return None
         try:
-            r = requests.get(url, headers=headers, timeout=timeout)
-            # Si KoBo anda inestable, puede devolver 502/503/504
-            if r.status_code in (502, 503, 504):
-                raise requests.HTTPError(f"{r.status_code} temporary", response=r)
-            return r
-        except Exception as e:
-            last_err = e
-            # backoff: 3, 6, 12, 20, 30...
-            sleep_s = min(30, 3 * (2 ** i))
-            time.sleep(sleep_s)
-    raise RuntimeError(f"Fallo al descargar tras reintentos. URL: {url}. Error: {last_err}")
+            lat = float(parts[0]); lon = float(parts[1])
+            return [lon, lat]
+        except Exception:
+            return None
+    else:
+        try:
+            lat = float(str(row.get(a) or "").strip())
+            lon = float(str(row.get(b) or "").strip()) if b else None
+            if lon is None:
+                return None
+            return [lon, lat]
+        except Exception:
+            return None
 
-def fetch_all_export_settings(headers: Dict[str, str]) -> List[Dict[str, Any]]:
-    """
-    Trae todos los export-settings (maneja paginación si existe).
-    """
-    url = f"{BASE}/api/v2/assets/{ASSET}/export-settings/"
-    out: List[Dict[str, Any]] = []
-
-    while url:
-        r = http_get_with_retries(url, headers=headers, timeout=120, tries=5)
-        r.raise_for_status()
-        data = r.json()
-
-        # Puede venir como {results:[...], next:...} o como [...]
-        if isinstance(data, dict) and "results" in data:
-            out.extend(data.get("results") or [])
-            url = data.get("next")
-        elif isinstance(data, list):
-            out.extend(data)
-            url = None
-        else:
-            url = None
-
-    return out
-
-def build_data_csv_url(export_setting: Dict[str, Any]) -> str:
-    """
-    Fuerza el endpoint estable:
-      .../export-settings/<ID>/data.csv
-    En vez de links /private-media/... que a veces dan 502.
-    """
-    settings_url = export_setting.get("url")
-
-    if not settings_url:
-        # Fallback: a veces trae uid
-        uid = export_setting.get("uid")
-        if uid:
-            settings_url = f"/api/v2/assets/{ASSET}/export-settings/{uid}/"
-        else:
-            raise RuntimeError("El export-setting no trae 'url' ni 'uid'. Revisa KoBo export-settings.")
-
-    if settings_url.startswith("/"):
-        settings_url = BASE + settings_url
-
-    return settings_url.rstrip("/") + "/data.csv"
-
-# =========================
-# MAIN
-# =========================
 def main():
     headers = {"Authorization": f"Token {TOKEN}"}
 
     # 1) Buscar export-setting por nombre
     settings = fetch_all_export_settings(headers)
-    if not settings:
-        raise RuntimeError("No encontré export-settings en KoBo. Revisa que hayas guardado 'Guardar selección como...'.")
-
     export = None
-    available = []
     for it in settings:
         name = (it.get("name") or it.get("title") or "").strip()
-        if name:
-            available.append(name)
         if name == EXPORT_NAME:
             export = it
-
+            break
     if export is None:
-        raise RuntimeError(
-            f"No encontré un export-setting con name='{EXPORT_NAME}'. "
-            f"Nombres disponibles: {available[:20]}{'...' if len(available) > 20 else ''}"
-        )
+        raise RuntimeError(f"No encontré export-setting con name='{EXPORT_NAME}'.")
 
-    # 2) Descargar CSV desde endpoint estable
+    # 2) Descargar CSV estable
     csv_url = build_data_csv_url(export)
     r = http_get_with_retries(csv_url, headers=headers, timeout=240, tries=7)
     r.raise_for_status()
+    text = r.content.decode("utf-8-sig", errors="replace")
 
-    text = r.content.decode("utf-8-sig", errors="replace")  # maneja BOM
     reader = csv.DictReader(io.StringIO(text))
     rows = list(reader)
 
-    # 3) Si no hay datos, escribe archivos vacíos pero válidos
     os.makedirs("data", exist_ok=True)
+
     if not rows:
         geojson = {"type": "FeatureCollection", "features": []}
-        resumen = {
-            "ultima_actualizacion": utc_now_iso(),
-            "kpis": {"total_boletas": 0, "total_plantas": 0, "total_participantes": 0},
-        }
+        resumen = {"ultima_actualizacion": utc_now_iso(), "kpis": {"total_boletas": 0, "total_plantas": 0, "total_participantes": 0}}
         with open(OUT_GEOJSON, "w", encoding="utf-8") as f:
             json.dump(geojson, f, ensure_ascii=False, indent=2)
         with open(OUT_RESUMEN, "w", encoding="utf-8") as f:
             json.dump(resumen, f, ensure_ascii=False, indent=2)
         return
 
-    # 4) Detectar nombres de columnas reales
     headers_csv = list(rows[0].keys())
+    geopoint_mode = find_geopoint_mode(headers_csv)
 
-    geopoint_field = first_existing_key(headers_csv, GEOPOINT_FIELD_CANDIDATES)
-    if not geopoint_field:
-        raise RuntimeError(
-            f"No encontré campo geopoint. Busqué: {GEOPOINT_FIELD_CANDIDATES}. "
-            f"Columnas disponibles (primeras 40): {headers_csv[:40]}"
-        )
+    date_field = None
+    for k in DATE_FIELD_CANDIDATES:
+        if k in rows[0]:
+            date_field = k
+            break
 
-    date_field = first_existing_key(headers_csv, DATE_FIELD_CANDIDATES)
-    plantas_field = first_existing_key(headers_csv, TOTAL_PLANTAS_CANDIDATES)
-    part_field = first_existing_key(headers_csv, TOTAL_PART_CANDIDATES)
-
-    # 5) Construir GeoJSON + KPIs
     features = []
     total_boletas = 0
     total_plantas = 0
@@ -230,33 +216,28 @@ def main():
     last_ts: Optional[datetime.datetime] = None
 
     for row in rows:
-        coords = parse_geopoint(row.get(geopoint_field))
+        coords = parse_coords(row, geopoint_mode)
         if not coords:
             continue
 
-        rid = (
-            row.get("_id")
-            or row.get("_uuid")
-            or row.get("meta/instanceID")
-            or row.get("id")
-            or f"row-{len(features)+1}"
-        )
+        rid = row.get("_id") or row.get("_uuid") or row.get("meta/instanceID") or row.get("id") or f"row-{len(features)+1}"
 
-        # Campos principales (con fallback)
+        municipios = get_multiselect(row, "municipios")
+        instituciones = get_multiselect(row, "institucion_resp")
+
         props = {
             "id": rid,
             "fecha_actividad": row.get("fecha_actividad") or (row.get(date_field) if date_field else "") or "",
-            "municipios": split_multi(row.get("municipios")),
+            "municipios": municipios,
             "comunidad": row.get("comunidad") or "",
             "sitio_nombre": row.get("sitio_nombre") or "",
-            "instituciones": split_multi(row.get("institucion_resp")),
+            "instituciones": instituciones,
             "institucion_resp_otro": row.get("institucion_resp_otro") or "",
             "area_m2": to_int(row.get("area_m2")),
             "tenencia": row.get("tenencia") or "",
-            "total_plantas": to_int(row.get(plantas_field)) if plantas_field else to_int(row.get("total_plantas")),
-            "total_participantes": to_int(row.get(part_field)) if part_field else to_int(row.get("total_participantes")),
+            "total_plantas": to_int(row.get("total_plantas")),
+            "total_participantes": to_int(row.get("total_participantes")),
             "autoriza_fotos": row.get("autoriza_fotos") or "",
-            # si en tu CSV salen URLs (porque marcaste "Incluir URL de archivos multimedia"), aquí quedarán:
             "foto_sitio_url": row.get("foto_sitio") or "",
             "foto_actividad_url": row.get("foto_actividad") or "",
             "observaciones": row.get("observaciones") or "",
@@ -266,35 +247,23 @@ def main():
         total_plantas += props["total_plantas"]
         total_part += props["total_participantes"]
 
-        # última actualización (si hay campo ISO)
         if date_field:
             ts = iso_parse(row.get(date_field))
             if ts and (last_ts is None or ts > last_ts):
                 last_ts = ts
 
-        features.append(
-            {
-                "type": "Feature",
-                "geometry": {"type": "Point", "coordinates": coords},
-                "properties": props,
-            }
-        )
+        features.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": coords}, "properties": props})
 
     geojson = {"type": "FeatureCollection", "features": features}
     ultima = (last_ts.replace(microsecond=0).isoformat() if last_ts else utc_now_iso())
 
     resumen = {
         "ultima_actualizacion": ultima,
-        "kpis": {
-            "total_boletas": int(total_boletas),
-            "total_plantas": int(total_plantas),
-            "total_participantes": int(total_part),
-        },
+        "kpis": {"total_boletas": int(total_boletas), "total_plantas": int(total_plantas), "total_participantes": int(total_part)},
     }
 
     with open(OUT_GEOJSON, "w", encoding="utf-8") as f:
         json.dump(geojson, f, ensure_ascii=False, indent=2)
-
     with open(OUT_RESUMEN, "w", encoding="utf-8") as f:
         json.dump(resumen, f, ensure_ascii=False, indent=2)
 
