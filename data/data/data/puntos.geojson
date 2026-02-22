@@ -1,0 +1,25 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-91.183, 14.772] },
+      "properties": {
+        "id": "demo-001",
+        "fecha_actividad": "2026-02-21",
+        "municipios": ["Sololá"],
+        "comunidad": "Demo",
+        "sitio_nombre": "Sitio demo",
+        "instituciones": ["INAB"],
+        "area_m2": 500,
+        "tenencia": "Comunal",
+        "total_participantes": 20,
+        "total_plantas": 200,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": null,
+        "foto_actividad_url": null,
+        "observaciones": "Punto de prueba"
+      }
+    }
+  ]
+}
