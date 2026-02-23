@@ -31,6 +31,37 @@
         "foto_actividad_url": "",
         "observaciones": ""
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.120204,
+          14.740749
+        ]
+      },
+      "properties": {
+        "id": "677672532",
+        "fecha_actividad": "2026-02-22",
+        "municipios": [
+          "san_andres_semetabaj"
+        ],
+        "comunidad": "Panimaché",
+        "sitio_nombre": "Parcelamiento 01",
+        "instituciones": [
+          "amigos_lago_atitlan"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 34,
+        "tenencia": "comunal",
+        "total_plantas": 367,
+        "total_participantes": 46,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
     }
   ]
 }
