@@ -12,11 +12,11 @@
     :root{
       --bg:#0b0f14;
       --panel:#0f1620;
-      --card:#121b27;
+      --card:#121c28;
       --line:rgba(255,255,255,.10);
       --ink:#e6edf3;
-      --muted:#9aa7b2;
-      --accent:#4bd190;
+      --muted:#a7b4bf;
+      --accent:#46d18f;
       --accent2:#2aa86e;
       --danger:#ff6b6b;
       --r:16px;
@@ -24,10 +24,11 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}
     a{color:inherit}
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
 
     header{
       position:sticky;top:0;z-index:10;
-      background:linear-gradient(90deg,#0b0f14,#0e141d,#0b0f14);
+      background:linear-gradient(90deg,#070b10,#0c121a,#070b10);
       border-bottom:1px solid var(--line);
       padding:10px 12px;
       display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
@@ -36,13 +37,13 @@
     .logos{display:flex;gap:8px;align-items:center}
     .logos img{
       height:38px;width:auto;border-radius:12px;
-      background:#0b0f14;border:1px solid var(--line);
+      background:#070b10;border:1px solid var(--line);
       padding:6px;
     }
     .titleWrap{display:flex;flex-direction:column;gap:2px}
-    .ttl{font-weight:850;letter-spacing:.2px}
+    .ttl{font-weight:900;letter-spacing:.2px}
     .sub{font-size:12px;color:var(--muted)}
-    .sub b{color:#cfe7dc}
+    .metaTop{font-size:12px;color:var(--muted)}
     .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .btn{
       border:1px solid var(--line);
@@ -53,112 +54,84 @@
       font-size:13px;
       cursor:pointer;
       text-decoration:none;
-      user-select:none;
+      display:inline-flex;align-items:center;gap:8px;
     }
-    .btn:hover{border-color:rgba(75,209,144,.45)}
-    .btn.primary{background:rgba(75,209,144,.10);border-color:rgba(75,209,144,.35)}
-    .btn.ghost{opacity:.85}
-    .chip{
-      border:1px solid rgba(75,209,144,.25);
-      background:rgba(75,209,144,.07);
-      color:#bff2d8;
-      padding:6px 10px;
-      border-radius:999px;
-      font-size:12px;
-      white-space:nowrap;
+    .btn:hover{border-color:rgba(70,209,143,.45)}
+    .btn.primary{background:rgba(70,209,143,.12);border-color:rgba(70,209,143,.35)}
+    .pill{
+      font-size:12px;color:var(--muted);
+      padding:6px 10px;border:1px solid rgba(255,255,255,.12);
+      border-radius:999px;background:rgba(0,0,0,.18);
     }
 
-    .wrap{height:calc(100vh - 64px);display:grid;grid-template-columns:360px 1fr}
+    .wrap{height:calc(100vh - 66px);display:grid;grid-template-columns:360px 1fr}
     aside{
       background:var(--panel);
       border-right:1px solid var(--line);
       padding:12px;
       overflow:auto;
     }
+
     #mapFrame{position:relative;width:100%;height:100%}
     #map{position:absolute;inset:0}
 
-    /* MapLibre controls (dark) */
-    .maplibregl-ctrl-group{
-      background:rgba(15,22,32,.88) !important;
-      border:1px solid rgba(255,255,255,.10) !important;
-      box-shadow:none !important;
-    }
-    .maplibregl-ctrl button{
-      filter:invert(1) grayscale(1);
-      opacity:.9;
-    }
-
-    .card{
+    details{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:var(--r);
       padding:10px;
       margin-bottom:10px;
     }
-    .card h3{margin:0 0 8px;font-size:13px;color:var(--ink);letter-spacing:.2px}
+    summary{
+      list-style:none; cursor:pointer; user-select:none;
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      font-weight:800; font-size:13px;
+    }
+    summary::-webkit-details-marker{display:none}
     .small{font-size:12px;color:var(--muted);line-height:1.35}
-
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     input,select{
-      background:#0b0f14;color:var(--ink);
-      border:1px solid var(--line);
+      background:#070b10;color:var(--ink);
+      border:1px solid rgba(255,255,255,.14);
       border-radius:12px;
       padding:8px 10px;
       font-size:13px;
       width:100%;
-      outline:none;
     }
-
-    .groupTitle{
-      margin:10px 0 6px;
-      font-size:11px;
-      color:var(--muted);
-      text-transform:uppercase;
-      letter-spacing:.14em;
-    }
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .layerItem{
-      padding:8px;
-      border:1px solid rgba(255,255,255,.06);
+      padding:10px;
+      border:1px solid rgba(255,255,255,.10);
       border-radius:14px;
       background:rgba(0,0,0,.18);
-      margin-bottom:8px;
+      margin-top:8px;
     }
-    .layerTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .layerName{font-size:13px}
-    .layerMeta{font-size:12px;color:var(--muted);margin-top:4px}
-    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
-    .tog{display:flex;align-items:center;gap:8px}
-    .pill{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
-    .pill.ok{border-color:rgba(75,209,144,.35);color:#bdf3d6}
-    .pill.bad{border-color:rgba(255,107,107,.35);color:#ffd0d0}
-
-    .legendRow{display:flex;align-items:center;gap:10px;margin:6px 0}
+    .layerName{font-size:13px;font-weight:800}
+    .layerGroup{font-size:12px;color:var(--muted);margin-top:2px}
+    .layerActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .tag{
+      font-size:11px;padding:4px 8px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.14);
+      color:var(--muted);
+    }
+    .legendRow{display:flex;align-items:center;gap:10px;margin-top:8px}
     .swatch{width:14px;height:14px;border-radius:5px;border:1px solid rgba(255,255,255,.16)}
     .dot{border-radius:50%}
-
     .status{
       font-size:12px;color:var(--muted);
-      padding:8px 10px;border:1px dashed rgba(255,255,255,.16);
-      border-radius:14px;background:rgba(0,0,0,.18)
+      padding:8px 10px;border:1px dashed rgba(255,255,255,.18);
+      border-radius:14px;background:rgba(0,0,0,.16);
+      margin-top:8px;
     }
 
-    /* Mobile: panel toggle */
-    #panelToggle{display:none}
+    /* Responsive */
     @media (max-width: 980px){
       .wrap{grid-template-columns:1fr}
-      aside{
-        position:fixed;left:0;top:64px;bottom:0;width:360px;max-width:92vw;
-        transform:translateX(-102%);
-        transition:.18s ease;
-        z-index:20;
-      }
-      body.panel-open aside{transform:translateX(0)}
-      #panelToggle{display:inline-flex}
+      aside{display:none}
     }
 
     /* =========================
-       IMPRESIÓN PRO (A4 apaisado)
+       Impresión (A4 horizontal)
        ========================= */
     body.print-mode header,
     body.print-mode aside{display:none !important}
@@ -167,10 +140,10 @@
       background:#fff !important;
       color:#000 !important;
     }
-    body.print-mode .wrap{display:block;height:auto;background:#fff}
-    #printSheet{display:none}
-    body.print-mode #printSheet{display:block}
 
+    body.print-mode .wrap{display:block;height:auto;background:#fff}
+
+    /* ocultar controles MapLibre */
     body.print-mode .maplibregl-control-container{display:none !important}
 
     body.print-mode #mapFrame{
@@ -181,20 +154,33 @@
       background:#fff;
     }
 
-    #printNorth, #printScaleBox{display:none}
+    #printNorth, #printScaleBox, #printCajetin, #printHeaderLine{display:none}
+
+    body.print-mode #printNorth,
+    body.print-mode #printScaleBox,
+    body.print-mode #printCajetin,
+    body.print-mode #printHeaderLine{display:block}
+
     body.print-mode #printNorth,
     body.print-mode #printScaleBox{
-      display:block;
-      position:absolute;
-      z-index:20;
-      background:rgba(255,255,255,.92);
+      position:absolute; z-index:20;
+      background:rgba(255,255,255,.95);
       border:1px solid #000;
       padding:6px 8px;
       border-radius:6px;
       color:#000;
     }
-    body.print-mode #printNorth{top:8mm; right:8mm; width:36mm; text-align:center}
-    body.print-mode #printScaleBox{left:8mm; bottom:8mm; min-width:60mm}
+
+    body.print-mode #printNorth{
+      top:8mm; right:8mm;
+      width:36mm;
+      text-align:center;
+    }
+
+    body.print-mode #printScaleBox{
+      left:8mm; bottom:8mm;
+      min-width:68mm;
+    }
 
     body.print-mode #printHeaderLine{
       width:277mm;
@@ -213,31 +199,32 @@
       display:grid;
       grid-template-columns:62mm 1fr 75mm;
       gap:6mm;
+      align-items:stretch;
       background:#fff;
     }
+
     body.print-mode #printCajetin .pLogos{
-      display:flex; gap:6mm; align-items:center; justify-content:flex-start;
+      display:flex; gap:6mm; align-items:center;
     }
     body.print-mode #printCajetin .pLogos img{
       height:22mm; width:auto;
-      border:1px solid #000;
-      border-radius:4mm;
-      padding:2mm;
-      background:#fff;
+      border:1px solid #000;border-radius:4mm;padding:2mm;
     }
-    body.print-mode .pTitle .h1{font-size:16px;font-weight:850;margin:0}
+
+    body.print-mode .pTitle .h1{font-size:16px;font-weight:900;margin:0}
     body.print-mode .pTitle .h2{font-size:12px;margin:2mm 0 0;color:#111}
     body.print-mode .pTitle .note{font-size:10px;color:#111;margin-top:3mm}
+
     body.print-mode .pMeta{
       font-size:10px;border-left:1px solid #000;padding-left:4mm;
       display:flex;flex-direction:column;justify-content:space-between;
     }
-    body.print-mode .pMeta .rowp{
+    body.print-mode .pMeta .r{
       display:flex;justify-content:space-between;gap:6mm;
       border-bottom:1px dotted #000;padding:1mm 0;
     }
-    body.print-mode .pMeta .rowp:last-child{border-bottom:none}
-    body.print-mode .pMeta b{font-weight:850}
+    body.print-mode .pMeta .r:last-child{border-bottom:none}
+    body.print-mode .pMeta b{font-weight:900}
 
     @page{size:A4 landscape;margin:0}
   </style>
@@ -252,43 +239,748 @@
     </div>
     <div class="titleWrap">
       <div class="ttl">Geoportal · Reforestación</div>
-      <div class="sub">
-        Sololá, Guatemala · Última actualización: <b id="lastUpdate">—</b>
-      </div>
+      <div class="sub">Departamento de Sololá, Guatemala</div>
+      <div class="metaTop" id="topMeta">Actualización: — · Registros: —</div>
     </div>
   </div>
 
   <div class="btns">
-    <button class="btn ghost" id="panelToggle">Panel</button>
     <a class="btn" href="../../index.html">Inicio</a>
     <a class="btn" href="./index.html">Módulo</a>
     <a class="btn" href="./dashboard.html">Dashboard</a>
     <a class="btn" href="./informes.html">Informes</a>
-    <a class="btn" href="../../data/puntos.geojson" download>Exportar puntos</a>
-    <button class="btn primary" id="printBtn">PDF</button>
+    <a class="btn" href="../../data/puntos.geojson" download>Descargar puntos</a>
+    <button class="btn primary" id="printBtn">Imprimir PDF</button>
   </div>
 </header>
 
 <div class="wrap">
   <aside>
-    <div class="card">
-      <h3>Mapa base</h3>
-      <div class="grid2">
-        <button class="btn" id="bmSat">Imagen satelital</button>
+    <details open>
+      <summary>Base cartográfica <span class="pill" id="baseName">Satélite</span></summary>
+      <div style="margin-top:10px" class="grid2">
+        <button class="btn" id="bmSat">Satélite</button>
         <button class="btn" id="bmOsm">Calles</button>
       </div>
       <div style="margin-top:8px">
         <button class="btn" id="bmDark">Oscuro</button>
       </div>
-    </div>
+    </details>
 
-    <div class="card">
-      <h3>Registros KoBo</h3>
-      <div class="grid2">
+    <details open>
+      <summary>Registros KoBo <span class="pill"><span id="koboShown">—</span>/<span id="koboTotal">—</span></span></summary>
+      <div class="status" id="statusBox">Cargando…</div>
+    </details>
+
+    <details>
+      <summary>Filtros</summary>
+      <div style="margin-top:10px" class="grid2">
         <div>
           <div class="small">Municipio</div>
           <select id="fMunicipio"><option value="">Todos</option></select>
         </div>
         <div>
           <div class="small">Institución</div>
-          <select id="fInstitucion"><option value="">Todas</option></select
+          <select id="fInstitucion"><option value="">Todas</option></select>
+        </div>
+      </div>
+      <div style="margin-top:10px" class="grid2">
+        <div>
+          <div class="small">Desde</div>
+          <input id="fDesde" type="date" />
+        </div>
+        <div>
+          <div class="small">Hasta</div>
+          <input id="fHasta" type="date" />
+        </div>
+      </div>
+      <div style="margin-top:10px" class="grid2">
+        <button class="btn" id="applyFilters">Aplicar</button>
+        <button class="btn" id="clearFilters">Limpiar</button>
+      </div>
+      <div class="small" style="margin-top:8px" id="filterSummary"></div>
+    </details>
+
+    <details>
+      <summary>Búsqueda</summary>
+      <div class="small" style="margin-top:8px">Buscar por ID de boleta.</div>
+      <div style="margin-top:10px" class="grid2">
+        <input id="searchId" placeholder="ID" />
+        <button class="btn" id="goSearch">Ir</button>
+      </div>
+      <div class="small" id="searchMsg" style="margin-top:8px"></div>
+    </details>
+
+    <details open>
+      <summary>Capas</summary>
+      <div class="small" style="margin-top:8px">Capas temáticas del módulo.</div>
+      <div id="layersUI"></div>
+      <div class="status" id="configStatus">Cargando capas…</div>
+    </details>
+
+    <details open>
+      <summary>Leyenda</summary>
+      <div id="legendUI"></div>
+    </details>
+  </aside>
+
+  <div id="mapFrame">
+    <div id="map"></div>
+
+    <!-- Norte (impresión) -->
+    <div id="printNorth">
+      <div style="font-weight:900;margin-bottom:2mm">N</div>
+      <svg id="northSvg" viewBox="0 0 100 140" width="100%" height="70">
+        <polygon points="50,5 80,80 50,70 20,80" fill="#000"></polygon>
+        <polygon points="50,70 80,80 50,135 20,80" fill="#fff" stroke="#000" stroke-width="2"></polygon>
+      </svg>
+    </div>
+
+    <!-- Escala (impresión) -->
+    <div id="printScaleBox">
+      <div style="font-size:10px;font-weight:900;margin-bottom:2mm">Escala</div>
+      <div id="scaleBar" style="height:8mm;display:flex;border:1px solid #000"></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:2mm">
+        <span>0</span>
+        <span id="scaleLabel">—</span>
+      </div>
+      <div style="font-size:9px;margin-top:1mm" id="scaleRatio">1:—</div>
+    </div>
+
+    <!-- Header y cajetín (impresión) -->
+    <div id="printHeaderLine">
+      <div id="printDate">—</div>
+      <div style="font-weight:900">Geoportal · Reforestación</div>
+      <div>WGS84 / Web Mercator</div>
+    </div>
+
+    <div id="printCajetin">
+      <div class="pLogos">
+        <img src="../../assets/img/BOSQUE.png" alt="BOSQUE" />
+        <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" />
+      </div>
+
+      <div class="pTitle">
+        <p class="h1">Geoportal · Reforestación</p>
+        <p class="h2">Departamento de Sololá, Guatemala</p>
+        <p class="note">Fuente: KoBoToolbox · Publicación: GitHub Pages</p>
+        <div style="font-size:10px;margin-top:3mm">
+          <b>Elaboró:</b> Laboratorio SIG del eje de bosques de CODEMA-Sololá
+        </div>
+      </div>
+
+      <div class="pMeta">
+        <div>
+          <div class="r"><span><b>Fecha</b></span><span id="metaFecha">—</span></div>
+          <div class="r"><span><b>Hora</b></span><span id="metaHora">—</span></div>
+          <div class="r"><span><b>Escala</b></span><span id="metaEscala">—</span></div>
+          <div class="r"><span><b>Zoom</b></span><span id="metaZoom">—</span></div>
+          <div class="r"><span><b>Base</b></span><span id="metaBase">—</span></div>
+        </div>
+        <div style="font-size:9px;color:#111;margin-top:2mm">
+          Escala aproximada según el centro del mapa.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CONFIG_URL  = "../../config/layers.reforestacion.json";
+  const KOBO_URL    = "../../data/puntos.geojson";
+  const RESUMEN_URL = "../../data/resumen.json";
+
+  // Basemaps raster (sin reset)
+  const styleBase = {
+    "version": 8,
+    "sources": {
+      "sat": {
+        "type": "raster",
+        "tiles": ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+        "tileSize": 256,
+        "attribution": "Esri"
+      },
+      "osm": {
+        "type": "raster",
+        "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+        "tileSize": 256,
+        "attribution": "© OpenStreetMap"
+      },
+      "dark": {
+        "type": "raster",
+        "tiles": [
+          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
+          "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
+        ],
+        "tileSize": 256,
+        "attribution": "© CARTO"
+      }
+    },
+    "layers": [
+      { "id": "bm-sat",  "type": "raster", "source": "sat",  "layout": { "visibility": "visible" } },
+      { "id": "bm-osm",  "type": "raster", "source": "osm",  "layout": { "visibility": "none" } },
+      { "id": "bm-dark", "type": "raster", "source": "dark", "layout": { "visibility": "none" } }
+    ]
+  };
+
+  const map = new maplibregl.Map({
+    container: "map",
+    style: styleBase,
+    center: [-91.18, 14.77],
+    zoom: 10
+  });
+  map.addControl(new maplibregl.NavigationControl(), "top-right");
+  map.addControl(new maplibregl.ScaleControl({ maxWidth: 130, unit: "metric" }));
+
+  const statusBox = document.getElementById("statusBox");
+  const configStatus = document.getElementById("configStatus");
+  const layersUI = document.getElementById("layersUI");
+  const legendUI = document.getElementById("legendUI");
+  const topMeta = document.getElementById("topMeta");
+
+  const baseName = document.getElementById("baseName");
+  const filterSummary = document.getElementById("filterSummary");
+
+  let activeBasemap = "sat";
+  function showBasemap(which){
+    ["bm-sat","bm-osm","bm-dark"].forEach(id => map.setLayoutProperty(id, "visibility", "none"));
+    if(which === "sat")  map.setLayoutProperty("bm-sat", "visibility", "visible");
+    if(which === "osm")  map.setLayoutProperty("bm-osm", "visibility", "visible");
+    if(which === "dark") map.setLayoutProperty("bm-dark", "visibility", "visible");
+    activeBasemap = which;
+    baseName.textContent = (which==="sat") ? "Satélite" : (which==="osm") ? "Calles" : "Oscuro";
+    document.getElementById("metaBase").textContent = baseName.textContent;
+  }
+  document.getElementById("bmSat").onclick  = () => showBasemap("sat");
+  document.getElementById("bmOsm").onclick  = () => showBasemap("osm");
+  document.getElementById("bmDark").onclick = () => showBasemap("dark");
+
+  // ====== KoBo (cluster + filtros + búsqueda) ======
+  let koboAll = null;
+
+  function safe(v){
+    if(v === null || v === undefined) return "";
+    if(Array.isArray(v)) return v.join(", ");
+    return String(v);
+  }
+
+  function buildPopupHTML(p){
+    const b = (label, val) => val ? `<div style="font-size:12px;margin-top:4px"><b>${label}:</b> ${safe(val)}</div>` : "";
+    const f1 = p.foto_sitio_url ? `<div style="margin-top:8px"><a target="_blank" rel="noopener" href="${p.foto_sitio_url}">Ver foto del sitio</a></div>` : "";
+    const f2 = p.foto_actividad_url ? `<div style="margin-top:6px"><a target="_blank" rel="noopener" href="${p.foto_actividad_url}">Ver foto de la actividad</a></div>` : "";
+    return `
+      <div style="min-width:260px">
+        <div style="font-weight:900;margin-bottom:6px">Boleta ${safe(p.id)}</div>
+        ${b("Fecha", p.fecha_actividad)}
+        ${b("Municipio(s)", p.municipios)}
+        ${b("Comunidad", p.comunidad)}
+        ${b("Sitio", p.sitio_nombre)}
+        ${b("Institución(es)", p.instituciones)}
+        ${b("Plantas", p.total_plantas)}
+        ${b("Participantes", p.total_participantes)}
+        ${p.observaciones ? `<div style="font-size:12px;margin-top:8px"><b>Observaciones:</b> ${safe(p.observaciones)}</div>` : ""}
+        ${f1}${f2}
+      </div>
+    `;
+  }
+
+  function updateCounters(shown, total){
+    document.getElementById("koboShown").textContent = shown;
+    document.getElementById("koboTotal").textContent = total;
+  }
+
+  function populateFilterOptions(geojson){
+    const muni = new Set();
+    const inst = new Set();
+
+    for(const ft of (geojson.features || [])){
+      const p = ft.properties || {};
+      const ms = p.municipios;
+      const is = p.instituciones;
+      (Array.isArray(ms) ? ms : (ms ? String(ms).split(/[,\s]+/) : [])).forEach(v => v && muni.add(v));
+      (Array.isArray(is) ? is : (is ? String(is).split(/[,\s]+/) : [])).forEach(v => v && inst.add(v));
+    }
+
+    const muniSel = document.getElementById("fMunicipio");
+    const instSel = document.getElementById("fInstitucion");
+
+    [...muni].sort().forEach(v=>{
+      const o=document.createElement("option"); o.value=v; o.textContent=v; muniSel.appendChild(o);
+    });
+    [...inst].sort().forEach(v=>{
+      const o=document.createElement("option"); o.value=v; o.textContent=v; instSel.appendChild(o);
+    });
+  }
+
+  function applyKoboFilters(){
+    if(!koboAll) return;
+
+    const muni = document.getElementById("fMunicipio").value.trim();
+    const inst = document.getElementById("fInstitucion").value.trim();
+    const desde = document.getElementById("fDesde").value;
+    const hasta = document.getElementById("fHasta").value;
+
+    const filtered = {
+      type: "FeatureCollection",
+      features: (koboAll.features || []).filter(ft=>{
+        const p = ft.properties || {};
+        const ms = p.municipios;
+        const is = p.instituciones;
+        const fecha = p.fecha_actividad || "";
+
+        const muniArr = Array.isArray(ms) ? ms : (ms ? String(ms).split(/[,\s]+/) : []);
+        const instArr = Array.isArray(is) ? is : (is ? String(is).split(/[,\s]+/) : []);
+
+        if(muni && !muniArr.includes(muni)) return false;
+        if(inst && !instArr.includes(inst)) return false;
+
+        if(desde && fecha && fecha < desde) return false;
+        if(hasta && fecha && fecha > hasta) return false;
+
+        return true;
+      })
+    };
+
+    const src = map.getSource("kobo");
+    if(src) src.setData(filtered);
+
+    updateCounters(filtered.features.length, (koboAll.features || []).length);
+
+    const parts = [];
+    if(muni) parts.push("Municipio: " + muni);
+    if(inst) parts.push("Institución: " + inst);
+    if(desde) parts.push("Desde: " + desde);
+    if(hasta) parts.push("Hasta: " + hasta);
+    filterSummary.textContent = parts.length ? ("Filtros activos · " + parts.join(" · ")) : "";
+  }
+
+  function clearKoboFilters(){
+    document.getElementById("fMunicipio").value = "";
+    document.getElementById("fInstitucion").value = "";
+    document.getElementById("fDesde").value = "";
+    document.getElementById("fHasta").value = "";
+    filterSummary.textContent = "";
+    if(map.getSource("kobo") && koboAll) map.getSource("kobo").setData(koboAll);
+    if(koboAll) updateCounters((koboAll.features || []).length, (koboAll.features || []).length);
+  }
+
+  document.getElementById("applyFilters").onclick = applyKoboFilters;
+  document.getElementById("clearFilters").onclick = clearKoboFilters;
+
+  function fitToGeojson(geojson){
+    const feats = geojson.features || [];
+    if(!feats.length) return;
+    const b = new maplibregl.LngLatBounds();
+    for(const ft of feats){
+      const g = ft.geometry;
+      if(g && g.type === "Point"){
+        b.extend(g.coordinates);
+      }
+    }
+    if(!b.isEmpty()) map.fitBounds(b, { padding: 40, maxZoom: 14 });
+  }
+
+  // ====== Capas (desde config) ======
+  const addedLayerIds = new Map(); // defId => [mapLayerIds...]
+  const sourceIds = new Map();     // defId => sourceId
+
+  async function addGeojsonLayer(def){
+    const res = await fetch(def.url, {cache:"no-store"});
+    if(!res.ok) throw new Error("No se pudo cargar la capa.");
+    const gj = await res.json();
+
+    const sourceId = `src_${def.id}`;
+    if(map.getSource(sourceId)) return;
+    map.addSource(sourceId, { type:"geojson", data: gj });
+
+    sourceIds.set(def.id, sourceId);
+
+    const style = def.style || {};
+    const kind = (style.kind || "fill").toLowerCase();
+    const mapLayerIds = [];
+
+    if(kind === "fill"){
+      const fillId = `${def.id}_fill`;
+      const outId  = `${def.id}_outline`;
+      map.addLayer({
+        id: fillId, type:"fill", source: sourceId,
+        paint: {
+          "fill-color": style.color || "#46d18f",
+          "fill-opacity": typeof style.opacity === "number" ? style.opacity : 0.22
+        },
+        layout:{visibility:"none"}
+      });
+      map.addLayer({
+        id: outId, type:"line", source: sourceId,
+        paint: {
+          "line-color": style.outline || style.color || "#46d18f",
+          "line-width": style.width || 1.2,
+          "line-opacity": typeof style.opacity === "number" ? Math.min(1, style.opacity + 0.35) : 0.75
+        },
+        layout:{visibility:"none"}
+      });
+      mapLayerIds.push(fillId, outId);
+    } else if(kind === "line"){
+      const lineId = `${def.id}_line`;
+      map.addLayer({
+        id: lineId, type:"line", source: sourceId,
+        paint: {
+          "line-color": style.color || "#46d18f",
+          "line-width": style.width || 2,
+          "line-opacity": typeof style.opacity === "number" ? style.opacity : 0.85
+        },
+        layout:{visibility:"none"}
+      });
+      mapLayerIds.push(lineId);
+    } else {
+      const ptId = `${def.id}_pt`;
+      map.addLayer({
+        id: ptId, type:"circle", source: sourceId,
+        paint: {
+          "circle-color": style.color || "#46d18f",
+          "circle-radius": style.radius || 5,
+          "circle-opacity": typeof style.opacity === "number" ? style.opacity : 0.85,
+          "circle-stroke-color": "rgba(0,0,0,0.35)",
+          "circle-stroke-width": 1
+        },
+        layout:{visibility:"none"}
+      });
+      mapLayerIds.push(ptId);
+    }
+
+    addedLayerIds.set(def.id, mapLayerIds);
+  }
+
+  function setLayerVisibility(defId, visible){
+    const ids = addedLayerIds.get(defId) || [];
+    ids.forEach(id => {
+      if(map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
+    });
+  }
+
+  function zoomToLayer(defId){
+    const srcId = sourceIds.get(defId);
+    if(!srcId) return;
+    const src = map.getSource(srcId);
+    if(!src || !src._data) return;
+    const gj = src._data;
+    const feats = gj.features || [];
+    const b = new maplibregl.LngLatBounds();
+    for(const ft of feats){
+      const g = ft.geometry;
+      if(!g) continue;
+      if(g.type === "Point") b.extend(g.coordinates);
+      if(g.type === "LineString") g.coordinates.forEach(c => b.extend(c));
+      if(g.type === "Polygon") g.coordinates.flat().forEach(c => b.extend(c));
+      if(g.type === "MultiPolygon") g.coordinates.flat(2).forEach(c => b.extend(c));
+    }
+    if(!b.isEmpty()) map.fitBounds(b, {padding: 40, maxZoom: 14});
+  }
+
+  function rebuildLegend(config){
+    legendUI.innerHTML = "";
+    const r1 = document.createElement("div");
+    r1.className = "legendRow";
+    r1.innerHTML = `<span class="swatch dot" style="background:var(--accent)"></span><div class="small">Registros KoBo</div>`;
+    legendUI.appendChild(r1);
+
+    (config.groups || []).forEach(g=>{
+      (g.layers || []).forEach(l=>{
+        const st = l.style || {};
+        const kind = (st.kind || "fill").toLowerCase();
+        const color = st.color || "#46d18f";
+        const row = document.createElement("div");
+        row.className = "legendRow";
+        row.innerHTML = `
+          <span class="swatch ${kind==="circle"?"dot":""}" style="background:${kind==="line"?"transparent":color}"></span>
+          <div class="small">${l.title}</div>
+        `;
+        legendUI.appendChild(row);
+      });
+    });
+  }
+
+  function makeLayerUI(groupName, layerDef){
+    const div = document.createElement("div");
+    div.className = "layerItem";
+
+    div.innerHTML = `
+      <div class="layerName">${layerDef.title}</div>
+      <div class="layerGroup">${groupName}</div>
+      <div class="layerActions">
+        <label class="btn" style="padding:6px 10px;font-size:12px;gap:8px">
+          <input type="checkbox" id="chk_${layerDef.id}" style="width:auto;margin:0"> Mostrar
+        </label>
+        <button class="btn" style="padding:6px 10px;font-size:12px" id="z_${layerDef.id}">Zoom</button>
+        <a class="btn" style="padding:6px 10px;font-size:12px" href="${layerDef.url}" download>Descargar</a>
+        <span class="tag" id="tag_${layerDef.id}">${layerDef.type || "capa"}</span>
+      </div>
+    `;
+
+    const chk = div.querySelector(`#chk_${layerDef.id}`);
+    const tag = div.querySelector(`#tag_${layerDef.id}`);
+    div.querySelector(`#z_${layerDef.id}`).onclick = ()=> zoomToLayer(layerDef.id);
+
+    chk.addEventListener("change", async (e)=>{
+      const on = e.target.checked;
+      try{
+        if(on && !addedLayerIds.has(layerDef.id)){
+          await addGeojsonLayer(layerDef);
+          setLayerVisibility(layerDef.id, true);
+          tag.textContent = "Activa";
+          tag.style.borderColor = "rgba(70,209,143,.35)";
+          tag.style.color = "#bdf3d6";
+        } else {
+          setLayerVisibility(layerDef.id, on);
+          tag.textContent = on ? "Activa" : (layerDef.type || "capa");
+          tag.style.borderColor = "rgba(255,255,255,.14)";
+          tag.style.color = "var(--muted)";
+        }
+      } catch(err){
+        console.error(err);
+        tag.textContent = "Error";
+        tag.style.borderColor = "rgba(255,107,107,.35)";
+        tag.style.color = "#ffd0d0";
+        e.target.checked = false;
+        configStatus.textContent = "Una capa no se pudo cargar. Revisa que el archivo exista.";
+      }
+    });
+
+    return div;
+  }
+
+  async function loadConfig(){
+    try{
+      const r = await fetch(CONFIG_URL, {cache:"no-store"});
+      if(!r.ok) throw new Error("no config");
+      const config = await r.json();
+      configStatus.textContent = "Capas cargadas.";
+      return config;
+    } catch(e){
+      configStatus.textContent = "No hay capas configuradas.";
+      return { groups: [] };
+    }
+  }
+
+  // ====== Impresión ======
+  function metersPerPixel(lat, zoom){
+    return 156543.03392 * Math.cos(lat * Math.PI/180) / Math.pow(2, zoom);
+  }
+  function niceLengthMeters(raw){
+    const candidates = [10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];
+    let best = candidates[0];
+    for(const c of candidates){ if(c <= raw) best = c; }
+    return best;
+  }
+  function formatMeters(m){
+    if(m >= 1000) return (m/1000).toFixed((m%1000===0)?0:1) + " km";
+    return m + " m";
+  }
+  function updatePrintLayout(){
+    const now = new Date();
+    const pad = n => String(n).padStart(2,"0");
+    const fecha = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+    const hora  = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+    document.getElementById("printDate").textContent = `${fecha} ${hora}`;
+    document.getElementById("metaFecha").textContent = fecha;
+    document.getElementById("metaHora").textContent = hora;
+
+    const bearing = map.getBearing() || 0;
+    document.getElementById("northSvg").style.transform = `rotate(${-bearing}deg)`;
+    document.getElementById("northSvg").style.transformOrigin = "50% 50%";
+
+    const center = map.getCenter();
+    const zoom = map.getZoom();
+    const mpp = metersPerPixel(center.lat, zoom);
+
+    const frame = document.getElementById("mapFrame");
+    const rect = frame.getBoundingClientRect();
+    const inches = (277/25.4);
+    const pxPerInch = rect.width / inches;
+
+    const scaleDen = Math.round(mpp * pxPerInch / 0.0254);
+    document.getElementById("scaleRatio").textContent = `1:${scaleDen.toLocaleString("es-GT")}`;
+    document.getElementById("metaEscala").textContent = `1:${scaleDen.toLocaleString("es-GT")}`;
+    document.getElementById("metaZoom").textContent = zoom.toFixed(2);
+    document.getElementById("metaBase").textContent = baseName.textContent;
+
+    const pxPerMm = rect.width / 277;
+    const maxBarPx = pxPerMm * 70;
+
+    const rawLen = mpp * maxBarPx;
+    const niceLen = niceLengthMeters(rawLen);
+    const barPx = Math.min(maxBarPx, niceLen / mpp);
+
+    const bar = document.getElementById("scaleBar");
+    bar.innerHTML = "";
+    const seg = 4;
+    for(let i=0;i<seg;i++){
+      const d = document.createElement("div");
+      d.style.width = (barPx/seg) + "px";
+      d.style.height = "100%";
+      d.style.background = (i%2===0) ? "#000" : "#fff";
+      bar.appendChild(d);
+    }
+    document.getElementById("scaleLabel").textContent = formatMeters(niceLen);
+  }
+
+  function printPDF(){
+    document.body.classList.add("print-mode");
+    map.resize();
+    setTimeout(()=>{
+      updatePrintLayout();
+      window.print();
+    }, 250);
+  }
+  window.addEventListener("afterprint", ()=>{
+    document.body.classList.remove("print-mode");
+    map.resize();
+  });
+  document.getElementById("printBtn").onclick = printPDF;
+
+  // ====== Init ======
+  async function loadResumen(){
+    try{
+      const r = await fetch(RESUMEN_URL, {cache:"no-store"});
+      if(!r.ok) return null;
+      return await r.json();
+    } catch { return null; }
+  }
+
+  async function loadKobo(){
+    statusBox.textContent = "Cargando…";
+    const r = await fetch(KOBO_URL, {cache:"no-store"});
+    if(!r.ok) throw new Error("No pude cargar puntos.");
+    koboAll = await r.json();
+    const n = (koboAll.features||[]).length;
+    updateCounters(n, n);
+
+    populateFilterOptions(koboAll);
+
+    if(!map.getSource("kobo")){
+      map.addSource("kobo", {
+        type: "geojson",
+        data: koboAll,
+        cluster: true,
+        clusterRadius: 50,
+        clusterMaxZoom: 14
+      });
+
+      map.addLayer({
+        id: "kobo-clusters",
+        type: "circle",
+        source: "kobo",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": "rgba(70,209,143,0.65)",
+          "circle-radius": ["step", ["get", "point_count"], 16, 20, 22, 50, 28, 200, 36],
+          "circle-stroke-color": "rgba(0,0,0,0.35)",
+          "circle-stroke-width": 1
+        }
+      });
+
+      map.addLayer({
+        id: "kobo-cluster-count",
+        type: "symbol",
+        source: "kobo",
+        filter: ["has", "point_count"],
+        layout: { "text-field": "{point_count_abbreviated}", "text-size": 12 },
+        paint: { "text-color": "#070b10" }
+      });
+
+      map.addLayer({
+        id: "kobo-points",
+        type: "circle",
+        source: "kobo",
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-color": "rgba(70,209,143,0.95)",
+          "circle-radius": 6,
+          "circle-stroke-color": "rgba(0,0,0,0.40)",
+          "circle-stroke-width": 1
+        }
+      });
+
+      map.on("click", "kobo-clusters", (e)=>{
+        const features = map.queryRenderedFeatures(e.point, { layers: ["kobo-clusters"] });
+        const clusterId = features[0].properties.cluster_id;
+        map.getSource("kobo").getClusterExpansionZoom(clusterId, (err, zoom) => {
+          if (err) return;
+          map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
+        });
+      });
+
+      map.on("click", "kobo-points", (e)=>{
+        const f = e.features && e.features[0];
+        if(!f) return;
+        new maplibregl.Popup({ maxWidth:"380px" })
+          .setLngLat(e.lngLat)
+          .setHTML(buildPopupHTML(f.properties || {}))
+          .addTo(map);
+      });
+
+      map.on("mouseenter", "kobo-points", ()=> map.getCanvas().style.cursor = "pointer");
+      map.on("mouseleave", "kobo-points", ()=> map.getCanvas().style.cursor = "");
+      map.on("mouseenter", "kobo-clusters", ()=> map.getCanvas().style.cursor = "pointer");
+      map.on("mouseleave", "kobo-clusters", ()=> map.getCanvas().style.cursor = "");
+
+      fitToGeojson(koboAll);
+    } else {
+      map.getSource("kobo").setData(koboAll);
+    }
+
+    statusBox.textContent = "Listo.";
+  }
+
+  function initSearch(){
+    document.getElementById("goSearch").onclick = ()=>{
+      const v = document.getElementById("searchId").value.trim();
+      const msg = document.getElementById("searchMsg");
+      msg.textContent = "";
+      if(!v){ msg.textContent = "Ingresa un ID."; return; }
+      const feats = (koboAll && koboAll.features) ? koboAll.features : [];
+      const hit = feats.find(ft => String((ft.properties||{}).id||"") === v);
+      if(!hit){ msg.textContent = "No se encontró."; return; }
+      const c = hit.geometry && hit.geometry.coordinates;
+      if(c && c.length>=2){
+        map.flyTo({center:c, zoom: 16});
+        msg.textContent = "Ubicado.";
+      }
+    };
+  }
+
+  map.on("load", async ()=>{
+    showBasemap("sat");
+    initSearch();
+
+    const [config, resumen] = await Promise.all([loadConfig(), loadResumen()]);
+
+    rebuildLegend(config);
+
+    layersUI.innerHTML = "";
+    (config.groups || []).forEach(g=>{
+      (g.layers || []).forEach(l=>{
+        if((l.type || "").toLowerCase() === "geojson"){
+          layersUI.appendChild(makeLayerUI(g.name || "Capas", l));
+        }
+      });
+    });
+
+    try{
+      await loadKobo();
+    }catch(e){
+      console.error(e);
+      statusBox.textContent = "No se pudieron cargar los puntos.";
+    }
+
+    // top meta (actualización / registros)
+    const n = (koboAll && koboAll.features) ? koboAll.features.length : 0;
+    const upd = resumen && resumen.ultima_actualizacion ? resumen.ultima_actualizacion : "—";
+    topMeta.textContent = `Actualización: ${upd} · Registros: ${n}`;
+  });
+</script>
+</body>
+</html>
