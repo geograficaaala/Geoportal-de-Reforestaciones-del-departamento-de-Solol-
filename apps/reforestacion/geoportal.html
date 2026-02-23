@@ -10,9 +10,9 @@
 
   <style>
     :root{
-      --bg:#0d1117;
-      --panel:#121821;
-      --card:#161f2b;
+      --bg:#0b0f14;
+      --panel:#0f1620;
+      --card:#121b27;
       --line:rgba(255,255,255,.10);
       --ink:#e6edf3;
       --muted:#9aa7b2;
@@ -24,6 +24,7 @@
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}
     a{color:inherit}
+
     header{
       position:sticky;top:0;z-index:10;
       background:linear-gradient(90deg,#0b0f14,#0e141d,#0b0f14);
@@ -31,7 +32,7 @@
       padding:10px 12px;
       display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
     }
-    .brand{display:flex;align-items:center;gap:10px;min-width:260px}
+    .brand{display:flex;align-items:center;gap:10px;min-width:280px}
     .logos{display:flex;gap:8px;align-items:center}
     .logos img{
       height:38px;width:auto;border-radius:12px;
@@ -39,8 +40,9 @@
       padding:6px;
     }
     .titleWrap{display:flex;flex-direction:column;gap:2px}
-    .ttl{font-weight:800;letter-spacing:.2px}
+    .ttl{font-weight:850;letter-spacing:.2px}
     .sub{font-size:12px;color:var(--muted)}
+    .sub b{color:#cfe7dc}
     .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .btn{
       border:1px solid var(--line);
@@ -51,9 +53,21 @@
       font-size:13px;
       cursor:pointer;
       text-decoration:none;
+      user-select:none;
     }
     .btn:hover{border-color:rgba(75,209,144,.45)}
     .btn.primary{background:rgba(75,209,144,.10);border-color:rgba(75,209,144,.35)}
+    .btn.ghost{opacity:.85}
+    .chip{
+      border:1px solid rgba(75,209,144,.25);
+      background:rgba(75,209,144,.07);
+      color:#bff2d8;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      white-space:nowrap;
+    }
+
     .wrap{height:calc(100vh - 64px);display:grid;grid-template-columns:360px 1fr}
     aside{
       background:var(--panel);
@@ -61,7 +75,20 @@
       padding:12px;
       overflow:auto;
     }
-    #map{width:100%;height:100%}
+    #mapFrame{position:relative;width:100%;height:100%}
+    #map{position:absolute;inset:0}
+
+    /* MapLibre controls (dark) */
+    .maplibregl-ctrl-group{
+      background:rgba(15,22,32,.88) !important;
+      border:1px solid rgba(255,255,255,.10) !important;
+      box-shadow:none !important;
+    }
+    .maplibregl-ctrl button{
+      filter:invert(1) grayscale(1);
+      opacity:.9;
+    }
+
     .card{
       background:var(--card);
       border:1px solid var(--line);
@@ -71,8 +98,8 @@
     }
     .card h3{margin:0 0 8px;font-size:13px;color:var(--ink);letter-spacing:.2px}
     .small{font-size:12px;color:var(--muted);line-height:1.35}
-    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .tog{display:flex;align-items:center;gap:8px}
+
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     input,select{
       background:#0b0f14;color:var(--ink);
       border:1px solid var(--line);
@@ -80,44 +107,139 @@
       padding:8px 10px;
       font-size:13px;
       width:100%;
+      outline:none;
     }
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
     .groupTitle{
       margin:10px 0 6px;
-      font-size:12px;
+      font-size:11px;
       color:var(--muted);
       text-transform:uppercase;
-      letter-spacing:.12em;
+      letter-spacing:.14em;
     }
     .layerItem{
-      padding:8px 8px;
+      padding:8px;
       border:1px solid rgba(255,255,255,.06);
       border-radius:14px;
       background:rgba(0,0,0,.18);
       margin-bottom:8px;
     }
-    .layerTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .layerTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .layerName{font-size:13px}
     .layerMeta{font-size:12px;color:var(--muted);margin-top:4px}
+    .row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+    .tog{display:flex;align-items:center;gap:8px}
     .pill{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
     .pill.ok{border-color:rgba(75,209,144,.35);color:#bdf3d6}
     .pill.bad{border-color:rgba(255,107,107,.35);color:#ffd0d0}
+
     .legendRow{display:flex;align-items:center;gap:10px;margin:6px 0}
     .swatch{width:14px;height:14px;border-radius:5px;border:1px solid rgba(255,255,255,.16)}
     .dot{border-radius:50%}
+
     .status{
       font-size:12px;color:var(--muted);
       padding:8px 10px;border:1px dashed rgba(255,255,255,.16);
       border-radius:14px;background:rgba(0,0,0,.18)
     }
+
+    /* Mobile: panel toggle */
+    #panelToggle{display:none}
     @media (max-width: 980px){
       .wrap{grid-template-columns:1fr}
-      aside{display:none}
+      aside{
+        position:fixed;left:0;top:64px;bottom:0;width:360px;max-width:92vw;
+        transform:translateX(-102%);
+        transition:.18s ease;
+        z-index:20;
+      }
+      body.panel-open aside{transform:translateX(0)}
+      #panelToggle{display:inline-flex}
     }
-    @media print{
-      header, aside{display:none!important}
-      .wrap{grid-template-columns:1fr;height:100vh}
+
+    /* =========================
+       IMPRESIÓN PRO (A4 apaisado)
+       ========================= */
+    body.print-mode header,
+    body.print-mode aside{display:none !important}
+
+    body.print-mode{
+      background:#fff !important;
+      color:#000 !important;
     }
+    body.print-mode .wrap{display:block;height:auto;background:#fff}
+    #printSheet{display:none}
+    body.print-mode #printSheet{display:block}
+
+    body.print-mode .maplibregl-control-container{display:none !important}
+
+    body.print-mode #mapFrame{
+      width:277mm;
+      height:150mm;
+      margin:10mm auto 0;
+      border:2px solid #000;
+      background:#fff;
+    }
+
+    #printNorth, #printScaleBox{display:none}
+    body.print-mode #printNorth,
+    body.print-mode #printScaleBox{
+      display:block;
+      position:absolute;
+      z-index:20;
+      background:rgba(255,255,255,.92);
+      border:1px solid #000;
+      padding:6px 8px;
+      border-radius:6px;
+      color:#000;
+    }
+    body.print-mode #printNorth{top:8mm; right:8mm; width:36mm; text-align:center}
+    body.print-mode #printScaleBox{left:8mm; bottom:8mm; min-width:60mm}
+
+    body.print-mode #printHeaderLine{
+      width:277mm;
+      margin:8mm auto 0;
+      display:flex;
+      justify-content:space-between;
+      font-size:10px;
+      color:#000;
+    }
+
+    body.print-mode #printCajetin{
+      width:277mm;
+      margin:6mm auto 0;
+      border:2px solid #000;
+      padding:5mm;
+      display:grid;
+      grid-template-columns:62mm 1fr 75mm;
+      gap:6mm;
+      background:#fff;
+    }
+    body.print-mode #printCajetin .pLogos{
+      display:flex; gap:6mm; align-items:center; justify-content:flex-start;
+    }
+    body.print-mode #printCajetin .pLogos img{
+      height:22mm; width:auto;
+      border:1px solid #000;
+      border-radius:4mm;
+      padding:2mm;
+      background:#fff;
+    }
+    body.print-mode .pTitle .h1{font-size:16px;font-weight:850;margin:0}
+    body.print-mode .pTitle .h2{font-size:12px;margin:2mm 0 0;color:#111}
+    body.print-mode .pTitle .note{font-size:10px;color:#111;margin-top:3mm}
+    body.print-mode .pMeta{
+      font-size:10px;border-left:1px solid #000;padding-left:4mm;
+      display:flex;flex-direction:column;justify-content:space-between;
+    }
+    body.print-mode .pMeta .rowp{
+      display:flex;justify-content:space-between;gap:6mm;
+      border-bottom:1px dotted #000;padding:1mm 0;
+    }
+    body.print-mode .pMeta .rowp:last-child{border-bottom:none}
+    body.print-mode .pMeta b{font-weight:850}
+
+    @page{size:A4 landscape;margin:0}
   </style>
 </head>
 
@@ -129,618 +251,44 @@
       <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" />
     </div>
     <div class="titleWrap">
-      <div class="ttl" id="portalTitle">Geoportal · Reforestación</div>
-      <div class="sub">Sololá, Guatemala · KoBo se actualiza automático</div>
+      <div class="ttl">Geoportal · Reforestación</div>
+      <div class="sub">
+        Sololá, Guatemala · Última actualización: <b id="lastUpdate">—</b>
+      </div>
     </div>
   </div>
 
   <div class="btns">
+    <button class="btn ghost" id="panelToggle">Panel</button>
     <a class="btn" href="../../index.html">Inicio</a>
     <a class="btn" href="./index.html">Módulo</a>
     <a class="btn" href="./dashboard.html">Dashboard</a>
     <a class="btn" href="./informes.html">Informes</a>
-    <a class="btn" href="../../data/puntos.geojson" download>Descargar puntos</a>
-    <button class="btn primary" id="printBtn">Imprimir</button>
+    <a class="btn" href="../../data/puntos.geojson" download>Exportar puntos</a>
+    <button class="btn primary" id="printBtn">PDF</button>
   </div>
 </header>
 
 <div class="wrap">
   <aside>
     <div class="card">
-      <h3>Basemap</h3>
+      <h3>Mapa base</h3>
       <div class="grid2">
-        <button class="btn" id="bmSat">Satélite</button>
+        <button class="btn" id="bmSat">Imagen satelital</button>
         <button class="btn" id="bmOsm">Calles</button>
       </div>
       <div style="margin-top:8px">
         <button class="btn" id="bmDark">Oscuro</button>
       </div>
-      <div class="small" style="margin-top:8px">
-        Consejo: el basemap oscuro se ve mejor con capas verdes suaves.
-      </div>
     </div>
 
     <div class="card">
-      <h3>KoBo · filtros rápidos</h3>
-      <div class="small">Filtra sin servidor: el mapa se actualiza al instante.</div>
-      <div style="margin-top:8px" class="grid2">
+      <h3>Registros KoBo</h3>
+      <div class="grid2">
         <div>
           <div class="small">Municipio</div>
-          <select id="fMunicipio">
-            <option value="">Todos</option>
-          </select>
+          <select id="fMunicipio"><option value="">Todos</option></select>
         </div>
         <div>
           <div class="small">Institución</div>
-          <select id="fInstitucion">
-            <option value="">Todas</option>
-          </select>
-        </div>
-      </div>
-      <div style="margin-top:8px" class="grid2">
-        <div>
-          <div class="small">Desde</div>
-          <input id="fDesde" type="date" />
-        </div>
-        <div>
-          <div class="small">Hasta</div>
-          <input id="fHasta" type="date" />
-        </div>
-      </div>
-      <div style="margin-top:8px" class="grid2">
-        <button class="btn" id="applyFilters">Aplicar</button>
-        <button class="btn" id="clearFilters">Limpiar</button>
-      </div>
-      <div class="small" style="margin-top:8px">
-        Mostrando: <b id="koboShown">—</b> / <span id="koboTotal">—</span>
-      </div>
-    </div>
-
-    <div class="card">
-      <h3>Buscar boleta</h3>
-      <div class="small">Escribe el ID exacto de la boleta (propiedad <code>id</code>).</div>
-      <div style="margin-top:8px" class="grid2">
-        <input id="searchId" placeholder="Ej: 123 o uuid..." />
-        <button class="btn" id="goSearch">Ir</button>
-      </div>
-      <div class="small" id="searchMsg" style="margin-top:6px"></div>
-    </div>
-
-    <div class="card">
-      <h3>Capas</h3>
-      <div class="small">Máximo 10 capas. Se definen en <code>config/layers.reforestacion.json</code>.</div>
-      <div id="layersUI"></div>
-      <div class="status" id="statusBox" style="margin-top:10px">Cargando configuración…</div>
-    </div>
-
-    <div class="card">
-      <h3>Leyenda</h3>
-      <div id="legendUI"></div>
-    </div>
-  </aside>
-
-  <div id="map"></div>
-</div>
-
-<script>
-  const CONFIG_URL = "../../config/layers.reforestacion.json";
-
-  // Basemaps (raster) para evitar resets de estilo
-  const styleBase = {
-    "version": 8,
-    "sources": {
-      "sat": {
-        "type": "raster",
-        "tiles": ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
-        "tileSize": 256,
-        "attribution": "Esri"
-      },
-      "osm": {
-        "type": "raster",
-        "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-        "tileSize": 256,
-        "attribution": "© OpenStreetMap contributors"
-      },
-      "dark": {
-        "type": "raster",
-        "tiles": [
-          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-        ],
-        "tileSize": 256,
-        "attribution": "© CARTO"
-      }
-    },
-    "layers": [
-      { "id": "bm-sat",  "type": "raster", "source": "sat",  "layout": { "visibility": "visible" } },
-      { "id": "bm-osm",  "type": "raster", "source": "osm",  "layout": { "visibility": "none" } },
-      { "id": "bm-dark", "type": "raster", "source": "dark", "layout": { "visibility": "none" } }
-    ]
-  };
-
-  const map = new maplibregl.Map({
-    container: "map",
-    style: styleBase,
-    center: [-91.18, 14.77],
-    zoom: 10
-  });
-
-  map.addControl(new maplibregl.NavigationControl(), "top-right");
-  map.addControl(new maplibregl.ScaleControl({ maxWidth: 130, unit: "metric" }));
-
-  const statusBox = document.getElementById("statusBox");
-  const layersUI  = document.getElementById("layersUI");
-  const legendUI  = document.getElementById("legendUI");
-
-  function setStatus(msg, isBad=false){
-    statusBox.textContent = msg;
-    statusBox.style.borderColor = isBad ? "rgba(255,107,107,.35)" : "rgba(255,255,255,.16)";
-    statusBox.style.color = isBad ? "#ffd0d0" : "var(--muted)";
-  }
-
-  function showBasemap(which){
-    ["bm-sat","bm-osm","bm-dark"].forEach(id => map.setLayoutProperty(id, "visibility", "none"));
-    if(which === "sat") map.setLayoutProperty("bm-sat", "visibility", "visible");
-    if(which === "osm") map.setLayoutProperty("bm-osm", "visibility", "visible");
-    if(which === "dark") map.setLayoutProperty("bm-dark", "visibility", "visible");
-  }
-
-  document.getElementById("bmSat").onclick  = () => showBasemap("sat");
-  document.getElementById("bmOsm").onclick  = () => showBasemap("osm");
-  document.getElementById("bmDark").onclick = () => showBasemap("dark");
-  document.getElementById("printBtn").onclick = () => window.print();
-
-  // ========= KoBo layer (cluster + filtros) =========
-  let koboAll = null;
-
-  function safe(v){
-    if(v === null || v === undefined) return "";
-    if(Array.isArray(v)) return v.join(", ");
-    return String(v);
-  }
-
-  function buildPopupHTML(p){
-    const f1 = p.foto_sitio_url ? `<div style="margin-top:6px"><a class="btn" style="display:inline-block" target="_blank" rel="noopener" href="${p.foto_sitio_url}">Foto sitio</a></div>` : "";
-    const f2 = p.foto_actividad_url ? `<div style="margin-top:6px"><a class="btn" style="display:inline-block" target="_blank" rel="noopener" href="${p.foto_actividad_url}">Foto actividad</a></div>` : "";
-    return `
-      <div style="min-width:240px">
-        <div style="font-weight:800;margin-bottom:6px;color:#e6edf3">Boleta ${safe(p.id)}</div>
-        <div style="font-size:12px;color:#9aa7b2"><b>Fecha:</b> ${safe(p.fecha_actividad)}</div>
-        <div style="font-size:12px;color:#9aa7b2"><b>Municipios:</b> ${safe(p.municipios)}</div>
-        <div style="font-size:12px;color:#9aa7b2"><b>Comunidad:</b> ${safe(p.comunidad)}</div>
-        <div style="font-size:12px;color:#9aa7b2"><b>Sitio:</b> ${safe(p.sitio_nombre)}</div>
-        <div style="font-size:12px;color:#9aa7b2"><b>Instituciones:</b> ${safe(p.instituciones)}</div>
-        <div style="font-size:12px;color:#9aa7b2"><b>Plantas:</b> ${safe(p.total_plantas)}</div>
-        <div style="font-size:12px;color:#9aa7b2"><b>Participantes:</b> ${safe(p.total_participantes)}</div>
-        ${p.observaciones ? `<div style="font-size:12px;color:#9aa7b2;margin-top:6px"><b>Obs:</b> ${safe(p.observaciones)}</div>` : ""}
-        ${f1}${f2}
-      </div>
-    `;
-  }
-
-  function updateKoboCounters(shown, total){
-    document.getElementById("koboShown").textContent = shown;
-    document.getElementById("koboTotal").textContent = total;
-  }
-
-  function populateFilterOptions(geojson){
-    const muni = new Set();
-    const inst = new Set();
-
-    for(const ft of (geojson.features || [])){
-      const p = ft.properties || {};
-      const ms = p.municipios;
-      const is = p.instituciones;
-      (Array.isArray(ms) ? ms : (ms ? String(ms).split(/[,\s]+/) : [])).forEach(v => v && muni.add(v));
-      (Array.isArray(is) ? is : (is ? String(is).split(/[,\s]+/) : [])).forEach(v => v && inst.add(v));
-    }
-
-    const muniSel = document.getElementById("fMunicipio");
-    const instSel = document.getElementById("fInstitucion");
-
-    [...muni].sort().forEach(v=>{
-      const o=document.createElement("option"); o.value=v; o.textContent=v; muniSel.appendChild(o);
-    });
-    [...inst].sort().forEach(v=>{
-      const o=document.createElement("option"); o.value=v; o.textContent=v; instSel.appendChild(o);
-    });
-  }
-
-  function applyKoboFilters(){
-    if(!koboAll) return;
-
-    const muni = document.getElementById("fMunicipio").value.trim();
-    const inst = document.getElementById("fInstitucion").value.trim();
-    const desde = document.getElementById("fDesde").value;
-    const hasta = document.getElementById("fHasta").value;
-
-    const filtered = {
-      type: "FeatureCollection",
-      features: (koboAll.features || []).filter(ft=>{
-        const p = ft.properties || {};
-        const ms = p.municipios;
-        const is = p.instituciones;
-        const fecha = p.fecha_actividad || "";
-
-        const muniArr = Array.isArray(ms) ? ms : (ms ? String(ms).split(/[,\s]+/) : []);
-        const instArr = Array.isArray(is) ? is : (is ? String(is).split(/[,\s]+/) : []);
-
-        if(muni && !muniArr.includes(muni)) return false;
-        if(inst && !instArr.includes(inst)) return false;
-
-        // comparación lexicográfica funciona con YYYY-MM-DD
-        if(desde && fecha && fecha < desde) return false;
-        if(hasta && fecha && fecha > hasta) return false;
-
-        return true;
-      })
-    };
-
-    const src = map.getSource("kobo");
-    if(src) src.setData(filtered);
-    updateKoboCounters(filtered.features.length, (koboAll.features || []).length);
-  }
-
-  function clearKoboFilters(){
-    document.getElementById("fMunicipio").value = "";
-    document.getElementById("fInstitucion").value = "";
-    document.getElementById("fDesde").value = "";
-    document.getElementById("fHasta").value = "";
-    if(map.getSource("kobo") && koboAll) map.getSource("kobo").setData(koboAll);
-    if(koboAll) updateKoboCounters((koboAll.features || []).length, (koboAll.features || []).length);
-  }
-
-  document.getElementById("applyFilters").onclick = applyKoboFilters;
-  document.getElementById("clearFilters").onclick = clearKoboFilters;
-
-  function fitToGeojson(geojson){
-    const feats = geojson.features || [];
-    if(!feats.length) return;
-    const b = new maplibregl.LngLatBounds();
-    for(const ft of feats){
-      const g = ft.geometry;
-      if(g && g.type === "Point"){
-        b.extend(g.coordinates);
-      }
-    }
-    if(!b.isEmpty()) map.fitBounds(b, {padding: 40, maxZoom: 14});
-  }
-
-  // ========= Otras capas GeoJSON =========
-  const addedLayerIds = new Map(); // layerId => [mapLayerIds...]
-
-  async function addGeojsonLayer(def){
-    const res = await fetch(def.url, {cache:"no-store"});
-    if(!res.ok) throw new Error(`No pude cargar ${def.url}`);
-    const gj = await res.json();
-
-    const sourceId = `src_${def.id}`;
-    if(map.getSource(sourceId)) return;
-
-    map.addSource(sourceId, {type:"geojson", data: gj});
-
-    const style = def.style || {};
-    const kind = (style.kind || "fill").toLowerCase();
-
-    const mapLayerIds = [];
-
-    if(kind === "fill"){
-      const fillId = `${def.id}_fill`;
-      const outId  = `${def.id}_outline`;
-      map.addLayer({
-        id: fillId, type:"fill", source: sourceId,
-        paint: {
-          "fill-color": style.color || "#4bd190",
-          "fill-opacity": typeof style.opacity === "number" ? style.opacity : 0.22
-        },
-        layout:{visibility:"none"}
-      });
-      map.addLayer({
-        id: outId, type:"line", source: sourceId,
-        paint: {
-          "line-color": style.outline || style.color || "#4bd190",
-          "line-width": style.width || 1.2,
-          "line-opacity": typeof style.opacity === "number" ? Math.min(1, style.opacity + 0.35) : 0.75
-        },
-        layout:{visibility:"none"}
-      });
-      mapLayerIds.push(fillId, outId);
-    } else if(kind === "line"){
-      const lineId = `${def.id}_line`;
-      map.addLayer({
-        id: lineId, type:"line", source: sourceId,
-        paint: {
-          "line-color": style.color || "#4bd190",
-          "line-width": style.width || 2,
-          "line-opacity": typeof style.opacity === "number" ? style.opacity : 0.85
-        },
-        layout:{visibility:"none"}
-      });
-      mapLayerIds.push(lineId);
-    } else { // circle
-      const ptId = `${def.id}_pt`;
-      map.addLayer({
-        id: ptId, type:"circle", source: sourceId,
-        paint: {
-          "circle-color": style.color || "#4bd190",
-          "circle-radius": style.radius || 5,
-          "circle-opacity": typeof style.opacity === "number" ? style.opacity : 0.85,
-          "circle-stroke-color": "rgba(0,0,0,0.35)",
-          "circle-stroke-width": 1
-        },
-        layout:{visibility:"none"}
-      });
-      mapLayerIds.push(ptId);
-    }
-
-    addedLayerIds.set(def.id, mapLayerIds);
-  }
-
-  function setLayerVisibility(defId, visible){
-    const ids = addedLayerIds.get(defId) || [];
-    ids.forEach(id => {
-      if(map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
-    });
-  }
-
-  function rebuildLegend(config){
-    legendUI.innerHTML = "";
-
-    // KoBo legend
-    const r1 = document.createElement("div");
-    r1.className = "legendRow";
-    r1.innerHTML = `<span class="swatch dot" style="background:var(--accent);border-color:rgba(0,0,0,.35)"></span><div class="small">Boletas KoBo (puntos)</div>`;
-    legendUI.appendChild(r1);
-
-    // config layers
-    (config.groups || []).forEach(g=>{
-      (g.layers || []).forEach(l=>{
-        const st = l.style || {};
-        const kind = (st.kind || "fill").toLowerCase();
-        const color = st.color || "#4bd190";
-        const row = document.createElement("div");
-        row.className = "legendRow";
-        row.innerHTML = `
-          <span class="swatch ${kind === "circle" ? "dot":""}" style="background:${kind==="line" ? "transparent" : color};border-color:rgba(255,255,255,.18)"></span>
-          <div class="small">${l.title}</div>
-        `;
-        legendUI.appendChild(row);
-      });
-    });
-  }
-
-  function makeLayerUI(groupName, layerDef){
-    const div = document.createElement("div");
-    div.className = "layerItem";
-
-    const pill = document.createElement("span");
-    pill.className = "pill";
-    pill.textContent = layerDef.type || "layer";
-
-    const top = document.createElement("div");
-    top.className = "layerTop";
-
-    const left = document.createElement("div");
-    left.style.flex = "1";
-    left.innerHTML = `<div class="layerName">${layerDef.title}</div><div class="layerMeta">${groupName}</div>`;
-
-    const right = document.createElement("div");
-    right.style.display = "flex";
-    right.style.flexDirection = "column";
-    right.style.alignItems = "flex-end";
-    right.style.gap = "6px";
-
-    const row = document.createElement("div");
-    row.className = "row";
-    row.style.marginTop = "8px";
-
-    const tog = document.createElement("div");
-    tog.className = "tog";
-    const chk = document.createElement("input");
-    chk.type = "checkbox";
-    chk.id = `chk_${layerDef.id}`;
-    const lbl = document.createElement("label");
-    lbl.setAttribute("for", chk.id);
-    lbl.className = "small";
-    lbl.textContent = "Mostrar";
-    tog.appendChild(chk);
-    tog.appendChild(lbl);
-
-    const dl = document.createElement("a");
-    dl.className = "btn";
-    dl.style.padding = "6px 10px";
-    dl.style.fontSize = "12px";
-    dl.textContent = "Descargar";
-    dl.href = layerDef.url;
-    dl.setAttribute("download", "");
-
-    row.appendChild(tog);
-    row.appendChild(dl);
-
-    top.appendChild(left);
-    top.appendChild(right);
-    right.appendChild(pill);
-
-    div.appendChild(top);
-    div.appendChild(row);
-
-    chk.addEventListener("change", async (e)=>{
-      const on = e.target.checked;
-      try{
-        if(on && !addedLayerIds.has(layerDef.id)){
-          await addGeojsonLayer(layerDef);
-          setLayerVisibility(layerDef.id, true);
-          pill.className = "pill ok";
-          pill.textContent = "ok";
-        } else {
-          setLayerVisibility(layerDef.id, on);
-        }
-      } catch(err){
-        console.error(err);
-        pill.className = "pill bad";
-        pill.textContent = "error";
-        e.target.checked = false;
-        setStatus(`Error cargando "${layerDef.title}". Revisa que exista el archivo: ${layerDef.url}`, true);
-      }
-    });
-
-    return div;
-  }
-
-  async function init(){
-    let config;
-    try{
-      const r = await fetch(CONFIG_URL, {cache:"no-store"});
-      if(!r.ok) throw new Error("No pude cargar config");
-      config = await r.json();
-      document.getElementById("portalTitle").textContent = config.title || "Geoportal · Reforestación";
-      setStatus("Config cargada. Activá capas desde el panel.");
-    } catch(e){
-      console.error(e);
-      config = {
-        title: "Geoportal · Reforestación",
-        kobo: { id:"kobo_boletas", title:"Boletas KoBo", url:"../../data/puntos.geojson" },
-        groups:[]
-      };
-      setStatus("No se encontró config. Usando solo KoBo.", true);
-    }
-
-    rebuildLegend(config);
-
-    // UI de capas
-    layersUI.innerHTML = "";
-    (config.groups || []).forEach(g=>{
-      const t = document.createElement("div");
-      t.className = "groupTitle";
-      t.textContent = g.name || "Grupo";
-      layersUI.appendChild(t);
-
-      (g.layers || []).forEach(l=>{
-        // por ahora soportamos geojson (y puedes meter hasta 10)
-        if((l.type || "").toLowerCase() === "geojson"){
-          layersUI.appendChild(makeLayerUI(g.name, l));
-        }
-      });
-    });
-
-    // KoBo data
-    const koboUrl = (config.kobo && config.kobo.url) ? config.kobo.url : "../../data/puntos.geojson";
-    const res = await fetch(koboUrl, {cache:"no-store"});
-    if(!res.ok) throw new Error("No pude cargar puntos KoBo");
-    koboAll = await res.json();
-
-    populateFilterOptions(koboAll);
-    updateKoboCounters((koboAll.features||[]).length, (koboAll.features||[]).length);
-
-    // Fuente cluster KoBo
-    if(!map.getSource("kobo")){
-      map.addSource("kobo", {
-        type: "geojson",
-        data: koboAll,
-        cluster: true,
-        clusterRadius: 50,
-        clusterMaxZoom: 14
-      });
-
-      // clusters
-      map.addLayer({
-        id: "kobo-clusters",
-        type: "circle",
-        source: "kobo",
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": "rgba(75,209,144,0.65)",
-          "circle-radius": [
-            "step", ["get", "point_count"],
-            16,  20, 22,  50, 28,  200, 36
-          ],
-          "circle-stroke-color": "rgba(0,0,0,0.35)",
-          "circle-stroke-width": 1
-        }
-      });
-
-      map.addLayer({
-        id: "kobo-cluster-count",
-        type: "symbol",
-        source: "kobo",
-        filter: ["has", "point_count"],
-        layout: {
-          "text-field": "{point_count_abbreviated}",
-          "text-size": 12
-        },
-        paint: { "text-color": "#0b0f14" }
-      });
-
-      // unclustered
-      map.addLayer({
-        id: "kobo-points",
-        type: "circle",
-        source: "kobo",
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-color": "rgba(75,209,144,0.95)",
-          "circle-radius": 6,
-          "circle-stroke-color": "rgba(0,0,0,0.40)",
-          "circle-stroke-width": 1
-        }
-      });
-
-      // click cluster zoom
-      map.on("click", "kobo-clusters", (e)=>{
-        const features = map.queryRenderedFeatures(e.point, { layers: ["kobo-clusters"] });
-        const clusterId = features[0].properties.cluster_id;
-        map.getSource("kobo").getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err) return;
-          map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
-        });
-      });
-
-      // click point popup
-      map.on("click", "kobo-points", (e)=>{
-        const f = e.features && e.features[0];
-        if(!f) return;
-        new maplibregl.Popup({ maxWidth:"360px" })
-          .setLngLat(e.lngLat)
-          .setHTML(buildPopupHTML(f.properties || {}))
-          .addTo(map);
-      });
-
-      map.on("mouseenter", "kobo-points", ()=> map.getCanvas().style.cursor = "pointer");
-      map.on("mouseleave", "kobo-points", ()=> map.getCanvas().style.cursor = "");
-      map.on("mouseenter", "kobo-clusters", ()=> map.getCanvas().style.cursor = "pointer");
-      map.on("mouseleave", "kobo-clusters", ()=> map.getCanvas().style.cursor = "");
-
-      fitToGeojson(koboAll);
-      setStatus("KoBo cargado. Podés filtrar, buscar y activar capas.");
-    }
-
-    // Buscar por ID
-    document.getElementById("goSearch").onclick = ()=>{
-      const v = document.getElementById("searchId").value.trim();
-      const msg = document.getElementById("searchMsg");
-      msg.textContent = "";
-      if(!v){ msg.textContent = "Escribe un ID."; return; }
-
-      const feats = (koboAll && koboAll.features) ? koboAll.features : [];
-      const hit = feats.find(ft => String((ft.properties||{}).id||"") === v);
-      if(!hit){ msg.textContent = "No encontrado."; return; }
-
-      const c = hit.geometry && hit.geometry.coordinates;
-      if(c && c.length>=2){
-        map.flyTo({center:c, zoom: 16});
-        msg.textContent = "Encontrado ✓";
-      }
-    };
-  }
-
-  map.on("load", ()=> {
-    init().catch(err=>{
-      console.error(err);
-      setStatus("Error inicializando el geoportal. Revisa consola.", true);
-    });
-  });
-</script>
-</body>
-</html>
+          <select id="fInstitucion"><option value="">Todas</option></select
