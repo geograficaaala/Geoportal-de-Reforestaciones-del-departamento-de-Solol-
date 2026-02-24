@@ -2,89 +2,982 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Reforestación · Sololá</title>
+  <meta name="description" content="Módulo de Reforestación del observatorio ambiental de Sololá: resumen, geoportal, dashboard e informes." />
+
   <style>
-    :root{--bg1:#e9fff2;--bg2:#e7f1ff;--bg3:#fff3dc;--card:#ffffffcc;--ink:#15322a;--muted:#4b5b57;--line:rgba(0,0,0,.08);--r:18px}
+    :root{
+      --bg-a:#e8fff5;
+      --bg-b:#e6f4ff;
+      --bg-c:#f3fffb;
+      --mint-1:#d8fff0;
+      --mint-2:#bdf2dd;
+      --sky-1:#d9efff;
+      --sky-2:#bfe3ff;
+      --teal:#1e7f73;
+      --teal-2:#2f9d87;
+      --ink:#10342f;
+      --muted:#4e6661;
+      --line:rgba(16,52,47,.11);
+      --line-soft:rgba(16,52,47,.06);
+      --white:#ffffff;
+      --glass:rgba(255,255,255,.72);
+      --glass-2:rgba(255,255,255,.86);
+      --shadow-lg:0 18px 50px rgba(23,72,71,.12);
+      --shadow-md:0 10px 28px rgba(23,72,71,.10);
+      --shadow-sm:0 6px 18px rgba(23,72,71,.08);
+      --r-xl:24px;
+      --r-lg:18px;
+      --r-md:14px;
+      --r-sm:12px;
+    }
+
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;color:var(--ink);background:linear-gradient(120deg,var(--bg1),var(--bg2),var(--bg3));min-height:100vh}
-    main{max-width:1000px;margin:0 auto;padding:18px}
-    header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-    a.btn{display:inline-block;text-decoration:none;color:var(--ink);background:#fff;border:1px solid var(--line);padding:10px 12px;border-radius:14px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.05)}
-    .card{margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.06)}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:12px}
-    .tile{background:#fff;border:1px solid var(--line);border-radius:18px;padding:16px}
-    .tile h3{margin:0 0 6px}
-    .tile p{margin:0 0 10px;color:var(--muted);font-size:13px;line-height:1.35}
-    .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:10px}
-    .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px}
-    .kpi .n{font-size:18px;font-weight:700}
-    .kpi .t{font-size:12px;color:var(--muted)}
-    @media(max-width:800px){.grid{grid-template-columns:1fr}}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 700px at 10% -10%, rgba(129,236,198,.35), transparent 60%),
+        radial-gradient(1000px 700px at 100% 10%, rgba(127,190,255,.30), transparent 62%),
+        linear-gradient(125deg, var(--bg-a), var(--bg-b) 55%, var(--bg-c));
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* Fondos decorativos */
+    .bg-orb{
+      position:fixed;
+      inset:auto auto 5% -80px;
+      width:260px; height:260px;
+      background:radial-gradient(circle at 30% 30%, rgba(74,209,158,.22), rgba(74,209,158,0) 70%);
+      filter:blur(4px);
+      pointer-events:none;
+      z-index:0;
+    }
+    .bg-orb.orb-2{
+      inset:90px -70px auto auto;
+      width:300px; height:300px;
+      background:radial-gradient(circle at 40% 40%, rgba(96,170,255,.18), rgba(96,170,255,0) 70%);
+    }
+
+    main{
+      position:relative;
+      z-index:1;
+      width:min(1200px, calc(100% - 28px));
+      margin:14px auto 18px;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:8px 4px 12px;
+      flex-wrap:wrap;
+    }
+
+    .brand-mini{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:var(--muted);
+      font-size:12px;
+      font-weight:600;
+      letter-spacing:.02em;
+    }
+    .brand-dot{
+      width:9px;height:9px;border-radius:999px;
+      background:linear-gradient(135deg, #2ccf9b, #71c9ff);
+      box-shadow:0 0 0 5px rgba(44,207,155,.14);
+      flex:0 0 auto;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      appearance:none;
+      border:none;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.01em;
+      border-radius:14px;
+      padding:10px 14px;
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+      box-shadow:var(--shadow-sm);
+      font-size:13px;
+      line-height:1;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform:translateY(-1px) }
+    .btn:active{ transform:translateY(0) }
+
+    .btn-outline{
+      color:var(--ink);
+      background:rgba(255,255,255,.75);
+      border:1px solid var(--line);
+      backdrop-filter: blur(6px);
+    }
+    .btn-outline:hover{
+      background:rgba(255,255,255,.92);
+      border-color:rgba(16,52,47,.18);
+    }
+
+    .btn-primary{
+      color:#08352e;
+      background:linear-gradient(135deg, #b8f5de, #cbeaff);
+      border:1px solid rgba(41,122,119,.14);
+      box-shadow:0 10px 22px rgba(44,135,120,.15);
+    }
+    .btn-primary:hover{
+      box-shadow:0 14px 28px rgba(44,135,120,.20);
+      filter:saturate(1.03);
+    }
+
+    .btn-soft{
+      color:var(--teal);
+      background:#fff;
+      border:1px solid var(--line-soft);
+      box-shadow:none;
+      font-weight:700;
+    }
+    .btn-soft:hover{
+      border-color:rgba(30,127,115,.18);
+      background:linear-gradient(135deg, rgba(216,255,240,.55), rgba(217,239,255,.45));
+    }
+
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid rgba(16,52,47,.10);
+      background:rgba(255,255,255,.68);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+      backdrop-filter: blur(8px);
+      box-shadow:0 6px 18px rgba(24,66,70,.06);
+      white-space:nowrap;
+    }
+    .chip .led{
+      width:8px;height:8px;border-radius:999px;background:#2ad28d;box-shadow:0 0 0 5px rgba(42,210,141,.16);
+      flex:0 0 auto;
+    }
+
+    /* Hero */
+    .hero{
+      display:grid;
+      grid-template-columns:1.25fr .9fr;
+      gap:14px;
+      align-items:stretch;
+    }
+
+    .hero-card,
+    .panel{
+      background:linear-gradient(180deg, var(--glass-2), rgba(255,255,255,.65));
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:var(--r-xl);
+      box-shadow:var(--shadow-lg);
+      backdrop-filter: blur(10px);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-card::before{
+      content:"";
+      position:absolute;
+      inset:auto -10% -30% auto;
+      width:280px; height:220px;
+      background:radial-gradient(circle at 35% 35%, rgba(116,226,177,.22), rgba(116,226,177,0) 72%);
+      pointer-events:none;
+    }
+    .hero-card::after{
+      content:"";
+      position:absolute;
+      inset:-30% auto auto -8%;
+      width:260px; height:220px;
+      background:radial-gradient(circle at 45% 45%, rgba(124,190,255,.18), rgba(124,190,255,0) 70%);
+      pointer-events:none;
+    }
+
+    .hero-body{
+      position:relative;
+      z-index:1;
+      padding:20px 20px 16px;
+      display:grid;
+      gap:14px;
+      min-height:270px;
+    }
+
+    .hero-kicker{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+      color:#0f4b40;
+      background:linear-gradient(135deg, rgba(184,245,222,.95), rgba(217,239,255,.9));
+      border:1px solid rgba(39,128,118,.12);
+    }
+
+    .hero h1{
+      margin:0;
+      font-size:clamp(24px, 4vw, 36px);
+      line-height:1.06;
+      letter-spacing:-.02em;
+      max-width:18ch;
+    }
+    .hero p{
+      margin:0;
+      color:var(--muted);
+      line-height:1.45;
+      font-size:14px;
+      max-width:64ch;
+    }
+
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:2px;
+    }
+
+    .hero-note{
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:10px;
+      align-items:center;
+      border:1px solid var(--line-soft);
+      border-radius:16px;
+      background:rgba(255,255,255,.70);
+      padding:10px 12px;
+    }
+    .hero-note .small{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.3;
+    }
+    .hero-note strong{
+      color:var(--ink);
+      display:block;
+      margin-bottom:2px;
+      font-size:12px;
+    }
+
+    /* Panel lateral del hero */
+    .status-panel{
+      padding:16px;
+      display:grid;
+      gap:12px;
+      align-content:start;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.72));
+    }
+
+    .status-header{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+    }
+    .status-header h2{
+      margin:0;
+      font-size:15px;
+      letter-spacing:.01em;
+    }
+
+    .status-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    .status-card{
+      background:#fff;
+      border:1px solid var(--line-soft);
+      border-radius:16px;
+      padding:12px;
+      box-shadow:0 8px 20px rgba(28,85,82,.06);
+    }
+    .status-card .label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:6px;
+    }
+    .status-card .value{
+      font-weight:800;
+      font-size:18px;
+      line-height:1.05;
+      letter-spacing:-.02em;
+      word-break:break-word;
+    }
+    .status-card .sub{
+      margin-top:5px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.3;
+    }
+
+    /* KPIs */
+    .section{
+      margin-top:14px;
+    }
+
+    .section-head{
+      display:flex;
+      align-items:end;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+      padding:0 2px;
+      flex-wrap:wrap;
+    }
+
+    .section-head h2{
+      margin:0;
+      font-size:17px;
+      letter-spacing:-.01em;
+    }
+    .section-head p{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:12px;
+    }
+
+    .kpi{
+      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+      border:1px solid rgba(255,255,255,.72);
+      border-radius:18px;
+      box-shadow:var(--shadow-md);
+      padding:14px 14px 12px;
+      position:relative;
+      overflow:hidden;
+      min-height:104px;
+    }
+    .kpi::after{
+      content:"";
+      position:absolute;
+      right:-18px; top:-16px;
+      width:78px; height:78px;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 35%, rgba(43,205,150,.16), rgba(95,185,255,.08) 55%, transparent 70%);
+      pointer-events:none;
+    }
+    .kpi .k-label{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:8px;
+      font-weight:600;
+    }
+    .kpi .k-value{
+      font-size:24px;
+      line-height:1.05;
+      font-weight:800;
+      letter-spacing:-.02em;
+    }
+    .kpi .k-meta{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.25;
+    }
+
+    /* Navegación principal */
+    .nav-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:12px;
+    }
+
+    .tile{
+      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+      border:1px solid rgba(255,255,255,.74);
+      border-radius:20px;
+      box-shadow:var(--shadow-md);
+      padding:14px;
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:12px;
+      align-items:start;
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      min-height:144px;
+    }
+    .tile:hover{
+      transform:translateY(-2px);
+      box-shadow:0 16px 34px rgba(25,82,78,.12);
+      border-color:rgba(45,138,128,.14);
+    }
+
+    .tile-icon{
+      width:48px; height:48px;
+      border-radius:14px;
+      display:grid; place-items:center;
+      background:linear-gradient(135deg, rgba(184,245,222,.95), rgba(217,239,255,.9));
+      border:1px solid rgba(39,128,118,.12);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.6);
+      color:#13695f;
+      flex:0 0 auto;
+    }
+    .tile-icon svg{ width:24px; height:24px; }
+
+    .tile h3{
+      margin:0;
+      font-size:16px;
+      letter-spacing:-.01em;
+    }
+    .tile p{
+      margin:6px 0 11px;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+    .tile .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    /* Bloques inferiores */
+    .two-col{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:12px;
+    }
+
+    .panel{
+      padding:14px;
+    }
+
+    .panel h3{
+      margin:0 0 6px;
+      font-size:15px;
+      letter-spacing:-.01em;
+    }
+    .panel p{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.4;
+    }
+
+    .list{
+      margin:10px 0 0;
+      padding:0;
+      list-style:none;
+      display:grid;
+      gap:8px;
+    }
+
+    .list li{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:10px;
+      align-items:start;
+      background:rgba(255,255,255,.68);
+      border:1px solid var(--line-soft);
+      border-radius:14px;
+      padding:10px;
+    }
+
+    .list .dot{
+      width:10px;height:10px;border-radius:50%;
+      margin-top:4px;
+      background:linear-gradient(135deg,#2bcd96,#6dbdff);
+      box-shadow:0 0 0 4px rgba(43,205,150,.12);
+    }
+
+    .mini-grid{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:10px;
+    }
+
+    .mini-card{
+      background:rgba(255,255,255,.74);
+      border:1px solid var(--line-soft);
+      border-radius:14px;
+      padding:10px;
+    }
+    .mini-card .t{
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:4px;
+    }
+    .mini-card .v{
+      font-size:14px;
+      font-weight:700;
+      line-height:1.2;
+    }
+
+    footer{
+      margin:14px 0 2px;
+      padding:12px 14px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.7);
+      background:linear-gradient(180deg, rgba(255,255,255,.82), rgba(255,255,255,.68));
+      box-shadow:var(--shadow-sm);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .footer-main{
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+    .footer-main strong{
+      color:var(--ink);
+      font-size:12px;
+      letter-spacing:.01em;
+    }
+    .footer-pill{
+      padding:7px 11px;
+      border-radius:999px;
+      border:1px solid var(--line-soft);
+      background:#fff;
+      font-size:11px;
+      color:var(--teal);
+      font-weight:700;
+      white-space:nowrap;
+    }
+
+    /* Estados */
+    .muted{color:var(--muted)}
+    .hidden{display:none !important}
+
+    /* Responsive */
+    @media (max-width: 1040px){
+      .hero{ grid-template-columns:1fr; }
+      .two-col{ grid-template-columns:1fr; }
+      .status-grid{ grid-template-columns:repeat(2,1fr); }
+    }
+
+    @media (max-width: 860px){
+      .kpis{ grid-template-columns:repeat(2,1fr); }
+      .nav-grid{ grid-template-columns:1fr; }
+      .mini-grid{ grid-template-columns:1fr; }
+      .status-grid{ grid-template-columns:1fr; }
+      .hero-body{ min-height:auto; }
+    }
+
+    @media (max-width: 520px){
+      main{ width:min(1200px, calc(100% - 16px)); margin-top:8px; }
+      .topbar{ padding:4px 2px 10px; }
+      .hero-body{ padding:16px; }
+      .status-panel{ padding:12px; }
+      .kpi .k-value{ font-size:20px; }
+      .tile{ grid-template-columns:1fr; }
+      .tile-icon{ width:42px; height:42px; }
+      .footer-pill{ width:100%; text-align:center; }
+    }
   </style>
 </head>
 <body>
-<main>
-  <header>
-    <div>
-      <h1 style="margin:0;font-size:20px">Módulo · Reforestación</h1>
-      <div style="color:var(--muted);font-size:13px">Resumen, Geoportal, Dashboard e Informes</div>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a class="btn" href="../../index.html">← Inicio</a>
-      <a class="btn" href="../../data/puntos.geojson">Ver puntos</a>
-    </div>
-  </header>
+  <div class="bg-orb" aria-hidden="true"></div>
+  <div class="bg-orb orb-2" aria-hidden="true"></div>
 
-  <section class="card">
-    <h2 style="margin:0 0 6px;font-size:18px">Indicadores</h2>
-    <div class="kpis">
-      <div class="kpi"><div class="n" id="k_boletas">—</div><div class="t">Boletas</div></div>
-      <div class="kpi"><div class="n" id="k_plantas">—</div><div class="t">Plantas</div></div>
-      <div class="kpi"><div class="n" id="k_part">—</div><div class="t">Participantes</div></div>
-    </div>
-    <div style="margin-top:8px;color:var(--muted);font-size:12px">
-      Última actualización: <span id="k_update">—</span>
-    </div>
-  </section>
+  <main>
+    <!-- Barra superior -->
+    <div class="topbar">
+      <div class="brand-mini">
+        <span class="brand-dot" aria-hidden="true"></span>
+        <span>Observatorio ambiental · Sololá · Módulo Reforestación</span>
+      </div>
 
-  <section class="card">
-    <div class="grid">
-      <div class="tile">
-        <h3>Geoportal</h3>
-        <p>Visor SIG avanzado: capas, leyenda, popups, descargas e impresión simple.</p>
-        <a class="btn" href="./geoportal.html">Abrir Geoportal</a>
-      </div>
-      <div class="tile">
-        <h3>Dashboard</h3>
-        <p>Gráficos e indicadores (por municipio, institución, especie y fechas).</p>
-        <a class="btn" href="./dashboard.html">Ver Dashboard</a>
-      </div>
-      <div class="tile">
-        <h3>Informes</h3>
-        <p>PDF/CSV por mes/año. Historial por año (y futuro generador).</p>
-        <a class="btn" href="./informes.html">Ver Informes</a>
-      </div>
-      <div class="tile">
-        <h3>Acerca del módulo</h3>
-        <p>Las boletas provienen de KoBoToolbox. Este portal se actualizará automáticamente.</p>
-        <span class="btn" style="opacity:.6;cursor:default">Pronto: conexión KoBo</span>
+      <div class="top-actions">
+        <a class="btn btn-outline" href="../../index.html" title="Volver al portal principal">← Inicio</a>
+        <a class="btn btn-outline" href="../../data/puntos.geojson" title="Ver datos de puntos">Datos GeoJSON</a>
       </div>
     </div>
-  </section>
-</main>
 
-<script>
-  fetch('../../data/resumen.json')
-    .then(r => r.ok ? r.json() : null)
-    .then(j => {
-      if(!j) return;
-      document.getElementById('k_boletas').textContent = j.kpis?.total_boletas ?? '—';
-      document.getElementById('k_plantas').textContent  = j.kpis?.total_plantas ?? '—';
-      document.getElementById('k_part').textContent     = j.kpis?.total_participantes ?? '—';
-      document.getElementById('k_update').textContent   = j.ultima_actualizacion ?? '—';
-    })
-    .catch(()=>{});
-</script>
+    <!-- Hero -->
+    <section class="hero">
+      <article class="hero-card" aria-labelledby="hero-title">
+        <div class="hero-body">
+          <div class="hero-kicker">
+            <span class="badge">🌱 Reforestación</span>
+            <span class="chip"><span class="led" aria-hidden="true"></span> Actualización automática KoBo → GitHub Pages</span>
+          </div>
+
+          <div>
+            <h1 id="hero-title">Portal de seguimiento de reforestación · Sololá</h1>
+            <p>
+              Consulta registros de campo, visualiza puntos de reforestación, analiza patrones y genera reportes
+              desde un entorno único con enfoque institucional.
+            </p>
+          </div>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="./geoportal.html">🗺️ Abrir Geoportal</a>
+            <a class="btn btn-outline" href="./dashboard.html">📊 Ver Dashboard</a>
+            <a class="btn btn-outline" href="./informes.html">📄 Informes</a>
+          </div>
+
+          <div class="hero-note">
+            <div class="small">
+              <strong>Uso recomendado</strong>
+              Explora el geoportal para ver ubicación de boletas y luego pasa al dashboard para análisis por municipio,
+              fechas y variables del formulario.
+            </div>
+            <a class="btn btn-soft" href="./dashboard.html">Ir al análisis →</a>
+          </div>
+        </div>
+      </article>
+
+      <aside class="hero-card status-panel" aria-label="Estado del módulo">
+        <div class="status-header">
+          <h2>Estado del módulo</h2>
+          <span class="chip" id="chip-sync"><span class="led"></span> En línea</span>
+        </div>
+
+        <div class="status-grid">
+          <div class="status-card">
+            <div class="label">Última actualización</div>
+            <div class="value" id="st_update">—</div>
+            <div class="sub">Dato leído desde <code>data/resumen.json</code></div>
+          </div>
+
+          <div class="status-card">
+            <div class="label">Fuente de captura</div>
+            <div class="value">KoBoToolbox</div>
+            <div class="sub">Sincronización automatizada por GitHub Actions</div>
+          </div>
+
+          <div class="status-card">
+            <div class="label">Cobertura de consulta</div>
+            <div class="value">Portal + SIG + Análisis</div>
+            <div class="sub">Resumen, Geoportal, Dashboard e Informes</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- KPIs -->
+    <section class="section" aria-labelledby="kpis-title">
+      <div class="section-head">
+        <div>
+          <h2 id="kpis-title">Indicadores principales</h2>
+          <p>Resumen rápido del módulo de reforestación</p>
+        </div>
+        <span class="chip">Datos dinámicos desde resumen.json</span>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <div class="k-label">Boletas registradas</div>
+          <div class="k-value" id="k_boletas">—</div>
+          <div class="k-meta">Registros capturados en campo</div>
+        </div>
+
+        <div class="kpi">
+          <div class="k-label">Plantas registradas</div>
+          <div class="k-value" id="k_plantas">—</div>
+          <div class="k-meta">Suma reportada en formularios</div>
+        </div>
+
+        <div class="kpi">
+          <div class="k-label">Participantes</div>
+          <div class="k-value" id="k_part">—</div>
+          <div class="k-meta">Personas vinculadas a jornadas</div>
+        </div>
+
+        <div class="kpi">
+          <div class="k-label">Última actualización</div>
+          <div class="k-value" id="k_update_short" style="font-size:18px">—</div>
+          <div class="k-meta">Fecha/hora de sincronización</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navegación principal -->
+    <section class="section" aria-labelledby="modulos-title">
+      <div class="section-head">
+        <div>
+          <h2 id="modulos-title">Navegación del módulo</h2>
+          <p>Acceso rápido a herramientas de consulta y análisis</p>
+        </div>
+      </div>
+
+      <div class="nav-grid">
+        <article class="tile">
+          <div class="tile-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M3 6l7-3 4 2 7-2v15l-7 2-4-2-7 3V6z"/>
+              <path d="M10 3v15M14 5v15"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Geoportal</h3>
+            <p>
+              Visor SIG con capas, popups, leyenda, base cartográfica y herramientas de impresión para consulta espacial.
+            </p>
+            <div class="actions">
+              <a class="btn btn-primary" href="./geoportal.html">Abrir Geoportal</a>
+              <a class="btn btn-soft" href="../../data/puntos.geojson">Descargar puntos</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M4 19h16"/>
+              <path d="M7 16V9"/>
+              <path d="M12 16V5"/>
+              <path d="M17 16v-4"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Dashboard</h3>
+            <p>
+              Tablero de control para patrones de reforestación: tendencias, comparaciones, filtros y estadísticas.
+            </p>
+            <div class="actions">
+              <a class="btn btn-primary" href="./dashboard.html">Ver Dashboard</a>
+              <a class="btn btn-soft" href="./geoportal.html">Cruzar con mapa</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M7 3h8l4 4v14H7z"/>
+              <path d="M15 3v5h5"/>
+              <path d="M10 13h6M10 17h6"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Informes</h3>
+            <p>
+              Consulta y descarga reportes en PDF/CSV por período. Espacio para consolidar productos institucionales.
+            </p>
+            <div class="actions">
+              <a class="btn btn-primary" href="./informes.html">Ver Informes</a>
+              <a class="btn btn-soft" href="./dashboard.html">Preparar análisis</a>
+            </div>
+          </div>
+        </article>
+
+        <article class="tile">
+          <div class="tile-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 8v4l2.5 2.5"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Estado y actualización</h3>
+            <p>
+              Los registros provienen de KoBoToolbox y se actualizan automáticamente hacia GitHub Pages mediante workflow.
+            </p>
+            <div class="actions">
+              <span class="btn btn-soft" style="cursor:default" id="estado-sync">Sincronización activa</span>
+              <a class="btn btn-outline" href="../../data/puntos.geojson">Ver archivo actual</a>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Bloques inferiores -->
+    <section class="section two-col" aria-labelledby="info-extra">
+      <article class="panel" id="info-extra">
+        <h3>Qué puedes hacer desde este módulo</h3>
+        <p>
+          Este espacio está pensado para navegación rápida y análisis institucional. La idea es pasar de la consulta
+          general a la exploración espacial y luego al análisis estadístico sin cambiar de módulo.
+        </p>
+
+        <ul class="list">
+          <li>
+            <span class="dot" aria-hidden="true"></span>
+            <div>
+              <strong>Visualizar ubicación de puntos de reforestación</strong><br>
+              <span class="muted">Con popups y capas base en el geoportal.</span>
+            </div>
+          </li>
+          <li>
+            <span class="dot" aria-hidden="true"></span>
+            <div>
+              <strong>Analizar patrones por fecha, municipio e institución</strong><br>
+              <span class="muted">Desde el dashboard con filtros y gráficos.</span>
+            </div>
+          </li>
+          <li>
+            <span class="dot" aria-hidden="true"></span>
+            <div>
+              <strong>Generar productos de consulta institucional</strong><br>
+              <span class="muted">Reportes y salidas para seguimiento del eje de bosques.</span>
+            </div>
+          </li>
+        </ul>
+      </article>
+
+      <aside class="panel" aria-label="Resumen de sistema">
+        <h3>Resumen técnico del flujo</h3>
+        <p>
+          Arquitectura estática en GitHub Pages con sincronización de datos desde KoBoToolbox hacia archivos GeoJSON/JSON.
+        </p>
+
+        <div class="mini-grid">
+          <div class="mini-card">
+            <div class="t">Plataforma</div>
+            <div class="v">GitHub Pages</div>
+          </div>
+          <div class="mini-card">
+            <div class="t">Captura</div>
+            <div class="v">KoBoToolbox</div>
+          </div>
+          <div class="mini-card">
+            <div class="t">Datos mapa</div>
+            <div class="v">GeoJSON</div>
+          </div>
+          <div class="mini-card">
+            <div class="t">Actualización</div>
+            <div class="v">GitHub Actions</div>
+          </div>
+        </div>
+
+        <ul class="list" style="margin-top:10px">
+          <li>
+            <span class="dot" aria-hidden="true"></span>
+            <div>
+              <strong>Ruta de datos del módulo</strong><br>
+              <span class="muted"><code>../../data/puntos.geojson</code> y <code>../../data/resumen.json</code></span>
+            </div>
+          </li>
+        </ul>
+      </aside>
+    </section>
+
+    <!-- Footer / marca -->
+    <footer>
+      <div class="footer-main">
+        <strong>Laboratorio SIG-Eje de bosques de CODEMA-SOLOLÁ 2026</strong><br>
+        Módulo Reforestación · Portal de consulta, geoportal y tablero de control
+      </div>
+      <div class="footer-pill" id="footer-update">Última actualización: —</div>
+    </footer>
+  </main>
+
+  <script>
+    (function(){
+      const el = (id)=>document.getElementById(id);
+
+      const fmtNum = (v)=>{
+        const n = Number(v);
+        if (!Number.isFinite(n)) return "—";
+        return new Intl.NumberFormat("es-GT").format(n);
+      };
+
+      const cleanText = (value)=>{
+        if (value == null) return "—";
+        let s = String(value).trim();
+        if (!s) return "—";
+        s = s.replace(/_/g, " ");
+        s = s.replace(/\s+/g, " ").trim();
+
+        // Corrección rápida de mojibake común (si apareciera)
+        const fixes = {
+          "Ã¡":"á","Ã©":"é","Ã­":"í","Ã³":"ó","Ãº":"ú",
+          "Ã":"Á","Ã‰":"É","Ã":"Í","Ã“":"Ó","Ãš":"Ú",
+          "Ã±":"ñ","Ã‘":"Ñ","Â":""
+        };
+        for (const [bad, good] of Object.entries(fixes)) {
+          s = s.split(bad).join(good);
+        }
+        return s;
+      };
+
+      const fmtDateShort = (raw)=>{
+        if (!raw) return "—";
+        const txt = cleanText(raw);
+
+        // Si ya viene legible, lo dejamos.
+        // Intento básico de parse si viene ISO.
+        const d = new Date(txt);
+        if (!isNaN(d.getTime())) {
+          return new Intl.DateTimeFormat("es-GT", {
+            year:"numeric", month:"short", day:"2-digit",
+            hour:"2-digit", minute:"2-digit"
+          }).format(d);
+        }
+        return txt;
+      };
+
+      const setSafe = (id, value)=> {
+        const node = el(id);
+        if (node) node.textContent = value;
+      };
+
+      fetch('../../data/resumen.json', { cache:'no-store' })
+        .then(r => r.ok ? r.json() : null)
+        .then(j => {
+          if (!j) return;
+
+          const boletas = j?.kpis?.total_boletas;
+          const plantas = j?.kpis?.total_plantas;
+          const participantes = j?.kpis?.total_participantes;
+          const ultima = j?.ultima_actualizacion;
+
+          setSafe('k_boletas', fmtNum(boletas));
+          setSafe('k_plantas', fmtNum(plantas));
+          setSafe('k_part', fmtNum(participantes));
+
+          const uFmt = fmtDateShort(ultima);
+          setSafe('k_update_short', uFmt);
+          setSafe('st_update', uFmt);
+          setSafe('footer-update', 'Última actualización: ' + uFmt);
+
+          // Estado visual
+          const total = Number(boletas || 0);
+          const chip = el('chip-sync');
+          const btnEstado = el('estado-sync');
+          if (chip && btnEstado) {
+            if (total > 0) {
+              btnEstado.textContent = 'Sincronización activa';
+            } else {
+              btnEstado.textContent = 'Sincronización sin registros';
+            }
+          }
+        })
+        .catch(() => {
+          setSafe('st_update', 'No disponible');
+          setSafe('footer-update', 'Última actualización: no disponible');
+          const chip = el('chip-sync');
+          if (chip) chip.innerHTML = '<span class="led" style="background:#f2a64a;box-shadow:0 0 0 5px rgba(242,166,74,.16)"></span> Estado no verificado';
+          const btnEstado = el('estado-sync');
+          if (btnEstado) btnEstado.textContent = 'No se pudo leer resumen.json';
+        });
+    })();
+  </script>
 </body>
 </html>
