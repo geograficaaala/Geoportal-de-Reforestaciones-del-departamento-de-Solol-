@@ -93,6 +93,192 @@
         "foto_actividad_url": "",
         "observaciones": "Los árboles tenian plaga"
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.160046,
+          14.741729
+        ]
+      },
+      "properties": {
+        "id": "679342035",
+        "fecha_actividad": "2026-02-24",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Monte mercedes",
+        "sitio_nombre": "Sacsiguan",
+        "instituciones": [
+          "conap_drac"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 10000,
+        "tenencia": "privada",
+        "total_plantas": 1111,
+        "total_participantes": 50,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679342035/attachments/attGLNz6xZF4DHWswL2DayB2/",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159716,
+          14.743467
+        ]
+      },
+      "properties": {
+        "id": "679342069",
+        "fecha_actividad": "2026-02-24",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Aldea San Juan Argueta",
+        "sitio_nombre": "",
+        "instituciones": [
+          "inab"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 500,
+        "tenencia": "privada",
+        "total_plantas": 180,
+        "total_participantes": 33,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159817,
+          14.743407
+        ]
+      },
+      "properties": {
+        "id": "679342598",
+        "fecha_actividad": "2026-02-03",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Solola",
+        "sitio_nombre": "Chuaxiq",
+        "instituciones": [
+          "maga"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 200,
+        "tenencia": "comunal",
+        "total_plantas": 200,
+        "total_participantes": 58,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679342598/attachments/attsdumSVXGQZPtMdJEsduRz/",
+        "foto_actividad_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679342598/attachments/atte4oEDNH9oX2To2JmWfxLi/",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159328,
+          14.760693
+        ]
+      },
+      "properties": {
+        "id": "679342950",
+        "fecha_actividad": "2026-02-24",
+        "municipios": [
+          "panajachel"
+        ],
+        "comunidad": "Casco urbano",
+        "sitio_nombre": "",
+        "instituciones": [
+          "amsclae"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 300,
+        "tenencia": "privada",
+        "total_plantas": 30,
+        "total_participantes": 10,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159328,
+          14.760093
+        ]
+      },
+      "properties": {
+        "id": "679343409",
+        "fecha_actividad": "2026-02-24",
+        "municipios": [
+          "santa_maria_visitacion"
+        ],
+        "comunidad": "Montecristo",
+        "sitio_nombre": "Montecristo",
+        "instituciones": [
+          "vivamos_mejor"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 425,
+        "tenencia": "privada",
+        "total_plantas": 40,
+        "total_participantes": 42,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679343409/attachments/attU6WeqTTZtpVi8ATuWMcN5/",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159328,
+          14.760693
+        ]
+      },
+      "properties": {
+        "id": "679343616",
+        "fecha_actividad": "2026-02-24",
+        "municipios": [
+          "santa_lucia_utatlan"
+        ],
+        "comunidad": "Novillero",
+        "sitio_nombre": "",
+        "instituciones": [
+          "maga"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 1000,
+        "tenencia": "privada",
+        "total_plantas": 1000,
+        "total_participantes": 6,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
     }
   ]
 }
