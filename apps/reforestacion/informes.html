@@ -230,7 +230,7 @@
       box-shadow:0 14px 30px rgba(18,56,51,.10);
       padding:14mm 14mm 15mm 14mm;
       position:relative;
-      overflow:hidden;
+      overflow:visible;
     }
     .page-break{ page-break-after: always; }
 
@@ -358,8 +358,7 @@
     .kpi-table td:nth-child(1){ width:52%; font-weight:700; }
 
     .footer-line{
-      position:absolute;
-      left:14mm; right:14mm; bottom:10mm;
+      margin-top:10pt;
       border-top:1px solid #000;
       padding-top:3pt;
       display:flex;
@@ -402,21 +401,22 @@
     }
 
     @media print{
-      body{
+      html, body{
         background:#fff !important;
-        margin:0;
+        margin:0 !important;
+        padding:0 !important;
       }
       .wrap{
         width:100%;
         margin:0;
         display:block;
       }
-      .controls, .preview-toolbar{ display:none !important; }
+      .controls, .preview-toolbar, #warnBox{ display:none !important; }
       .preview-shell{
-        padding:0;
-        background:#fff;
-        box-shadow:none;
-        border:none;
+        padding:0 !important;
+        background:#fff !important;
+        box-shadow:none !important;
+        border:none !important;
       }
       .shell{
         background:#fff !important;
@@ -425,21 +425,34 @@
         border-radius:0 !important;
       }
       .pages{
-        gap:0;
+        display:block !important;
+        gap:0 !important;
       }
       .page{
-        width:auto;
-        min-height:auto;
-        border:none;
-        box-shadow:none;
-        margin:0;
-        padding:12mm 12mm 13mm 12mm;
+        width:auto !important;
+        min-height:0 !important;
+        border:none !important;
+        box-shadow:none !important;
+        margin:0 !important;
+        padding:0 !important;
+        break-inside:avoid-page;
+        page-break-inside:avoid;
+      }
+      .page-break{
+        break-after:page;
         page-break-after:always;
       }
-      .page:last-child{ page-break-after:auto; }
+      .page:last-child{
+        break-after:auto;
+        page-break-after:auto;
+      }
+      .report-header, .meta-grid, .cover-box, table{
+        break-inside:avoid;
+        page-break-inside:avoid;
+      }
       @page{
         size:A4;
-        margin:10mm;
+        margin:12mm;
       }
     }
   </style>
@@ -1204,6 +1217,14 @@
       els.warnBox.textContent = msg;
     }
 
+    let previewTimer = null;
+    function schedulePreview(delay=180){
+      if (previewTimer) clearTimeout(previewTimer);
+      previewTimer = setTimeout(() => {
+        try { generatePreview(); } catch(e){ console.error(e); }
+      }, delay);
+    }
+
     function generatePreview(){
       const rows = applyFilters(state.rawFeatures);
       state.lastFiltered = rows.slice();
@@ -1303,12 +1324,14 @@
           state.resumen = resumenRes.value.data;
         }
 
-        ["change","keyup"].forEach(evt=>{
+        ["change","keyup","input"].forEach(evt=>{
           [els.desde, els.hasta, els.municipio, els.tenencia, els.institucion, els.texto, els.tipoInforme, els.ordenTabla,
-           els.secResumen, els.secMetodologia, els.secTerritorial, els.secOperativo, els.secObservaciones, els.secTabla
+           els.secResumen, els.secMetodologia, els.secTerritorial, els.secOperativo, els.secObservaciones, els.secTabla,
+           els.firmante, els.destinatario, els.notaTecnica
           ].forEach(node => node.addEventListener(evt, ()=>{
             const rows = applyFilters(state.rawFeatures);
             updateMiniStats(rows);
+            schedulePreview(node === els.texto || node === els.notaTecnica ? 260 : 120);
           }));
         });
 
