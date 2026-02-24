@@ -62,6 +62,37 @@
         "foto_actividad_url": "",
         "observaciones": ""
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.211577,
+          14.800931
+        ]
+      },
+      "properties": {
+        "id": "679327842",
+        "fecha_actividad": "2026-02-24",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Chuaxic",
+        "sitio_nombre": "Caserío Chui Manzana",
+        "instituciones": [
+          "amigos_lago_atitlan"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 34,
+        "tenencia": "comunal",
+        "total_plantas": 367,
+        "total_participantes": 47,
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": "Los árboles tenian plaga"
+      }
     }
   ]
 }
