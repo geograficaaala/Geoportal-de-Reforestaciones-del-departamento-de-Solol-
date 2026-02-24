@@ -1,10 +1,1339 @@
+
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Informes · Reforestación</title></head>
-<body style="margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#fff;">
-<div style="max-width:900px;margin:0 auto;padding:18px">
-  <a href="./index.html">← Volver</a>
-  <h1>Informes (próximo paso)</h1>
-  <p>Aquí listaremos PDFs/CSVs por mes/año y luego un generador simple.</p>
-</div>
-</body></html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Informes · Reforestación · Sololá</title>
+  <meta name="description" content="Centro de generación de informes PDF para el módulo de reforestación de Sololá." />
+  <style>
+    :root{
+      --bg-a:#e9fbf4;
+      --bg-b:#e8f5ff;
+      --bg-c:#f7fffb;
+      --ink:#143631;
+      --muted:#5b736d;
+      --line:rgba(20,54,49,.10);
+      --line-soft:rgba(20,54,49,.06);
+      --card:rgba(255,255,255,.84);
+      --card-strong:rgba(255,255,255,.92);
+      --accent:#2b9a86;
+      --accent2:#5eaeea;
+      --shadow-lg:0 16px 36px rgba(22,79,73,.12);
+      --shadow-md:0 10px 26px rgba(22,79,73,.10);
+      --shadow-sm:0 6px 18px rgba(22,79,73,.08);
+      --radius-xl:22px;
+      --radius-lg:16px;
+      --radius-md:12px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(900px 560px at 0% -5%, rgba(74,214,169,.18), transparent 65%),
+        radial-gradient(800px 520px at 100% 0%, rgba(94,174,234,.16), transparent 66%),
+        linear-gradient(125deg, var(--bg-a), var(--bg-b) 55%, var(--bg-c));
+      min-height:100vh;
+    }
+    a{color:inherit}
+    .wrap{
+      width:min(1360px, calc(100% - 24px));
+      margin:12px auto 18px;
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+    .shell{
+      background:linear-gradient(180deg, var(--card-strong), var(--card));
+      border:1px solid rgba(255,255,255,.82);
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow-lg);
+      backdrop-filter: blur(9px);
+    }
+    .controls{
+      position:sticky;
+      top:10px;
+      padding:14px;
+      display:grid;
+      gap:12px;
+    }
+    .titlebar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex;align-items:center;gap:10px;
+      font-size:12px;font-weight:700;color:var(--muted);
+    }
+    .brand .dot{
+      width:10px;height:10px;border-radius:50%;
+      background:linear-gradient(135deg,#33d39d,#6ebfff);
+      box-shadow:0 0 0 5px rgba(51,211,157,.14);
+      flex:0 0 auto;
+    }
+    .btns-row{
+      display:flex; gap:8px; flex-wrap:wrap;
+    }
+    .btn{
+      appearance:none;border:none;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;gap:8px;
+      padding:10px 12px;border-radius:12px;
+      font-weight:700;font-size:12px;line-height:1;
+      text-decoration:none;
+      transition:.18s ease;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform:translateY(-1px); }
+    .btn:active{ transform:translateY(0); }
+    .btn-primary{
+      background:linear-gradient(135deg, #bff4df, #cee9ff);
+      color:#0e3f37;
+      border:1px solid rgba(30,127,115,.14);
+      box-shadow:0 8px 18px rgba(30,127,115,.12);
+    }
+    .btn-outline{
+      background:#fff;
+      color:var(--ink);
+      border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);
+    }
+    .btn-soft{
+      background:rgba(255,255,255,.72);
+      border:1px solid var(--line-soft);
+      color:var(--accent);
+    }
+    .card{
+      background:rgba(255,255,255,.72);
+      border:1px solid var(--line-soft);
+      border-radius:16px;
+      padding:12px;
+      box-shadow:var(--shadow-sm);
+    }
+    .card h3{
+      margin:0 0 8px;
+      font-size:14px;
+      letter-spacing:-.01em;
+    }
+    .card p{
+      margin:0;
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.35;
+    }
+    .grid-2{
+      display:grid;grid-template-columns:1fr 1fr;gap:8px;
+    }
+    .field{
+      display:grid; gap:5px;
+    }
+    .field label{
+      font-size:11px;
+      font-weight:700;
+      color:var(--muted);
+      letter-spacing:.01em;
+    }
+    .field input,.field select,.field textarea{
+      width:100%;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:10px;
+      padding:8px 10px;
+      font: inherit;
+      font-size:12px;
+      color:var(--ink);
+      outline:none;
+    }
+    .field input:focus,.field select:focus,.field textarea:focus{
+      border-color:rgba(43,154,134,.35);
+      box-shadow:0 0 0 3px rgba(43,154,134,.10);
+    }
+    .checks{
+      display:grid; gap:7px;
+    }
+    .checks label{
+      display:flex; align-items:flex-start; gap:8px;
+      font-size:12px; color:var(--ink);
+      line-height:1.25;
+      cursor:pointer;
+    }
+    .checks input{ margin-top:2px; }
+    .stat-strip{
+      display:grid; grid-template-columns:repeat(2,1fr); gap:8px;
+    }
+    .mini{
+      background:#fff;
+      border:1px solid var(--line-soft);
+      border-radius:12px;
+      padding:8px 9px;
+    }
+    .mini .t{ font-size:10px; color:var(--muted); margin-bottom:4px; }
+    .mini .v{ font-size:15px; font-weight:800; line-height:1; letter-spacing:-.02em; }
+    .hint{
+      font-size:11px; color:var(--muted); line-height:1.35;
+      background:rgba(255,255,255,.62);
+      border:1px dashed rgba(20,54,49,.12);
+      border-radius:12px;
+      padding:10px;
+    }
+
+    /* Preview area */
+    .preview-shell{
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+    .preview-toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      padding:2px 2px 4px;
+    }
+    .preview-toolbar .left{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      color:var(--muted); font-size:12px;
+    }
+    .chip{
+      display:inline-flex;align-items:center;gap:7px;
+      border:1px solid var(--line);
+      background:#fff;
+      color:var(--muted);
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:11px;
+      font-weight:700;
+    }
+    .chip .led{
+      width:8px;height:8px;border-radius:50%;
+      background:#2fd08f; box-shadow:0 0 0 4px rgba(47,208,143,.14);
+    }
+
+    /* Pages */
+    .pages{
+      display:grid;
+      gap:12px;
+      justify-content:center;
+    }
+    .page{
+      width:210mm;
+      min-height:297mm;
+      background:#fff;
+      border:1px solid #d9dfdc;
+      box-shadow:0 14px 30px rgba(18,56,51,.10);
+      padding:14mm 14mm 15mm 14mm;
+      position:relative;
+      overflow:hidden;
+    }
+    .page-break{ page-break-after: always; }
+
+    .report{
+      font-family:"Times New Roman", Times, serif;
+      font-size:10pt;
+      line-height:1.5;
+      color:#000;
+    }
+    .report p{
+      margin:0 0 7pt;
+      text-align:justify;
+    }
+    .report ul{
+      margin:0 0 7pt 17pt;
+      padding:0;
+    }
+    .report li{
+      margin:0 0 3pt;
+      text-align:justify;
+    }
+    .report table{
+      width:100%;
+      border-collapse:collapse;
+      font-family:"Times New Roman", Times, serif;
+      font-size:10pt;
+      margin:0 0 8pt;
+    }
+    .report th,.report td{
+      border:1px solid #000;
+      padding:4px 5px;
+      vertical-align:top;
+    }
+    .report th{
+      font-weight:700;
+      text-align:center;
+    }
+    .report .small{
+      font-size:9pt;
+      line-height:1.35;
+    }
+    .report .muted{
+      color:#333;
+    }
+    .report .center{ text-align:center; }
+    .report .right{ text-align:right; }
+    .report .just{ text-align:justify; }
+    .report .section-title{
+      font-weight:700;
+      text-transform:uppercase;
+      text-align:left;
+      margin:0 0 6pt;
+      letter-spacing:.02em;
+      font-size:10pt;
+    }
+    .report .subsection{
+      font-weight:700;
+      margin:0 0 5pt;
+      font-size:10pt;
+    }
+
+    .report-header{
+      display:grid;
+      grid-template-columns:22mm 1fr 22mm;
+      gap:6mm;
+      align-items:center;
+      margin-bottom:8pt;
+      border-bottom:1px solid #000;
+      padding-bottom:6pt;
+    }
+    .logo-box{
+      width:22mm; height:22mm;
+      display:grid; place-items:center;
+      border:1px solid #000;
+      background:#fff;
+      overflow:hidden;
+    }
+    .logo-box img{
+      width:100%; height:100%; object-fit:contain;
+      display:block;
+    }
+    .logo-fallback{
+      font-family: "Times New Roman", Times, serif;
+      font-size:8pt;
+      text-align:center;
+      line-height:1.1;
+      padding:2mm;
+    }
+    .head-text{
+      text-align:center;
+      line-height:1.2;
+    }
+    .head-text .line{
+      font-weight:700;
+      font-size:10pt;
+      text-transform:uppercase;
+    }
+    .head-text .line.small{
+      font-weight:400;
+      text-transform:none;
+      font-size:10pt;
+    }
+
+    .cover-box{
+      border:1px solid #000;
+      padding:10pt 12pt;
+      margin-top:10pt;
+    }
+
+    .meta-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8pt;
+      margin-bottom:8pt;
+    }
+    .meta-item{
+      border:1px solid #000;
+      padding:5pt 6pt;
+    }
+    .meta-item .k{
+      font-weight:700;
+      display:block;
+    }
+
+    .kpi-table td:nth-child(1){ width:52%; font-weight:700; }
+
+    .footer-line{
+      position:absolute;
+      left:14mm; right:14mm; bottom:10mm;
+      border-top:1px solid #000;
+      padding-top:3pt;
+      display:flex;
+      justify-content:space-between;
+      gap:8pt;
+      font-family:"Times New Roman", Times, serif;
+      font-size:9pt;
+      color:#000;
+    }
+
+    .list-tight td, .list-tight th { font-size:9.5pt; }
+
+    .preview-empty{
+      width:210mm;
+      min-height:120mm;
+      border:1px dashed #c6d2cd;
+      border-radius:14px;
+      background:rgba(255,255,255,.78);
+      display:grid;
+      place-items:center;
+      color:var(--muted);
+      text-align:center;
+      padding:18px;
+    }
+
+    .alert{
+      font-size:11px;
+      color:#8a5a00;
+      background:#fff9e6;
+      border:1px solid #f3db9a;
+      border-radius:10px;
+      padding:8px 10px;
+      line-height:1.3;
+    }
+
+    @media (max-width: 1120px){
+      .wrap{ grid-template-columns:1fr; }
+      .controls{ position:static; }
+      .page, .preview-empty{ width:min(100%, 210mm); }
+    }
+
+    @media print{
+      body{
+        background:#fff !important;
+        margin:0;
+      }
+      .wrap{
+        width:100%;
+        margin:0;
+        display:block;
+      }
+      .controls, .preview-toolbar{ display:none !important; }
+      .preview-shell{
+        padding:0;
+        background:#fff;
+        box-shadow:none;
+        border:none;
+      }
+      .shell{
+        background:#fff !important;
+        border:none !important;
+        box-shadow:none !important;
+        border-radius:0 !important;
+      }
+      .pages{
+        gap:0;
+      }
+      .page{
+        width:auto;
+        min-height:auto;
+        border:none;
+        box-shadow:none;
+        margin:0;
+        padding:12mm 12mm 13mm 12mm;
+        page-break-after:always;
+      }
+      .page:last-child{ page-break-after:auto; }
+      @page{
+        size:A4;
+        margin:10mm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Panel de control -->
+    <aside class="shell controls" aria-label="Centro de generación de informes">
+      <div class="titlebar">
+        <div class="brand"><span class="dot" aria-hidden="true"></span> <span>Centro de informes · Reforestación</span></div>
+        <div class="btns-row">
+          <a class="btn btn-outline" href="./index.html">← Volver</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Generación de informe PDF</h3>
+        <p>Configura filtros, redactado y secciones. Luego genera la vista previa y usa <strong>Imprimir / Guardar PDF</strong> desde el navegador.</p>
+      </div>
+
+      <div class="card">
+        <h3>Periodo y filtros</h3>
+        <div class="grid-2">
+          <div class="field">
+            <label for="desde">Fecha inicial</label>
+            <input type="date" id="desde" />
+          </div>
+          <div class="field">
+            <label for="hasta">Fecha final</label>
+            <input type="date" id="hasta" />
+          </div>
+        </div>
+        <div class="grid-2" style="margin-top:8px">
+          <div class="field">
+            <label for="municipio">Municipio</label>
+            <select id="municipio"><option value="">Todos</option></select>
+          </div>
+          <div class="field">
+            <label for="tenencia">Tenencia</label>
+            <select id="tenencia"><option value="">Todas</option></select>
+          </div>
+        </div>
+        <div class="field" style="margin-top:8px">
+          <label for="institucion">Institución</label>
+          <select id="institucion"><option value="">Todas</option></select>
+        </div>
+        <div class="field" style="margin-top:8px">
+          <label for="texto">Búsqueda libre (sitio/comunidad/observación)</label>
+          <input type="text" id="texto" placeholder="Ej. Panajachel, parcela, vivero..." />
+        </div>
+        <div class="grid-2" style="margin-top:8px">
+          <div class="field">
+            <label for="tipoInforme">Tipo de informe</label>
+            <select id="tipoInforme">
+              <option value="tecnico">Técnico narrativo</option>
+              <option value="ejecutivo">Ejecutivo narrativo</option>
+              <option value="operativo">Operativo de campo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ordenTabla">Orden de registros</label>
+            <select id="ordenTabla">
+              <option value="fecha_desc">Fecha (reciente → antigua)</option>
+              <option value="fecha_asc">Fecha (antigua → reciente)</option>
+              <option value="plantas_desc">Plantas (mayor → menor)</option>
+              <option value="area_desc">Área (mayor → menor)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Secciones del informe</h3>
+        <div class="checks">
+          <label><input type="checkbox" id="secResumen" checked /> Resumen ejecutivo / síntesis narrativa</label>
+          <label><input type="checkbox" id="secMetodologia" checked /> Metodología y fuente de datos (KoBo / geoportal)</label>
+          <label><input type="checkbox" id="secTerritorial" checked /> Análisis territorial (municipios / comunidades / sitios)</label>
+          <label><input type="checkbox" id="secOperativo" checked /> Análisis operativo (plantas, participantes, área, densidades)</label>
+          <label><input type="checkbox" id="secObservaciones" checked /> Hallazgos cualitativos y observaciones</label>
+          <label><input type="checkbox" id="secTabla" checked /> Anexo de registros filtrados</label>
+        </div>
+        <div class="grid-2" style="margin-top:8px">
+          <div class="field">
+            <label for="firmante">Firmante</label>
+            <input type="text" id="firmante" value="Laboratorio SIG del eje de bosques de CODEMA-Sololá" />
+          </div>
+          <div class="field">
+            <label for="destinatario">Dirigido a</label>
+            <input type="text" id="destinatario" placeholder="Ej. Coordinación CODEMA / Mesa técnica" />
+          </div>
+        </div>
+        <div class="field" style="margin-top:8px">
+          <label for="notaTecnica">Nota/alcance del informe</label>
+          <textarea id="notaTecnica" rows="3" placeholder="Ej. Informe preliminar de avance de jornadas de reforestación con base en boletas registradas al corte del periodo seleccionado."></textarea>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Acciones</h3>
+        <div class="btns-row">
+          <button class="btn btn-primary" id="btnGenerar">Generar vista previa</button>
+          <button class="btn btn-outline" id="btnPrint">Imprimir / Guardar PDF</button>
+          <button class="btn btn-soft" id="btnCSV">Exportar CSV filtrado</button>
+          <button class="btn btn-soft" id="btnJSON">Exportar JSON filtrado</button>
+        </div>
+        <div class="hint" style="margin-top:8px">
+          Sugerencia: usa <strong>Ctrl + P</strong>, selecciona <strong>Guardar como PDF</strong> y desactiva encabezados/pies del navegador para un resultado más limpio.
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Indicadores del filtro actual</h3>
+        <div class="stat-strip">
+          <div class="mini"><div class="t">Registros</div><div class="v" id="mini_reg">—</div></div>
+          <div class="mini"><div class="t">Plantas</div><div class="v" id="mini_pla">—</div></div>
+          <div class="mini"><div class="t">Participantes</div><div class="v" id="mini_par">—</div></div>
+          <div class="mini"><div class="t">Área (m²)</div><div class="v" id="mini_area">—</div></div>
+        </div>
+        <div class="hint" style="margin-top:8px" id="mini_periodo">Periodo: —</div>
+      </div>
+    </aside>
+
+    <!-- Vista previa -->
+    <section class="shell preview-shell" aria-label="Vista previa del informe">
+      <div class="preview-toolbar">
+        <div class="left">
+          <span class="chip"><span class="led" aria-hidden="true"></span> Vista previa de informe en A4</span>
+          <span class="chip" id="chipData">Cargando datos…</span>
+        </div>
+        <div class="btns-row">
+          <button class="btn btn-primary" id="btnGenerar2">Generar vista previa</button>
+          <button class="btn btn-outline" id="btnPrint2">Imprimir / Guardar PDF</button>
+        </div>
+      </div>
+
+      <div id="warnBox" class="alert" style="display:none"></div>
+
+      <div id="pages" class="pages" aria-live="polite">
+        <div class="preview-empty">
+          <div>
+            <strong>Genera la vista previa del informe</strong><br />
+            Configura los filtros en el panel izquierdo y pulsa <em>Generar vista previa</em>.
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+  (function(){
+    "use strict";
+
+    const DATA_SOURCES = {
+      puntos: ["../../data/puntos.geojson", "../../data/puntos (1).geojson", "../data/puntos.geojson", "./data/puntos.geojson"],
+      resumen: ["../../data/resumen.json", "../data/resumen.json", "./data/resumen.json"]
+    };
+    const LOGO_LEFT = "../../assets/img/BOSQUE.png";
+    const LOGO_RIGHT = "../../assets/img/CODEMA%20(2).png";
+
+    const state = {
+      rawFeatures: [],
+      resumen: null,
+      lastFiltered: [],
+      logoStatus: { left: true, right: true }
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const els = {
+      desde:$("desde"), hasta:$("hasta"), municipio:$("municipio"), tenencia:$("tenencia"), institucion:$("institucion"),
+      texto:$("texto"), tipoInforme:$("tipoInforme"), ordenTabla:$("ordenTabla"),
+      secResumen:$("secResumen"), secMetodologia:$("secMetodologia"), secTerritorial:$("secTerritorial"),
+      secOperativo:$("secOperativo"), secObservaciones:$("secObservaciones"), secTabla:$("secTabla"),
+      firmante:$("firmante"), destinatario:$("destinatario"), notaTecnica:$("notaTecnica"),
+      btnGenerar:$("btnGenerar"), btnGenerar2:$("btnGenerar2"), btnPrint:$("btnPrint"), btnPrint2:$("btnPrint2"),
+      btnCSV:$("btnCSV"), btnJSON:$("btnJSON"),
+      pages:$("pages"), chipData:$("chipData"), warnBox:$("warnBox"),
+      mini_reg:$("mini_reg"), mini_pla:$("mini_pla"), mini_par:$("mini_par"), mini_area:$("mini_area"), mini_periodo:$("mini_periodo")
+    };
+
+    function cleanText(v){
+      if (v === null || v === undefined) return "";
+      let s = String(v).trim();
+      if (!s) return "";
+      s = s.replace(/_/g, " ").replace(/\s+/g, " ").trim();
+      const fixes = {
+        "Ã¡":"á","Ã©":"é","Ã­":"í","Ã³":"ó","Ãº":"ú","Ã":"Á","Ã‰":"É","Ã":"Í","Ã“":"Ó","Ãš":"Ú","Ã±":"ñ","Ã‘":"Ñ","Â":""
+      };
+      for (const [bad,good] of Object.entries(fixes)) s = s.split(bad).join(good);
+      return s;
+    }
+
+    function titleCase(s){
+      s = cleanText(s || "");
+      if (!s) return "";
+      return s.split(" ").map(w => {
+        if (!w) return w;
+        if (["de","del","la","las","los","y","e","o","u","en","a"].includes(w.toLowerCase())) return w.toLowerCase();
+        return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+      }).join(" ");
+    }
+
+    function toArray(v){
+      if (Array.isArray(v)) return v.filter(x => x !== null && x !== undefined && String(x).trim() !== "");
+      if (v === null || v === undefined || String(v).trim() === "") return [];
+      return [v];
+    }
+
+    function asNum(v){
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function fmtNum(v, digits=0){
+      const n = Number(v);
+      if (!Number.isFinite(n)) return "0";
+      return new Intl.NumberFormat("es-GT", { maximumFractionDigits: digits, minimumFractionDigits: digits }).format(n);
+    }
+
+    function fmtDate(dateStr){
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return cleanText(dateStr);
+      return new Intl.DateTimeFormat("es-GT", { year:"numeric", month:"long", day:"2-digit" }).format(d);
+    }
+
+    function fmtDateShort(dateStr){
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return cleanText(dateStr);
+      return new Intl.DateTimeFormat("es-GT", { year:"numeric", month:"2-digit", day:"2-digit" }).format(d);
+    }
+
+    function fmtDateTime(dateStr){
+      if (!dateStr) return "";
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return cleanText(dateStr);
+      return new Intl.DateTimeFormat("es-GT", {
+        year:"numeric", month:"2-digit", day:"2-digit", hour:"2-digit", minute:"2-digit"
+      }).format(d);
+    }
+
+    async function fetchFirstJson(urls){
+      for (const u of urls){
+        try{
+          const r = await fetch(u, {cache:"no-store"});
+          if (!r.ok) continue;
+          return { url:u, data: await r.json() };
+        }catch(e){}
+      }
+      throw new Error("No se pudo cargar el archivo JSON desde las rutas esperadas.");
+    }
+
+    function normalizeFeature(f, i){
+      const p = (f && f.properties) ? f.properties : {};
+      const g = f && f.geometry ? f.geometry : {};
+      const coords = Array.isArray(g.coordinates) ? g.coordinates : [];
+      const lon = Number(coords[0]), lat = Number(coords[1]);
+
+      const municipios = toArray(p.municipios).map(x=>cleanText(x));
+      const instituciones = toArray(p.instituciones).map(x=>cleanText(x));
+
+      const area = asNum(p.area_m2);
+      const plantas = asNum(p.total_plantas);
+      const participantes = asNum(p.total_participantes);
+      const fecha = cleanText(p.fecha_actividad);
+      const fechaObj = fecha ? new Date(fecha) : null;
+
+      return {
+        idx:i+1,
+        id: cleanText(p.id) || String(i+1),
+        fecha_actividad: fecha,
+        fechaObj: (fechaObj && !isNaN(fechaObj.getTime())) ? fechaObj : null,
+        municipios,
+        municipio_principal: titleCase(municipios[0] || ""),
+        comunidad: titleCase(p.comunidad),
+        sitio_nombre: titleCase(p.sitio_nombre),
+        instituciones,
+        institucion_principal: titleCase(instituciones[0] || p.institucion_resp_otro || ""),
+        institucion_otra: titleCase(p.institucion_resp_otro || ""),
+        area_m2: area,
+        total_plantas: plantas,
+        total_participantes: participantes,
+        tenencia: titleCase(p.tenencia),
+        autoriza_fotos: cleanText(p.autoriza_fotos),
+        foto_sitio_url: cleanText(p.foto_sitio_url),
+        foto_actividad_url: cleanText(p.foto_actividad_url),
+        observaciones: cleanText(p.observaciones),
+        lat: Number.isFinite(lat) ? lat : null,
+        lon: Number.isFinite(lon) ? lon : null,
+        densidad_pl_m2: area > 0 ? plantas / area : null,
+        plantas_por_participante: participantes > 0 ? plantas / participantes : null,
+        raw: p
+      };
+    }
+
+    function uniqueSorted(items){
+      return [...new Set(items.filter(Boolean))].sort((a,b)=> a.localeCompare(b, 'es'));
+    }
+
+    function fillSelect(selectEl, values, placeholder="Todos"){
+      const current = selectEl.value;
+      selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+      values.forEach(v=>{
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        selectEl.appendChild(opt);
+      });
+      if ([...selectEl.options].some(o => o.value === current)) selectEl.value = current;
+    }
+
+    function buildFilterOptions(rows){
+      const municipios = [];
+      const tenencias = [];
+      const instituciones = [];
+      rows.forEach(r=>{
+        r.municipios.forEach(m=> municipios.push(titleCase(m)));
+        if (r.tenencia) tenencias.push(r.tenencia);
+        r.instituciones.forEach(i=> instituciones.push(titleCase(i)));
+        if (r.institucion_otra) instituciones.push(r.institucion_otra);
+      });
+      fillSelect(els.municipio, uniqueSorted(municipios), "Todos");
+      fillSelect(els.tenencia, uniqueSorted(tenencias), "Todas");
+      fillSelect(els.institucion, uniqueSorted(instituciones), "Todas");
+    }
+
+    function applyFilters(rows){
+      const desde = els.desde.value ? new Date(els.desde.value + "T00:00:00") : null;
+      const hasta = els.hasta.value ? new Date(els.hasta.value + "T23:59:59") : null;
+      const municipio = titleCase(els.municipio.value);
+      const tenencia = titleCase(els.tenencia.value);
+      const institucion = titleCase(els.institucion.value);
+      const text = cleanText(els.texto.value).toLowerCase();
+
+      let out = rows.filter(r=>{
+        if (desde && (!r.fechaObj || r.fechaObj < desde)) return false;
+        if (hasta && (!r.fechaObj || r.fechaObj > hasta)) return false;
+        if (municipio){
+          const munis = r.municipios.map(m=>titleCase(m));
+          if (!munis.includes(municipio) && r.municipio_principal !== municipio) return false;
+        }
+        if (tenencia && r.tenencia !== tenencia) return false;
+        if (institucion){
+          const insts = r.instituciones.map(i=>titleCase(i));
+          if (!insts.includes(institucion) && r.institucion_principal !== institucion && r.institucion_otra !== institucion) return false;
+        }
+        if (text){
+          const haystack = [
+            r.id, r.comunidad, r.sitio_nombre, r.municipio_principal, r.institucion_principal, r.tenencia, r.observaciones
+          ].join(" ").toLowerCase();
+          if (!haystack.includes(text)) return false;
+        }
+        return true;
+      });
+
+      const ord = els.ordenTabla.value;
+      out.sort((a,b)=>{
+        if (ord === "fecha_asc") return (a.fechaObj?.getTime()||0) - (b.fechaObj?.getTime()||0);
+        if (ord === "plantas_desc") return b.total_plantas - a.total_plantas;
+        if (ord === "area_desc") return b.area_m2 - a.area_m2;
+        return (b.fechaObj?.getTime()||0) - (a.fechaObj?.getTime()||0);
+      });
+
+      return out;
+    }
+
+    function sum(arr, fn){ return arr.reduce((acc,x)=>acc+(fn?fn(x):x),0); }
+    function mean(arr){ return arr.length ? sum(arr)/arr.length : 0; }
+    function median(nums){
+      const a = nums.filter(Number.isFinite).slice().sort((x,y)=>x-y);
+      if (!a.length) return 0;
+      const m = Math.floor(a.length/2);
+      return a.length%2 ? a[m] : (a[m-1]+a[m])/2;
+    }
+    function stddev(nums){
+      const a = nums.filter(Number.isFinite);
+      if (a.length < 2) return 0;
+      const m = mean(a);
+      const v = a.reduce((acc,x)=> acc + (x-m)*(x-m), 0) / (a.length-1);
+      return Math.sqrt(v);
+    }
+    function pct(nums, p){
+      const a = nums.filter(Number.isFinite).slice().sort((x,y)=>x-y);
+      if (!a.length) return 0;
+      const idx = (a.length - 1) * p;
+      const lo = Math.floor(idx), hi = Math.ceil(idx);
+      if (lo === hi) return a[lo];
+      return a[lo] + (a[hi]-a[lo])*(idx-lo);
+    }
+
+    function groupBy(rows, keyFn, valFn){
+      const map = new Map();
+      rows.forEach(r=>{
+        const keys = keyFn(r);
+        const vals = Array.isArray(keys) ? keys : [keys];
+        vals.filter(Boolean).forEach(k=>{
+          if (!map.has(k)) map.set(k, []);
+          map.get(k).push(valFn ? valFn(r) : r);
+        });
+      });
+      return map;
+    }
+
+    function aggregateRows(rows){
+      const n = rows.length;
+      const plantas = sum(rows, r=>r.total_plantas);
+      const participantes = sum(rows, r=>r.total_participantes);
+      const area = sum(rows, r=>r.area_m2);
+      const densidad = area>0 ? plantas/area : 0;
+      const plantasPorRegistro = n>0 ? plantas/n : 0;
+      const partPorRegistro = n>0 ? participantes/n : 0;
+      const plantasPorParticipante = participantes>0 ? plantas/participantes : 0;
+
+      const plantasArr = rows.map(r=>r.total_plantas);
+      const areaArr = rows.map(r=>r.area_m2);
+      const partArr = rows.map(r=>r.total_participantes);
+      const densArr = rows.map(r=>Number.isFinite(r.densidad_pl_m2) ? r.densidad_pl_m2 : NaN).filter(Number.isFinite);
+
+      const fechas = rows.map(r=>r.fechaObj).filter(Boolean).sort((a,b)=>a-b);
+      const desde = fechas[0] || null;
+      const hasta = fechas[fechas.length-1] || null;
+
+      const muniAgg = [...groupBy(rows, r => r.municipios.map(m=>titleCase(m))).entries()].map(([k, list])=>({
+        nombre:k,
+        registros:list.length,
+        plantas:sum(list, r=>r.total_plantas),
+        participantes:sum(list, r=>r.total_participantes),
+        area_m2:sum(list, r=>r.area_m2)
+      })).sort((a,b)=> b.plantas - a.plantas || b.registros - a.registros);
+
+      const instAgg = [...groupBy(rows, r => {
+        const arr = r.instituciones.map(i=>titleCase(i));
+        if (!arr.length && r.institucion_principal) return [r.institucion_principal];
+        return arr;
+      }).entries()].map(([k, list])=>({
+        nombre:k,
+        registros:list.length,
+        plantas:sum(list, r=>r.total_plantas),
+        participantes:sum(list, r=>r.total_participantes),
+      })).sort((a,b)=> b.registros - a.registros || b.plantas - a.plantas);
+
+      const tenAgg = [...groupBy(rows, r=>r.tenencia || "Sin dato").entries()].map(([k,list])=>({
+        nombre:k,
+        registros:list.length,
+        plantas:sum(list, r=>r.total_plantas),
+        area_m2:sum(list, r=>r.area_m2)
+      })).sort((a,b)=> b.registros - a.registros);
+
+      const comunidadesUnicas = uniqueSorted(rows.map(r=>r.comunidad).filter(Boolean)).length;
+      const sitiosUnicos = uniqueSorted(rows.map(r=>r.sitio_nombre).filter(Boolean)).length;
+      const municipiosUnicos = uniqueSorted(muniAgg.map(x=>x.nombre)).length;
+      const fotosAutorizadas = rows.filter(r=> (r.autoriza_fotos||"").toLowerCase() === "yes").length;
+      const conCoordenadas = rows.filter(r=> Number.isFinite(r.lat) && Number.isFinite(r.lon)).length;
+      const conObservacion = rows.filter(r=> r.observaciones).length;
+
+      return {
+        n, plantas, participantes, area, densidad,
+        plantasPorRegistro, partPorRegistro, plantasPorParticipante,
+        plantasStats: { media: mean(plantasArr), mediana: median(plantasArr), sd: stddev(plantasArr), p25: pct(plantasArr, .25), p75: pct(plantasArr,.75), min: Math.min(...plantasArr, 0), max: Math.max(...plantasArr, 0) },
+        areaStats: { media: mean(areaArr), mediana: median(areaArr), sd: stddev(areaArr), p25: pct(areaArr,.25), p75: pct(areaArr,.75), min: Math.min(...areaArr, 0), max: Math.max(...areaArr, 0) },
+        partStats: { media: mean(partArr), mediana: median(partArr), sd: stddev(partArr), p25: pct(partArr,.25), p75: pct(partArr,.75), min: Math.min(...partArr, 0), max: Math.max(...partArr, 0) },
+        densStats: { media: mean(densArr), mediana: median(densArr), sd: stddev(densArr), p25: pct(densArr,.25), p75: pct(densArr,.75), min: densArr.length ? Math.min(...densArr) : 0, max: densArr.length ? Math.max(...densArr) : 0 },
+        desde, hasta,
+        muniAgg, instAgg, tenAgg,
+        comunidadesUnicas, sitiosUnicos, municipiosUnicos,
+        fotosAutorizadas, conCoordenadas, conObservacion
+      };
+    }
+
+    function topListSentence(items, valueKey, labelFn, unitLabel, maxItems=3){
+      if (!items.length) return "No se identifican registros suficientes para establecer predominancias.";
+      const top = items.slice(0, maxItems);
+      const txt = top.map(it => `${labelFn(it)} (${fmtNum(it[valueKey])} ${unitLabel})`).join("; ");
+      return `Las principales concentraciones corresponden a ${txt}.`;
+    }
+
+    function periodLabel(agg){
+      if (!agg.desde && !agg.hasta) return "Sin periodo definido";
+      if (agg.desde && agg.hasta){
+        if (fmtDateShort(agg.desde) === fmtDateShort(agg.hasta)) return `Corte del ${fmtDate(agg.desde)}`;
+        return `Del ${fmtDate(agg.desde)} al ${fmtDate(agg.hasta)}`;
+      }
+      if (agg.desde) return `Desde ${fmtDate(agg.desde)}`;
+      return `Hasta ${fmtDate(agg.hasta)}`;
+    }
+
+    function buildNarrative(rows, agg){
+      const tipo = els.tipoInforme.value;
+      const periodoTxt = periodLabel(agg);
+
+      const topMuni = agg.muniAgg[0]?.nombre || "sin predominio municipal";
+      const topInst = agg.instAgg[0]?.nombre || "sin predominio institucional";
+      const topTen = agg.tenAgg[0]?.nombre || "sin predominio de tenencia";
+      const d = agg.densidad > 0 ? `${fmtNum(agg.densidad,2)} plantas/m²` : "sin cálculo de densidad por falta de área";
+      const areaHa = agg.area/10000;
+
+      const resumen = [];
+      resumen.push(`Con base en la información registrada en las boletas de campo del módulo de reforestación de Sololá, correspondiente al periodo ${periodoTxt.toLowerCase()}, se identificaron ${fmtNum(agg.n)} registro(s) válidos para análisis. En dichos registros se reporta un total de ${fmtNum(agg.plantas)} plantas y la participación de ${fmtNum(agg.participantes)} personas, en un área acumulada de ${fmtNum(agg.area,2)} m² (${fmtNum(areaHa,4)} ha).`);
+      resumen.push(`A nivel agregado, la densidad global estimada para el periodo analizado es de ${d}, mientras que el promedio por registro asciende a ${fmtNum(agg.plantasPorRegistro,2)} plantas, ${fmtNum(agg.partPorRegistro,2)} participantes y ${fmtNum(agg.n ? agg.area/agg.n : 0,2)} m² de área intervenida. El comportamiento observado muestra predominio territorial en ${topMuni}, predominio institucional de ${topInst} y mayor participación de sitios bajo tenencia ${topTen.toLowerCase()}.`);
+
+      const metodologia = [];
+      metodologia.push(`El presente informe se genera a partir de boletas capturadas en KoBoToolbox y sincronizadas al portal institucional mediante un flujo automatizado hacia archivos estáticos (GeoJSON/JSON) consumidos por el módulo de reforestación en GitHub Pages. Para la elaboración de esta salida se aplicaron filtros por periodo, municipio, institución, tenencia y búsqueda textual, según la configuración seleccionada por la persona usuaria en la interfaz del centro de informes.`);
+      metodologia.push(`El análisis se basa en variables registradas por boleta, incluyendo fecha de actividad, municipio, comunidad, sitio, institución participante, tenencia del terreno, área intervenida (m²), total de plantas y total de participantes. Cuando la información de área es igual a cero o no se encuentra disponible, los indicadores derivados de densidad se calculan únicamente sobre los registros con dato válido.`);
+
+      const territorial = [];
+      territorial.push(`La cobertura territorial del conjunto filtrado comprende ${fmtNum(agg.municipiosUnicos)} municipio(s), ${fmtNum(agg.comunidadesUnicas)} comunidad(es) y ${fmtNum(agg.sitiosUnicos)} sitio(s) de intervención identificados en las boletas. ${topListSentence(agg.muniAgg, "plantas", x=>x.nombre, "plantas")}`);
+      if (agg.muniAgg.length){
+        const totalPlantas = agg.plantas || 1;
+        const principal = agg.muniAgg[0];
+        territorial.push(`El municipio con mayor número de plantas reportadas es ${principal.nombre}, con ${fmtNum(principal.plantas)} plantas, equivalente al ${fmtNum((principal.plantas/totalPlantas)*100,2)} % del total filtrado. Este comportamiento sugiere concentración de actividades en puntos específicos, por lo que se recomienda ampliar la cobertura geográfica si el objetivo operativo es balancear la distribución territorial de jornadas.`);
+      } else {
+        territorial.push(`No se cuenta con una desagregación municipal suficiente para establecer concentración territorial en el periodo seleccionado.`);
+      }
+
+      const operativo = [];
+      operativo.push(`En términos operativos, la serie de registros presenta un promedio de ${fmtNum(agg.plantasStats.media,2)} plantas por boleta, con mediana de ${fmtNum(agg.plantasStats.mediana,2)} y desviación estándar de ${fmtNum(agg.plantasStats.sd,2)}, lo cual permite valorar la dispersión de las jornadas registradas. Para área intervenida, el promedio es de ${fmtNum(agg.areaStats.media,2)} m² y la mediana de ${fmtNum(agg.areaStats.mediana,2)} m², mientras que la participación promedio es de ${fmtNum(agg.partStats.media,2)} personas por registro.`);
+      operativo.push(`La productividad observada, medida como plantas por participante, alcanza ${fmtNum(agg.plantasPorParticipante,2)} plantas/persona para el periodo filtrado. Asimismo, la densidad de plantación (plantas por m²) presenta una media de ${fmtNum(agg.densStats.media,2)} y una mediana de ${fmtNum(agg.densStats.mediana,2)} sobre los registros con área válida, indicador útil para comparar consistencia técnica entre jornadas o sitios.`);
+      if (agg.tenAgg.length){
+        operativo.push(`Respecto a la tenencia del terreno, ${topListSentence(agg.tenAgg, "registros", x=>x.nombre.toLowerCase(), "registro(s)")} Esta segmentación permite identificar si la ejecución se concentra en terrenos privados, comunales u otras modalidades reportadas en la boleta.`);
+      }
+
+      const observ = [];
+      if (agg.conObservacion > 0){
+        const sampleObs = rows.filter(r=>r.observaciones).slice(0,3).map(r=>`[${fmtDateShort(r.fecha_actividad)} · ${r.municipio_principal || "Sin municipio"}] ${r.observaciones}`);
+        observ.push(`Se identificaron ${fmtNum(agg.conObservacion)} registro(s) con observaciones textuales consignadas en boleta. Las observaciones pueden complementar la interpretación cuantitativa respecto a condiciones del sitio, logística de jornada o incidencias de campo.`);
+        if (sampleObs.length) observ.push(`Ejemplos de observaciones registradas: ${sampleObs.join(" | ")}.`);
+      } else {
+        observ.push(`No se registran observaciones textuales en el conjunto filtrado de boletas, por lo que la lectura cualitativa del periodo es limitada y se basa principalmente en variables cuantitativas y espaciales.`);
+      }
+      observ.push(`En cuanto al uso de material fotográfico, ${fmtNum(agg.fotosAutorizadas)} de ${fmtNum(agg.n)} registro(s) reportan autorización de uso de fotografías. Este dato es relevante para la preparación de informes narrativos ampliados y productos de comunicación institucional, sin necesidad de almacenar las imágenes dentro del repositorio del portal.`);
+
+      if (tipo === "ejecutivo"){
+        return {
+          resumen: resumen.slice(0,1).concat([`De forma sintética, el periodo analizado presenta ${fmtNum(agg.plantas)} plantas en ${fmtNum(agg.n)} registro(s), con foco territorial principal en ${topMuni} y participación institucional destacada de ${topInst}. Se recomienda utilizar el geoportal y el dashboard del módulo para profundizar la lectura espacial y temporal antes de emitir lineamientos operativos.`]),
+          metodologia: metodologia.slice(0,1),
+          territorial: territorial.slice(0,2),
+          operativo: operativo.slice(0,2),
+          observaciones: observ.slice(0,2)
+        };
+      }
+
+      if (tipo === "operativo"){
+        operativo.push(`Para fines de seguimiento de campo, se recomienda verificar consistencia entre área reportada, número de plantas y participantes por registro, especialmente cuando se detecten densidades atípicas o diferencias significativas entre medianas y promedios. La tabla anexa facilita la revisión boleta por boleta con identificación de sitio y fecha.`);
+      }
+
+      return { resumen, metodologia, territorial, operativo, observaciones: observ };
+    }
+
+    function esc(s){
+      return String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+    }
+
+    function logoHTML(which){
+      const url = which === "left" ? LOGO_LEFT : LOGO_RIGHT;
+      const fallback = which === "left" ? "LOGO\nBOSQUES" : "LOGO\nCODEMA";
+      return `<div class="logo-box"><img src="${url}" alt="Logo institucional" onerror="this.replaceWith((()=>{const d=document.createElement('div');d.className='logo-box';d.innerHTML='<div class=\\'logo-fallback\\'>${fallback.replace(/\n/g,'<br>')}</div>';return d;})())"></div>`;
+    }
+
+    function buildSummaryTable(agg){
+      const rows = [
+        ["Registros (boletas)", fmtNum(agg.n)],
+        ["Total de plantas", fmtNum(agg.plantas)],
+        ["Total de participantes", fmtNum(agg.participantes)],
+        ["Área acumulada (m²)", fmtNum(agg.area,2)],
+        ["Área acumulada (ha)", fmtNum(agg.area/10000,4)],
+        ["Plantas por registro (promedio)", fmtNum(agg.plantasPorRegistro,2)],
+        ["Participantes por registro (promedio)", fmtNum(agg.partPorRegistro,2)],
+        ["Plantas por participante", fmtNum(agg.plantasPorParticipante,2)],
+        ["Densidad global (plantas/m²)", fmtNum(agg.densidad,2)],
+        ["Municipios con registros", fmtNum(agg.municipiosUnicos)],
+        ["Comunidades con registros", fmtNum(agg.comunidadesUnicas)],
+        ["Sitios con registros", fmtNum(agg.sitiosUnicos)]
+      ];
+      return `
+        <table class="kpi-table">
+          <tbody>
+            ${rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="right">${esc(r[1])}</td></tr>`).join("")}
+          </tbody>
+        </table>`;
+    }
+
+    function buildTopTable(title, cols, rows){
+      return `
+        <p class="section-title">${esc(title)}</p>
+        <table class="list-tight">
+          <thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead>
+          <tbody>
+            ${rows.length ? rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${cols.length}" class="center">Sin registros</td></tr>`}
+          </tbody>
+        </table>`;
+    }
+
+    function buildRegistrosTable(rows){
+      const cols = ["No.", "Fecha", "Municipio", "Comunidad", "Sitio", "Institución", "Tenencia", "Área (m²)", "Plantas", "Participantes"];
+      const tableRows = rows.map((r,idx)=>[
+        String(idx+1),
+        fmtDateShort(r.fecha_actividad),
+        r.municipio_principal || "Sin dato",
+        r.comunidad || "Sin dato",
+        r.sitio_nombre || "Sin dato",
+        r.institucion_principal || "Sin dato",
+        r.tenencia || "Sin dato",
+        fmtNum(r.area_m2,2),
+        fmtNum(r.total_plantas),
+        fmtNum(r.total_participantes)
+      ]);
+      return buildTopTable("Anexo de registros filtrados", cols, tableRows);
+    }
+
+    function buildHeader(meta){
+      return `
+        <div class="report-header">
+          ${logoHTML("left")}
+          <div class="head-text">
+            <div class="line">Laboratorio SIG - Eje de Bosques de CODEMA-Sololá</div>
+            <div class="line">Módulo de Reforestación · Centro de Informes</div>
+            <div class="line small">Informe generado automáticamente a partir de boletas KoBo sincronizadas al geoportal</div>
+          </div>
+          ${logoHTML("right")}
+        </div>
+        <div class="meta-grid">
+          <div class="meta-item"><span class="k">Tipo de informe</span>${esc(meta.tipo)}</div>
+          <div class="meta-item"><span class="k">Periodo analizado</span>${esc(meta.periodo)}</div>
+          <div class="meta-item"><span class="k">Fecha de emisión</span>${esc(meta.fechaEmision)}</div>
+          <div class="meta-item"><span class="k">Registros considerados</span>${esc(meta.registros)}</div>
+          <div class="meta-item"><span class="k">Dirigido a</span>${esc(meta.destinatario || "No especificado")}</div>
+          <div class="meta-item"><span class="k">Elaboró</span>${esc(meta.firmante)}</div>
+        </div>`;
+    }
+
+    function pageFooter(pageNum){
+      return `<div class="footer-line"><span>Laboratorio SIG - Eje de Bosques de CODEMA-Sololá 2026</span><span>Página ${pageNum}</span></div>`;
+    }
+
+    function buildPagesHTML(rows, agg, texts){
+      const periodo = periodLabel(agg);
+      const meta = {
+        tipo: titleCase(els.tipoInforme.value),
+        periodo,
+        fechaEmision: fmtDateTime(new Date()),
+        registros: fmtNum(agg.n),
+        destinatario: cleanText(els.destinatario.value),
+        firmante: cleanText(els.firmante.value) || "Laboratorio SIG del eje de bosques de CODEMA-Sololá"
+      };
+      const nota = cleanText(els.notaTecnica.value);
+
+      const pages = [];
+      let pageNum = 1;
+
+      // Cover / Portada técnica breve
+      const portada = `
+      <div class="page page-break">
+        <div class="report">
+          ${buildHeader(meta)}
+          <div class="cover-box">
+            <p class="section-title center">Informe narrativo de reforestación</p>
+            <p><strong>Periodo:</strong> ${esc(periodo)}.</p>
+            <p><strong>Alcance:</strong> Informe generado a partir de boletas registradas en campo, filtradas según la configuración seleccionada en el centro de informes del módulo de reforestación.</p>
+            ${nota ? `<p><strong>Nota de alcance:</strong> ${esc(nota)}</p>` : ""}
+            <p>Este documento presenta una síntesis narrativa y cuantitativa de registros de reforestación, incluyendo caracterización territorial, variables operativas de las jornadas y anexo de registros filtrados. La estructura está diseñada para apoyar seguimiento institucional, revisión técnica y elaboración de productos de comunicación o monitoreo.</p>
+          </div>
+          <p class="section-title">Resumen de indicadores</p>
+          ${buildSummaryTable(agg)}
+          <p class="small muted">Fuente primaria: boletas KoBoToolbox sincronizadas hacia archivos <em>GeoJSON/JSON</em> consumidos por el portal público del módulo de reforestación (GitHub Pages).</p>
+          ${pageFooter(pageNum)}
+        </div>
+      </div>`;
+      pages.push(portada); pageNum++;
+
+      // Main analytical page
+      let bodySections = "";
+      if (els.secResumen.checked){
+        bodySections += `<p class="section-title">1. Resumen ejecutivo</p>${texts.resumen.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+      }
+      if (els.secMetodologia.checked){
+        bodySections += `<p class="section-title">2. Metodología y fuente de datos</p>${texts.metodologia.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+      }
+      if (els.secTerritorial.checked){
+        bodySections += `<p class="section-title">3. Análisis territorial</p>${texts.territorial.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+      }
+      if (els.secOperativo.checked){
+        bodySections += `<p class="section-title">4. Análisis operativo</p>${texts.operativo.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+      }
+      if (els.secObservaciones.checked){
+        bodySections += `<p class="section-title">5. Hallazgos cualitativos y observaciones</p>${texts.observaciones.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+      }
+
+      const muniRows = agg.muniAgg.slice(0,10).map(x=>[
+        x.nombre, fmtNum(x.registros), fmtNum(x.plantas), fmtNum(x.participantes), fmtNum(x.area_m2,2)
+      ]);
+      const instRows = agg.instAgg.slice(0,10).map(x=>[
+        x.nombre, fmtNum(x.registros), fmtNum(x.plantas), fmtNum(x.participantes)
+      ]);
+      const tenRows = agg.tenAgg.slice(0,10).map(x=>[
+        x.nombre, fmtNum(x.registros), fmtNum(x.plantas), fmtNum(x.area_m2,2)
+      ]);
+
+      const cuadros = `
+        ${buildTopTable("Cuadro 1. Distribución por municipio (top 10)", ["Municipio","Registros","Plantas","Participantes","Área (m²)"], muniRows)}
+        ${buildTopTable("Cuadro 2. Distribución por institución (top 10)", ["Institución","Registros","Plantas","Participantes"], instRows)}
+        ${buildTopTable("Cuadro 3. Distribución por tenencia", ["Tenencia","Registros","Plantas","Área (m²)"], tenRows)}
+      `;
+
+      const analitica = `
+      <div class="page ${els.secTabla.checked ? "page-break" : ""}">
+        <div class="report">
+          ${buildHeader(meta)}
+          ${bodySections}
+          ${cuadros}
+          <p class="small">Valores estadísticos de referencia (plantas por registro): media = ${fmtNum(agg.plantasStats.media,2)}, mediana = ${fmtNum(agg.plantasStats.mediana,2)}, desviación estándar = ${fmtNum(agg.plantasStats.sd,2)}, P25 = ${fmtNum(agg.plantasStats.p25,2)}, P75 = ${fmtNum(agg.plantasStats.p75,2)}.</p>
+          <p class="small">Valores estadísticos de referencia (área en m²): media = ${fmtNum(agg.areaStats.media,2)}, mediana = ${fmtNum(agg.areaStats.mediana,2)}, desviación estándar = ${fmtNum(agg.areaStats.sd,2)}, P25 = ${fmtNum(agg.areaStats.p25,2)}, P75 = ${fmtNum(agg.areaStats.p75,2)}.</p>
+          ${pageFooter(pageNum)}
+        </div>
+      </div>`;
+      pages.push(analitica); pageNum++;
+
+      if (els.secTabla.checked){
+        // Split records table into chunks per page
+        const chunkSize = 18;
+        for (let i=0; i<rows.length || i===0; i+=chunkSize){
+          const chunk = rows.slice(i, i+chunkSize);
+          const titleExtra = rows.length ? ` (registros ${i+1} a ${Math.min(i+chunkSize, rows.length)} de ${rows.length})` : "";
+          const table = rows.length
+            ? buildRegistrosTable(chunk).replace("Anexo de registros filtrados", `Anexo de registros filtrados${titleExtra}`)
+            : `<p class="section-title">Anexo de registros filtrados</p><p>No se encontraron registros para los filtros seleccionados.</p>`;
+
+          const page = `
+          <div class="page ${i+chunkSize < rows.length ? "page-break" : ""}">
+            <div class="report">
+              ${buildHeader(meta)}
+              ${table}
+              ${pageFooter(pageNum)}
+            </div>
+          </div>`;
+          pages.push(page); pageNum++;
+          if (!rows.length) break;
+        }
+      }
+
+      return pages.join("");
+    }
+
+    function updateMiniStats(rows){
+      const agg = aggregateRows(rows);
+      els.mini_reg.textContent = fmtNum(agg.n);
+      els.mini_pla.textContent = fmtNum(agg.plantas);
+      els.mini_par.textContent = fmtNum(agg.participantes);
+      els.mini_area.textContent = fmtNum(agg.area,2);
+      els.mini_periodo.textContent = "Periodo: " + periodLabel(agg);
+    }
+
+    function setWarning(msg){
+      if (!msg){
+        els.warnBox.style.display = "none";
+        els.warnBox.textContent = "";
+        return;
+      }
+      els.warnBox.style.display = "";
+      els.warnBox.textContent = msg;
+    }
+
+    function generatePreview(){
+      const rows = applyFilters(state.rawFeatures);
+      state.lastFiltered = rows.slice();
+      updateMiniStats(rows);
+      const agg = aggregateRows(rows);
+
+      if (!rows.length){
+        setWarning("No hay registros que coincidan con los filtros seleccionados. Ajusta periodo, municipio, institución, tenencia o búsqueda libre.");
+      } else {
+        setWarning("");
+      }
+
+      const texts = buildNarrative(rows, agg);
+      els.pages.innerHTML = buildPagesHTML(rows, agg, texts);
+      els.chipData.textContent = rows.length ? `${rows.length} registro(s) filtrados` : `0 registros filtrados`;
+    }
+
+    function csvEscape(v){
+      const s = String(v ?? "");
+      if (/[",;\n]/.test(s)) return '"' + s.replace(/"/g,'""') + '"';
+      return s;
+    }
+
+    function downloadBlob(filename, text, type){
+      const blob = new Blob([text], {type});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 500);
+    }
+
+    function exportCSV(){
+      const rows = state.lastFiltered.length ? state.lastFiltered : applyFilters(state.rawFeatures);
+      const headers = ["id","fecha_actividad","municipio","comunidad","sitio_nombre","institucion","tenencia","area_m2","total_plantas","total_participantes","lat","lon","observaciones"];
+      const lines = [headers.join(";")];
+      rows.forEach(r=>{
+        const vals = [
+          r.id, r.fecha_actividad, r.municipio_principal, r.comunidad, r.sitio_nombre,
+          r.institucion_principal, r.tenencia, r.area_m2, r.total_plantas, r.total_participantes, r.lat ?? "", r.lon ?? "", r.observaciones
+        ];
+        lines.push(vals.map(csvEscape).join(";"));
+      });
+      downloadBlob(`informe_reforestacion_registros_${new Date().toISOString().slice(0,10)}.csv`, lines.join("\n"), "text/csv;charset=utf-8");
+    }
+
+    function exportJSON(){
+      const rows = state.lastFiltered.length ? state.lastFiltered : applyFilters(state.rawFeatures);
+      const payload = rows.map(r=>({
+        id:r.id,
+        fecha_actividad:r.fecha_actividad,
+        municipios:r.municipios,
+        comunidad:r.comunidad,
+        sitio_nombre:r.sitio_nombre,
+        instituciones:r.instituciones.length ? r.instituciones : (r.institucion_principal ? [r.institucion_principal] : []),
+        tenencia:r.tenencia,
+        area_m2:r.area_m2,
+        total_plantas:r.total_plantas,
+        total_participantes:r.total_participantes,
+        observaciones:r.observaciones,
+        coordenadas: (Number.isFinite(r.lon) && Number.isFinite(r.lat)) ? [r.lon, r.lat] : null
+      }));
+      downloadBlob(`informe_reforestacion_registros_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
+    }
+
+    function seedDates(rows){
+      const fechas = rows.map(r=>r.fechaObj).filter(Boolean).sort((a,b)=>a-b);
+      if (!fechas.length) return;
+      const min = fechas[0].toISOString().slice(0,10);
+      const max = fechas[fechas.length-1].toISOString().slice(0,10);
+      if (!els.desde.value) els.desde.value = min;
+      if (!els.hasta.value) els.hasta.value = max;
+    }
+
+    async function init(){
+      try{
+        const [puntosRes, resumenRes] = await Promise.allSettled([
+          fetchFirstJson(DATA_SOURCES.puntos),
+          fetchFirstJson(DATA_SOURCES.resumen)
+        ]);
+
+        if (puntosRes.status === "fulfilled"){
+          const gj = puntosRes.value.data;
+          if (!gj || !Array.isArray(gj.features)) throw new Error("El GeoJSON no contiene 'features'.");
+          state.rawFeatures = gj.features.map(normalizeFeature);
+          buildFilterOptions(state.rawFeatures);
+          seedDates(state.rawFeatures);
+          els.chipData.textContent = `Datos cargados (${state.rawFeatures.length} registros)`;
+        } else {
+          throw puntosRes.reason || new Error("No se pudo cargar puntos.geojson");
+        }
+
+        if (resumenRes.status === "fulfilled"){
+          state.resumen = resumenRes.value.data;
+        }
+
+        ["change","keyup"].forEach(evt=>{
+          [els.desde, els.hasta, els.municipio, els.tenencia, els.institucion, els.texto, els.tipoInforme, els.ordenTabla,
+           els.secResumen, els.secMetodologia, els.secTerritorial, els.secOperativo, els.secObservaciones, els.secTabla
+          ].forEach(node => node.addEventListener(evt, ()=>{
+            const rows = applyFilters(state.rawFeatures);
+            updateMiniStats(rows);
+          }));
+        });
+
+        // defaults
+        updateMiniStats(applyFilters(state.rawFeatures));
+        generatePreview();
+
+      } catch (err){
+        console.error(err);
+        els.chipData.textContent = "Error de carga";
+        setWarning("No se pudieron cargar los datos para generar el informe. Verifica las rutas de 'data/puntos.geojson' y 'data/resumen.json' dentro del repositorio.");
+      }
+    }
+
+    // events
+    [els.btnGenerar, els.btnGenerar2].forEach(b => b.addEventListener("click", generatePreview));
+    [els.btnPrint, els.btnPrint2].forEach(b => b.addEventListener("click", ()=>{
+      generatePreview();
+      window.print();
+    }));
+    els.btnCSV.addEventListener("click", exportCSV);
+    els.btnJSON.addEventListener("click", exportJSON);
+
+    init();
+  })();
+  </script>
+</body>
+</html>
