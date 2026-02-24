@@ -605,10 +605,35 @@
   (function(){
     "use strict";
 
-    const DATA_SOURCES = {
-      puntos: ["../../data/puntos.geojson", "../../data/puntos (1).geojson", "../data/puntos.geojson", "./data/puntos.geojson"],
-      resumen: ["../../data/resumen.json", "../data/resumen.json", "./data/resumen.json"]
-    };
+    function detectRepoBase(){
+  try{
+    const path = (location && location.pathname) ? location.pathname : "";
+    const host = (location && location.hostname) ? location.hostname : "";
+    const parts = path.split("/").filter(Boolean);
+    if (host.endsWith("github.io") && parts.length) return "/" + parts[0];
+    return "";
+  } catch(_e){
+    return "";
+  }
+}
+
+const REPO_BASE = detectRepoBase();
+
+const DATA_SOURCES = {
+  puntos: [
+    `${REPO_BASE}/data/puntos.geojson`,
+    "../../data/puntos.geojson",
+    "../data/puntos.geojson",
+    "./data/puntos.geojson",
+    "../../data/puntos (1).geojson"
+  ],
+  resumen: [
+    `${REPO_BASE}/data/resumen.json`,
+    "../../data/resumen.json",
+    "../data/resumen.json",
+    "./data/resumen.json"
+  ]
+};
     const LOGO_LEFT = "../../assets/img/BOSQUE.png";
     const LOGO_RIGHT = "../../assets/img/CODEMA%20(2).png";
 
@@ -1315,7 +1340,7 @@
           state.rawFeatures = gj.features.map(normalizeFeature);
           buildFilterOptions(state.rawFeatures);
           seedDates(state.rawFeatures);
-          els.chipData.textContent = `Datos cargados (${state.rawFeatures.length} registros)`;
+          els.chipData.textContent = `Datos cargados (${state.rawFeatures.length} registros)` + (puntosRes.value?.url ? ` · ${puntosRes.value.url}` : "");
         } else {
           throw puntosRes.reason || new Error("No se pudo cargar puntos.geojson");
         }
@@ -1342,7 +1367,7 @@
       } catch (err){
         console.error(err);
         els.chipData.textContent = "Error de carga";
-        setWarning("No se pudieron cargar los datos para generar el informe. Verifica las rutas de 'data/puntos.geojson' y 'data/resumen.json' dentro del repositorio.");
+        setWarning("No se pudieron cargar los datos para generar el informe. " + (err?.message || "") + " · Verifica las rutas de data/puntos.geojson y data/resumen.json.");
       }
     }
 
