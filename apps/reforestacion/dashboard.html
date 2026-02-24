@@ -1,10 +1,2526 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Dashboard · Reforestación</title></head>
-<body style="margin:0;font-family:system-ui,Segoe UI,Roboto,Arial;background:#fff;">
-<div style="max-width:900px;margin:0 auto;padding:18px">
-  <a href="./index.html">← Volver</a>
-  <h1>Dashboard (próximo paso)</h1>
-  <p>Aquí pondremos gráficos, tabla filtrable y descargas.</p>
-</div>
-</body></html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Dashboard · Reforestación · Sololá</title>
+
+  <!-- Librerías (estáticas y gratuitas, compatibles con GitHub Pages) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#e9f7f6;
+      --bg2:#edf8ff;
+      --panel:rgba(255,255,255,.82);
+      --card:rgba(255,255,255,.90);
+      --line:rgba(18,79,97,.14);
+      --line2:rgba(34,153,141,.18);
+      --ink:#13313d;
+      --muted:#5f7b87;
+      --muted2:#6f8b96;
+      --green:#2fad7a;
+      --green2:#7eddbf;
+      --cyan:#66cad8;
+      --cyan2:#9ce6ee;
+      --blue:#3fa2e0;
+      --warn:#d78a34;
+      --danger:#d95b5b;
+      --shadow:0 16px 34px rgba(15,62,72,.10);
+      --shadow-sm:0 8px 18px rgba(15,62,72,.08);
+      --radius:18px;
+      --radius-sm:14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 500px at -5% -10%, rgba(143,227,193,.45), transparent 70%),
+        radial-gradient(900px 600px at 105% -5%, rgba(103,200,214,.28), transparent 70%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+    a{color:inherit}
+
+    .shell{
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 14px;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    header.topbar{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:12px;
+      align-items:center;
+      padding:12px 14px;
+      border-radius:22px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.76));
+      box-shadow:var(--shadow);
+      position:sticky;
+      top:10px;
+      z-index:40;
+      backdrop-filter: blur(8px);
+    }
+    .brand{
+      display:flex;align-items:center;gap:14px;min-width:0;
+    }
+    .brand-logos{
+      display:flex;align-items:center;gap:8px;flex-shrink:0;
+      padding:6px;border-radius:14px;
+      background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.82));
+      border:1px solid rgba(18,79,97,.10);
+      box-shadow:0 6px 14px rgba(15,62,72,.06);
+    }
+    .brand-logos img{
+      width:52px;height:52px;object-fit:contain;border-radius:10px;
+      background:rgba(255,255,255,.9);
+      border:1px solid rgba(18,79,97,.08);
+      padding:4px;
+    }
+    .brand-title{
+      min-width:0;
+      display:flex;flex-direction:column;gap:3px;
+    }
+    .brand-title h1{
+      margin:0;font-size:18px;font-weight:800;letter-spacing:.2px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .brand-title .sub{
+      color:var(--muted);
+      font-size:12px;
+      display:flex;flex-wrap:wrap;gap:8px;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:6px;
+      border-radius:999px;
+      border:1px solid rgba(18,79,97,.12);
+      background:rgba(255,255,255,.75);
+      padding:4px 8px;
+      font-size:11px;
+      color:var(--muted);
+      font-weight:600;
+    }
+    .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:linear-gradient(180deg,var(--green),var(--cyan));
+      box-shadow:0 0 0 3px rgba(47,173,122,.15);
+      flex-shrink:0;
+    }
+
+    .nav{
+      display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;
+    }
+    .btn{
+      appearance:none;border:1px solid rgba(18,79,97,.14);
+      background:rgba(255,255,255,.78);color:var(--ink);
+      padding:9px 12px;border-radius:14px;font-size:13px;font-weight:600;
+      cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+      box-shadow:0 6px 14px rgba(15,62,72,.05);
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(15,62,72,.08);border-color:rgba(47,173,122,.35)}
+    .btn.primary{
+      background:linear-gradient(180deg, rgba(47,173,122,.12), rgba(103,200,214,.14));
+      border-color:rgba(47,173,122,.28);
+    }
+    .btn.small{padding:7px 10px;border-radius:12px;font-size:12px}
+    .btn.ghost{background:rgba(255,255,255,.58)}
+    .btn.active{
+      background:linear-gradient(180deg, rgba(47,173,122,.16), rgba(103,200,214,.18));
+      border-color:rgba(47,173,122,.35);
+      color:#0f5f46;
+    }
+
+    .layout{
+      display:grid;
+      grid-template-columns: 330px 1fr;
+      gap:14px;
+      min-height: calc(100vh - 120px);
+    }
+
+    .panel{
+      border-radius:var(--radius);
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.84), rgba(255,255,255,.74));
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    aside.sidebar{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      height:fit-content;
+      position:sticky;
+      top:94px;
+    }
+
+    .section{
+      border:1px solid rgba(18,79,97,.10);
+      background:rgba(255,255,255,.58);
+      border-radius:16px;
+      overflow:hidden;
+    }
+    .section summary{
+      list-style:none;
+      padding:12px 12px;
+      cursor:pointer;
+      font-weight:700;
+      font-size:13px;
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
+      color:#123845;
+      background:linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.55));
+      border-bottom:1px solid rgba(18,79,97,.06);
+    }
+    .section summary::-webkit-details-marker{display:none}
+    .section .content{
+      padding:12px;
+      display:grid;
+      gap:10px;
+    }
+
+    .field{
+      display:grid;
+      gap:6px;
+    }
+    .field label{
+      font-size:12px;font-weight:700;color:#315462;
+    }
+    .field input[type="date"],
+    .field input[type="search"],
+    .field input[type="number"],
+    .field select{
+      width:100%; border:1px solid rgba(18,79,97,.14);
+      border-radius:12px; background:rgba(255,255,255,.85);
+      padding:9px 10px; color:var(--ink); font:inherit; font-size:13px;
+      outline:none;
+    }
+    .field select[multiple]{min-height:92px; padding:8px}
+    .field input:focus, .field select:focus{
+      border-color:rgba(47,173,122,.35);
+      box-shadow:0 0 0 3px rgba(47,173,122,.12);
+    }
+    .check{
+      display:flex;align-items:center;gap:8px;
+      padding:8px 10px;border-radius:12px;border:1px solid rgba(18,79,97,.10);
+      background:rgba(255,255,255,.65);
+      font-size:12px;color:#2f4f5c;font-weight:600;
+    }
+    .check input{accent-color:var(--green)}
+
+    .chips{display:flex;flex-wrap:wrap;gap:8px}
+    .chip{
+      border:1px solid rgba(18,79,97,.10);
+      border-radius:999px;
+      background:rgba(255,255,255,.70);
+      padding:6px 10px;
+      font-size:12px;
+      color:#315462;
+      font-weight:600;
+      cursor:pointer;
+      user-select:none;
+    }
+    .chip:hover{border-color:rgba(47,173,122,.28)}
+    .hint{font-size:11px;color:var(--muted);line-height:1.35}
+
+    .stats-mini{
+      display:grid;grid-template-columns:1fr 1fr;gap:8px;
+    }
+    .mini-card{
+      border:1px solid rgba(18,79,97,.10);
+      border-radius:14px;
+      background:rgba(255,255,255,.70);
+      padding:9px;
+    }
+    .mini-card .k{font-size:11px;color:var(--muted);font-weight:600}
+    .mini-card .v{margin-top:2px;font-size:15px;font-weight:800;color:#103944}
+
+    main.dashboard{
+      display:grid;
+      gap:14px;
+      grid-template-rows:auto auto auto auto auto;
+      align-content:start;
+    }
+
+    .kpi-grid{
+      display:grid;
+      grid-template-columns: repeat(6, minmax(0,1fr));
+      gap:12px;
+    }
+    .kpi{
+      border-radius:18px;
+      border:1px solid rgba(18,79,97,.11);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.76)),
+        radial-gradient(160px 80px at 85% -10%, rgba(103,200,214,.22), transparent 70%);
+      box-shadow:var(--shadow);
+      padding:12px 13px;
+      position:relative;
+      overflow:hidden;
+    }
+    .kpi:before{
+      content:"";
+      position:absolute;inset:auto auto 0 0;
+      width:100%;height:4px;
+      background:linear-gradient(90deg,var(--green),var(--cyan),var(--green2));
+      opacity:.8;
+    }
+    .kpi .label{
+      font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.15px;
+      text-transform:uppercase;
+    }
+    .kpi .value{
+      margin-top:6px;
+      font-size:26px;font-weight:800;line-height:1.05;
+      color:#0f3641;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .kpi .note{
+      margin-top:4px;font-size:12px;color:#4f707d;font-weight:600;min-height:16px;
+    }
+
+    .grid-2{display:grid;grid-template-columns: 1.05fr 1.45fr; gap:14px;}
+    .grid-3{display:grid;grid-template-columns: 1.25fr 1fr 1fr; gap:14px;}
+    .grid-2-eq{display:grid;grid-template-columns: 1fr 1fr; gap:14px;}
+    .grid-analytics{display:grid;grid-template-columns: 1.2fr 1fr 1fr; gap:14px;}
+
+    .card{
+      border-radius:20px;
+      border:1px solid rgba(18,79,97,.11);
+      background:linear-gradient(180deg, rgba(255,255,255,.87), rgba(255,255,255,.76));
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      min-height: 180px;
+    }
+    .card-head{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(18,79,97,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58));
+    }
+    .card-title{
+      margin:0;
+      font-size:14px;font-weight:800;letter-spacing:.1px;color:#123845;
+    }
+    .card-sub{
+      margin-top:3px;font-size:12px;color:var(--muted);
+      line-height:1.35;
+    }
+    .card-body{padding:10px 12px}
+    .eq-badge{
+      white-space:nowrap;
+      font-size:11px;
+      font-weight:700;
+      color:#135066;
+      border:1px solid rgba(18,79,97,.12);
+      border-radius:999px;
+      padding:6px 9px;
+      background:linear-gradient(180deg, rgba(103,200,214,.10), rgba(47,173,122,.08));
+      max-width: 48%;
+      overflow:hidden;text-overflow:ellipsis;
+    }
+
+    .chart-wrap{
+      position:relative;
+      height: 290px;
+    }
+    .chart-wrap.short{height:240px}
+    canvas{width:100%!important;height:100%!important}
+
+    #miniMap{
+      width:100%;
+      height: 382px;
+      border-radius:16px;
+      border:1px solid rgba(18,79,97,.10);
+      overflow:hidden;
+    }
+    .leaflet-container{
+      background:#dff4f2;
+      font-family:'Inter',system-ui,sans-serif;
+    }
+    .leaflet-control-attribution{font-size:10px}
+    .tree-marker{
+      width:24px;height:24px;
+      display:flex;align-items:center;justify-content:center;
+      border-radius:50%;
+      background:radial-gradient(circle at 35% 30%, #fff 0 25%, #c9f4e5 28%, #62cfa7 65%, #2fad7a 100%);
+      border:2px solid rgba(255,255,255,.9);
+      box-shadow:0 6px 14px rgba(20,90,85,.22);
+      color:#0b5b3c;
+      font-size:14px;
+      line-height:1;
+    }
+    .tree-marker span{transform:translateY(-.5px)}
+    .mini-popup{
+      font-size:12px;color:#153746;line-height:1.35;
+    }
+    .mini-popup b{color:#0f5767}
+    .mini-popup .r{margin:3px 0}
+
+    .insights{
+      display:grid; gap:10px;
+    }
+    .insight{
+      border-radius:14px;
+      border:1px solid rgba(18,79,97,.10);
+      background:rgba(255,255,255,.70);
+      padding:11px 12px;
+    }
+    .insight h4{
+      margin:0 0 6px 0;
+      font-size:12px; font-weight:800; color:#123845;
+      text-transform:uppercase; letter-spacing:.2px;
+    }
+    .insight p{
+      margin:0; font-size:13px; color:#2f4f5c; line-height:1.42;
+    }
+    .insight code{
+      background:rgba(103,200,214,.10);
+      border:1px solid rgba(18,79,97,.08);
+      padding:2px 6px;border-radius:8px;
+      color:#114a5d;font-weight:700;
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:11px;
+    }
+
+    .metric-list{
+      display:grid; gap:8px;
+    }
+    .metric-row{
+      display:grid; grid-template-columns: 1fr auto; gap:12px; align-items:center;
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid rgba(18,79,97,.09);
+      background:rgba(255,255,255,.70);
+    }
+    .metric-row .n{font-size:12px;color:#315462;font-weight:700}
+    .metric-row .v{font-size:13px;color:#103944;font-weight:800}
+    .metric-row .s{font-size:11px;color:var(--muted);font-weight:600}
+
+    .table-toolbar{
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      flex-wrap:wrap;margin-bottom:10px;
+    }
+    .table-toolbar .meta{font-size:12px;color:var(--muted);font-weight:600}
+    .table-wrap{
+      border:1px solid rgba(18,79,97,.10);
+      border-radius:14px;
+      overflow:auto;
+      max-height: 360px;
+      background:rgba(255,255,255,.70);
+    }
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      min-width:920px;
+      font-size:12px;
+    }
+    thead th{
+      position:sticky; top:0; z-index:2;
+      background:linear-gradient(180deg, #f8fcfd, #eff8fb);
+      color:#214854;
+      font-weight:800;
+      text-align:left;
+      padding:10px 10px;
+      border-bottom:1px solid rgba(18,79,97,.10);
+      white-space:nowrap;
+      cursor:pointer;
+      user-select:none;
+    }
+    thead th:hover{background:linear-gradient(180deg,#f9feff,#eaf7fb)}
+    tbody td{
+      padding:9px 10px;
+      border-bottom:1px solid rgba(18,79,97,.07);
+      color:#234754;
+      vertical-align:top;
+    }
+    tbody tr:nth-child(odd){background:rgba(255,255,255,.55)}
+    tbody tr:hover{background:rgba(103,200,214,.07)}
+    td.num{text-align:right; font-variant-numeric: tabular-nums;}
+    .tag{
+      display:inline-flex;align-items:center;gap:6px;
+      border:1px solid rgba(18,79,97,.10);
+      border-radius:999px;padding:3px 8px;
+      background:rgba(255,255,255,.75);font-weight:700;font-size:11px;color:#2f4f5c;
+    }
+
+    .empty-state{
+      border:1px dashed rgba(18,79,97,.18);
+      border-radius:14px;
+      background:rgba(255,255,255,.55);
+      color:#476773;
+      padding:20px;
+      text-align:center;
+      font-size:13px;
+      font-weight:600;
+    }
+
+    .footer-note{
+      font-size:11px;color:var(--muted); padding:2px 4px 8px;
+    }
+
+    .legend-inline{
+      display:flex; flex-wrap:wrap; gap:8px;
+      margin-top:6px;
+    }
+    .legend-inline .item{
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:11px; color:#446673; font-weight:600;
+      background:rgba(255,255,255,.62);
+      border:1px solid rgba(18,79,97,.08);
+      border-radius:999px; padding:4px 8px;
+    }
+    .sw{
+      width:10px;height:10px;border-radius:50%;display:inline-block;
+      box-shadow:0 0 0 1px rgba(18,79,97,.12) inset;
+    }
+
+    .statusbar{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      flex-wrap:wrap;
+      padding:10px 12px;
+      border-radius:16px;
+      border:1px solid rgba(18,79,97,.11);
+      background:rgba(255,255,255,.70);
+      box-shadow:var(--shadow-sm);
+      font-size:12px;
+      color:#355865;
+    }
+    .statusbar b{color:#113b47}
+    .mono{
+      font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+      font-size:11px;
+      border:1px solid rgba(18,79,97,.08);
+      background:rgba(255,255,255,.7);
+      border-radius:8px;
+      padding:3px 6px;
+      color:#2f5562;
+    }
+
+    @media (max-width: 1280px){
+      .kpi-grid{grid-template-columns: repeat(3, minmax(0,1fr));}
+      .grid-2, .grid-3, .grid-2-eq, .grid-analytics{grid-template-columns:1fr}
+      .layout{grid-template-columns:1fr}
+      aside.sidebar{position:static}
+      #miniMap{height:300px}
+    }
+    @media (max-width: 780px){
+      .kpi-grid{grid-template-columns: repeat(2, minmax(0,1fr));}
+      .brand-title h1{font-size:15px}
+      .brand-logos img{width:44px;height:44px}
+      .nav{justify-content:flex-start}
+      .eq-badge{max-width:100%}
+      header.topbar{grid-template-columns:1fr}
+    }
+
+    @media print{
+      body{background:#fff}
+      header.topbar, aside.sidebar, .table-toolbar .btn, #refreshBtn, #printBtn, #exportCsvBtn, #exportJsonBtn {display:none!important}
+      .shell{max-width:none;padding:0}
+      .layout{grid-template-columns:1fr}
+      main.dashboard{gap:8px}
+      .card,.panel,.kpi{box-shadow:none;background:#fff;border-color:#bbb}
+      .kpi-grid{grid-template-columns:repeat(3,1fr)}
+      .chart-wrap{height:220px}
+      #miniMap{height:260px}
+      .table-wrap{max-height:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logos">
+          <img src="../../assets/img/BOSQUE.png" alt="Logo bosque">
+          <img src="../../assets/img/CODEMA%20(2).png" alt="Logo CODEMA">
+        </div>
+        <div class="brand-title">
+          <h1>Dashboard de Reforestación · Sololá</h1>
+          <div class="sub">
+            <span class="pill"><span class="dot"></span> Tablero analítico de registros KoBo</span>
+            <span class="pill" id="dataTimestampPill">Cargando datos…</span>
+            <span class="pill" id="recordCountPill">0 registros</span>
+          </div>
+        </div>
+      </div>
+      <nav class="nav">
+        <a class="btn" href="../../index.html">Inicio</a>
+        <a class="btn" href="./index.html">Módulo</a>
+        <a class="btn" href="./geoportal.html">Geoportal</a>
+        <a class="btn active" href="./dashboard.html">Dashboard</a>
+        <a class="btn" href="./informes.html">Informes</a>
+        <button class="btn primary" id="refreshBtn" type="button">Actualizar</button>
+        <button class="btn" id="printBtn" type="button">Imprimir</button>
+      </nav>
+    </header>
+
+    <div class="layout">
+      <aside class="sidebar panel">
+        <details class="section" open>
+          <summary>
+            <span>Filtros</span>
+            <span class="pill" id="filtersPill">Sin filtros</span>
+          </summary>
+          <div class="content">
+            <div class="field">
+              <label for="fBuscar">Buscar en registros</label>
+              <input id="fBuscar" type="search" placeholder="Comunidad, sitio, observaciones…">
+            </div>
+
+            <div class="field">
+              <label for="fDesde">Fecha desde</label>
+              <input id="fDesde" type="date">
+            </div>
+            <div class="field">
+              <label for="fHasta">Fecha hasta</label>
+              <input id="fHasta" type="date">
+            </div>
+
+            <div class="field">
+              <label for="fMunicipio">Municipios</label>
+              <select id="fMunicipio" multiple></select>
+            </div>
+
+            <div class="field">
+              <label for="fInstitucion">Instituciones</label>
+              <select id="fInstitucion" multiple></select>
+            </div>
+
+            <div class="field">
+              <label for="fTenencia">Tenencia</label>
+              <select id="fTenencia" multiple></select>
+            </div>
+
+            <div class="field">
+              <label for="fMinPlantas">Mínimo de plantas</label>
+              <input id="fMinPlantas" type="number" min="0" step="1" placeholder="0">
+            </div>
+
+            <label class="check"><input type="checkbox" id="fSoloFotos"> Solo registros con fotos autorizadas</label>
+            <label class="check"><input type="checkbox" id="fSoloArea"> Solo registros con área reportada (&gt; 0 m²)</label>
+
+            <div class="chips">
+              <button class="chip" type="button" data-range="all">Todo</button>
+              <button class="chip" type="button" data-range="30">Últimos 30 días</button>
+              <button class="chip" type="button" data-range="90">Últimos 90 días</button>
+              <button class="chip" type="button" data-range="year">Año actual</button>
+            </div>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn primary small" id="applyFiltersBtn" type="button">Aplicar filtros</button>
+              <button class="btn small" id="resetFiltersBtn" type="button">Limpiar filtros</button>
+            </div>
+
+            <div class="hint">
+              El tablero limpia textos automáticamente (guiones bajos, códigos y caracteres extraños)
+              para mostrar etiquetas más legibles en gráficos y tablas.
+            </div>
+          </div>
+        </details>
+
+        <details class="section" open>
+          <summary>
+            <span>Resumen rápido</span>
+            <span class="pill" id="scopePill">Filtrado</span>
+          </summary>
+          <div class="content">
+            <div class="stats-mini">
+              <div class="mini-card">
+                <div class="k">Registros</div>
+                <div class="v" id="miniRecords">0</div>
+              </div>
+              <div class="mini-card">
+                <div class="k">Plantas</div>
+                <div class="v" id="miniPlants">0</div>
+              </div>
+              <div class="mini-card">
+                <div class="k">Área total</div>
+                <div class="v" id="miniArea">0 m²</div>
+              </div>
+              <div class="mini-card">
+                <div class="k">Participantes</div>
+                <div class="v" id="miniParticipants">0</div>
+              </div>
+            </div>
+            <div class="hint" id="filterNarrative">Sin filtros activos.</div>
+          </div>
+        </details>
+
+        <details class="section" open>
+          <summary>
+            <span>Exportación</span>
+            <span class="pill">Datos filtrados</span>
+          </summary>
+          <div class="content">
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn small primary" id="exportCsvBtn" type="button">Descargar CSV</button>
+              <button class="btn small" id="exportJsonBtn" type="button">Descargar JSON</button>
+            </div>
+            <div class="hint">
+              Exporta únicamente los registros visibles con los filtros actuales. Útil para informes y análisis adicionales.
+            </div>
+          </div>
+        </details>
+
+        <details class="section">
+          <summary>
+            <span>Notas metodológicas</span>
+            <span class="pill">Indicadores</span>
+          </summary>
+          <div class="content">
+            <div class="hint">
+              <b>Plantas por m²</b>: total de plantas / área reportada.<br>
+              <b>Plantas por participante</b>: total de plantas / participantes reportados.<br>
+              <b>Concentración territorial</b>: participación porcentual por municipio.<br>
+              <b>Tendencia</b>: regresión lineal en gráficos de dispersión.
+            </div>
+          </div>
+        </details>
+      </aside>
+
+      <main class="dashboard">
+        <div class="statusbar">
+          <div>
+            <b>Fuente:</b> <span class="mono">../../data/puntos.geojson</span> + <span class="mono">../../data/resumen.json</span>
+          </div>
+          <div>
+            <span id="statusText">Cargando datos…</span>
+          </div>
+        </div>
+
+        <section class="kpi-grid" id="kpiGrid">
+          <article class="kpi"><div class="label">Registros filtrados</div><div class="value" id="kpiRegistros">0</div><div class="note" id="kpiRegistrosNote">—</div></article>
+          <article class="kpi"><div class="label">Total de plantas</div><div class="value" id="kpiPlantas">0</div><div class="note" id="kpiPlantasNote">—</div></article>
+          <article class="kpi"><div class="label">Total participantes</div><div class="value" id="kpiParticipantes">0</div><div class="note" id="kpiParticipantesNote">—</div></article>
+          <article class="kpi"><div class="label">Área reportada</div><div class="value" id="kpiArea">0 m²</div><div class="note" id="kpiAreaNote">—</div></article>
+          <article class="kpi"><div class="label">Densidad promedio</div><div class="value" id="kpiDensidad">0</div><div class="note" id="kpiDensidadNote">Plantas por m²</div></article>
+          <article class="kpi"><div class="label">Plantas por participante</div><div class="value" id="kpiEficiencia">0</div><div class="note" id="kpiEficienciaNote">Promedio por registro</div></article>
+        </section>
+
+        <section class="grid-2">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Distribución espacial de registros</h3>
+                <div class="card-sub">Vista de apoyo para ubicación de puntos reforestados y selección visual.</div>
+              </div>
+              <span class="pill" id="mapSummaryPill">0 puntos</span>
+            </div>
+            <div class="card-body">
+              <div id="miniMap"></div>
+              <div class="legend-inline">
+                <span class="item"><span class="sw" style="background:#2fad7a"></span> Punto de reforestación</span>
+                <span class="item"><span class="sw" style="background:#66cad8"></span> Extensión contextual (filtro)</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Serie temporal de actividad</h3>
+                <div class="card-sub">Registros, plantas y participantes por fecha de actividad (según filtros).</div>
+              </div>
+              <span class="pill" id="temporalPill">Sin datos</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap">
+                <canvas id="chartTemporal"></canvas>
+              </div>
+              <div class="footer-note" id="temporalFoot">—</div>
+            </div>
+          </article>
+        </section>
+
+        <section class="grid-3">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Plantas por municipio</h3>
+                <div class="card-sub">Comparación de aporte total por municipio.</div>
+              </div>
+              <span class="pill" id="muniPill">0 municipios</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap short"><canvas id="chartMunicipios"></canvas></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Registros por tenencia</h3>
+                <div class="card-sub">Frecuencia relativa de la tenencia reportada.</div>
+              </div>
+              <span class="pill" id="tenenciaPill">—</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap short"><canvas id="chartTenencia"></canvas></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Participantes por institución</h3>
+                <div class="card-sub">Aporte de participantes por institución registrada.</div>
+              </div>
+              <span class="pill" id="instPill">0 instituciones</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap short"><canvas id="chartInstituciones"></canvas></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="grid-2-eq">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Relación área vs plantas</h3>
+                <div class="card-sub">Dispersión con línea de tendencia para estimar respuesta por área reportada.</div>
+              </div>
+              <span class="eq-badge" id="eqAreaPlantas">Ecuación: n/d</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap"><canvas id="chartAreaPlantas"></canvas></div>
+              <div class="footer-note" id="eqAreaNote">Se calcula sobre registros con área y plantas válidas.</div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Relación participantes vs plantas</h3>
+                <div class="card-sub">Dispersión con tendencia para explorar intensidad de jornadas.</div>
+              </div>
+              <span class="eq-badge" id="eqPartPlantas">Ecuación: n/d</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap"><canvas id="chartPartPlantas"></canvas></div>
+              <div class="footer-note" id="eqPartNote">Ayuda a detectar jornadas con alta productividad o baja eficiencia.</div>
+            </div>
+          </article>
+        </section>
+
+        <section class="grid-analytics">
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Distribución de plantas por registro</h3>
+                <div class="card-sub">Histograma (agrupación automática) para observar concentración y dispersión.</div>
+              </div>
+              <span class="pill" id="histPill">—</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap short"><canvas id="chartHistPlantas"></canvas></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Indicadores estadísticos</h3>
+                <div class="card-sub">Resumen descriptivo para análisis rápido de patrones.</div>
+              </div>
+              <span class="pill" id="statsPill">Descriptivo</span>
+            </div>
+            <div class="card-body">
+              <div class="metric-list" id="statsList"></div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <div>
+                <h3 class="card-title">Lecturas analíticas</h3>
+                <div class="card-sub">Interpretación automática (exploratoria, no causal).</div>
+              </div>
+              <span class="pill" id="insightsPill">Insights</span>
+            </div>
+            <div class="card-body">
+              <div class="insights" id="insightsBox"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="card">
+          <div class="card-head">
+            <div>
+              <h3 class="card-title">Tabla de registros</h3>
+              <div class="card-sub">Tabla filtrable con ordenamiento por columnas y valores ya limpios.</div>
+            </div>
+            <span class="pill" id="tablePill">0 filas</span>
+          </div>
+          <div class="card-body">
+            <div class="table-toolbar">
+              <div class="meta" id="tableMeta">Sin datos cargados.</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn small" id="toggleTop10Btn" type="button">Ver top 10 por plantas</button>
+                <button class="btn small" id="showAllRowsBtn" type="button">Ver todos</button>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table id="recordsTable">
+                <thead>
+                  <tr>
+                    <th data-sort="fecha">Fecha</th>
+                    <th data-sort="municipio">Municipio</th>
+                    <th data-sort="comunidad">Comunidad</th>
+                    <th data-sort="sitio">Sitio</th>
+                    <th data-sort="tenencia">Tenencia</th>
+                    <th data-sort="plantas">Plantas</th>
+                    <th data-sort="participantes">Participantes</th>
+                    <th data-sort="area">Área (m²)</th>
+                    <th data-sort="densidad">Plantas/m²</th>
+                    <th data-sort="institucion">Institución</th>
+                  </tr>
+                </thead>
+                <tbody id="recordsTbody"></tbody>
+              </table>
+            </div>
+            <div class="footer-note" id="tableFoot">—</div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // =========================
+    // Configuración y estado
+    // =========================
+    const DATA_URL = '../../data/puntos.geojson';
+    const RESUMEN_URL = '../../data/resumen.json';
+
+    const state = {
+      all: [],
+      filtered: [],
+      resumen: null,
+      charts: {},
+      map: null,
+      mapLayer: null,
+      sort: { key: 'fecha', dir: 'desc' },
+      tableMode: 'all',
+      loading: false
+    };
+
+    const refs = {
+      statusText: document.getElementById('statusText'),
+      recordCountPill: document.getElementById('recordCountPill'),
+      dataTimestampPill: document.getElementById('dataTimestampPill'),
+      filtersPill: document.getElementById('filtersPill'),
+      filterNarrative: document.getElementById('filterNarrative'),
+      scopePill: document.getElementById('scopePill'),
+
+      fBuscar: document.getElementById('fBuscar'),
+      fDesde: document.getElementById('fDesde'),
+      fHasta: document.getElementById('fHasta'),
+      fMunicipio: document.getElementById('fMunicipio'),
+      fInstitucion: document.getElementById('fInstitucion'),
+      fTenencia: document.getElementById('fTenencia'),
+      fMinPlantas: document.getElementById('fMinPlantas'),
+      fSoloFotos: document.getElementById('fSoloFotos'),
+      fSoloArea: document.getElementById('fSoloArea'),
+
+      miniRecords: document.getElementById('miniRecords'),
+      miniPlants: document.getElementById('miniPlants'),
+      miniArea: document.getElementById('miniArea'),
+      miniParticipants: document.getElementById('miniParticipants'),
+
+      kpiRegistros: document.getElementById('kpiRegistros'),
+      kpiRegistrosNote: document.getElementById('kpiRegistrosNote'),
+      kpiPlantas: document.getElementById('kpiPlantas'),
+      kpiPlantasNote: document.getElementById('kpiPlantasNote'),
+      kpiParticipantes: document.getElementById('kpiParticipantes'),
+      kpiParticipantesNote: document.getElementById('kpiParticipantesNote'),
+      kpiArea: document.getElementById('kpiArea'),
+      kpiAreaNote: document.getElementById('kpiAreaNote'),
+      kpiDensidad: document.getElementById('kpiDensidad'),
+      kpiDensidadNote: document.getElementById('kpiDensidadNote'),
+      kpiEficiencia: document.getElementById('kpiEficiencia'),
+      kpiEficienciaNote: document.getElementById('kpiEficienciaNote'),
+
+      mapSummaryPill: document.getElementById('mapSummaryPill'),
+      temporalPill: document.getElementById('temporalPill'),
+      temporalFoot: document.getElementById('temporalFoot'),
+      muniPill: document.getElementById('muniPill'),
+      tenenciaPill: document.getElementById('tenenciaPill'),
+      instPill: document.getElementById('instPill'),
+      eqAreaPlantas: document.getElementById('eqAreaPlantas'),
+      eqPartPlantas: document.getElementById('eqPartPlantas'),
+      eqAreaNote: document.getElementById('eqAreaNote'),
+      eqPartNote: document.getElementById('eqPartNote'),
+      histPill: document.getElementById('histPill'),
+
+      statsList: document.getElementById('statsList'),
+      insightsBox: document.getElementById('insightsBox'),
+      tablePill: document.getElementById('tablePill'),
+      tableMeta: document.getElementById('tableMeta'),
+      tableFoot: document.getElementById('tableFoot'),
+      recordsTbody: document.getElementById('recordsTbody')
+    };
+
+    // =========================
+    // Utilidades de formato y limpieza
+    // =========================
+    const ES_MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+    const MUNICIPIO_MAP = {
+      'panajachel':'Panajachel',
+      'san_andres_semetabaj':'San Andrés Semetabaj',
+      'solola':'Sololá',
+      'concepcion':'Concepción',
+      'nahuala':'Nahualá',
+      'santa_catarina_palopo':'Santa Catarina Palopó',
+      'santa_lucia_utatlan':'Santa Lucía Utatlán',
+      'santiago_atitlan':'Santiago Atitlán',
+      'san_antonio_palopo':'San Antonio Palopó',
+      'san_jose_chacaya':'San José Chacayá',
+      'san_juan_la_laguna':'San Juan La Laguna',
+      'san_lucas_toliman':'San Lucas Tolimán',
+      'san_marcos_la_laguna':'San Marcos La Laguna',
+      'san_pablo_la_laguna':'San Pablo La Laguna',
+      'san_pedro_la_laguna':'San Pedro La Laguna',
+      'santa_clara_la_laguna':'Santa Clara La Laguna',
+      'santa_cruz_la_laguna':'Santa Cruz La Laguna',
+      'santa_maria_visitacion':'Santa María Visitación',
+      'santa_maria_visitación':'Santa María Visitación'
+    };
+
+    const INSTITUCION_MAP = {
+      'amigos_lago_atitlan':'Amigos del Lago de Atitlán'
+    };
+
+    const VALUE_MAP = {
+      'yes':'Sí',
+      'no':'No',
+      'si':'Sí',
+      'sí':'Sí',
+      'private':'Privada',
+      'privada':'Privada',
+      'comunal':'Comunal',
+      'municipal':'Municipal',
+      'comunitaria':'Comunitaria',
+      'colectiva':'Colectiva'
+    };
+
+    function maybeFixMojibake(str){
+      if(typeof str !== 'string') return str;
+      let s = str.trim();
+      if(!s) return s;
+      const looksBroken = /Ã.|Â|â€™|â€œ|â€|ðŸ|�/.test(s);
+      if(!looksBroken) return s;
+      try{
+        const bytes = Uint8Array.from([...s].map(ch => ch.charCodeAt(0) & 255));
+        const dec = new TextDecoder('utf-8', {fatal:false}).decode(bytes);
+        if(dec && dec !== s && !/�/.test(dec)) return dec;
+      }catch(_){}
+      return s;
+    }
+
+    function titleCaseEs(str){
+      return String(str || '')
+        .split(' ')
+        .filter(Boolean)
+        .map(w => {
+          if(/^(de|del|la|las|los|y|e|en|a|al)$/i.test(w)) return w.toLowerCase();
+          if(/^[A-ZÁÉÍÓÚÑ]{2,}$/.test(w)) return w; // siglas
+          return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+        })
+        .join(' ')
+        .replace(/\bSig\b/g, 'SIG');
+    }
+
+    function cleanToken(raw, field=''){
+      if(raw == null) return '';
+      if(typeof raw === 'number') return Number.isFinite(raw) ? raw : '';
+      if(typeof raw === 'boolean') return raw ? 'Sí' : 'No';
+
+      let s = maybeFixMojibake(String(raw)).trim();
+      if(!s) return '';
+
+      if(field === 'municipios' && MUNICIPIO_MAP[s]) return MUNICIPIO_MAP[s];
+      if(field === 'instituciones' && INSTITUCION_MAP[s]) return INSTITUCION_MAP[s];
+
+      const lower = s.toLowerCase();
+      if(VALUE_MAP[lower]) return VALUE_MAP[lower];
+
+      s = s.replace(/[_]+/g,' ');
+      s = s.replace(/[-]{2,}/g,' ');
+      s = s.replace(/\s+/g,' ').trim();
+
+      if(/^[a-z0-9_]+$/.test(lower) && (field === 'municipios' || field === 'instituciones')){
+        return titleCaseEs(s);
+      }
+
+      return s;
+    }
+
+    function formatLabel(raw, field=''){
+      if(Array.isArray(raw)){
+        return raw.map(v => cleanToken(v, field)).filter(Boolean).join(', ');
+      }
+      const v = cleanToken(raw, field);
+      if(typeof v === 'number') return v.toString();
+      return v;
+    }
+
+    function num(val){
+      if(val == null || val === '') return NaN;
+      if(typeof val === 'number') return Number.isFinite(val) ? val : NaN;
+      const t = String(val).trim().replace(/,/g,'');
+      const n = Number(t);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function toISODateSafe(value){
+      if(!value) return '';
+      if(typeof value === 'string'){
+        const m = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+        if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+      }
+      const d = new Date(value);
+      if(Number.isNaN(d.getTime())) return '';
+      return d.toISOString().slice(0,10);
+    }
+
+    function parseDate(value){
+      const iso = toISODateSafe(value);
+      if(!iso) return null;
+      const d = new Date(iso + 'T00:00:00');
+      return Number.isNaN(d.getTime()) ? null : d;
+    }
+
+    function fmtDate(value){
+      const d = value instanceof Date ? value : parseDate(value);
+      if(!d) return 'Sin fecha';
+      return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
+    }
+
+    function fmtDateLong(value){
+      const d = value instanceof Date ? value : parseDate(value);
+      if(!d) return 'Sin fecha';
+      return `${d.getDate()} ${ES_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function fmtNum(n, max=0){
+      if(!Number.isFinite(n)) return '—';
+      return new Intl.NumberFormat('es-GT',{maximumFractionDigits:max}).format(n);
+    }
+
+    function fmtDec(n, max=2){
+      if(!Number.isFinite(n)) return '—';
+      return new Intl.NumberFormat('es-GT',{minimumFractionDigits:0, maximumFractionDigits:max}).format(n);
+    }
+
+    function pct(n, total, max=1){
+      if(!Number.isFinite(n) || !Number.isFinite(total) || total <= 0) return '—';
+      return `${fmtDec((n/total)*100, max)}%`;
+    }
+
+    function nvl(v, fallback='—'){
+      return (v == null || v === '' || (typeof v === 'number' && !Number.isFinite(v))) ? fallback : v;
+    }
+
+    function sum(arr){ return arr.reduce((a,b)=>a + (Number.isFinite(b)?b:0), 0); }
+    function mean(arr){
+      const vals = arr.filter(Number.isFinite);
+      return vals.length ? sum(vals)/vals.length : NaN;
+    }
+    function median(arr){
+      const vals = arr.filter(Number.isFinite).slice().sort((a,b)=>a-b);
+      if(!vals.length) return NaN;
+      const mid = Math.floor(vals.length/2);
+      return vals.length % 2 ? vals[mid] : (vals[mid-1] + vals[mid])/2;
+    }
+    function stdDev(arr){
+      const vals = arr.filter(Number.isFinite);
+      if(vals.length < 2) return NaN;
+      const m = mean(vals);
+      const variance = vals.reduce((acc,v)=>acc + Math.pow(v-m,2), 0)/(vals.length-1);
+      return Math.sqrt(variance);
+    }
+    function quantile(arr, q){
+      const vals = arr.filter(Number.isFinite).slice().sort((a,b)=>a-b);
+      if(!vals.length) return NaN;
+      if(vals.length === 1) return vals[0];
+      const pos = (vals.length - 1) * q;
+      const base = Math.floor(pos);
+      const rest = pos - base;
+      const next = vals[base + 1] ?? vals[base];
+      return vals[base] + rest * (next - vals[base]);
+    }
+    function range(arr){
+      const vals = arr.filter(Number.isFinite);
+      if(!vals.length) return [NaN, NaN];
+      return [Math.min(...vals), Math.max(...vals)];
+    }
+
+    function linearRegression(points){
+      const pts = points.filter(p => Number.isFinite(p.x) && Number.isFinite(p.y));
+      if(pts.length < 2) return null;
+      const xs = pts.map(p=>p.x);
+      const ys = pts.map(p=>p.y);
+      const xMean = mean(xs), yMean = mean(ys);
+      let nume = 0, deno = 0;
+      for(const p of pts){
+        nume += (p.x - xMean) * (p.y - yMean);
+        deno += Math.pow(p.x - xMean, 2);
+      }
+      if(deno === 0) return null;
+      const m = nume / deno;
+      const b = yMean - m * xMean;
+      const yhat = pts.map(p => m*p.x + b);
+      let ssRes = 0, ssTot = 0;
+      for(let i=0;i<pts.length;i++){
+        ssRes += Math.pow(pts[i].y - yhat[i], 2);
+        ssTot += Math.pow(pts[i].y - yMean, 2);
+      }
+      const r2 = ssTot === 0 ? 1 : (1 - ssRes/ssTot);
+      const xMin = Math.min(...xs), xMax = Math.max(...xs);
+      return {
+        m,b,r2,n:pts.length,
+        line:[
+          {x:xMin, y: m*xMin + b},
+          {x:xMax, y: m*xMax + b}
+        ]
+      };
+    }
+
+    function regressionLabel(reg, yName='y', xName='x'){
+      if(!reg) return 'Ecuación: n/d';
+      const m = fmtDec(reg.m, 3);
+      const bAbs = fmtDec(Math.abs(reg.b), 2);
+      const sign = reg.b >= 0 ? '+' : '−';
+      return `Ecuación: ${yName} = ${m}·${xName} ${sign} ${bAbs} · R²=${fmtDec(reg.r2,3)}`;
+    }
+
+    function histogram(values, desiredBins){
+      const vals = values.filter(v => Number.isFinite(v)).slice().sort((a,b)=>a-b);
+      if(!vals.length) return { labels:[], counts:[] };
+      const minV = vals[0], maxV = vals[vals.length-1];
+      if(minV === maxV){
+        return { labels:[`${fmtNum(minV)}–${fmtNum(maxV)}`], counts:[vals.length] };
+      }
+      const bins = Math.max(3, Math.min(10, desiredBins || Math.round(Math.sqrt(vals.length))));
+      const width = (maxV - minV) / bins;
+      const counts = new Array(bins).fill(0);
+      const edges = new Array(bins + 1).fill(0).map((_,i)=> minV + i*width);
+      for(const v of vals){
+        let idx = Math.floor((v - minV) / width);
+        if(idx >= bins) idx = bins - 1;
+        if(idx < 0) idx = 0;
+        counts[idx]++;
+      }
+      const labels = counts.map((_,i) => {
+        const a = edges[i];
+        const b = edges[i+1];
+        return `${fmtNum(Math.round(a))}–${fmtNum(Math.round(b))}`;
+      });
+      return { labels, counts };
+    }
+
+    function groupSum(records, keyFn, valueFn){
+      const map = new Map();
+      for(const r of records){
+        const k = keyFn(r);
+        const key = (k == null || k === '') ? 'Sin dato' : k;
+        const v = valueFn ? valueFn(r) : 1;
+        map.set(key, (map.get(key) || 0) + (Number.isFinite(v) ? v : 0));
+      }
+      return map;
+    }
+
+    function groupCount(records, keyFn){
+      return groupSum(records, keyFn, () => 1);
+    }
+
+    function sortMapDesc(map, limit){
+      const arr = [...map.entries()].sort((a,b)=>b[1]-a[1]);
+      return Number.isFinite(limit) ? arr.slice(0, limit) : arr;
+    }
+
+    function extent(records){
+      const coords = records
+        .map(r => [r.lat, r.lon])
+        .filter(([lat,lon]) => Number.isFinite(lat) && Number.isFinite(lon));
+      if(!coords.length) return null;
+      let minLat=Infinity, minLon=Infinity, maxLat=-Infinity, maxLon=-Infinity;
+      for(const [lat,lon] of coords){
+        if(lat<minLat) minLat=lat;
+        if(lat>maxLat) maxLat=lat;
+        if(lon<minLon) minLon=lon;
+        if(lon>maxLon) maxLon=lon;
+      }
+      return [[minLat,minLon],[maxLat,maxLon]];
+    }
+
+    function downloadBlob(filename, text, type='text/plain;charset=utf-8'){
+      const blob = new Blob([text], {type});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    }
+
+    function csvEscape(v){
+      const s = (v == null) ? '' : String(v);
+      if(/[",\n;]/.test(s)) return `"${s.replace(/"/g,'""')}"`;
+      return s;
+    }
+
+    // =========================
+    // Carga y normalización de datos
+    // =========================
+    async function fetchJSON(url){
+      const res = await fetch(url, {cache:'no-store'});
+      if(!res.ok) throw new Error(`No se pudo cargar ${url} (${res.status})`);
+      return res.json();
+    }
+
+    async function loadData(){
+      state.loading = true;
+      refs.statusText.textContent = 'Cargando GeoJSON y resumen…';
+      try{
+        const [geojson, resumen] = await Promise.all([
+          fetchJSON(DATA_URL),
+          fetchJSON(RESUMEN_URL).catch(() => null)
+        ]);
+
+        const records = normalizeGeoJSON(geojson);
+        state.all = records;
+        state.resumen = resumen;
+
+        populateFilterOptions(records);
+        applyFilters({preserveDateIfExists:true});
+        updateGlobalBadges();
+
+        refs.statusText.innerHTML = `Datos cargados correctamente · <b>${fmtNum(records.length)}</b> registros`;
+      }catch(err){
+        console.error(err);
+        refs.statusText.textContent = 'Error al cargar datos. Verifica rutas y archivos en /data/';
+        renderEmptyDashboard(err.message || 'Error de carga');
+      }finally{
+        state.loading = false;
+      }
+    }
+
+    function normalizeGeoJSON(geojson){
+      const feats = Array.isArray(geojson?.features) ? geojson.features : [];
+      return feats.map((f, i) => {
+        const p = f?.properties || {};
+        const coords = Array.isArray(f?.geometry?.coordinates) ? f.geometry.coordinates : [];
+        const lon = num(coords[0]), lat = num(coords[1]);
+
+        const fechaISO = toISODateSafe(p.fecha_actividad);
+        const fechaObj = parseDate(fechaISO);
+        const municipios = Array.isArray(p.municipios) ? p.municipios.map(v=>formatLabel(v,'municipios')).filter(Boolean) : [formatLabel(p.municipios,'municipios')].filter(Boolean);
+        const instituciones = Array.isArray(p.instituciones) ? p.instituciones.map(v=>formatLabel(v,'instituciones')).filter(Boolean) : [formatLabel(p.instituciones,'instituciones')].filter(Boolean);
+
+        const comunidad = formatLabel(p.comunidad, 'comunidad');
+        const sitio = formatLabel(p.sitio_nombre, 'sitio_nombre');
+        const tenencia = formatLabel(p.tenencia, 'tenencia');
+        const observaciones = formatLabel(p.observaciones, 'observaciones');
+        const autorizacionFotos = formatLabel(p.autoriza_fotos, 'autoriza_fotos');
+        const fotoSitio = String(p.foto_sitio_url || '').trim();
+        const fotoActividad = String(p.foto_actividad_url || '').trim();
+
+        const plantas = num(p.total_plantas);
+        const participantes = num(p.total_participantes);
+        const area = num(p.area_m2);
+
+        const densidad = (Number.isFinite(plantas) && Number.isFinite(area) && area > 0) ? (plantas / area) : NaN;
+        const plantasPorParticipante = (Number.isFinite(plantas) && Number.isFinite(participantes) && participantes > 0) ? (plantas / participantes) : NaN;
+
+        const muniPrincipal = municipios[0] || 'Sin dato';
+        const instPrincipal = instituciones[0] || (formatLabel(p.institucion_resp_otro,'institucion_resp_otro') || 'Sin dato');
+
+        const searchBlob = [
+          p.id, fechaISO, muniPrincipal, municipios.join(' '), comunidad, sitio,
+          instPrincipal, instituciones.join(' '), tenencia, observaciones
+        ].map(v => formatLabel(v)).join(' | ').toLowerCase();
+
+        return {
+          _idx: i,
+          id: String(p.id ?? ''),
+          fechaISO, fechaObj,
+          fechaLabel: fmtDate(fechaObj),
+          municipio: muniPrincipal,
+          municipios,
+          comunidad,
+          sitio,
+          institucion: instPrincipal,
+          instituciones,
+          tenencia,
+          observaciones,
+          autorizacionFotos,
+          hasFotos: ['Sí','yes','si','sí'].includes(String(autorizacionFotos)),
+          fotoSitio, fotoActividad,
+          plantas: Number.isFinite(plantas) ? plantas : 0,
+          participantes: Number.isFinite(participantes) ? participantes : 0,
+          area: Number.isFinite(area) ? area : 0,
+          densidad,
+          plantasPorParticipante,
+          lat: Number.isFinite(lat) ? lat : NaN,
+          lon: Number.isFinite(lon) ? lon : NaN,
+          raw: p,
+          searchBlob
+        };
+      });
+    }
+
+    function populateFilterOptions(records){
+      const municipios = [...new Set(records.map(r=>r.municipio).filter(Boolean))].sort(localeSort);
+      const instituciones = [...new Set(records.map(r=>r.institucion).filter(Boolean))].sort(localeSort);
+      const tenencias = [...new Set(records.map(r=>r.tenencia).filter(Boolean))].sort(localeSort);
+
+      fillMultiSelect(refs.fMunicipio, municipios);
+      fillMultiSelect(refs.fInstitucion, instituciones);
+      fillMultiSelect(refs.fTenencia, tenencias);
+
+      // Fechas por defecto según datos (sin forzar filtros)
+      const validDates = records.map(r => r.fechaISO).filter(Boolean).sort();
+      if(validDates.length){
+        refs.fDesde.min = validDates[0];
+        refs.fDesde.max = validDates.at(-1);
+        refs.fHasta.min = validDates[0];
+        refs.fHasta.max = validDates.at(-1);
+      }
+    }
+
+    function fillMultiSelect(selectEl, values){
+      const selected = new Set([...selectEl.options].filter(o=>o.selected).map(o=>o.value));
+      selectEl.innerHTML = '';
+      for(const v of values){
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        if(selected.has(v)) opt.selected = true;
+        selectEl.appendChild(opt);
+      }
+    }
+
+    function selectedValues(selectEl){
+      return [...selectEl.selectedOptions].map(o=>o.value);
+    }
+
+    function localeSort(a,b){
+      return String(a).localeCompare(String(b), 'es', {sensitivity:'base'});
+    }
+
+    // =========================
+    // Filtros y render
+    // =========================
+    function getFilterState(){
+      return {
+        buscar: refs.fBuscar.value.trim().toLowerCase(),
+        desde: refs.fDesde.value || '',
+        hasta: refs.fHasta.value || '',
+        municipios: new Set(selectedValues(refs.fMunicipio)),
+        instituciones: new Set(selectedValues(refs.fInstitucion)),
+        tenencias: new Set(selectedValues(refs.fTenencia)),
+        minPlantas: refs.fMinPlantas.value === '' ? null : Math.max(0, Number(refs.fMinPlantas.value)),
+        soloFotos: refs.fSoloFotos.checked,
+        soloArea: refs.fSoloArea.checked
+      };
+    }
+
+    function applyFilters(opts = {}){
+      const f = getFilterState();
+      const filtered = state.all.filter(r => {
+        if(f.buscar && !r.searchBlob.includes(f.buscar)) return false;
+        if(f.desde && r.fechaISO && r.fechaISO < f.desde) return false;
+        if(f.hasta && r.fechaISO && r.fechaISO > f.hasta) return false;
+        if(f.municipios.size && !f.municipios.has(r.municipio)) return false;
+        if(f.instituciones.size && !f.instituciones.has(r.institucion)) return false;
+        if(f.tenencias.size && !f.tenencias.has(r.tenencia)) return false;
+        if(f.minPlantas != null && r.plantas < f.minPlantas) return false;
+        if(f.soloFotos && !r.hasFotos) return false;
+        if(f.soloArea && !(r.area > 0)) return false;
+        return true;
+      });
+
+      state.filtered = filtered;
+      updateFilterPills(f, filtered.length);
+      renderDashboard();
+    }
+
+    function resetFilters(){
+      refs.fBuscar.value = '';
+      refs.fDesde.value = '';
+      refs.fHasta.value = '';
+      refs.fMinPlantas.value = '';
+      refs.fSoloFotos.checked = false;
+      refs.fSoloArea.checked = false;
+      for(const sel of [refs.fMunicipio, refs.fInstitucion, refs.fTenencia]){
+        for(const o of sel.options) o.selected = false;
+      }
+      state.tableMode = 'all';
+      applyFilters();
+    }
+
+    function updateFilterPills(f, count){
+      const active = [];
+      if(f.buscar) active.push('texto');
+      if(f.desde || f.hasta) active.push('fecha');
+      if(f.municipios.size) active.push(`municipio (${f.municipios.size})`);
+      if(f.instituciones.size) active.push(`institución (${f.instituciones.size})`);
+      if(f.tenencias.size) active.push(`tenencia (${f.tenencias.size})`);
+      if(f.minPlantas != null) active.push(`mín. plantas`);
+      if(f.soloFotos) active.push('con fotos');
+      if(f.soloArea) active.push('con área');
+
+      refs.filtersPill.textContent = active.length ? `${active.length} filtros` : 'Sin filtros';
+      refs.filterNarrative.textContent = active.length
+        ? `Filtros activos: ${active.join(', ')}. Resultado actual: ${fmtNum(count)} registros.`
+        : 'Sin filtros activos.';
+      refs.scopePill.textContent = active.length ? 'Filtrado' : 'Global';
+    }
+
+    function updateGlobalBadges(){
+      refs.recordCountPill.textContent = `${fmtNum(state.all.length)} registros`;
+      const r = state.resumen;
+      if(r?.ultima_actualizacion){
+        refs.dataTimestampPill.textContent = `Actualización: ${fmtDateLong(r.ultima_actualizacion)}`;
+      }else{
+        const maxDate = state.all.map(x=>x.fechaObj).filter(Boolean).sort((a,b)=>b-a)[0];
+        refs.dataTimestampPill.textContent = maxDate ? `Última fecha: ${fmtDateLong(maxDate)}` : 'Sin fecha';
+      }
+    }
+
+    function renderEmptyDashboard(msg){
+      state.filtered = [];
+      renderKPIs([]);
+      renderMiniMap([]);
+      renderCharts([]);
+      renderStats([]);
+      renderInsights([], {error: msg || 'Sin datos'});
+      renderTable([]);
+    }
+
+    function renderDashboard(){
+      const data = state.filtered;
+      renderKPIs(data);
+      renderMiniMap(data);
+      renderCharts(data);
+      renderStats(data);
+      renderInsights(data);
+      renderTable(data);
+    }
+
+    // =========================
+    // KPI / métricas
+    // =========================
+    function renderKPIs(data){
+      const n = data.length;
+      const plantas = sum(data.map(r=>r.plantas));
+      const participantes = sum(data.map(r=>r.participantes));
+      const areaTotal = sum(data.map(r=>r.area));
+      const densidades = data.map(r=>r.densidad).filter(Number.isFinite);
+      const ppp = data.map(r=>r.plantasPorParticipante).filter(Number.isFinite);
+
+      const promPlantas = mean(data.map(r=>r.plantas));
+      const medPlantas = median(data.map(r=>r.plantas));
+      const promParticipantes = mean(data.map(r=>r.participantes));
+      const promArea = mean(data.map(r=>r.area).filter(v=>v>0));
+      const densidadPonderada = areaTotal > 0 ? plantas / areaTotal : NaN;
+      const pppGlobal = participantes > 0 ? plantas / participantes : NaN;
+
+      refs.miniRecords.textContent = fmtNum(n);
+      refs.miniPlants.textContent = fmtNum(plantas);
+      refs.miniArea.textContent = `${fmtNum(areaTotal)} m²`;
+      refs.miniParticipants.textContent = fmtNum(participantes);
+
+      refs.kpiRegistros.textContent = fmtNum(n);
+      refs.kpiRegistrosNote.textContent = n ? `Cobertura en ${fmtNum(new Set(data.map(r=>r.municipio)).size)} municipio(s)` : 'Sin datos';
+
+      refs.kpiPlantas.textContent = fmtNum(plantas);
+      refs.kpiPlantasNote.textContent = Number.isFinite(promPlantas)
+        ? `Promedio ${fmtDec(promPlantas,1)} · Mediana ${fmtDec(medPlantas,1)}`
+        : 'Sin datos';
+
+      refs.kpiParticipantes.textContent = fmtNum(participantes);
+      refs.kpiParticipantesNote.textContent = Number.isFinite(promParticipantes)
+        ? `Promedio ${fmtDec(promParticipantes,1)} por registro`
+        : 'Sin datos';
+
+      refs.kpiArea.textContent = `${fmtNum(areaTotal)} m²`;
+      refs.kpiAreaNote.textContent = Number.isFinite(promArea)
+        ? `Promedio ${fmtDec(promArea,1)} m² (registros con área)`
+        : 'Sin área reportada';
+
+      refs.kpiDensidad.textContent = Number.isFinite(densidadPonderada) ? fmtDec(densidadPonderada,2) : '—';
+      refs.kpiDensidadNote.textContent = densidades.length
+        ? `Promedio simple ${fmtDec(mean(densidades),2)} · Mediana ${fmtDec(median(densidades),2)}`
+        : 'Plantas por m²';
+
+      refs.kpiEficiencia.textContent = Number.isFinite(pppGlobal) ? fmtDec(pppGlobal,2) : '—';
+      refs.kpiEficienciaNote.textContent = ppp.length
+        ? `Promedio por registro ${fmtDec(mean(ppp),2)}`
+        : 'Promedio por registro';
+    }
+
+    // =========================
+    // Mapa mini
+    // =========================
+    function ensureMiniMap(){
+      if(state.map) return state.map;
+      const map = L.map('miniMap', {
+        zoomControl: true,
+        preferCanvas: true,
+        attributionControl: true
+      }).setView([14.77, -91.18], 10);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
+
+      state.mapLayer = L.layerGroup().addTo(map);
+      state.map = map;
+      return map;
+    }
+
+    function markerHTML(){
+      return '<div class="tree-marker"><span>🌳</span></div>';
+    }
+
+    function renderMiniMap(data){
+      const map = ensureMiniMap();
+      state.mapLayer.clearLayers();
+
+      let count = 0;
+      for(const r of data){
+        if(!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+        const marker = L.marker([r.lat, r.lon], {
+          icon: L.divIcon({
+            className: '',
+            html: markerHTML(),
+            iconSize: [24,24],
+            iconAnchor: [12,12],
+            popupAnchor: [0,-10]
+          })
+        });
+
+        const popup = `
+          <div class="mini-popup">
+            <div class="r"><b>Fecha:</b> ${escapeHtml(r.fechaLabel)}</div>
+            <div class="r"><b>Municipio:</b> ${escapeHtml(r.municipio)}</div>
+            <div class="r"><b>Comunidad:</b> ${escapeHtml(nvl(r.comunidad,''))}</div>
+            <div class="r"><b>Sitio:</b> ${escapeHtml(nvl(r.sitio,''))}</div>
+            <div class="r"><b>Plantas:</b> ${fmtNum(r.plantas)}</div>
+            <div class="r"><b>Participantes:</b> ${fmtNum(r.participantes)}</div>
+            <div class="r"><b>Área:</b> ${fmtNum(r.area)} m²</div>
+          </div>
+        `;
+        marker.bindPopup(popup);
+        marker.addTo(state.mapLayer);
+        count++;
+      }
+
+      refs.mapSummaryPill.textContent = `${fmtNum(count)} puntos`;
+
+      if(count){
+        const ex = extent(data);
+        if(ex){
+          map.fitBounds(ex, {padding:[18,18], maxZoom:14});
+        }
+      }else{
+        map.setView([14.77, -91.18], 10);
+      }
+
+      setTimeout(() => map.invalidateSize(), 50);
+    }
+
+    function escapeHtml(s){
+      return String(s ?? '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+
+    // =========================
+    // Charts
+    // =========================
+    function chartDefaultOptions(){
+      return {
+        responsive:true,
+        maintainAspectRatio:false,
+        animation:false,
+        plugins:{
+          legend:{
+            labels:{
+              color:'#355865',
+              boxWidth:10, boxHeight:10,
+              usePointStyle:true,
+              pointStyle:'circle',
+              font:{family:'Inter', size:11, weight:'600'}
+            }
+          },
+          tooltip:{
+            backgroundColor:'rgba(14,44,56,.94)',
+            titleColor:'#e7fbff',
+            bodyColor:'#e7fbff',
+            borderColor:'rgba(103,200,214,.35)',
+            borderWidth:1,
+            padding:10,
+            titleFont:{family:'Inter', weight:'700'},
+            bodyFont:{family:'Inter'}
+          }
+        },
+        scales:{
+          x:{
+            ticks:{color:'#557582', font:{family:'Inter', size:11}},
+            grid:{color:'rgba(18,79,97,.08)'},
+            border:{color:'rgba(18,79,97,.10)'}
+          },
+          y:{
+            ticks:{color:'#557582', font:{family:'Inter', size:11}},
+            grid:{color:'rgba(18,79,97,.08)'},
+            border:{color:'rgba(18,79,97,.10)'}
+          }
+        }
+      };
+    }
+
+    function createOrUpdateChart(key, canvasId, config){
+      const el = document.getElementById(canvasId);
+      if(!el) return;
+      if(state.charts[key]){
+        state.charts[key].destroy();
+      }
+      state.charts[key] = new Chart(el.getContext('2d'), config);
+    }
+
+    function destroyAllCharts(){
+      for(const k of Object.keys(state.charts)){
+        try{ state.charts[k].destroy(); }catch(_){}
+      }
+      state.charts = {};
+    }
+
+    function renderCharts(data){
+      renderTemporalChart(data);
+      renderMunicipiosChart(data);
+      renderTenenciaChart(data);
+      renderInstitucionesChart(data);
+      renderScatterAreaPlantas(data);
+      renderScatterPartPlantas(data);
+      renderHistPlantas(data);
+    }
+
+    function renderTemporalChart(data){
+      const byDate = new Map();
+      for(const r of data){
+        const key = r.fechaISO || 'Sin fecha';
+        if(!byDate.has(key)) byDate.set(key, {registros:0, plantas:0, participantes:0});
+        const o = byDate.get(key);
+        o.registros += 1;
+        o.plantas += r.plantas || 0;
+        o.participantes += r.participantes || 0;
+      }
+      const rows = [...byDate.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
+      const labels = rows.map(([k]) => (k === 'Sin fecha' ? 'Sin fecha' : fmtDate(k)));
+      const registros = rows.map(([,v]) => v.registros);
+      const plantas = rows.map(([,v]) => v.plantas);
+      const participantes = rows.map(([,v]) => v.participantes);
+
+      refs.temporalPill.textContent = rows.length ? `${fmtNum(rows.length)} fechas` : 'Sin datos';
+
+      if(!rows.length){
+        createEmptyChart('temporal', 'chartTemporal', 'Sin datos temporales');
+        refs.temporalFoot.textContent = 'No hay registros para construir la serie temporal.';
+        return;
+      }
+
+      const opts = chartDefaultOptions();
+      opts.interaction = {mode:'index', intersect:false};
+      opts.scales.y.beginAtZero = true;
+      opts.scales.y.title = {display:true, text:'Cantidad', color:'#557582', font:{family:'Inter', size:11, weight:'700'}};
+
+      createOrUpdateChart('temporal', 'chartTemporal', {
+        type:'line',
+        data:{
+          labels,
+          datasets:[
+            {
+              label:'Registros',
+              data:registros,
+              borderColor:'#2fad7a',
+              backgroundColor:'rgba(47,173,122,.16)',
+              fill:true,
+              tension:.28,
+              pointRadius:3,
+              pointHoverRadius:4,
+              yAxisID:'y'
+            },
+            {
+              label:'Plantas',
+              data:plantas,
+              borderColor:'#3fa2e0',
+              backgroundColor:'rgba(63,162,224,.12)',
+              fill:false,
+              tension:.28,
+              pointRadius:3,
+              pointHoverRadius:4,
+              yAxisID:'y1'
+            },
+            {
+              label:'Participantes',
+              data:participantes,
+              borderColor:'#66cad8',
+              backgroundColor:'rgba(102,202,216,.12)',
+              fill:false,
+              tension:.28,
+              pointRadius:3,
+              pointHoverRadius:4,
+              yAxisID:'y'
+            }
+          ]
+        },
+        options:{
+          ...opts,
+          scales:{
+            x: opts.scales.x,
+            y: {
+              ...opts.scales.y,
+              beginAtZero:true,
+              position:'left',
+              title:{display:true, text:'Registros / Participantes', color:'#557582', font:{family:'Inter', size:11, weight:'700'}}
+            },
+            y1: {
+              ...opts.scales.y,
+              beginAtZero:true,
+              position:'right',
+              grid:{drawOnChartArea:false, color:'rgba(18,79,97,.05)'},
+              title:{display:true, text:'Plantas', color:'#557582', font:{family:'Inter', size:11, weight:'700'}}
+            }
+          }
+        }
+      });
+
+      const totalDays = rows.length;
+      const maxPlantas = Math.max(...plantas);
+      const idxMax = plantas.findIndex(v => v === maxPlantas);
+      refs.temporalFoot.textContent = `Pico de plantas: ${fmtNum(maxPlantas)} en ${labels[idxMax]} · Cobertura temporal: ${fmtNum(totalDays)} fecha(s).`;
+    }
+
+    function renderMunicipiosChart(data){
+      const map = groupSum(data, r=>r.municipio, r=>r.plantas);
+      const rows = sortMapDesc(map, 8);
+      refs.muniPill.textContent = `${fmtNum(map.size)} municipios`;
+
+      if(!rows.length){
+        createEmptyChart('municipios','chartMunicipios','Sin datos por municipio');
+        return;
+      }
+
+      const labels = rows.map(r=>r[0]);
+      const vals = rows.map(r=>r[1]);
+
+      const opts = chartDefaultOptions();
+      opts.indexAxis = 'y';
+      opts.scales.x.beginAtZero = true;
+      opts.plugins.legend.display = false;
+
+      createOrUpdateChart('municipios','chartMunicipios', {
+        type:'bar',
+        data:{
+          labels,
+          datasets:[{
+            label:'Plantas',
+            data:vals,
+            borderRadius:8,
+            backgroundColor:['#2fad7a','#66cad8','#7eddbf','#3fa2e0','#9ce6ee','#54c59e','#8bd5f0','#b9f1ea']
+          }]
+        },
+        options: opts
+      });
+    }
+
+    function renderTenenciaChart(data){
+      const map = groupCount(data, r=>r.tenencia || 'Sin dato');
+      const rows = sortMapDesc(map);
+      refs.tenenciaPill.textContent = rows.length ? `${fmtNum(rows.length)} categorías` : 'Sin datos';
+
+      if(!rows.length){
+        createEmptyChart('tenencia','chartTenencia','Sin datos de tenencia');
+        return;
+      }
+
+      const labels = rows.map(r=>r[0]);
+      const vals = rows.map(r=>r[1]);
+
+      const opts = chartDefaultOptions();
+      opts.plugins.legend.position = 'bottom';
+      opts.scales = {};
+      createOrUpdateChart('tenencia','chartTenencia', {
+        type:'doughnut',
+        data:{
+          labels,
+          datasets:[{
+            data:vals,
+            borderColor:'rgba(255,255,255,.9)',
+            borderWidth:2,
+            backgroundColor:['#2fad7a','#66cad8','#7eddbf','#3fa2e0','#9ce6ee','#badcf6']
+          }]
+        },
+        options:{
+          ...opts,
+          cutout:'58%'
+        }
+      });
+    }
+
+    function renderInstitucionesChart(data){
+      const map = groupSum(data, r=>r.institucion, r=>r.participantes);
+      const rows = sortMapDesc(map, 8);
+      refs.instPill.textContent = `${fmtNum(map.size)} instituciones`;
+
+      if(!rows.length){
+        createEmptyChart('instituciones','chartInstituciones','Sin datos por institución');
+        return;
+      }
+
+      const labels = rows.map(r=>r[0]);
+      const vals = rows.map(r=>r[1]);
+
+      const opts = chartDefaultOptions();
+      opts.plugins.legend.display = false;
+      opts.scales.y.beginAtZero = true;
+      createOrUpdateChart('instituciones','chartInstituciones', {
+        type:'bar',
+        data:{
+          labels,
+          datasets:[{
+            label:'Participantes',
+            data:vals,
+            borderRadius:8,
+            backgroundColor:'rgba(102,202,216,.75)',
+            borderColor:'#4fa6b6',
+            borderWidth:1.2
+          }]
+        },
+        options:{
+          ...opts,
+          scales:{
+            x:{...opts.scales.x, ticks:{...opts.scales.x.ticks, maxRotation:0, minRotation:0}},
+            y:{...opts.scales.y, beginAtZero:true}
+          }
+        }
+      });
+    }
+
+    function renderScatterAreaPlantas(data){
+      const pts = data
+        .filter(r => r.area > 0 && r.plantas >= 0)
+        .map(r => ({x:r.area, y:r.plantas, municipio:r.municipio, sitio:r.sitio, fecha:r.fechaLabel}));
+      const reg = linearRegression(pts);
+      refs.eqAreaPlantas.textContent = regressionLabel(reg, 'Plantas', 'Área');
+      refs.eqAreaNote.textContent = pts.length
+        ? `Muestra usada: ${fmtNum(pts.length)} registro(s) con área > 0. ${reg ? `R²=${fmtDec(reg.r2,3)}` : 'No se pudo ajustar línea (área constante o pocos datos).'}` 
+        : 'No hay registros con área > 0 para estimar tendencia.';
+
+      if(!pts.length){
+        createEmptyChart('areaPlantas','chartAreaPlantas','Sin datos válidos de área');
+        return;
+      }
+
+      const opts = chartDefaultOptions();
+      opts.plugins.tooltip.callbacks = {
+        label(ctx){
+          const raw = ctx.raw || {};
+          if(ctx.dataset.label?.startsWith('Tendencia')){
+            return ` ${ctx.dataset.label}`;
+          }
+          const base = ` Área ${fmtDec(raw.x,1)} m² · Plantas ${fmtNum(raw.y)}`;
+          if(raw.meta) return `${base} · ${raw.meta}`;
+          return base;
+        }
+      };
+      opts.scales.x.title = {display:true, text:'Área (m²)', color:'#557582', font:{family:'Inter', size:11, weight:'700'}};
+      opts.scales.y.title = {display:true, text:'Plantas', color:'#557582', font:{family:'Inter', size:11, weight:'700'}};
+      opts.scales.x.beginAtZero = true;
+      opts.scales.y.beginAtZero = true;
+
+      createOrUpdateChart('areaPlantas','chartAreaPlantas', {
+        type:'scatter',
+        data:{
+          datasets:[
+            {
+              label:'Registros',
+              data: pts.map(p => ({x:p.x, y:p.y, meta:`${p.municipio}${p.sitio ? ' · ' + p.sitio : ''}` })),
+              pointRadius:5,
+              pointHoverRadius:6,
+              pointBackgroundColor:'rgba(47,173,122,.80)',
+              pointBorderColor:'#1e7f5a',
+              pointBorderWidth:1.2
+            },
+            ...(reg ? [{
+              label:`Tendencia (${fmtDec(reg.m,3)}x ${reg.b>=0?'+':'-'} ${fmtDec(Math.abs(reg.b),2)} · R²=${fmtDec(reg.r2,3)})`,
+              data: reg.line,
+              showLine:true,
+              pointRadius:0,
+              borderWidth:2,
+              borderColor:'#3fa2e0',
+              backgroundColor:'rgba(63,162,224,.15)',
+              tension:0
+            }] : [])
+          ]
+        },
+        options: opts
+      });
+    }
+
+    function renderScatterPartPlantas(data){
+      const pts = data
+        .filter(r => r.participantes > 0 && r.plantas >= 0)
+        .map(r => ({x:r.participantes, y:r.plantas, municipio:r.municipio, sitio:r.sitio, fecha:r.fechaLabel}));
+      const reg = linearRegression(pts);
+      refs.eqPartPlantas.textContent = regressionLabel(reg, 'Plantas', 'Participantes');
+      refs.eqPartNote.textContent = pts.length
+        ? `Muestra usada: ${fmtNum(pts.length)} registro(s) con participantes > 0. ${reg ? `R²=${fmtDec(reg.r2,3)}` : 'No se pudo ajustar línea (participantes constantes o pocos datos).'}` 
+        : 'No hay registros válidos para estimar tendencia.';
+
+      if(!pts.length){
+        createEmptyChart('partPlantas','chartPartPlantas','Sin datos válidos de participantes');
+        return;
+      }
+
+      const opts = chartDefaultOptions();
+      opts.plugins.tooltip.callbacks = {
+        label(ctx){
+          const raw = ctx.raw || {};
+          if(ctx.dataset.label?.startsWith('Tendencia')){
+            return ` ${ctx.dataset.label}`;
+          }
+          const base = ` Participantes ${fmtNum(raw.x)} · Plantas ${fmtNum(raw.y)}`;
+          if(raw.meta) return `${base} · ${raw.meta}`;
+          return base;
+        }
+      };
+      opts.scales.x.title = {display:true, text:'Participantes', color:'#557582', font:{family:'Inter', size:11, weight:'700'}};
+      opts.scales.y.title = {display:true, text:'Plantas', color:'#557582', font:{family:'Inter', size:11, weight:'700'}};
+      opts.scales.x.beginAtZero = true;
+      opts.scales.y.beginAtZero = true;
+
+      createOrUpdateChart('partPlantas','chartPartPlantas', {
+        type:'scatter',
+        data:{
+          datasets:[
+            {
+              label:'Registros',
+              data: pts.map(p => ({x:p.x, y:p.y, meta:`${p.municipio}${p.sitio ? ' · ' + p.sitio : ''}` })),
+              pointRadius:5,
+              pointHoverRadius:6,
+              pointBackgroundColor:'rgba(102,202,216,.85)',
+              pointBorderColor:'#3f97a5',
+              pointBorderWidth:1.2
+            },
+            ...(reg ? [{
+              label:`Tendencia (${fmtDec(reg.m,3)}x ${reg.b>=0?'+':'-'} ${fmtDec(Math.abs(reg.b),2)} · R²=${fmtDec(reg.r2,3)})`,
+              data: reg.line,
+              showLine:true,
+              pointRadius:0,
+              borderWidth:2,
+              borderColor:'#2fad7a',
+              backgroundColor:'rgba(47,173,122,.15)',
+              tension:0
+            }] : [])
+          ]
+        },
+        options: opts
+      });
+    }
+
+    function renderHistPlantas(data){
+      const vals = data.map(r=>r.plantas).filter(v=>Number.isFinite(v) && v >= 0);
+      const h = histogram(vals);
+      refs.histPill.textContent = h.labels.length ? `${fmtNum(h.labels.length)} clases` : 'Sin datos';
+
+      if(!h.labels.length){
+        createEmptyChart('histPlantas','chartHistPlantas','Sin datos de plantas');
+        return;
+      }
+
+      const opts = chartDefaultOptions();
+      opts.plugins.legend.display = false;
+      opts.scales.y.beginAtZero = true;
+      opts.scales.x.ticks.maxRotation = 0;
+      opts.scales.x.ticks.autoSkip = true;
+
+      createOrUpdateChart('histPlantas','chartHistPlantas', {
+        type:'bar',
+        data:{
+          labels:h.labels,
+          datasets:[{
+            label:'Frecuencia',
+            data:h.counts,
+            borderRadius:6,
+            backgroundColor:'rgba(47,173,122,.68)',
+            borderColor:'#278b62',
+            borderWidth:1
+          }]
+        },
+        options: opts
+      });
+    }
+
+    function createEmptyChart(key, canvasId, label){
+      const opts = chartDefaultOptions();
+      opts.plugins.legend.display = false;
+      opts.scales = {
+        x:{display:false},
+        y:{display:false}
+      };
+      createOrUpdateChart(key, canvasId, {
+        type:'bar',
+        data:{
+          labels:[''],
+          datasets:[{
+            data:[0],
+            backgroundColor:'rgba(18,79,97,.08)',
+            borderRadius:8
+          }]
+        },
+        options:{
+          ...opts,
+          plugins:{
+            ...opts.plugins,
+            tooltip:{enabled:false}
+          }
+        },
+        plugins:[{
+          id:'emptyLabel',
+          afterDraw(chart){
+            const {ctx, chartArea} = chart;
+            if(!chartArea) return;
+            ctx.save();
+            ctx.fillStyle = '#5f7b87';
+            ctx.font = '600 13px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, (chartArea.left + chartArea.right)/2, (chartArea.top + chartArea.bottom)/2);
+            ctx.restore();
+          }
+        }]
+      });
+    }
+
+    // =========================
+    // Estadísticos e insights
+    // =========================
+    function renderStats(data){
+      const plants = data.map(r=>r.plantas).filter(Number.isFinite);
+      const participants = data.map(r=>r.participantes).filter(Number.isFinite);
+      const areas = data.map(r=>r.area).filter(v=>Number.isFinite(v) && v > 0);
+      const dens = data.map(r=>r.densidad).filter(Number.isFinite);
+      const ppp = data.map(r=>r.plantasPorParticipante).filter(Number.isFinite);
+
+      const [minPlants, maxPlants] = range(plants);
+      const [minArea, maxArea] = range(areas);
+
+      const muniPlants = sortMapDesc(groupSum(data, r=>r.municipio, r=>r.plantas));
+      const topMuni = muniPlants[0];
+      const totalPlants = sum(plants);
+      const muniHHI = (() => {
+        if(!totalPlants) return NaN;
+        return muniPlants.reduce((acc,[,v]) => acc + Math.pow(v/totalPlants,2), 0);
+      })();
+
+      const dates = data.map(r=>r.fechaObj).filter(Boolean).sort((a,b)=>a-b);
+      const cadenceDays = [];
+      for(let i=1;i<dates.length;i++){
+        const d = (dates[i] - dates[i-1]) / (1000*60*60*24);
+        if(Number.isFinite(d) && d >= 0) cadenceDays.push(d);
+      }
+
+      const statsRows = [
+        {n:'Promedio de plantas', v: fmtDec(mean(plants),2), s:'por registro'},
+        {n:'Mediana de plantas', v: fmtDec(median(plants),2), s:'robusta a valores altos'},
+        {n:'Desviación estándar (plantas)', v: fmtDec(stdDev(plants),2), s:'dispersión'},
+        {n:'Rango de plantas', v: `${fmtNum(minPlants)} – ${fmtNum(maxPlants)}`, s:'mínimo – máximo'},
+        {n:'Promedio de participantes', v: fmtDec(mean(participants),2), s:'por registro'},
+        {n:'Mediana de participantes', v: fmtDec(median(participants),2), s:'por registro'},
+        {n:'Área media reportada', v: Number.isFinite(mean(areas)) ? `${fmtDec(mean(areas),2)} m²` : '—', s:'solo registros con área'},
+        {n:'Rango de área', v: Number.isFinite(minArea) ? `${fmtDec(minArea,1)} – ${fmtDec(maxArea,1)} m²` : '—', s:'mínimo – máximo'},
+        {n:'Densidad media', v: fmtDec(mean(dens),2), s:'plantas por m² (simple)'},
+        {n:'Plantas por participante', v: fmtDec(mean(ppp),2), s:'promedio por registro'},
+        {n:'Municipio líder', v: topMuni ? topMuni[0] : '—', s: topMuni ? `${pct(topMuni[1], totalPlants)} de plantas` : 'sin datos'},
+        {n:'Concentración territorial', v: Number.isFinite(muniHHI) ? fmtDec(muniHHI,3) : '—', s:'HHI (0–1, mayor = más concentrado)'},
+        {n:'Cadencia entre jornadas', v: cadenceDays.length ? `${fmtDec(mean(cadenceDays),1)} días` : '—', s:'promedio entre fechas consecutivas'}
+      ];
+
+      refs.statsList.innerHTML = '';
+      if(!data.length){
+        refs.statsList.innerHTML = `<div class="empty-state">No hay datos con los filtros actuales.</div>`;
+        return;
+      }
+      for(const row of statsRows){
+        const el = document.createElement('div');
+        el.className = 'metric-row';
+        el.innerHTML = `
+          <div>
+            <div class="n">${escapeHtml(row.n)}</div>
+            <div class="s">${escapeHtml(row.s || '')}</div>
+          </div>
+          <div class="v">${escapeHtml(row.v)}</div>
+        `;
+        refs.statsList.appendChild(el);
+      }
+    }
+
+    function renderInsights(data, extra = {}){
+      refs.insightsBox.innerHTML = '';
+
+      if(extra.error){
+        refs.insightsBox.innerHTML = `<div class="empty-state">No se pudo cargar el tablero: ${escapeHtml(extra.error)}</div>`;
+        return;
+      }
+      if(!data.length){
+        refs.insightsBox.innerHTML = `<div class="empty-state">No hay registros para generar lecturas analíticas.</div>`;
+        return;
+      }
+
+      const plants = data.map(r=>r.plantas);
+      const participants = data.map(r=>r.participantes);
+      const areas = data.map(r=>r.area).filter(v=>v>0);
+      const dens = data.map(r=>r.densidad).filter(Number.isFinite);
+      const muniPlants = sortMapDesc(groupSum(data, r=>r.municipio, r=>r.plantas));
+      const topMuni = muniPlants[0];
+      const totalPlants = sum(plants);
+      const regPart = linearRegression(data.filter(r=>r.participantes>0).map(r=>({x:r.participantes,y:r.plantas})));
+      const regArea = linearRegression(data.filter(r=>r.area>0).map(r=>({x:r.area,y:r.plantas})));
+
+      const q1 = quantile(plants, .25), q3 = quantile(plants, .75);
+      const iqr = (Number.isFinite(q1) && Number.isFinite(q3)) ? (q3 - q1) : NaN;
+      const upperFence = Number.isFinite(iqr) ? (q3 + 1.5*iqr) : NaN;
+      const outliers = Number.isFinite(upperFence) ? data.filter(r=>r.plantas > upperFence) : [];
+
+      const cards = [];
+
+      if(topMuni){
+        cards.push({
+          title:'Concentración territorial',
+          text:`${topMuni[0]} concentra ${pct(topMuni[1], totalPlants)} del total de plantas registradas en el filtro actual (${fmtNum(topMuni[1])} plantas).`
+        });
+      }
+
+      if(regPart){
+        const strength = regPart.r2 >= 0.7 ? 'fuerte' : regPart.r2 >= 0.4 ? 'moderada' : regPart.r2 >= 0.15 ? 'débil' : 'muy baja';
+        cards.push({
+          title:'Relación participantes–plantas',
+          text:`La tendencia lineal sugiere una asociación ${strength} (R²=${fmtDec(regPart.r2,3)}). Ecuación: ${fmtDec(regPart.m,3)}·participantes ${regPart.b>=0?'+':'−'} ${fmtDec(Math.abs(regPart.b),2)}.`
+        });
+      } else {
+        cards.push({
+          title:'Relación participantes–plantas',
+          text:'Aún no hay suficiente variación en participantes para estimar una tendencia confiable.'
+        });
+      }
+
+      if(regArea){
+        const strength = regArea.r2 >= 0.7 ? 'fuerte' : regArea.r2 >= 0.4 ? 'moderada' : regArea.r2 >= 0.15 ? 'débil' : 'muy baja';
+        cards.push({
+          title:'Relación área–plantas',
+          text:`La relación entre área reportada y plantas es ${strength} (R²=${fmtDec(regArea.r2,3)}). Útil para revisar consistencia del reporte de densidad.`
+        });
+      } else {
+        cards.push({
+          title:'Relación área–plantas',
+          text:'No hay suficiente información de área (o no varía) para ajustar una tendencia lineal.'
+        });
+      }
+
+      if(dens.length){
+        cards.push({
+          title:'Densidad de plantación',
+          text:`Densidad media ${fmtDec(mean(dens),2)} plantas/m² (mediana ${fmtDec(median(dens),2)}). Conviene comparar sitios de tenencia distinta con este indicador.`
+        });
+      }
+
+      if(outliers.length){
+        const top = outliers.slice().sort((a,b)=>b.plantas-a.plantas)[0];
+        cards.push({
+          title:'Registros altos (exploratorio)',
+          text:`Se detectaron ${fmtNum(outliers.length)} registro(s) por encima del umbral IQR (${fmtDec(upperFence,1)} plantas). El mayor es ${fmtNum(top.plantas)} plantas en ${top.municipio}.`
+        });
+      } else {
+        cards.push({
+          title:'Registros altos (exploratorio)',
+          text:'No se detectan valores atípicos altos de plantas bajo la regla IQR con el filtro actual.'
+        });
+      }
+
+      // Si existe resumen.json con KPIs, mostrar contraste
+      if(state.resumen?.kpis){
+        const k = state.resumen.kpis;
+        cards.push({
+          title:'Contraste con resumen del portal',
+          text:`Resumen reporta ${fmtNum(Number(k.total_boletas||0))} boletas, ${fmtNum(Number(k.total_plantas||0))} plantas y ${fmtNum(Number(k.total_participantes||0))} participantes.`
+        });
+      }
+
+      for(const c of cards.slice(0,6)){
+        const el = document.createElement('div');
+        el.className = 'insight';
+        el.innerHTML = `<h4>${escapeHtml(c.title)}</h4><p>${escapeHtml(c.text)}</p>`;
+        refs.insightsBox.appendChild(el);
+      }
+    }
+
+    // =========================
+    // Tabla
+    // =========================
+    function getSortedRecords(data){
+      const rows = data.slice();
+      const {key, dir} = state.sort;
+      const mult = dir === 'asc' ? 1 : -1;
+
+      rows.sort((a,b) => {
+        let va, vb;
+        switch(key){
+          case 'fecha': va = a.fechaISO || ''; vb = b.fechaISO || ''; break;
+          case 'municipio': va = a.municipio || ''; vb = b.municipio || ''; break;
+          case 'comunidad': va = a.comunidad || ''; vb = b.comunidad || ''; break;
+          case 'sitio': va = a.sitio || ''; vb = b.sitio || ''; break;
+          case 'tenencia': va = a.tenencia || ''; vb = b.tenencia || ''; break;
+          case 'plantas': va = a.plantas; vb = b.plantas; break;
+          case 'participantes': va = a.participantes; vb = b.participantes; break;
+          case 'area': va = a.area; vb = b.area; break;
+          case 'densidad': va = a.densidad; vb = b.densidad; break;
+          case 'institucion': va = a.institucion || ''; vb = b.institucion || ''; break;
+          default: va = a.fechaISO || ''; vb = b.fechaISO || ''; break;
+        }
+        const na = Number(va), nb = Number(vb);
+        if(Number.isFinite(na) && Number.isFinite(nb)){
+          if(na < nb) return -1 * mult;
+          if(na > nb) return 1 * mult;
+          return 0;
+        }
+        return String(va).localeCompare(String(vb), 'es', {sensitivity:'base'}) * mult;
+      });
+
+      if(state.tableMode === 'top10'){
+        rows.sort((a,b)=>b.plantas-a.plantas);
+        return rows.slice(0,10);
+      }
+      return rows;
+    }
+
+    function renderTable(data){
+      const rows = getSortedRecords(data);
+      refs.tablePill.textContent = `${fmtNum(rows.length)} filas`;
+      refs.tableMeta.textContent = `${fmtNum(data.length)} registros filtrados · Orden: ${sortLabel(state.sort.key)} (${state.sort.dir === 'asc' ? 'ascendente' : 'descendente'})`;
+      refs.tableFoot.textContent = state.tableMode === 'top10'
+        ? 'Mostrando top 10 por plantas dentro del filtro actual.'
+        : 'Mostrando todos los registros filtrados.';
+
+      refs.recordsTbody.innerHTML = '';
+      if(!rows.length){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td colspan="10"><div class="empty-state">No hay registros para mostrar en la tabla.</div></td>`;
+        refs.recordsTbody.appendChild(tr);
+        return;
+      }
+
+      for(const r of rows){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(r.fechaLabel)}</td>
+          <td><span class="tag">${escapeHtml(r.municipio)}</span></td>
+          <td>${escapeHtml(nvl(r.comunidad,''))}</td>
+          <td>${escapeHtml(nvl(r.sitio,''))}</td>
+          <td>${escapeHtml(nvl(r.tenencia,''))}</td>
+          <td class="num">${fmtNum(r.plantas)}</td>
+          <td class="num">${fmtNum(r.participantes)}</td>
+          <td class="num">${fmtDec(r.area,1)}</td>
+          <td class="num">${Number.isFinite(r.densidad) ? fmtDec(r.densidad,2) : '—'}</td>
+          <td>${escapeHtml(nvl(r.institucion,''))}</td>
+        `;
+        refs.recordsTbody.appendChild(tr);
+      }
+    }
+
+    function sortLabel(key){
+      const m = {
+        fecha:'Fecha', municipio:'Municipio', comunidad:'Comunidad', sitio:'Sitio',
+        tenencia:'Tenencia', plantas:'Plantas', participantes:'Participantes',
+        area:'Área', densidad:'Densidad', institucion:'Institución'
+      };
+      return m[key] || key;
+    }
+
+    // =========================
+    // Exportación
+    // =========================
+    function exportFilteredCSV(){
+      const rows = getSortedRecords(state.filtered);
+      if(!rows.length){
+        alert('No hay datos filtrados para exportar.');
+        return;
+      }
+      const header = [
+        'id','fecha_actividad','municipio','comunidad','sitio_nombre','tenencia',
+        'institucion','total_plantas','total_participantes','area_m2','plantas_por_m2',
+        'plantas_por_participante','latitud','longitud','autoriza_fotos','observaciones'
+      ];
+      const lines = [header.join(',')];
+      for(const r of rows){
+        lines.push([
+          r.id, r.fechaISO, r.municipio, r.comunidad, r.sitio, r.tenencia, r.institucion,
+          r.plantas, r.participantes, r.area,
+          Number.isFinite(r.densidad) ? r.densidad.toFixed(4) : '',
+          Number.isFinite(r.plantasPorParticipante) ? r.plantasPorParticipante.toFixed(4) : '',
+          Number.isFinite(r.lat) ? r.lat : '',
+          Number.isFinite(r.lon) ? r.lon : '',
+          r.autorizacionFotos, r.observaciones
+        ].map(csvEscape).join(','));
+      }
+      downloadBlob(`dashboard_reforestacion_filtrado_${new Date().toISOString().slice(0,10)}.csv`, lines.join('\n'), 'text/csv;charset=utf-8');
+    }
+
+    function exportFilteredJSON(){
+      const rows = getSortedRecords(state.filtered).map(r => ({
+        id: r.id,
+        fecha_actividad: r.fechaISO,
+        municipio: r.municipio,
+        comunidad: r.comunidad,
+        sitio_nombre: r.sitio,
+        tenencia: r.tenencia,
+        institucion: r.institucion,
+        total_plantas: r.plantas,
+        total_participantes: r.participantes,
+        area_m2: r.area,
+        plantas_por_m2: Number.isFinite(r.densidad) ? Number(r.densidad.toFixed(4)) : null,
+        plantas_por_participante: Number.isFinite(r.plantasPorParticipante) ? Number(r.plantasPorParticipante.toFixed(4)) : null,
+        coordenadas: (Number.isFinite(r.lon) && Number.isFinite(r.lat)) ? [r.lon, r.lat] : null,
+        autoriza_fotos: r.autorizacionFotos,
+        observaciones: r.observaciones
+      }));
+      downloadBlob(`dashboard_reforestacion_filtrado_${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(rows, null, 2), 'application/json;charset=utf-8');
+    }
+
+    // =========================
+    // Interacciones
+    // =========================
+    function setupUI(){
+      document.getElementById('applyFiltersBtn').addEventListener('click', () => applyFilters());
+      document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
+      document.getElementById('refreshBtn').addEventListener('click', loadData);
+      document.getElementById('printBtn').addEventListener('click', () => window.print());
+      document.getElementById('exportCsvBtn').addEventListener('click', exportFilteredCSV);
+      document.getElementById('exportJsonBtn').addEventListener('click', exportFilteredJSON);
+      document.getElementById('toggleTop10Btn').addEventListener('click', () => { state.tableMode = 'top10'; renderTable(state.filtered); });
+      document.getElementById('showAllRowsBtn').addEventListener('click', () => { state.tableMode = 'all'; renderTable(state.filtered); });
+
+      // Aplicación en vivo (suave)
+      const liveInputs = [refs.fBuscar, refs.fDesde, refs.fHasta, refs.fMinPlantas, refs.fSoloFotos, refs.fSoloArea, refs.fMunicipio, refs.fInstitucion, refs.fTenencia];
+      for(const el of liveInputs){
+        el.addEventListener('change', () => applyFilters());
+        if(el.tagName === 'INPUT' && (el.type === 'search' || el.type === 'number')){
+          el.addEventListener('input', debounce(() => applyFilters(), 180));
+        }
+      }
+
+      document.querySelectorAll('.chip[data-range]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          setDateQuickRange(btn.dataset.range);
+          applyFilters();
+        });
+      });
+
+      document.querySelectorAll('#recordsTable thead th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.sort;
+          if(state.sort.key === key){
+            state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+          }else{
+            state.sort.key = key;
+            state.sort.dir = (['fecha','plantas','participantes','area','densidad'].includes(key)) ? 'desc' : 'asc';
+          }
+          renderTable(state.filtered);
+          updateSortIndicators();
+        });
+      });
+      updateSortIndicators();
+    }
+
+    function updateSortIndicators(){
+      document.querySelectorAll('#recordsTable thead th[data-sort]').forEach(th => {
+        const key = th.dataset.sort;
+        const base = sortLabel(key);
+        if(key === state.sort.key){
+          th.textContent = `${base} ${state.sort.dir === 'asc' ? '▲' : '▼'}`;
+        } else {
+          th.textContent = base;
+        }
+      });
+    }
+
+    function setDateQuickRange(mode){
+      const dates = state.all.map(r=>r.fechaObj).filter(Boolean);
+      if(!dates.length){
+        refs.fDesde.value = '';
+        refs.fHasta.value = '';
+        return;
+      }
+      const maxDate = new Date(Math.max(...dates.map(d=>d.getTime())));
+      let start = null;
+      if(mode === 'all'){
+        refs.fDesde.value = '';
+        refs.fHasta.value = '';
+        return;
+      }
+      if(mode === '30'){
+        start = new Date(maxDate); start.setDate(start.getDate() - 29);
+      } else if(mode === '90'){
+        start = new Date(maxDate); start.setDate(start.getDate() - 89);
+      } else if(mode === 'year'){
+        start = new Date(maxDate.getFullYear(), 0, 1);
+      }
+      refs.fDesde.value = toISODateSafe(start);
+      refs.fHasta.value = toISODateSafe(maxDate);
+    }
+
+    function debounce(fn, ms){
+      let t = null;
+      return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), ms);
+      };
+    }
+
+    // =========================
+    // Inicialización
+    // =========================
+    setupUI();
+    loadData();
+
+    // Exponer para depuración rápida
+    window.refoDashboard = {
+      state, loadData, applyFilters, resetFilters
+    };
+  </script>
+</body>
+</html>
