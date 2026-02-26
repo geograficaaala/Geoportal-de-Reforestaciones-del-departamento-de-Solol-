@@ -4,278 +4,562 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Observatorio ambiental · Sololá</title>
-  <meta name="description" content="Portal principal del observatorio ambiental de Sololá." />
+  <meta name="description" content="Portal principal del Observatorio Ambiental y módulos forestales del departamento de Sololá." />
+
+  <!-- Tema tipo “Flatly” (similar al estilo de tu referencia) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/flatly/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
   <style>
-:root{
-  --bg1:#ecfbf6;
-  --bg2:#e8f4ff;
-  --bg3:#f8fffc;
-  --ink:#123730;
-  --muted:#56756d;
-  --line:rgba(18,55,48,.10);
-  --line2:rgba(18,55,48,.06);
-  --panel:rgba(255,255,255,.80);
-  --panel2:rgba(255,255,255,.92);
-  --teal:#1f7f6f;
-  --teal2:#2f9f89;
-  --sky:#2e7fca;
-  --shadow:0 18px 42px rgba(23,75,72,.10);
-  --shadow2:0 10px 22px rgba(23,75,72,.08);
-  --r1:22px;
-  --r2:16px;
-  --r3:12px;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  color:var(--ink);
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background:
-    radial-gradient(1100px 650px at 0% -10%, rgba(94,221,173,.22), transparent 62%),
-    radial-gradient(900px 620px at 100% 0%, rgba(112,182,255,.20), transparent 62%),
-    linear-gradient(130deg,var(--bg1),var(--bg2) 55%,var(--bg3));
-}
-main{width:min(1180px, calc(100% - 24px)); margin:14px auto 20px; position:relative; z-index:1;}
-.orb{position:fixed; width:260px; height:260px; border-radius:999px; filter:blur(14px); opacity:.45; pointer-events:none; z-index:0;}
-.orb.a{left:-80px; top:80px; background:radial-gradient(circle at 35% 35%, rgba(61,212,156,.30), rgba(61,212,156,0) 72%)}
-.orb.b{right:-70px; top:20px; background:radial-gradient(circle at 35% 35%, rgba(96,170,255,.28), rgba(96,170,255,0) 72%)}
-.topbar{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:2px 2px 0}
-.brand{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.02em}
-.brand .dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,#31d39b,#71bcff); box-shadow:0 0 0 5px rgba(49,211,155,.15)}
-.stack{display:grid; gap:12px}
-.panel{background:linear-gradient(180deg,var(--panel2),var(--panel)); border:1px solid rgba(255,255,255,.75); border-radius:var(--r1); box-shadow:var(--shadow); backdrop-filter:blur(10px)}
-.hero{display:grid; grid-template-columns:1.15fr .85fr; gap:12px}
-.hero-main{padding:18px; position:relative; overflow:hidden}
-.hero-main::after{content:""; position:absolute; right:-35px; top:-20px; width:210px; height:210px; border-radius:50%; background:radial-gradient(circle at 35% 35%, rgba(66,212,159,.16), transparent 72%)}
-.hero-main::before{content:""; position:absolute; left:-35px; bottom:-45px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle at 40% 40%, rgba(100,169,255,.14), transparent 72%)}
-.kicker{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
-.badge{display:inline-flex; align-items:center; gap:7px; border-radius:999px; padding:7px 11px; font-size:12px; font-weight:800; border:1px solid rgba(22,99,87,.10); color:#0f5044; background:linear-gradient(135deg, rgba(191,244,224,.95), rgba(219,237,255,.94))}
-.badge .led{width:8px;height:8px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 4px rgba(47,208,143,.14)}
-h1{margin:0; font-size:clamp(24px,3.5vw,36px); line-height:1.06; letter-spacing:-.02em; max-width:20ch}
-.hero p{margin:10px 0 0; color:var(--muted); font-size:14px; line-height:1.45; max-width:68ch}
-.actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
-.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; border-radius:14px; padding:10px 14px; font-weight:800; font-size:13px; line-height:1; transition:.15s transform ease,.15s box-shadow ease,.15s background ease,.15s border-color ease; white-space:nowrap}
-.btn:hover{transform:translateY(-1px)}
-.btn.primary{background:linear-gradient(135deg,#bff4df,#cfe8ff); color:#0b3f36; border:1px solid rgba(33,120,108,.12); box-shadow:0 10px 22px rgba(32,124,114,.14)}
-.btn.outline{background:rgba(255,255,255,.86); color:var(--ink); border:1px solid var(--line); box-shadow:0 6px 16px rgba(23,75,72,.06)}
-.btn.soft{background:#fff; color:var(--teal); border:1px solid var(--line2)}
-.hero-side{padding:14px; display:grid; gap:10px; align-content:start}
-.side-title{display:flex; justify-content:space-between; align-items:center; gap:8px}
-.side-title h2{margin:0; font-size:15px}
-.pill{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:7px 10px; color:var(--muted); font-size:11px; font-weight:800}
-.pill .led{width:8px;height:8px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 4px rgba(47,208,143,.14)}
-.info{background:rgba(255,255,255,.84); border:1px solid var(--line2); border-radius:14px; padding:12px; box-shadow:var(--shadow2)}
-.info .lab{font-size:12px; color:var(--muted); margin-bottom:5px}
-.info .val{font-size:16px; font-weight:800; line-height:1.12}
-.info .sub{font-size:11px; color:var(--muted); margin-top:4px; line-height:1.3}
-.section{margin-top:12px}
-.section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap; padding:0 2px; margin-bottom:8px}
-.section-head h2{margin:0; font-size:16px; letter-spacing:-.01em}
-.section-head p{margin:0; color:var(--muted); font-size:12px}
-.grid{display:grid; gap:12px}
-.cards-2{grid-template-columns:repeat(2,1fr)}
-.cards-3{grid-template-columns:repeat(3,1fr)}
-.cards-4{grid-template-columns:repeat(4,1fr)}
-.card{background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.78)); border:1px solid rgba(255,255,255,.82); border-radius:18px; box-shadow:var(--shadow2); padding:14px}
-.kpi .lab{font-size:12px; color:var(--muted); margin-bottom:7px}
-.kpi .val{font-size:22px; font-weight:800; line-height:1.05; letter-spacing:-.02em}
-.kpi .sub{font-size:11px; color:var(--muted); margin-top:6px}
-.navcard{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; min-height:146px}
-.icon{width:46px; height:46px; border-radius:13px; display:grid; place-items:center; background:linear-gradient(135deg, rgba(191,244,223,.95), rgba(220,238,255,.95)); border:1px solid rgba(20,103,92,.10); color:#12675d}
-.icon svg{width:23px;height:23px}
-.navcard h3{margin:0; font-size:16px}
-.navcard p{margin:6px 0 10px; color:var(--muted); font-size:13px; line-height:1.4}
-.nav-actions{display:flex; gap:8px; flex-wrap:wrap}
-.footer{margin-top:12px; padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.80); background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.74)); box-shadow:var(--shadow2); display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
-.footer .small{font-size:12px; color:var(--muted); line-height:1.35}
-.footer .small strong{color:var(--ink)}
-.footer .chip{padding:7px 11px; border-radius:999px; border:1px solid var(--line2); background:#fff; color:var(--teal); font-size:11px; font-weight:800}
-.muted{color:var(--muted)}
-code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.92em; background:rgba(255,255,255,.75); border:1px solid var(--line2); padding:2px 6px; border-radius:8px}
-@media (max-width:1060px){ .hero{grid-template-columns:1fr} }
-@media (max-width:860px){ .cards-4{grid-template-columns:repeat(2,1fr)} .cards-3{grid-template-columns:1fr} .cards-2{grid-template-columns:1fr} }
-@media (max-width:560px){ main{width:min(1180px, calc(100% - 16px)); margin-top:8px} .hero-main,.hero-side{padding:14px} .navcard{grid-template-columns:1fr; min-height:auto} .footer .chip{width:100%; text-align:center} }
-</style>
+    :root{
+      --bg-a:#eaf7f2;
+      --bg-b:#e8f2ff;
+      --bg-c:#ffffff;
+      --glass:rgba(255,255,255,.86);
+      --glass-2:rgba(255,255,255,.94);
+      --stroke:rgba(14, 78, 70, .12);
+      --shadow:0 18px 48px rgba(0,0,0,.10);
+      --shadow-sm:0 10px 22px rgba(0,0,0,.08);
+    }
+
+    body{
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 560px at 0% 0%, rgba(44, 165, 141, .16), transparent 60%),
+        radial-gradient(900px 560px at 100% 0%, rgba(42, 127, 202, .14), transparent 60%),
+        linear-gradient(135deg,var(--bg-a),var(--bg-b) 55%, var(--bg-c));
+      padding-top: 76px; /* navbar fixed */
+    }
+
+    .glass{
+      background: linear-gradient(180deg, var(--glass-2), var(--glass));
+      border: 1px solid rgba(255,255,255,.85);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero{
+      border: 1px solid rgba(255,255,255,.80);
+      box-shadow: var(--shadow);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      position: relative;
+    }
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:auto -140px -140px auto;
+      width: 360px; height: 360px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(44, 165, 141, .22), transparent 65%);
+      filter: blur(2px);
+      pointer-events:none;
+    }
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:-140px auto auto -140px;
+      width: 380px; height: 380px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(42, 127, 202, .18), transparent 65%);
+      filter: blur(2px);
+      pointer-events:none;
+    }
+
+    .brand-logos{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
+    .brand-logos img{
+      height: 34px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
+      background: rgba(255,255,255,.94);
+      border-radius: 10px;
+      padding: 4px 6px;
+    }
+    @media (max-width: 420px){
+      .brand-logos img{ height: 28px; }
+    }
+
+    .icon-badge{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.90);
+    }
+
+    .navcard{
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      border: 1px solid rgba(255,255,255,.82);
+    }
+    .navcard:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: rgba(44, 165, 141, .25);
+    }
+
+    .kpi{
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .kpi:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+    }
+
+    .muted{ color: rgba(0,0,0,.65); }
+    .section-title{ letter-spacing: -.01em; }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.35rem .6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.65);
+      background: rgba(255,255,255,.18);
+    }
+    .led{
+      width: .55rem;
+      height: .55rem;
+      border-radius: 999px;
+      background: #2fd08f;
+      box-shadow: 0 0 0 .25rem rgba(47,208,143,.18);
+    }
+
+    .to-top{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 1080;
+      display:none;
+    }
+    .to-top.show{ display:inline-flex; }
+  </style>
 </head>
+
 <body>
-  <div class="orb a" aria-hidden="true"></div>
-  <div class="orb b" aria-hidden="true"></div>
-  <main>
-    <div class="topbar">
-      <div class="brand"><span class="dot" aria-hidden="true"></span><span>Observatorio ambiental · Sololá</span></div>
-      <div class="actions">
-        <a class="btn outline" href="./apps/reforestacion/index.html">Ir al módulo Reforestación</a>
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#inicio" style="min-width:0;">
+        <span class="brand-logos" aria-label="Logos institucionales">
+          <!-- Logos (OBLIGATORIOS) -->
+          <img src="./BOSQUE.png" alt="Logo Eje de Bosques" loading="eager">
+          <img src="./CODEMA%20%282%29.png" alt="Logo Comisión Departamental de Medio Ambiente de Sololá" loading="eager">
+        </span>
+        <span class="d-none d-md-inline text-truncate">Observatorio ambiental · Sololá</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item"><a class="nav-link active" href="#inicio">Inicio</a></li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="ddModulos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Módulos
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="ddModulos">
+              <li><h6 class="dropdown-header">Reforestaciones</h6></li>
+              <li><a class="dropdown-item" href="./apps/reforestacion/index.html"><i class="bi bi-tree me-2"></i>Resumen</a></li>
+              <li><a class="dropdown-item" href="./apps/reforestacion/geoportal.html"><i class="bi bi-map me-2"></i>Geoportal</a></li>
+              <li><a class="dropdown-item" href="./apps/reforestacion/dashboard.html"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+
+              <li><hr class="dropdown-divider"></li>
+
+              <li><h6 class="dropdown-header">Incendios forestales</h6></li>
+              <li><span class="dropdown-item-text"><i class="bi bi-fire me-2"></i>Módulo (próximamente)</span></li>
+
+              <li><hr class="dropdown-divider"></li>
+
+              <li><h6 class="dropdown-header">Ecología del paisaje forestal de Sololá</h6></li>
+              <li><span class="dropdown-item-text"><i class="bi bi-diagram-3 me-2"></i>Módulo (próximamente)</span></li>
+            </ul>
+          </li>
+
+          <li class="nav-item"><a class="nav-link" href="#indicadores">Indicadores</a></li>
+        </ul>
       </div>
     </div>
+  </nav>
 
-    <section class="hero">
-      <article class="panel hero-main">
-        <div class="kicker">
-          <span class="badge">🌿 Portal institucional</span>
-          <span class="badge"><span class="led"></span> GitHub Pages</span>
-        </div>
-        <h1>Observatorio ambiental y geoportal integral de Sololá</h1>
-        <p>
-          Pantalla principal para navegar cómodamente entre módulos. El módulo activo es <strong>Reforestación</strong>.
-          Desde aquí puedes entrar al resumen del módulo, al geoportal y al tablero de control.
-        </p>
-        <div class="actions">
-          <a class="btn primary" href="./apps/reforestacion/index.html">🌱 Entrar a Reforestación</a>
-          <a class="btn outline" href="./apps/reforestacion/geoportal.html">🗺️ Geoportal</a>
-          <a class="btn outline" href="./apps/reforestacion/dashboard.html">📊 Dashboard</a>
-        </div>
-      </article>
+  <main class="container my-4">
+    <!-- INICIO / HOME -->
+    <section id="inicio" class="hero glass p-4 p-lg-5">
+      <div class="row g-4 position-relative" style="z-index:1">
+        <div class="col-lg-8">
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="badge text-bg-success"><i class="bi bi-leaf me-1"></i>Portal institucional</span>
+            <span class="badge text-bg-secondary pill" id="chipEstado" title="Estado del sistema">
+              <span class="led" aria-hidden="true"></span>
+              <span id="chipEstadoTxt">En línea</span>
+            </span>
+          </div>
 
-      <aside class="panel hero-side" aria-label="Estado del sistema">
-        <div class="side-title">
-          <h2>Estado del sistema</h2>
-          <span class="pill" id="chipEstado"><span class="led"></span> En línea</span>
+          <h1 class="display-6 fw-bold mb-2">
+            ¿Qué es el Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá?
+          </h1>
+
+          <p class="muted mb-3">
+            <strong>Eje de Bosques - Comisión Departamental de Medio Ambiente de Sololá</strong><br>
+            El Eje de Bosques es el órgano técnico de la Comisión Departamental de Medio Ambiente de Sololá, encargado de coordinar la política forestal y la protección de los recursos naturales en el departamento. Su función es centralizar la gestión entre el gobierno central, las municipalidades y la sociedad civil.
+          </p>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="card glass h-100">
+                <div class="card-body">
+                  <h2 class="h6 mb-2 section-title"><i class="bi bi-bullseye me-1"></i>Objetivos operativos</h2>
+                  <ul class="mb-0 muted" style="padding-left: 1.1rem;">
+                    <li><strong>Gestión de incendios:</strong> Ejecución del plan departamental para la prevención y combate de incendios forestales en coordinación con CONRED.</li>
+                    <li><strong>Reforestación:</strong> Planificación de jornadas de plantación en zonas críticas de recarga hídrica y cuencas compartidas.</li>
+                    <li><strong>Cumplimiento normativo:</strong> Verificación de lineamientos técnicos del INAB y el CONAP a nivel local.</li>
+                    <li><strong>Articulación institucional:</strong> Enlace técnico entre el CODEDE de Sololá y las unidades de gestión ambiental municipal (UGAM).</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="card glass h-100">
+                <div class="card-body">
+                  <h2 class="h6 mb-2 section-title"><i class="bi bi-compass me-1"></i>Marco de acción</h2>
+                  <p class="mb-0 muted">
+                    El eje actúa principalmente en la protección de la cuenca del Lago de Atitlán, trabajando de forma conjunta con la AMSCLAE para reducir la erosión del suelo y asegurar la cobertura forestal permanente en las zonas altas.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <a class="btn btn-success" href="#modulos">
+              <i class="bi bi-grid-3x3-gap-fill me-1"></i>Ver módulos
+            </a>
+            <a class="btn btn-outline-primary" href="#indicadores">
+              <i class="bi bi-graph-up me-1"></i>Ver indicadores
+            </a>
+          </div>
         </div>
-        <div class="info">
-          <div class="lab">Módulo activo</div>
-          <div class="val">Reforestación</div>
-          <div class="sub">Ruta: <code>./apps/reforestacion/</code></div>
+
+        <div class="col-lg-4">
+          <div class="glass rounded-4 p-3 p-lg-4">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1 section-title">Estado del portal</h2>
+                <div class="text-body-secondary small">Lectura rápida de datos publicados</div>
+              </div>
+              <span class="badge text-bg-light border">
+                <i class="bi bi-clock me-1"></i><span id="st_update">—</span>
+              </span>
+            </div>
+
+            <hr class="my-3">
+
+            <div class="row g-2">
+              <div class="col-12">
+                <div class="p-3 bg-body rounded-4 border">
+                  <div class="small text-body-secondary">Datos</div>
+                  <div class="fw-semibold" id="dataText">Verificando…</div>
+                  <div class="small text-body-secondary mt-1">Se cargan indicadores desde archivos publicados.</div>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="p-3 bg-body rounded-4 border">
+                  <div class="small text-body-secondary">Módulo activo</div>
+                  <div class="fw-semibold">Reforestaciones</div>
+                  <div class="small text-body-secondary mt-1">Los otros módulos se irán habilitando por fases.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-3 d-flex flex-wrap gap-2">
+              <a class="btn btn-sm btn-outline-secondary" href="#modulos">
+                <i class="bi bi-grid me-1"></i>Ir a módulos
+              </a>
+              <a class="btn btn-sm btn-outline-secondary" href="#indicadores">
+                <i class="bi bi-speedometer2 me-1"></i>Ir a indicadores
+              </a>
+            </div>
+          </div>
         </div>
-        <div class="info">
-          <div class="lab">Última actualización de datos</div>
-          <div class="val" id="st_update">—</div>
-          <div class="sub">Lectura desde <code>./data/resumen.json</code></div>
-        </div>
-        <div class="info">
-          <div class="lab">Sincronización</div>
-          <div class="val" id="syncText">Verificando…</div>
-          <div class="sub">KoBoToolbox → GitHub Actions → GitHub Pages</div>
-        </div>
-      </aside>
+      </div>
     </section>
 
-    <section class="section">
-      <div class="section-head">
+    <!-- MÓDULOS -->
+    <section id="modulos" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
         <div>
-          <h2>Navegación rápida</h2>
-          <p>Accesos principales del portal (sin análisis duplicados)</p>
+          <h2 class="h4 mb-1 section-title">Módulos del observatorio</h2>
+          <div class="text-body-secondary">Navega por temática y entra al detalle desde cada módulo</div>
         </div>
       </div>
-      <div class="grid cards-3">
-        <article class="card navcard">
-          <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l7-3 4 2 7-2v15l-7 2-4-2-7 3V6z"/><path d="M10 3v15M14 5v15"/></svg>
+
+      <div class="row g-3">
+        <!-- Reforestaciones -->
+        <div class="col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-tree"></i></div>
+                <div class="w-100">
+                  <h3 class="h5 mb-1">Módulo de reforestaciones</h3>
+                  <p class="mb-3 muted">Consulta registros, explora el visor SIG y revisa estadísticas del seguimiento de reforestación.</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-success btn-sm" href="./apps/reforestacion/index.html"><i class="bi bi-box-arrow-in-right me-1"></i>Resumen</a>
+                    <a class="btn btn-outline-primary btn-sm" href="./apps/reforestacion/geoportal.html"><i class="bi bi-map me-1"></i>Geoportal</a>
+                    <a class="btn btn-outline-primary btn-sm" href="./apps/reforestacion/dashboard.html"><i class="bi bi-bar-chart me-1"></i>Dashboard</a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3>Resumen del módulo</h3>
-            <p>Pantalla de entrada del módulo Reforestación para navegación y estado general.</p>
-            <div class="nav-actions"><a class="btn primary" href="./apps/reforestacion/index.html">Abrir módulo</a></div>
+        </div>
+
+        <!-- Incendios -->
+        <div class="col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-fire"></i></div>
+                <div class="w-100">
+                  <h3 class="h5 mb-1">Módulo de incendios forestales</h3>
+                  <p class="mb-3 muted">Seguimiento, prevención y respuesta: mapas, reportes y estadísticas por temporada.</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-clock me-1"></i>Próximamente</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-        </article>
-        <article class="card navcard">
-          <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19h16"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/></svg>
+        </div>
+
+        <!-- Ecología del paisaje -->
+        <div class="col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-diagram-3"></i></div>
+                <div class="w-100">
+                  <h3 class="h5 mb-1">Ecología del paisaje forestal de Sololá</h3>
+                  <p class="mb-3 muted">Cobertura forestal, conectividad, fragmentación y análisis territorial para planificación.</p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-clock me-1"></i>Próximamente</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3>Dashboard</h3>
-            <p>Tablero analítico del módulo para tendencias y estadísticas de reforestación.</p>
-            <div class="nav-actions"><a class="btn outline" href="./apps/reforestacion/dashboard.html">Ir al dashboard</a></div>
-          </div>
-        </article>
-        <article class="card navcard">
-          <div class="icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M10 13h6M10 17h6"/></svg>
-          </div>
-          <div>
-            <h3>Geoportal</h3>
-            <p>Visor SIG para localizar puntos, consultar popups y trabajar con el mapa.</p>
-            <div class="nav-actions"><a class="btn outline" href="./apps/reforestacion/geoportal.html">Abrir geoportal</a></div>
-          </div>
-        </article>
+        </div>
+
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-head">
+    <!-- INDICADORES -->
+    <section id="indicadores" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
         <div>
-          <h2>Indicadores del módulo activo</h2>
-          <p>Vista mínima para confirmar que los datos están entrando bien</p>
+          <h2 class="h4 mb-1 section-title">Indicadores</h2>
+          <div class="text-body-secondary">Vista rápida (por ahora: datos del módulo de reforestaciones)</div>
+        </div>
+        <span class="badge text-bg-light border">
+          <i class="bi bi-database me-1"></i>
+          Fuente: <code class="ms-1">data/resumen.json</code>
+        </span>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-6 col-lg-3">
+          <div class="card glass kpi h-100">
+            <div class="card-body">
+              <div class="text-body-secondary small">Boletas</div>
+              <div class="display-6 fw-bold" id="k_boletas">—</div>
+              <div class="small text-body-secondary"><i class="bi bi-file-earmark-text me-1"></i>resumen.json</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="card glass kpi h-100">
+            <div class="card-body">
+              <div class="text-body-secondary small">Plantas</div>
+              <div class="display-6 fw-bold" id="k_plantas">—</div>
+              <div class="small text-body-secondary"><i class="bi bi-flower1 me-1"></i>resumen.json</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="card glass kpi h-100">
+            <div class="card-body">
+              <div class="text-body-secondary small">Participantes</div>
+              <div class="display-6 fw-bold" id="k_part">—</div>
+              <div class="small text-body-secondary"><i class="bi bi-people me-1"></i>resumen.json</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="card glass kpi h-100">
+            <div class="card-body">
+              <div class="text-body-secondary small">Puntos geo</div>
+              <div class="display-6 fw-bold" id="k_puntos">—</div>
+              <div class="small text-body-secondary"><i class="bi bi-geo-alt me-1"></i>data/puntos.geojson</div>
+            </div>
+          </div>
         </div>
       </div>
-      <div class="grid cards-4">
-        <div class="card kpi"><div class="lab">Boletas</div><div class="val" id="k_boletas">—</div><div class="sub">resumen.json</div></div>
-        <div class="card kpi"><div class="lab">Plantas</div><div class="val" id="k_plantas">—</div><div class="sub">resumen.json</div></div>
-        <div class="card kpi"><div class="lab">Participantes</div><div class="val" id="k_part">—</div><div class="sub">resumen.json</div></div>
-        <div class="card kpi"><div class="lab">Puntos geo</div><div class="val" id="k_puntos">—</div><div class="sub">data/puntos.geojson</div></div>
-      </div>
     </section>
 
-    <section class="section">
-      <div class="grid cards-2">
-        <article class="card">
-          <h3 style="margin:0 0 6px;font-size:15px">Módulos previstos (próximo crecimiento)</h3>
-          <p class="muted" style="margin:0;font-size:13px;line-height:1.42">Incendios forestales, fragmentación forestal y otras capas ambientales/geográficas. Esta portada puede crecer sin romper la navegación del módulo actual.</p>
-        </article>
-        <article class="card">
-          <h3 style="margin:0 0 6px;font-size:15px">Ruta segura de archivos</h3>
-          <p class="muted" style="margin:0;font-size:13px;line-height:1.42">Este <code>index.html</code> está pensado para la <strong>raíz del repo</strong>. Por eso todos los enlaces apuntan a <code>./apps/reforestacion/...</code>.</p>
-        </article>
+    <!-- FOOTER -->
+    <footer class="mt-5 pb-4">
+      <div class="card glass">
+        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div style="font-size:.95rem;">
+            <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong><br>
+            <span class="text-body-secondary">Portal principal · Navegación por módulos</span>
+          </div>
+          <div class="badge text-bg-light border" id="foot_update">
+            <i class="bi bi-clock-history me-1"></i>Última actualización: —
+          </div>
+        </div>
       </div>
-    </section>
-
-    <footer class="footer">
-      <div class="small"><strong>Laboratorio SIG-Eje de bosques de CODEMA-SOLOLÁ 2026</strong><br>Portal principal · Navegación hacia módulos</div>
-      <div class="chip" id="foot_update">Última actualización: —</div>
     </footer>
   </main>
-  
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-  const fmtNum = (v)=>{ const n=Number(v); return Number.isFinite(n) ? new Intl.NumberFormat('es-GT').format(n) : '—'; };
-  const cleanText = (v)=>{
-    if (v == null) return '—';
-    let s = String(v).trim(); if (!s) return '—';
-    s = s.replace(/_/g,' ').replace(/\s+/g,' ').trim();
-    const fixes = {'Ã¡':'á','Ã©':'é','Ã­':'í','Ã³':'ó','Ãº':'ú','Ã':'Á','Ã‰':'É','Ã':'Í','Ã“':'Ó','Ãš':'Ú','Ã±':'ñ','Ã‘':'Ñ','Â':''};
-    for (const [bad,good] of Object.entries(fixes)) s = s.split(bad).join(good);
-    return s;
-  };
-  const fmtDate = (raw)=>{
-    if (!raw) return '—';
-    const txt = cleanText(raw);
-    const d = new Date(txt);
-    return isNaN(d.getTime()) ? txt : new Intl.DateTimeFormat('es-GT',{year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(d);
-  };
-  const RESUMEN = './data/resumen.json';
-  const PUNTOS = './data/puntos.geojson';
 
-  fetch(RESUMEN,{cache:'no-store'})
-    .then(r=>r.ok ? r.json() : null)
-    .then(j=>{
-      if (!j) throw new Error('No se pudo leer resumen.json');
-      const boletas = j?.kpis?.total_boletas;
-      const plantas = j?.kpis?.total_plantas;
-      const part = j?.kpis?.total_participantes;
-      const upd = fmtDate(j?.ultima_actualizacion);
-      if ($('k_boletas')) $('k_boletas').textContent = fmtNum(boletas);
-      if ($('k_plantas')) $('k_plantas').textContent = fmtNum(plantas);
-      if ($('k_part')) $('k_part').textContent = fmtNum(part);
-      if ($('k_update')) $('k_update').textContent = upd;
-      if ($('st_update')) $('st_update').textContent = upd;
-      if ($('foot_update')) $('foot_update').textContent = 'Última actualización: ' + upd;
-      if ($('syncText')) $('syncText').textContent = Number(boletas||0) > 0 ? 'Sincronización activa' : 'Sin registros todavía';
-    })
-    .catch(()=>{
-      if ($('st_update')) $('st_update').textContent = 'No disponible';
-      if ($('foot_update')) $('foot_update').textContent = 'Última actualización: no disponible';
-      if ($('syncText')) $('syncText').textContent = 'No se pudo leer resumen.json';
-      const chip=$('chipEstado');
-      if (chip) chip.innerHTML = '<span class="led" style="background:#f0b24d;box-shadow:0 0 0 4px rgba(240,178,77,.14)"></span> Estado no verificado';
-    });
+  <button class="btn btn-primary to-top" id="toTop" type="button" aria-label="Volver arriba">
+    <i class="bi bi-arrow-up"></i>
+  </button>
 
-  fetch(PUNTOS,{cache:'no-store'})
-    .then(r=>r.ok ? r.json() : null)
-    .then(gj=>{ if (gj && Array.isArray(gj.features) && $('k_puntos')) $('k_puntos').textContent = fmtNum(gj.features.length); })
-    .catch(()=>{});
-})();
-</script>
+  <!-- Bootstrap JS (dropdown y navbar mobile) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
+  <script>
+    (function(){
+      const $ = (id)=>document.getElementById(id);
+
+      const fmtNum = (v)=>{
+        const n = Number(v);
+        return Number.isFinite(n) ? new Intl.NumberFormat('es-GT').format(n) : '—';
+      };
+
+      const cleanText = (v)=>{
+        if (v == null) return '—';
+        let s = String(v).trim();
+        if (!s) return '—';
+        s = s.replace(/_/g,' ').replace(/\s+/g,' ').trim();
+        const fixes = {
+          'Ã¡':'á','Ã©':'é','Ã­':'í','Ã³':'ó','Ãº':'ú',
+          'Ã':'Á','Ã‰':'É','Ã':'Í','Ã“':'Ó','Ãš':'Ú',
+          'Ã±':'ñ','Ã‘':'Ñ','Â':''
+        };
+        for (const [bad,good] of Object.entries(fixes)) s = s.split(bad).join(good);
+        return s;
+      };
+
+      const fmtDate = (raw)=>{
+        if (!raw) return '—';
+        const txt = cleanText(raw);
+        const d = new Date(txt);
+        return isNaN(d.getTime())
+          ? txt
+          : new Intl.DateTimeFormat('es-GT',{
+              year:'numeric', month:'short', day:'2-digit', hour:'2-digit', minute:'2-digit'
+            }).format(d);
+      };
+
+      const setChip = (state, msg)=>{
+        const chipTxt = $('chipEstadoTxt');
+        const chip = $('chipEstado');
+        if (!chip || !chipTxt) return;
+
+        const led = chip.querySelector('.led');
+        if (state === 'ok'){
+          chip.classList.remove('text-bg-warning');
+          chip.classList.add('text-bg-secondary');
+          chipTxt.textContent = msg || 'En línea';
+          if (led){
+            led.style.background = '#2fd08f';
+            led.style.boxShadow = '0 0 0 .25rem rgba(47,208,143,.18)';
+          }
+        } else {
+          chip.classList.remove('text-bg-secondary');
+          chip.classList.add('text-bg-warning');
+          chipTxt.textContent = msg || 'Estado no verificado';
+          if (led){
+            led.style.background = '#f0b24d';
+            led.style.boxShadow = '0 0 0 .25rem rgba(240,178,77,.18)';
+          }
+        }
+      };
+
+      const RESUMEN = './data/resumen.json';
+      const PUNTOS  = './data/puntos.geojson';
+
+      // KPIs desde resumen.json
+      fetch(RESUMEN, { cache:'no-store' })
+        .then(r => r.ok ? r.json() : null)
+        .then(j => {
+          if (!j) throw new Error('No se pudo leer resumen.json');
+
+          const boletas = j?.kpis?.total_boletas;
+          const plantas = j?.kpis?.total_plantas;
+          const part    = j?.kpis?.total_participantes;
+          const upd     = fmtDate(j?.ultima_actualizacion);
+
+          if ($('k_boletas')) $('k_boletas').textContent = fmtNum(boletas);
+          if ($('k_plantas')) $('k_plantas').textContent = fmtNum(plantas);
+          if ($('k_part'))    $('k_part').textContent    = fmtNum(part);
+
+          if ($('st_update')) $('st_update').textContent = upd;
+          if ($('foot_update')) $('foot_update').innerHTML = '<i class="bi bi-clock-history me-1"></i>Última actualización: ' + upd;
+
+          const hasData = Number(boletas || 0) > 0;
+          if ($('dataText')) $('dataText').textContent = hasData ? 'Datos disponibles' : 'Sin registros todavía';
+
+          setChip('ok', 'En línea');
+        })
+        .catch(() => {
+          if ($('st_update')) $('st_update').textContent = 'No disponible';
+          if ($('dataText')) $('dataText').textContent = 'No se pudo cargar la información';
+          if ($('foot_update')) $('foot_update').innerHTML = '<i class="bi bi-clock-history me-1"></i>Última actualización: no disponible';
+          setChip('warn', 'Estado no verificado');
+        });
+
+      // Conteo de puntos desde GeoJSON
+      fetch(PUNTOS, { cache:'no-store' })
+        .then(r => r.ok ? r.json() : null)
+        .then(gj => {
+          if (gj && Array.isArray(gj.features) && $('k_puntos')){
+            $('k_puntos').textContent = fmtNum(gj.features.length);
+          }
+        })
+        .catch(()=>{});
+
+      // Botón “volver arriba”
+      const btn = $('toTop');
+      const toggleTop = ()=>{
+        if (!btn) return;
+        if (window.scrollY > 700) btn.classList.add('show');
+        else btn.classList.remove('show');
+      };
+      window.addEventListener('scroll', toggleTop, { passive:true });
+      toggleTop();
+
+      if (btn){
+        btn.addEventListener('click', ()=>window.scrollTo({ top:0, behavior:'smooth' }));
+      }
+    })();
+  </script>
 </body>
 </html>
