@@ -3,274 +3,711 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Módulo Reforestación · Sololá</title>
-  <meta name="description" content="Pantalla de navegación del módulo de reforestación de Sololá." />
+  <title>Módulo de Reforestaciones · Plataforma digital del Eje de Bosques</title>
+  <meta name="description" content="Módulo de Reforestaciones: visor SIG, análisis territorial y geoestadística aplicada para planificar intervenciones en Sololá." />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/flatly/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
   <style>
-:root{
-  --bg1:#ecfbf6;
-  --bg2:#e8f4ff;
-  --bg3:#f8fffc;
-  --ink:#123730;
-  --muted:#56756d;
-  --line:rgba(18,55,48,.10);
-  --line2:rgba(18,55,48,.06);
-  --panel:rgba(255,255,255,.80);
-  --panel2:rgba(255,255,255,.92);
-  --teal:#1f7f6f;
-  --teal2:#2f9f89;
-  --sky:#2e7fca;
-  --shadow:0 18px 42px rgba(23,75,72,.10);
-  --shadow2:0 10px 22px rgba(23,75,72,.08);
-  --r1:22px;
-  --r2:16px;
-  --r3:12px;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  color:var(--ink);
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  background:
-    radial-gradient(1100px 650px at 0% -10%, rgba(94,221,173,.22), transparent 62%),
-    radial-gradient(900px 620px at 100% 0%, rgba(112,182,255,.20), transparent 62%),
-    linear-gradient(130deg,var(--bg1),var(--bg2) 55%,var(--bg3));
-}
-main{width:min(1180px, calc(100% - 24px)); margin:14px auto 20px; position:relative; z-index:1;}
-.orb{position:fixed; width:260px; height:260px; border-radius:999px; filter:blur(14px); opacity:.45; pointer-events:none; z-index:0;}
-.orb.a{left:-80px; top:80px; background:radial-gradient(circle at 35% 35%, rgba(61,212,156,.30), rgba(61,212,156,0) 72%)}
-.orb.b{right:-70px; top:20px; background:radial-gradient(circle at 35% 35%, rgba(96,170,255,.28), rgba(96,170,255,0) 72%)}
-.topbar{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; padding:2px 2px 0}
-.brand{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:12px; font-weight:700; letter-spacing:.02em}
-.brand .dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,#31d39b,#71bcff); box-shadow:0 0 0 5px rgba(49,211,155,.15)}
-.stack{display:grid; gap:12px}
-.panel{background:linear-gradient(180deg,var(--panel2),var(--panel)); border:1px solid rgba(255,255,255,.75); border-radius:var(--r1); box-shadow:var(--shadow); backdrop-filter:blur(10px)}
-.hero{display:grid; grid-template-columns:1.15fr .85fr; gap:12px}
-.hero-main{padding:18px; position:relative; overflow:hidden}
-.hero-main::after{content:""; position:absolute; right:-35px; top:-20px; width:210px; height:210px; border-radius:50%; background:radial-gradient(circle at 35% 35%, rgba(66,212,159,.16), transparent 72%)}
-.hero-main::before{content:""; position:absolute; left:-35px; bottom:-45px; width:240px; height:240px; border-radius:50%; background:radial-gradient(circle at 40% 40%, rgba(100,169,255,.14), transparent 72%)}
-.kicker{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
-.badge{display:inline-flex; align-items:center; gap:7px; border-radius:999px; padding:7px 11px; font-size:12px; font-weight:800; border:1px solid rgba(22,99,87,.10); color:#0f5044; background:linear-gradient(135deg, rgba(191,244,224,.95), rgba(219,237,255,.94))}
-.badge .led{width:8px;height:8px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 4px rgba(47,208,143,.14)}
-h1{margin:0; font-size:clamp(24px,3.5vw,36px); line-height:1.06; letter-spacing:-.02em; max-width:20ch}
-.hero p{margin:10px 0 0; color:var(--muted); font-size:14px; line-height:1.45; max-width:68ch}
-.actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:14px}
-.btn{display:inline-flex; align-items:center; justify-content:center; gap:8px; text-decoration:none; border-radius:14px; padding:10px 14px; font-weight:800; font-size:13px; line-height:1; transition:.15s transform ease,.15s box-shadow ease,.15s background ease,.15s border-color ease; white-space:nowrap}
-.btn:hover{transform:translateY(-1px)}
-.btn.primary{background:linear-gradient(135deg,#bff4df,#cfe8ff); color:#0b3f36; border:1px solid rgba(33,120,108,.12); box-shadow:0 10px 22px rgba(32,124,114,.14)}
-.btn.outline{background:rgba(255,255,255,.86); color:var(--ink); border:1px solid var(--line); box-shadow:0 6px 16px rgba(23,75,72,.06)}
-.btn.soft{background:#fff; color:var(--teal); border:1px solid var(--line2)}
-.hero-side{padding:14px; display:grid; gap:10px; align-content:start}
-.side-title{display:flex; justify-content:space-between; align-items:center; gap:8px}
-.side-title h2{margin:0; font-size:15px}
-.pill{display:inline-flex; align-items:center; gap:7px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:7px 10px; color:var(--muted); font-size:11px; font-weight:800}
-.pill .led{width:8px;height:8px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 4px rgba(47,208,143,.14)}
-.info{background:rgba(255,255,255,.84); border:1px solid var(--line2); border-radius:14px; padding:12px; box-shadow:var(--shadow2)}
-.info .lab{font-size:12px; color:var(--muted); margin-bottom:5px}
-.info .val{font-size:16px; font-weight:800; line-height:1.12}
-.info .sub{font-size:11px; color:var(--muted); margin-top:4px; line-height:1.3}
-.section{margin-top:12px}
-.section-head{display:flex; justify-content:space-between; align-items:flex-end; gap:10px; flex-wrap:wrap; padding:0 2px; margin-bottom:8px}
-.section-head h2{margin:0; font-size:16px; letter-spacing:-.01em}
-.section-head p{margin:0; color:var(--muted); font-size:12px}
-.grid{display:grid; gap:12px}
-.cards-2{grid-template-columns:repeat(2,1fr)}
-.cards-3{grid-template-columns:repeat(3,1fr)}
-.cards-4{grid-template-columns:repeat(4,1fr)}
-.card{background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,255,255,.78)); border:1px solid rgba(255,255,255,.82); border-radius:18px; box-shadow:var(--shadow2); padding:14px}
-.kpi .lab{font-size:12px; color:var(--muted); margin-bottom:7px}
-.kpi .val{font-size:22px; font-weight:800; line-height:1.05; letter-spacing:-.02em}
-.kpi .sub{font-size:11px; color:var(--muted); margin-top:6px}
-.navcard{display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; min-height:146px}
-.icon{width:46px; height:46px; border-radius:13px; display:grid; place-items:center; background:linear-gradient(135deg, rgba(191,244,223,.95), rgba(220,238,255,.95)); border:1px solid rgba(20,103,92,.10); color:#12675d}
-.icon svg{width:23px;height:23px}
-.navcard h3{margin:0; font-size:16px}
-.navcard p{margin:6px 0 10px; color:var(--muted); font-size:13px; line-height:1.4}
-.nav-actions{display:flex; gap:8px; flex-wrap:wrap}
-.footer{margin-top:12px; padding:12px 14px; border-radius:16px; border:1px solid rgba(255,255,255,.80); background:linear-gradient(180deg, rgba(255,255,255,.88), rgba(255,255,255,.74)); box-shadow:var(--shadow2); display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
-.footer .small{font-size:12px; color:var(--muted); line-height:1.35}
-.footer .small strong{color:var(--ink)}
-.footer .chip{padding:7px 11px; border-radius:999px; border:1px solid var(--line2); background:#fff; color:var(--teal); font-size:11px; font-weight:800}
-.muted{color:var(--muted)}
-code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:.92em; background:rgba(255,255,255,.75); border:1px solid var(--line2); padding:2px 6px; border-radius:8px}
-@media (max-width:1060px){ .hero{grid-template-columns:1fr} }
-@media (max-width:860px){ .cards-4{grid-template-columns:repeat(2,1fr)} .cards-3{grid-template-columns:1fr} .cards-2{grid-template-columns:1fr} }
-@media (max-width:560px){ main{width:min(1180px, calc(100% - 16px)); margin-top:8px} .hero-main,.hero-side{padding:14px} .navcard{grid-template-columns:1fr; min-height:auto} .footer .chip{width:100%; text-align:center} }
-</style>
+    :root{
+      --bg-a:#eaf7f2;
+      --bg-b:#e8f2ff;
+      --bg-c:#ffffff;
+      --glass:rgba(255,255,255,.86);
+      --glass-2:rgba(255,255,255,.94);
+      --stroke:rgba(14, 78, 70, .12);
+      --shadow:0 18px 48px rgba(0,0,0,.10);
+      --shadow-sm:0 10px 22px rgba(0,0,0,.08);
+    }
+
+    body{
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 560px at 0% 0%, rgba(44, 165, 141, .16), transparent 60%),
+        radial-gradient(900px 560px at 100% 0%, rgba(42, 127, 202, .14), transparent 60%),
+        linear-gradient(135deg,var(--bg-a),var(--bg-b) 55%, var(--bg-c));
+      padding-top: 76px;
+    }
+
+    .glass{
+      background: linear-gradient(180deg, var(--glass-2), var(--glass));
+      border: 1px solid rgba(255,255,255,.85);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero{
+      border: 1px solid rgba(255,255,255,.80);
+      box-shadow: var(--shadow);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:auto -140px -140px auto;
+      width: 360px; height: 360px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(44, 165, 141, .22), transparent 65%);
+      filter: blur(2px);
+      pointer-events:none;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:-140px auto auto -140px;
+      width: 380px; height: 380px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(42, 127, 202, .18), transparent 65%);
+      filter: blur(2px);
+      pointer-events:none;
+    }
+
+    .brand-logos{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
+
+    .brand-logos img{
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
+      background: rgba(255,255,255,.94);
+      border-radius: 10px;
+      padding: 4px 6px;
+    }
+
+    @media (max-width: 420px){
+      .brand-logos img{ height: 36px; }
+    }
+
+    .muted{ color: rgba(0,0,0,.65); }
+    .section-title{ letter-spacing: -.01em; }
+
+    .icon-badge{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.90);
+    }
+
+    .navcard{
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      border: 1px solid rgba(255,255,255,.82);
+    }
+
+    .navcard:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: rgba(44, 165, 141, .25);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.35rem .6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.65);
+      background: rgba(255,255,255,.18);
+    }
+
+    .led{
+      width: .55rem;
+      height: .55rem;
+      border-radius: 999px;
+      background: #2fd08f;
+      box-shadow: 0 0 0 .25rem rgba(47,208,143,.18);
+    }
+
+    .hero-media{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 12px 26px rgba(0,0,0,.08);
+    }
+
+    .hero-media img{
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .callout{
+      border-left: 4px solid rgba(44, 165, 141, .55);
+      background: rgba(255,255,255,.55);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+
+    .step{
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+    }
+
+    .step .num{
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display:grid;
+      place-items:center;
+      background: rgba(44, 165, 141, .10);
+      border: 1px solid rgba(44, 165, 141, .18);
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .footer-logos{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 18px;
+      justify-content:center;
+      align-items:center;
+      margin-top: 14px;
+    }
+
+    .footer-logos a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 6px 4px;
+      text-decoration:none;
+    }
+
+    .footer-logos img{
+      max-height: 62px;
+      width:auto;
+      max-width: 240px;
+      object-fit:contain;
+      display:block;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    .footer-logos a:hover img{
+      transform: translateY(-1px);
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.10));
+    }
+
+    .to-top{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 1080;
+      display:none;
+    }
+
+    .to-top.show{ display:inline-flex; }
+  </style>
 </head>
+
 <body>
-  <div class="orb a" aria-hidden="true"></div>
-  <div class="orb b" aria-hidden="true"></div>
-  <main>
-    <div class="topbar">
-      <div class="brand"><span class="dot" aria-hidden="true"></span><span>Observatorio ambiental · Sololá · Módulo Reforestación</span></div>
-      <div class="actions">
-        <a class="btn outline" href="../../index.html">← Portal principal</a>
-        <a class="btn outline" href="../../data/puntos.geojson">Datos GeoJSON</a>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#inicio" style="min-width:0;">
+        <span class="brand-logos" aria-label="Logos institucionales">
+          <img src="../../corrected.gif" alt="Logo del Eje de Bosques" loading="eager">
+          <img src="../../CODEMA%20%282%29.png" alt="Logo de la Comisión Departamental de Medio Ambiente de Sololá" loading="eager">
+        </span>
+        <span class="d-none d-md-inline text-truncate">Plataforma digital del Eje de Bosques · Sololá</span>
+        <span class="badge text-bg-success d-none d-lg-inline ms-2"><i class="bi bi-tree-fill me-1"></i>Reforestaciones</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="../../index.html"><i class="bi bi-house-door me-1"></i>Inicio</a>
+          </li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle active" href="#" id="ddModulos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Módulos
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="ddModulos">
+              <li><h6 class="dropdown-header">Reforestaciones (activo)</h6></li>
+              <li><a class="dropdown-item" href="./index.html"><i class="bi bi-tree me-2"></i>Inicio del módulo</a></li>
+              <li><a class="dropdown-item" href="./geoportal.html"><i class="bi bi-map me-2"></i>Geoportal</a></li>
+              <li><a class="dropdown-item" href="./dashboard.html"><i class="bi bi-bar-chart me-2"></i>Dashboard</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><h6 class="dropdown-header">Próximamente</h6></li>
+              <li><span class="dropdown-item-text"><i class="bi bi-fire me-2"></i>Incendios forestales</span></li>
+              <li><span class="dropdown-item-text"><i class="bi bi-diagram-3 me-2"></i>Ecología del paisaje forestal</span></li>
+            </ul>
+          </li>
+
+          <li class="nav-item"><a class="nav-link" href="#productos">Productos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#metodologia">Metodología</a></li>
+          <li class="nav-item"><a class="nav-link" href="#analisis">Análisis territorial</a></li>
+          <li class="nav-item"><a class="nav-link" href="#geoestadistica">Geoestadística</a></li>
+        </ul>
+
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-light btn-sm" href="./geoportal.html">
+            <i class="bi bi-map me-1"></i>Abrir Geoportal
+          </a>
+        </div>
       </div>
     </div>
+  </nav>
 
-    <section class="hero">
-      <article class="panel hero-main">
-        <div class="kicker">
-          <span class="badge"> Reforestación</span>
-          <span class="badge"><span class="led"></span> Módulo operativo</span>
-        </div>
-        <h1>Entrada del módulo de reforestación de Sololá</h1>
-        <p>
-          Esta pantalla sirve para navegar rápido entre el geoportal, el dashboard y los informes del módulo.
-          Aquí solo se muestra un resumen mínimo para no repetir análisis entre pantallas.
-        </p>
-        <div class="actions">
-          <a class="btn primary" href="./geoportal.html"> Geoportal</a>
-          <a class="btn outline" href="./dashboard.html"> Dashboard</a>
-          <a class="btn outline" href="./informes.html"> Informes</a>
-        </div>
-      </article>
+  <main class="container my-4">
+    <section id="inicio" class="hero glass p-4 p-lg-5">
+      <div class="row g-4 align-items-start position-relative" style="z-index:1">
+        <div class="col-lg-7">
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="badge text-bg-success"><i class="bi bi-tree-fill me-1"></i>Módulo activo</span>
+            <span class="badge text-bg-secondary pill">
+              <span class="led" aria-hidden="true"></span>
+              <span>En operación</span>
+            </span>
+          </div>
 
-      <aside class="panel hero-side" aria-label="Estado del módulo">
-        <div class="side-title">
-          <h2>Estado del módulo</h2>
-          <span class="pill" id="chipEstado"><span class="led"></span> En línea</span>
+          <h1 class="display-6 fw-bold mb-2">Módulo de Reforestaciones</h1>
+
+          <p class="lead muted mb-3" style="max-width: 64ch;">
+            Este módulo organiza los reportes de jornadas de reforestación y los transforma en información territorial útil para planificar
+            intervenciones: localización, priorización y seguimiento. El objetivo es facilitar una coordinación interinstitucional clara,
+            con criterios técnicos y productos SIG que se puedan consultar y replicar.
+          </p>
+
+          <div class="callout muted">
+            <div class="fw-semibold mb-1"><i class="bi bi-compass me-1"></i>Uso recomendado</div>
+            <ul class="mb-0" style="padding-left: 1.1rem;">
+              <li>Explora el territorio en el <strong>Geoportal</strong> para ubicar intervenciones y consultar capas.</li>
+              <li>Consulta el <strong>Dashboard</strong> para lectura por periodo y apoyo a reportes.</li>
+              <li>Usa la <strong>boleta homologada</strong> como referencia común de captura y trazabilidad.</li>
+            </ul>
+          </div>
+
+          <div class="mt-4 d-flex flex-wrap gap-2">
+            <a class="btn btn-success" href="./geoportal.html"><i class="bi bi-map me-1"></i>Geoportal</a>
+            <a class="btn btn-outline-primary" href="./dashboard.html"><i class="bi bi-bar-chart-line me-1"></i>Dashboard</a>
+            <a class="btn btn-outline-primary" href="https://ee.kobotoolbox.org/x/JuJxSZxP" target="_blank" rel="noopener">
+              <i class="bi bi-box-arrow-up-right me-1"></i>Boleta homologada
+            </a>
+          </div>
+
+          <div class="mt-3 small text-body-secondary">
+            <i class="bi bi-shield-check me-1"></i>Los productos del módulo se basan en trazabilidad y validación geográfica.
+          </div>
         </div>
-        <div class="info">
-          <div class="lab">Última actualización</div>
-          <div class="val" id="st_update">—</div>
-          <div class="sub">Lectura desde <code>../../data/resumen.json</code></div>
+
+        <div class="col-lg-5">
+          <div class="glass rounded-4 p-3 p-lg-4">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1 section-title">Fuentes y trazabilidad</h2>
+                <div class="text-body-secondary small">De la boleta a productos SIG</div>
+              </div>
+              <span class="badge text-bg-light border">
+                <i class="bi bi-clipboard-check me-1"></i>Homologada
+              </span>
+            </div>
+
+            <hr class="my-3">
+
+            <div class="row g-2">
+              <div class="col-12">
+                <div class="p-3 bg-body rounded-4 border">
+                  <div class="small text-body-secondary">Fuente principal</div>
+                  <div class="fw-semibold">Boleta homologada de reporte de reforestaciones</div>
+                  <div class="small text-body-secondary mt-1">
+                    Captura estándar de datos en campo para consolidación y análisis territorial.
+                  </div>
+                  <a class="btn btn-sm btn-outline-primary mt-2" href="https://ee.kobotoolbox.org/x/JuJxSZxP" target="_blank" rel="noopener">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Abrir boleta
+                  </a>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="p-3 bg-body rounded-4 border">
+                  <div class="small text-body-secondary">Salida SIG</div>
+                  <div class="fw-semibold">Puntos geográficos y capas de contexto</div>
+                  <div class="small text-body-secondary mt-1">
+                    Validación de coordenadas y cruces con cuencas, cobertura y criterios técnicos.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="hero-media">
+                <img src="../../corrected.gif" alt="Identidad visual del Eje de Bosques" loading="lazy">
+              </div>
+            </div>
+
+            <div class="mt-3 d-flex flex-wrap gap-2">
+              <a class="btn btn-sm btn-outline-secondary" href="#metodologia"><i class="bi bi-journal-text me-1"></i>Metodología</a>
+              <a class="btn btn-sm btn-outline-secondary" href="#analisis"><i class="bi bi-diagram-2 me-1"></i>Análisis</a>
+            </div>
+          </div>
         </div>
-        <div class="info">
-          <div class="lab">Flujo de datos</div>
-          <div class="val" id="syncText">Verificando…</div>
-          <div class="sub">KoBo → GitHub Actions → GitHub Pages</div>
-        </div>
-        <div class="info">
-          <div class="lab">Ruta del módulo</div>
-          <div class="val">/apps/reforestacion/</div>
-          <div class="sub">Enlaces internos locales a este directorio</div>
-        </div>
-      </aside>
+      </div>
     </section>
 
-    <section class="section">
-      <div class="section-head">
+    <section id="productos" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
         <div>
-          <h2>Navegación principal</h2>
-          <p>Cada pantalla cumple una función distinta para evitar duplicación</p>
+          <h2 class="h4 mb-1 section-title">Productos del módulo</h2>
+          <div class="text-body-secondary">Herramientas para explorar, documentar y coordinar</div>
         </div>
       </div>
-      <div class="grid cards-3">
-        <article class="card navcard">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6l7-3 4 2 7-2v15l-7 2-4-2-7 3V6z"/><path d="M10 3v15M14 5v15"/></svg></div>
-          <div>
-            <h3>Geoportal</h3>
-            <p>Consulta espacial y exploración de puntos. Aquí va la experiencia cartográfica, no el análisis estadístico profundo.</p>
-            <div class="nav-actions"><a class="btn primary" href="./geoportal.html">Abrir geoportal</a></div>
+
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-map"></i></div>
+                <div>
+                  <h3 class="h5 mb-1">Geoportal</h3>
+                  <p class="mb-3 muted">Visor SIG para ubicar intervenciones, consultar atributos y cruzar capas territoriales.</p>
+                  <a class="btn btn-success btn-sm" href="./geoportal.html">Abrir geoportal <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+              </div>
+            </div>
           </div>
-        </article>
-        <article class="card navcard">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19h16"/><path d="M7 16V9"/><path d="M12 16V5"/><path d="M17 16v-4"/></svg></div>
-          <div>
-            <h3>Dashboard</h3>
-            <p>Análisis de patrones, estadísticas y visualización cuantitativa. Aquí vive el tablero técnico.</p>
-            <div class="nav-actions"><a class="btn outline" href="./dashboard.html">Abrir dashboard</a></div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-bar-chart"></i></div>
+                <div>
+                  <h3 class="h5 mb-1">Dashboard</h3>
+                  <p class="mb-3 muted">Lectura por periodo y apoyo a reportes, útil para seguimiento y coordinación.</p>
+                  <a class="btn btn-outline-primary btn-sm" href="./dashboard.html">Ir al dashboard <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+              </div>
+            </div>
           </div>
-        </article>
-        <article class="card navcard">
-          <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v5h5"/><path d="M10 13h6M10 17h6"/></svg></div>
-          <div>
-            <h3>Informes</h3>
-            <p>Salida de reportes y productos. Puede mantenerse simple por ahora sin afectar la navegación del módulo.</p>
-            <div class="nav-actions"><a class="btn outline" href="./informes.html">Abrir informes</a></div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-clipboard-check"></i></div>
+                <div>
+                  <h3 class="h5 mb-1">Boleta homologada</h3>
+                  <p class="mb-3 muted">Formulario estándar para captura y trazabilidad entre instituciones.</p>
+                  <a class="btn btn-outline-primary btn-sm" href="https://ee.kobotoolbox.org/x/JuJxSZxP" target="_blank" rel="noopener">
+                    Abrir boleta <i class="bi bi-box-arrow-up-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
-        </article>
+        </div>
+
       </div>
     </section>
 
-    <section class="section">
-      <div class="section-head">
+    <section id="metodologia" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
         <div>
-          <h2>Resumen mínimo del módulo</h2>
-          <p>Solo para ver estado y continuidad del flujo; el análisis se hace en el dashboard</p>
+          <h2 class="h4 mb-1 section-title">Metodología de trabajo</h2>
+          <div class="text-body-secondary">Cómo se convierten reportes en información SIG confiable</div>
         </div>
       </div>
-      <div class="grid cards-4">
-        <div class="card kpi"><div class="lab">Boletas</div><div class="val" id="k_boletas">—</div><div class="sub">resumen.json</div></div>
-        <div class="card kpi"><div class="lab">Plantas</div><div class="val" id="k_plantas">—</div><div class="sub">resumen.json</div></div>
-        <div class="card kpi"><div class="lab">Participantes</div><div class="val" id="k_part">—</div><div class="sub">resumen.json</div></div>
-        <div class="card kpi"><div class="lab">Puntos con coordenadas</div><div class="val" id="k_puntos">—</div><div class="sub">puntos.geojson</div></div>
+
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-3"><i class="bi bi-funnel me-1"></i>Preparación de datos</h3>
+
+              <div class="step mb-3">
+                <div class="num">1</div>
+                <div>
+                  <div class="fw-semibold">Estandarización</div>
+                  <div class="muted">Revisión de campos clave (fecha, lugar, especie, cantidad) y consistencia de registros.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">2</div>
+                <div>
+                  <div class="fw-semibold">Validación geográfica</div>
+                  <div class="muted">Control de coordenadas y verificación espacial para evitar puntos fuera del área de trabajo.</div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="num">3</div>
+                <div>
+                  <div class="fw-semibold">Publicación SIG</div>
+                  <div class="muted">Generación de capas y actualización del visor para consulta y coordinación interinstitucional.</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-3"><i class="bi bi-layers me-1"></i>Capas de contexto</h3>
+              <p class="muted mb-3">
+                Para planificar intervenciones, los puntos se interpretan junto con capas territoriales que ayudan a definir prioridad y enfoque.
+              </p>
+
+              <ul class="muted mb-0" style="padding-left: 1.1rem;">
+                <li>Cuencas y microcuencas / zonas de recarga hídrica</li>
+                <li>Cobertura forestal y cambios recientes</li>
+                <li>Áreas protegidas y zonas de amortiguamiento</li>
+                <li>Pendiente y erosión potencial</li>
+                <li>Límites municipales y articulación local (UGAM)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="section">
-      <div class="grid cards-2">
-        <article class="card">
-          <h3 style="margin:0 0 6px;font-size:15px">Evita confusión entre pantallas</h3>
-          <p class="muted" style="margin:0;font-size:13px;line-height:1.42">Inicio del módulo = navegación. Geoportal = mapa. Dashboard = análisis. Informes = salidas. Así ya no se siente que todo repite lo mismo.</p>
-        </article>
-        <article class="card">
-          <h3 style="margin:0 0 6px;font-size:15px">Rutas correctas para este archivo</h3>
-          <p class="muted" style="margin:0;font-size:13px;line-height:1.42">Este archivo está diseñado para <code>/apps/reforestacion/index.html</code>. Por eso usa <code>./geoportal.html</code> y datos en <code>../../data/...</code>.</p>
-        </article>
+    <section id="analisis" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+          <h2 class="h4 mb-1 section-title">Análisis territorial para la planificación</h2>
+          <div class="text-body-secondary">De ubicaciones registradas a decisiones de intervención</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <p class="muted mb-3">
+                El análisis territorial identifica zonas donde la reforestación aporta mayor beneficio ambiental (agua, suelo, conectividad)
+                y donde la coordinación institucional puede sostener resultados. Se trabaja con criterios claros y productos verificables.
+              </p>
+
+              <div class="step mb-3">
+                <div class="num">1</div>
+                <div>
+                  <div class="fw-semibold">Lectura del territorio</div>
+                  <div class="muted">Relación de intervenciones con cuencas, pendientes, cobertura y áreas estratégicas.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">2</div>
+                <div>
+                  <div class="fw-semibold">Criterios de priorización</div>
+                  <div class="muted">Reglas técnicas: recarga hídrica, riesgo de erosión, conectividad y coordinación local.</div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="num">3</div>
+                <div>
+                  <div class="fw-semibold">Salida para decisión</div>
+                  <div class="muted">Mapas y listados de zonas sugeridas para planificar jornadas, refuerzos y seguimiento.</div>
+                </div>
+              </div>
+
+              <hr class="my-3">
+
+              <div class="callout muted">
+                <div class="fw-semibold mb-1"><i class="bi bi-check2-circle me-1"></i>Buenas prácticas</div>
+                <ul class="mb-0" style="padding-left: 1.1rem;">
+                  <li>Priorizar protección de fuentes de agua y suelos frágiles.</li>
+                  <li>Evitar duplicidad mediante cruces con planes municipales y UGAM.</li>
+                  <li>Complementar con verificación en campo para validar condiciones del sitio.</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-2"><i class="bi bi-question-circle me-1"></i>Preguntas clave</h3>
+              <ul class="muted mb-3" style="padding-left: 1.1rem;">
+                <li>¿En qué municipios y cuencas se concentra el esfuerzo?</li>
+                <li>¿Dónde conviene reforzar por erosión o pérdida de cobertura?</li>
+                <li>¿Qué zonas requieren continuidad por recarga hídrica?</li>
+                <li>¿Qué áreas muestran brechas de cobertura territorial?</li>
+              </ul>
+
+              <h3 class="h6 section-title mb-2"><i class="bi bi-clipboard2-data me-1"></i>Resultado esperado</h3>
+              <p class="muted mb-0">
+                Productos SIG para apoyar la planificación, facilitar acuerdos y documentar seguimiento de acciones interinstitucionales.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <footer class="footer">
-      <div class="small"><strong>Laboratorio SIG del eje de bosques de CODEMA-SOLOLÁ 2026</strong><br>Módulo Reforestación · Pantalla de navegación</div>
-      <div class="chip" id="foot_update">Última actualización: —</div>
+    <section id="geoestadistica" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+          <h2 class="h4 mb-1 section-title">Geoestadística aplicada</h2>
+          <div class="text-body-secondary">Patrones espaciales para priorizar y evaluar intervenciones</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <p class="muted mb-3">
+                La geoestadística permite ir más allá de la visualización de puntos. Ayuda a identificar concentración, clústeres y brechas
+                territoriales; además, facilita comparar resultados entre municipios y cuencas con criterios consistentes.
+              </p>
+
+              <div class="callout muted">
+                <div class="fw-semibold mb-1"><i class="bi bi-bullseye me-1"></i>Aplicaciones típicas</div>
+                <ul class="mb-0" style="padding-left: 1.1rem;">
+                  <li>Mapas de densidad para ubicar zonas de alta y baja cobertura de intervención.</li>
+                  <li>Identificación de “hotspots” para focalizar acciones y optimizar logística.</li>
+                  <li>Análisis de proximidad a ríos, nacimientos, áreas protegidas e infraestructura.</li>
+                  <li>Comparación por periodos para evaluar continuidad y distribución espacial del esfuerzo.</li>
+                </ul>
+              </div>
+
+              <div class="mt-3 small text-body-secondary">
+                <i class="bi bi-info-circle me-1"></i>Estos análisis se integran con criterios técnicos y validación local.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-3"><i class="bi bi-tools me-1"></i>Técnicas de lectura espacial</h3>
+
+              <div class="step mb-3">
+                <div class="num">1</div>
+                <div>
+                  <div class="fw-semibold">Densidad</div>
+                  <div class="muted">Lectura de intensidad territorial para balancear intervenciones.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">2</div>
+                <div>
+                  <div class="fw-semibold">Hotspots y clústeres</div>
+                  <div class="muted">Detección de agrupamientos significativos para priorización.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">3</div>
+                <div>
+                  <div class="fw-semibold">Buffers y proximidad</div>
+                  <div class="muted">Criterios de cercanía a elementos estratégicos del territorio.</div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="num">4</div>
+                <div>
+                  <div class="fw-semibold">Cruces por unidad territorial</div>
+                  <div class="muted">Resultados comparables por cuenca y municipio.</div>
+                </div>
+              </div>
+
+              <div class="mt-3 d-flex flex-wrap gap-2">
+                <a class="btn btn-sm btn-outline-secondary" href="./geoportal.html"><i class="bi bi-map me-1"></i>Geoportal</a>
+                <a class="btn btn-sm btn-outline-secondary" href="./dashboard.html"><i class="bi bi-bar-chart me-1"></i>Dashboard</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-5 pb-4">
+      <div class="text-center mb-3" style="font-size:.98rem;">
+        <strong>Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
+      </div>
+
+      <div class="text-center mb-2">
+        <div class="fw-semibold">Instituciones y organizaciones</div>
+        <div class="text-body-secondary">
+          El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
+        </div>
+      </div>
+
+      <div class="footer-logos" aria-label="Logos institucionales">
+        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Ambiente y Recursos Naturales">
+          <img src="../../marn.png" alt="MARN">
+        </a>
+        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Agricultura, Ganadería y Alimentación">
+          <img src="../../maga.png" alt="MAGA">
+        </a>
+        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" aria-label="Instituto Nacional de Bosques">
+          <img src="../../inab.png" alt="INAB">
+        </a>
+        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="Consejo Nacional de Áreas Protegidas">
+          <img src="../../conap.png" alt="CONAP">
+        </a>
+        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" aria-label="Autoridad para el Manejo Sustentable de la Cuenca del Lago de Atitlán y su Entorno">
+          <img src="../../amsclae.png" alt="AMSCLAE">
+        </a>
+        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="Coordinadora Nacional para la Reducción de Desastres">
+          <img src="../../conred.png" alt="CONRED">
+        </a>
+        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" aria-label="Centro de Estudios Atitlán - Universidad del Valle de Guatemala">
+          <img src="../../cea.png" alt="CEA - UVG">
+        </a>
+        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" aria-label="Asociación Amigos del Lago de Atitlán">
+          <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
+        </a>
+        <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener" aria-label="Vivamos Mejor Guatemala">
+          <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
+        </a>
+        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" aria-label="Alliance for International Reforestation">
+          <img src="../../aires.png" alt="AIR">
+        </a>
+      </div>
     </footer>
   </main>
-  
-<script>
-(function(){
-  const $ = (id)=>document.getElementById(id);
-  const fmtNum = (v)=>{ const n=Number(v); return Number.isFinite(n) ? new Intl.NumberFormat('es-GT').format(n) : '—'; };
-  const cleanText = (v)=>{
-    if (v == null) return '—';
-    let s = String(v).trim(); if (!s) return '—';
-    s = s.replace(/_/g,' ').replace(/\s+/g,' ').trim();
-    const fixes = {'Ã¡':'á','Ã©':'é','Ã­':'í','Ã³':'ó','Ãº':'ú','Ã':'Á','Ã‰':'É','Ã':'Í','Ã“':'Ó','Ãš':'Ú','Ã±':'ñ','Ã‘':'Ñ','Â':''};
-    for (const [bad,good] of Object.entries(fixes)) s = s.split(bad).join(good);
-    return s;
-  };
-  const fmtDate = (raw)=>{
-    if (!raw) return '—';
-    const txt = cleanText(raw);
-    const d = new Date(txt);
-    return isNaN(d.getTime()) ? txt : new Intl.DateTimeFormat('es-GT',{year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(d);
-  };
-  const RESUMEN = '../../data/resumen.json';
-  const PUNTOS = '../../data/puntos.geojson';
 
-  fetch(RESUMEN,{cache:'no-store'})
-    .then(r=>r.ok ? r.json() : null)
-    .then(j=>{
-      if (!j) throw new Error('No se pudo leer resumen.json');
-      const boletas = j?.kpis?.total_boletas;
-      const plantas = j?.kpis?.total_plantas;
-      const part = j?.kpis?.total_participantes;
-      const upd = fmtDate(j?.ultima_actualizacion);
-      if ($('k_boletas')) $('k_boletas').textContent = fmtNum(boletas);
-      if ($('k_plantas')) $('k_plantas').textContent = fmtNum(plantas);
-      if ($('k_part')) $('k_part').textContent = fmtNum(part);
-      if ($('k_update')) $('k_update').textContent = upd;
-      if ($('st_update')) $('st_update').textContent = upd;
-      if ($('foot_update')) $('foot_update').textContent = 'Última actualización: ' + upd;
-      if ($('syncText')) $('syncText').textContent = Number(boletas||0) > 0 ? 'Sincronización activa' : 'Sin registros todavía';
-    })
-    .catch(()=>{
-      if ($('st_update')) $('st_update').textContent = 'No disponible';
-      if ($('foot_update')) $('foot_update').textContent = 'Última actualización: no disponible';
-      if ($('syncText')) $('syncText').textContent = 'No se pudo leer resumen.json';
-      const chip=$('chipEstado');
-      if (chip) chip.innerHTML = '<span class="led" style="background:#f0b24d;box-shadow:0 0 0 4px rgba(240,178,77,.14)"></span> Estado no verificado';
-    });
+  <button class="btn btn-primary to-top" id="toTop" type="button" aria-label="Volver arriba">
+    <i class="bi bi-arrow-up"></i>
+  </button>
 
-  fetch(PUNTOS,{cache:'no-store'})
-    .then(r=>r.ok ? r.json() : null)
-    .then(gj=>{ if (gj && Array.isArray(gj.features) && $('k_puntos')) $('k_puntos').textContent = fmtNum(gj.features.length); })
-    .catch(()=>{});
-})();
-</script>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function(){
+      const btn = document.getElementById('toTop');
+      const toggleTop = () => {
+        if (!btn) return;
+        if (window.scrollY > 700) btn.classList.add('show');
+        else btn.classList.remove('show');
+      };
+      window.addEventListener('scroll', toggleTop, { passive: true });
+      toggleTop();
+      if (btn){
+        btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      }
+    })();
+  </script>
 </body>
 </html>
