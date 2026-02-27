@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Observatorio ambiental · Sololá</title>
-  <meta name="description" content="Portal principal del Observatorio Ambiental y módulos forestales del departamento de Sololá." />
+  <title>Plataforma digital del Eje de Bosques · Sololá</title>
+  <meta name="description" content="Plataforma digital del Eje de Bosques para módulos SIG forestales del departamento de Sololá." />
 
-  <!-- Tema tipo “Flatly” (similar al estilo de tu referencia) -->
+  <!-- Tema tipo “Flatly” (similar a tu referencia) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/flatly/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
@@ -133,7 +133,57 @@
       box-shadow: 0 0 0 .25rem rgba(47,208,143,.18);
     }
 
-    .to-top{
+    /* GIF / imagen destacada en Home */
+    .hero-media{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 12px 26px rgba(0,0,0,.08);
+    }
+    .hero-media img{
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Logos institucionales (pie de página) */
+    .footer-partners{
+      margin-top: 1.25rem;
+    }
+    .footer-partners .subtitle{
+      color: rgba(0,0,0,.65);
+    }
+    .footer-logos{
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      justify-content: center;
+      align-items: center;
+      margin-top: 14px;
+    }
+    .footer-logos a{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 4px;
+      text-decoration: none;
+    }
+    .footer-logos img{
+      max-height: 56px;
+      width: auto;
+      max-width: 220px;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
+      transition: transform .12s ease, filter .12s ease;
+    }
+    .footer-logos a:hover img{
+      transform: translateY(-1px);
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.10));
+    }
+
+.to-top{
       position: fixed;
       right: 16px;
       bottom: 16px;
@@ -150,11 +200,10 @@
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#inicio" style="min-width:0;">
         <span class="brand-logos" aria-label="Logos institucionales">
-          <!-- Logos (OBLIGATORIOS) -->
           <img src="./BOSQUE.png" alt="Logo Eje de Bosques" loading="eager">
           <img src="./CODEMA%20%282%29.png" alt="Logo Comisión Departamental de Medio Ambiente de Sololá" loading="eager">
         </span>
-        <span class="d-none d-md-inline text-truncate">Observatorio ambiental · Sololá</span>
+        <span class="d-none d-md-inline text-truncate">Plataforma digital del Eje de Bosques · Sololá</span>
       </a>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menú">
@@ -242,7 +291,7 @@
             </div>
           </div>
 
-          <div class="mt-4">
+          <div class="mt-4 d-flex flex-wrap gap-2">
             <a class="btn btn-success" href="#modulos">
               <i class="bi bi-grid-3x3-gap-fill me-1"></i>Ver módulos
             </a>
@@ -283,6 +332,12 @@
               </div>
             </div>
 
+            <div class="mt-4">
+              <div class="hero-media">
+                <img src="./eje_animated.gif" alt="Animación institucional del Eje de Bosques" loading="lazy">
+              </div>
+            </div>
+
             <div class="mt-3 d-flex flex-wrap gap-2">
               <a class="btn btn-sm btn-outline-secondary" href="#modulos">
                 <i class="bi bi-grid me-1"></i>Ir a módulos
@@ -296,11 +351,11 @@
       </div>
     </section>
 
-    <!-- MÓDULOS -->
+<!-- MÓDULOS -->
     <section id="modulos" class="mt-5">
       <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
         <div>
-          <h2 class="h4 mb-1 section-title">Módulos del observatorio</h2>
+          <h2 class="h4 mb-1 section-title">Módulos de la plataforma</h2>
           <div class="text-body-secondary">Navega por temática y entra al detalle desde cada módulo</div>
         </div>
       </div>
@@ -335,9 +390,9 @@
                 <div class="w-100">
                   <h3 class="h5 mb-1">Módulo de incendios forestales</h3>
                   <p class="mb-3 muted">Seguimiento, prevención y respuesta: mapas, reportes y estadísticas por temporada.</p>
-                  <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-clock me-1"></i>Próximamente</button>
-                  </div>
+                  <button class="btn btn-outline-secondary btn-sm" type="button" disabled>
+                    <i class="bi bi-clock me-1"></i>Próximamente
+                  </button>
                 </div>
               </div>
             </div>
@@ -353,9 +408,9 @@
                 <div class="w-100">
                   <h3 class="h5 mb-1">Ecología del paisaje forestal de Sololá</h3>
                   <p class="mb-3 muted">Cobertura forestal, conectividad, fragmentación y análisis territorial para planificación.</p>
-                  <div class="d-flex flex-wrap gap-2">
-                    <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-clock me-1"></i>Próximamente</button>
-                  </div>
+                  <button class="btn btn-outline-secondary btn-sm" type="button" disabled>
+                    <i class="bi bi-clock me-1"></i>Próximamente
+                  </button>
                 </div>
               </div>
             </div>
@@ -427,13 +482,55 @@
         <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
           <div style="font-size:.95rem;">
             <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong><br>
-            <span class="text-body-secondary">Portal principal · Navegación por módulos</span>
+            <span class="text-body-secondary">Plataforma digital · Navegación por módulos</span>
           </div>
           <div class="badge text-bg-light border" id="foot_update">
             <i class="bi bi-clock-history me-1"></i>Última actualización: —
           </div>
         </div>
       </div>
+
+      <div class="footer-partners text-center">
+        <div class="fw-semibold">Instituciones y organizaciones</div>
+        <div class="subtitle">
+          El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
+        </div>
+
+        <div class="footer-logos" aria-label="Logos de instituciones y organizaciones">
+          <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Ambiente y Recursos Naturales">
+            <img src="./marn.png" alt="MARN">
+          </a>
+          <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Agricultura, Ganadería y Alimentación">
+            <img src="./maga.png" alt="MAGA">
+          </a>
+          <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" aria-label="Instituto Nacional de Bosques">
+            <img src="./inab.png" alt="INAB">
+          </a>
+          <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="Consejo Nacional de Áreas Protegidas">
+            <img src="./conap.png" alt="CONAP">
+          </a>
+          <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="Coordinadora Nacional para la Reducción de Desastres">
+            <img src="./conred.png" alt="CONRED">
+          </a>
+          <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" aria-label="Centro de Estudios Atitlán - Universidad del Valle de Guatemala">
+            <img src="./cea.png" alt="CEA - UVG">
+          </a>
+          <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" aria-label="Asociación Amigos del Lago de Atitlán">
+            <img src="./aala_logo.png" alt="Amigos del Lago de Atitlán">
+          </a>
+          <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener" aria-label="Vivamos Mejor Guatemala">
+            <img src="./vivamos.png" alt="Vivamos Mejor Guatemala">
+          </a>
+          <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" aria-label="Alliance for International Reforestation">
+            <img src="./aires.png" alt="AIR">
+          </a>
+        </div>
+
+        <div class="small text-body-secondary mt-2">
+          <i class="bi bi-box-arrow-up-right me-1"></i>Al hacer clic en cada logo, se abrirá el sitio oficial en una nueva pestaña.
+        </div>
+      </div>
+
     </footer>
   </main>
 
