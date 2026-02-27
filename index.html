@@ -4,9 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Plataforma digital del Eje de Bosques · Sololá</title>
-  <meta name="description" content="Plataforma digital del Eje de Bosques para módulos SIG forestales del departamento de Sololá." />
+  <meta name="description" content="Plataforma digital del Eje de Bosques de CODEMA Sololá." />
 
-  <!-- Tema tipo “Flatly” (similar a tu referencia) -->
+  <!-- Tema tipo “Flatly” (inspirado) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/flatly/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
@@ -73,7 +73,7 @@
       min-width: 0;
     }
     .brand-logos img{
-      height: 34px;
+      height: 44px;
       width: auto;
       object-fit: contain;
       filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
@@ -82,7 +82,7 @@
       padding: 4px 6px;
     }
     @media (max-width: 420px){
-      .brand-logos img{ height: 28px; }
+      .brand-logos img{ height: 36px; }
     }
 
     .icon-badge{
@@ -183,7 +183,7 @@
       filter: drop-shadow(0 8px 16px rgba(0,0,0,.10));
     }
 
-.to-top{
+    .to-top{
       position: fixed;
       right: 16px;
       bottom: 16px;
@@ -261,7 +261,7 @@
 
           <p class="muted mb-3">
             <strong>Eje de Bosques - Comisión Departamental de Medio Ambiente de Sololá</strong><br>
-            El Eje de Bosques es el órgano técnico de la Comisión Departamental de Medio Ambiente de Sololá, encargado de coordinar la política forestal y la protección de los recursos naturales en el departamento. Su función es centralizar la gestión entre el gobierno central, las municipalidades y la sociedad civil.
+            El Eje de Bosques es el órgano técnico de la Comisión Departamental de Medio Ambiente de Sololá, encargado de coordinar las acciones para la preservación y restauración de los recursos forestales en el departamento de Sololá. Su función es centralizar la gestión entre el gobierno central, las municipalidades y la sociedad civil.
           </p>
 
           <div class="row g-3">
@@ -318,9 +318,14 @@
             <div class="row g-2">
               <div class="col-12">
                 <div class="p-3 bg-body rounded-4 border">
-                  <div class="small text-body-secondary">Datos</div>
-                  <div class="fw-semibold" id="dataText">Verificando…</div>
-                  <div class="small text-body-secondary mt-1">Se cargan indicadores desde archivos publicados.</div>
+                  <div class="small text-body-secondary">Fuente</div>
+                  <div class="fw-semibold">Boleta homologada de reporte de reforestaciones</div>
+                  <div class="small text-body-secondary mt-1">
+                    La información presentada en esta plataforma proviene de la boleta homologada de reporte de reforestaciones del eje. Acceda a ella desde aquí:
+                  </div>
+                  <a class="btn btn-sm btn-outline-primary mt-2" href="https://ee.kobotoolbox.org/x/JuJxSZxP" target="_blank" rel="noopener">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Abrir boleta
+                  </a>
                 </div>
               </div>
               <div class="col-12">
@@ -334,7 +339,7 @@
 
             <div class="mt-4">
               <div class="hero-media">
-                <img src="./eje_animated.gif" alt="Animación institucional del Eje de Bosques" loading="lazy">
+                <img src="./corrected.gif" alt="Animación institucional del Eje de Bosques" loading="lazy">
               </div>
             </div>
 
@@ -425,7 +430,7 @@
       <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
         <div>
           <h2 class="h4 mb-1 section-title">Indicadores</h2>
-          <div class="text-body-secondary">Vista rápida (por ahora: datos del módulo de reforestaciones)</div>
+          <div class="text-body-secondary">A través del esfuerzo interinstitucional coordinado, durante el año 2025 y 2026 se han logrado en materia de reforestación:</div>
         </div>
         <span class="badge text-bg-light border">
           <i class="bi bi-database me-1"></i>
@@ -477,20 +482,16 @@
     </section>
 
     <!-- FOOTER -->
-    <footer class="mt-5 pb-4">
-      <div class="card glass">
-        <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-2">
-          <div style="font-size:.95rem;">
-            <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong><br>
-            <span class="text-body-secondary">Plataforma digital · Navegación por módulos</span>
-          </div>
-          <div class="badge text-bg-light border" id="foot_update">
-            <i class="bi bi-clock-history me-1"></i>Última actualización: —
-          </div>
-        </div>
+<footer class="mt-5 pb-4">
+      <div class="text-center mb-3" style="font-size: .98rem;">
+        <strong>Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
       </div>
-
-      <div class="footer-partners text-center">
+      <div class="text-center mb-4">
+        <span class="badge text-bg-light border" id="foot_update">
+          <i class="bi bi-clock-history me-1"></i>Última actualización: —
+        </span>
+      </div>
+<div class="footer-partners text-center">
         <div class="fw-semibold">Instituciones y organizaciones</div>
         <div class="subtitle">
           El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
@@ -509,6 +510,9 @@
           <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="Consejo Nacional de Áreas Protegidas">
             <img src="./conap.png" alt="CONAP">
           </a>
+          <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" aria-label="Autoridad para el Manejo Sustentable de la Cuenca del Lago de Atitlán y su Entorno">
+            <img src="./amsclae.png" alt="AMSCLAE">
+          </a>
           <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="Coordinadora Nacional para la Reducción de Desastres">
             <img src="./conred.png" alt="CONRED">
           </a>
@@ -525,13 +529,10 @@
             <img src="./aires.png" alt="AIR">
           </a>
         </div>
+</div>
 
-        <div class="small text-body-secondary mt-2">
-          <i class="bi bi-box-arrow-up-right me-1"></i>Al hacer clic en cada logo, se abrirá el sitio oficial en una nueva pestaña.
-        </div>
-      </div>
-
-    </footer>
+    
+</footer>
   </main>
 
   <button class="btn btn-primary to-top" id="toTop" type="button" aria-label="Volver arriba">
@@ -628,8 +629,7 @@
         })
         .catch(() => {
           if ($('st_update')) $('st_update').textContent = 'No disponible';
-          if ($('dataText')) $('dataText').textContent = 'No se pudo cargar la información';
-          if ($('foot_update')) $('foot_update').innerHTML = '<i class="bi bi-clock-history me-1"></i>Última actualización: no disponible';
+if ($('foot_update')) $('foot_update').innerHTML = '<i class="bi bi-clock-history me-1"></i>Última actualización: no disponible';
           setChip('warn', 'Estado no verificado');
         });
 
