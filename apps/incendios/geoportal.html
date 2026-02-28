@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard Incendios — FIRMS (Sololá/Guatemala)</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""/>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin=""></script>
+
+  <!-- MarkerCluster -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#eef6f4;
+      --card:#ffffff;
+      --ink:#0d2b26;
+      --muted:#4a6c66;
+      --brand:#1e9e8a;
+      --danger:#ff5a5f;
+      --warn:#ffb703;
+      --low:#6c757d;
+      --border: rgba(10,30,25,.10);
+      --shadow: 0 12px 30px rgba(10,40,35,.10);
+      --radius: 14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+      color:var(--ink);
+      background: linear-gradient(180deg, #f7fffd, var(--bg));
+      min-height:100vh;
+    }
+
+    .topbar{
+      position:sticky; top:0; z-index:10;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .brand{ display:flex; flex-direction:column; gap:2px; }
+    .brand h1{ margin:0; font-size:16px; letter-spacing:.2px; }
+    .brand .sub{ font-size:12px; color:var(--muted); }
+
+    .top-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      background:#fff;
+      border:1px solid var(--border);
+      border-radius:999px;
+      box-shadow: var(--shadow);
+      font-size:12px;
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .dot{ width:10px; height:10px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 4px rgba(30,158,138,.15); }
+
+    main{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:14px;
+      padding: 14px 14px 18px;
+      align-items:stretch;
+    }
+    .panel{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-width:0;
+    }
+    .panel h2{
+      margin:0;
+      padding:12px 14px;
+      font-size:13px;
+      color:#0a3a33;
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+    .panel .content{ padding: 12px 14px 14px; }
+
+    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+    select, input[type="text"], input[type="number"]{
+      width:100%;
+      padding:10px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(0,0,0,.14);
+      background: #fff;
+      outline:none;
+    }
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+
+    .checks{
+      display:grid; gap:8px;
+      padding:10px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.14);
+      border-radius:12px;
+    }
+    .checks .row{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:#234b45; }
+    .checks small{ display:block; color:var(--muted); margin-top:2px; }
+
+    .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+    button{
+      border:none; cursor:pointer;
+      padding:10px 12px;
+      border-radius: 12px;
+      font-weight:700; font-size:12.5px;
+    }
+    .btn-primary{ background: linear-gradient(135deg, var(--brand), #40c6b3); color:#fff; }
+    .btn-ghost{ background:#fff; border:1px solid rgba(0,0,0,.14); color:#224843; }
+
+    .status{
+      margin-top:10px;
+      padding:10px;
+      border-radius:12px;
+      background:#f7fffd;
+      border:1px dashed rgba(30,158,138,.25);
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.35;
+      white-space:pre-wrap;
+    }
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    .right{
+      display:grid;
+      grid-template-rows: auto auto 1fr;
+      gap:14px;
+      min-width:0;
+    }
+
+    #map{ height: 520px; border-radius: var(--radius); }
+    .mapWrap{ padding:12px 14px 14px; }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      padding: 12px 14px 14px;
+    }
+    .kpi{
+      border:1px solid rgba(0,0,0,.08);
+      border-radius: 14px;
+      padding:10px;
+      background:#fff;
+      min-width:0;
+    }
+    .kpi .k{ font-size:11px; color:var(--muted); }
+    .kpi .v{ font-size:16px; font-weight:900; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .lower{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:14px;
+      min-width:0;
+      padding: 0 0 14px;
+    }
+
+    .filters{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+    .filters input{ flex:1; }
+
+    .tableWrap{
+      overflow:auto;
+      max-height: 420px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.08);
+      background:#fff;
+    }
+    table{ width:100%; border-collapse: collapse; font-size:12px; }
+    thead th{
+      position:sticky; top:0; z-index:1;
+      background:#f3fffb;
+      border-bottom:1px solid rgba(0,0,0,.10);
+      text-align:left;
+      padding:10px 8px;
+      color:#1f4a43;
+      white-space:nowrap;
+    }
+    tbody td{
+      border-bottom:1px solid rgba(0,0,0,.06);
+      padding:8px 8px;
+      color:#1e3d38;
+      vertical-align:top;
+      white-space:nowrap;
+    }
+    tbody tr:hover{ background:#f7fffd; cursor:pointer; }
+
+    .legend{
+      display:flex; gap:10px; flex-wrap:wrap;
+      padding: 0 14px 14px;
+      font-size:12px; color:var(--muted);
+    }
+    .lg{
+      display:flex; align-items:center; gap:6px;
+      padding:6px 8px;
+      background:#fff;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:999px;
+    }
+    .sw{ width:10px; height:10px; border-radius:50%; }
+
+    .hotspot{
+      width:14px; height:14px;
+      border-radius:50%;
+      border:2px solid rgba(255,255,255,.9);
+      box-shadow: 0 6px 18px rgba(0,0,0,.18);
+    }
+
+    @media (max-width: 1100px){
+      main{ grid-template-columns: 1fr; }
+      .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .lower{ grid-template-columns: 1fr; }
+      #map{ height: 440px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="topbar">
+    <div class="brand">
+      <h1>Dashboard Incendios — FIRMS (NRT)</h1>
+      <div class="sub">Sololá / Guatemala • Mapa + KPIs + gráficos + tabla • tiempos en <b>UTC</b></div>
+    </div>
+    <div class="top-actions">
+      <div class="pill" title="Estado del proxy">
+        <span class="dot"></span>
+        <span id="pillText">Proxy: sin verificar</span>
+      </div>
+      <div class="pill" title="Auto actualización">
+        <input id="auto" type="checkbox" checked />
+        <label for="auto" style="margin:0; font-size:12px; color:var(--muted); cursor:pointer;">Auto (10 min)</label>
+      </div>
+      <div class="pill" id="lastRun">Última actualización: —</div>
+    </div>
+  </div>
+
+  <main>
+    <section class="panel">
+      <h2>Filtros</h2>
+      <div class="content">
+        <div class="grid2">
+          <div>
+            <label for="days">Período</label>
+            <select id="days">
+              <option value="1">24 horas (1 día)</option>
+              <option value="3" selected>72 horas (3 días)</option>
+              <option value="7">7 días</option>
+              <option value="30">30 días</option>
+            </select>
+          </div>
+          <div>
+            <label for="bboxMode">Recorte (BBOX)</label>
+            <select id="bboxMode">
+              <option value="solola" selected>Sololá (preset)</option>
+              <option value="guatemala">Guatemala (preset)</option>
+              <option value="map">Extensión del mapa</option>
+              <option value="manual">Personalizado</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <label>Sensores (NRT)</label>
+        <div class="checks">
+          <div class="row">
+            <input type="checkbox" id="s_snpp" checked>
+            <div><b>VIIRS S-NPP</b><small>VIIRS_SNPP_NRT</small></div>
+          </div>
+          <div class="row">
+            <input type="checkbox" id="s_n20" checked>
+            <div><b>VIIRS NOAA-20</b><small>VIIRS_NOAA20_NRT</small></div>
+          </div>
+          <div class="row">
+            <input type="checkbox" id="s_n21" checked>
+            <div><b>VIIRS NOAA-21</b><small>VIIRS_NOAA21_NRT</small></div>
+          </div>
+          <div class="row">
+            <input type="checkbox" id="s_modis" checked>
+            <div><b>MODIS</b><small>MODIS_NRT</small></div>
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="grid2">
+          <div>
+            <label for="conf">Confianza</label>
+            <select id="conf">
+              <option value="all" selected>Todas</option>
+              <option value="high">Alta</option>
+              <option value="nominal">Nominal/Media</option>
+              <option value="low">Baja</option>
+            </select>
+          </div>
+          <div>
+            <label for="limit">Límite filas</label>
+            <select id="limit">
+              <option value="2000">2,000</option>
+              <option value="10000" selected>10,000</option>
+              <option value="20000">20,000</option>
+              <option value="50000">50,000</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="manualBBox" style="display:none; margin-top:10px">
+          <label>BBOX manual (west,south,east,north)</label>
+          <div class="grid2">
+            <input type="number" step="0.000001" id="w" placeholder="west (lon)">
+            <input type="number" step="0.000001" id="e" placeholder="east (lon)">
+          </div>
+          <div style="height:8px"></div>
+          <div class="grid2">
+            <input type="number" step="0.000001" id="s" placeholder="south (lat)">
+            <input type="number" step="0.000001" id="n" placeholder="north (lat)">
+          </div>
+        </div>
+
+        <div class="btns">
+          <button class="btn-primary" id="btnRun">Actualizar</button>
+          <button class="btn-ghost" id="btnFit">Ajustar mapa</button>
+          <button class="btn-ghost" id="btnCSV">CSV</button>
+          <button class="btn-ghost" id="btnGeoJSON">GeoJSON</button>
+        </div>
+
+        <div class="status" id="status">Listo.</div>
+        <div class="hint">Tip: Guatemala + 7/30 días puede traer muchos puntos; por eso usamos clustering.</div>
+      </div>
+    </section>
+
+    <section class="right">
+      <section class="panel">
+        <h2>Mapa</h2>
+        <div class="mapWrap">
+          <div id="map"></div>
+        </div>
+        <div class="legend">
+          <div class="lg"><span class="sw" style="background:var(--danger)"></span> Alta</div>
+          <div class="lg"><span class="sw" style="background:var(--warn)"></span> Nominal/Media</div>
+          <div class="lg"><span class="sw" style="background:var(--low)"></span> Baja</div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>KPIs</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="k">Detecciones (dedupe)</div><div class="v" id="k_total">—</div></div>
+          <div class="kpi"><div class="k">Alta confianza</div><div class="v" id="k_high">—</div></div>
+          <div class="kpi"><div class="k">FRP (suma)</div><div class="v" id="k_frp">—</div></div>
+          <div class="kpi"><div class="k">Última detección (UTC)</div><div class="v" id="k_last">—</div></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Análisis</h2>
+        <div class="content">
+          <div class="lower">
+            <div>
+              <div class="filters">
+                <input id="q" type="text" placeholder="Filtrar tabla (sensor, fecha, satélite, confidence…)" />
+                <button class="btn-ghost" id="btnClear">Limpiar</button>
+              </div>
+              <div class="tableWrap">
+                <table id="tbl">
+                  <thead>
+                    <tr>
+                      <th>UTC</th>
+                      <th>Sensor</th>
+                      <th>Conf.</th>
+                      <th>Lat</th>
+                      <th>Lon</th>
+                      <th>FRP</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+              <div class="hint" id="tableNote"></div>
+            </div>
+            <div>
+              <canvas id="chartByDate" height="170"></canvas>
+              <div style="height:12px"></div>
+              <canvas id="chartBySensor" height="170"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+<script>
+  // TU WORKER ✅
+  const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
+
+  // Presets
+  const BBOX_PRESETS = {
+    solola: [-91.586608, 14.495833, -91.040503, 14.992742],
+    guatemala: [-92.3592, 13.5235, -88.0458, 18.0436],
+  };
+
+  const $ = (id) => document.getElementById(id);
+
+  const map = L.map("map", { zoomControl: true }).setView([14.77, -91.18], 10);
+
+  const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
+
+  const imagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 19,
+    attribution: "Tiles &copy; Esri",
+  });
+
+  L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
+
+  const clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
+  map.addLayer(clusters);
+
+  let lastData = [];
+  let markerById = new Map();
+  let chart1 = null;
+  let chart2 = null;
+  let autoTimer = null;
+
+  function setStatus(msg){ $("status").textContent = msg; }
+  function fmt(n, d=0){
+    if (n === null || n === undefined || Number.isNaN(n)) return "—";
+    return new Intl.NumberFormat("es-GT",{ maximumFractionDigits:d }).format(n);
+  }
+
+  function confClass(c){
+    const s = String(c ?? "").trim().toLowerCase();
+    const n = Number(s);
+    if (!Number.isNaN(n)){
+      if (n >= 80) return "high";
+      if (n >= 30) return "nominal";
+      return "low";
+    }
+    if (["h","high"].includes(s)) return "high";
+    if (["n","nominal","m","medium"].includes(s)) return "nominal";
+    if (["l","low"].includes(s)) return "low";
+    return "unknown";
+  }
+
+  function confColor(c){
+    const k = confClass(c);
+    if (k === "high") return getComputedStyle(document.documentElement).getPropertyValue("--danger").trim();
+    if (k === "nominal") return getComputedStyle(document.documentElement).getPropertyValue("--warn").trim();
+    return getComputedStyle(document.documentElement).getPropertyValue("--low").trim();
+  }
+
+  function getSensors(){
+    const out = [];
+    if ($("s_snpp").checked) out.push("VIIRS_SNPP_NRT");
+    if ($("s_n20").checked) out.push("VIIRS_NOAA20_NRT");
+    if ($("s_n21").checked) out.push("VIIRS_NOAA21_NRT");
+    if ($("s_modis").checked) out.push("MODIS_NRT");
+    return out;
+  }
+
+  function getBBox(){
+    const mode = $("bboxMode").value;
+    if (mode === "solola" || mode === "guatemala") return BBOX_PRESETS[mode];
+    if (mode === "map"){
+      const b = map.getBounds();
+      return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
+    }
+    const w = Number($("w").value), s = Number($("s").value), e = Number($("e").value), n = Number($("n").value);
+    if (![w,s,e,n].every(Number.isFinite) || e <= w || n <= s) return null;
+    return [w,s,e,n];
+  }
+
+  function bboxStr(arr){ return arr.map(v => Number(v.toFixed(6))).join(","); }
+
+  function fitBBox(arr){
+    const b = L.latLngBounds([arr[1], arr[0]], [arr[3], arr[2]]);
+    map.fitBounds(b.pad(0.06));
+  }
+
+  const iconCache = new Map();
+  function markerIcon(color){
+    if (iconCache.has(color)) return iconCache.get(color);
+    const icon = L.divIcon({
+      className: "",
+      html: `<div class="hotspot" style="background:${color}"></div>`,
+      iconSize: [14,14],
+      iconAnchor: [7,7],
+      popupAnchor: [0,-8]
+    });
+    iconCache.set(color, icon);
+    return icon;
+  }
+
+  function clearAll(){
+    clusters.clearLayers();
+    markerById.clear();
+    lastData = [];
+    $("tbl").querySelector("tbody").innerHTML = "";
+    $("tableNote").textContent = "";
+    $("k_total").textContent = "—";
+    $("k_high").textContent = "—";
+    $("k_frp").textContent = "—";
+    $("k_last").textContent = "—";
+    if (chart1){ chart1.destroy(); chart1=null; }
+    if (chart2){ chart2.destroy(); chart2=null; }
+    setStatus("Limpio.");
+  }
+
+  function buildTable(rows){
+    const tbody = $("tbl").querySelector("tbody");
+    tbody.innerHTML = "";
+    const frag = document.createDocumentFragment();
+
+    for (const r of rows){
+      const tr = document.createElement("tr");
+      tr.dataset.id = r.id;
+      tr.innerHTML = `
+        <td>${r.datetime_utc || "—"}</td>
+        <td>${r.source || "—"}</td>
+        <td>${r.confidence || "—"}</td>
+        <td>${Number.isFinite(r.lat) ? r.lat.toFixed(5) : "—"}</td>
+        <td>${Number.isFinite(r.lon) ? r.lon.toFixed(5) : "—"}</td>
+        <td>${r.frp ?? "—"}</td>
+      `;
+      frag.appendChild(tr);
+    }
+    tbody.appendChild(frag);
+
+    tbody.querySelectorAll("tr").forEach(tr => {
+      tr.addEventListener("click", () => {
+        const id = tr.dataset.id;
+        const mk = markerById.get(id);
+        if (!mk) return;
+        map.setView(mk.getLatLng(), Math.max(map.getZoom(), 13));
+        mk.openPopup();
+      });
+    });
+  }
+
+  function applyFilter(){
+    const q = $("q").value.trim().toLowerCase();
+    const rows = $("tbl").querySelectorAll("tbody tr");
+    let shown = 0;
+
+    rows.forEach(tr => {
+      const ok = !q || tr.textContent.toLowerCase().includes(q);
+      tr.style.display = ok ? "" : "none";
+      if (ok) shown++;
+    });
+    $("tableNote").textContent = `Mostrando ${shown} / ${lastData.length} filas (filtro local). Click en una fila para acercar en el mapa.`;
+  }
+
+  function updateKPIs(payload){
+    const total = payload?.total ?? 0;
+    const hi = payload?.summary?.byConfidence?.high ?? 0;
+    const frp = payload?.summary?.frp_sum ?? null;
+    const last = payload?.summary?.last_detection_utc ?? null;
+
+    $("k_total").textContent = fmt(total);
+    $("k_high").textContent = fmt(hi);
+    $("k_frp").textContent = (frp === null ? "—" : fmt(frp, 3));
+    $("k_last").textContent = last || "—";
+  }
+
+  function updateCharts(payload){
+    const byDate = payload?.summary?.byDate || {};
+    const bySensor = payload?.summary?.bySensor || {};
+
+    const dates = Object.keys(byDate).sort();
+    const counts = dates.map(d => byDate[d]);
+
+    const ctx1 = $("chartByDate").getContext("2d");
+    if (chart1) chart1.destroy();
+    chart1 = new Chart(ctx1, {
+      type: "bar",
+      data: { labels: dates, datasets: [{ label: "Detecciones por día", data: counts }] },
+      options: { responsive:true, plugins:{ legend:{ display:true }}, scales:{ y:{ beginAtZero:true } } }
+    });
+
+    const sensors = Object.keys(bySensor).sort();
+    const scounts = sensors.map(s => bySensor[s]);
+
+    const ctx2 = $("chartBySensor").getContext("2d");
+    if (chart2) chart2.destroy();
+    chart2 = new Chart(ctx2, {
+      type: "doughnut",
+      data: { labels: sensors, datasets: [{ label:"Por sensor", data: scounts }] },
+      options: { responsive:true, plugins:{ legend:{ position:"bottom" } } }
+    });
+  }
+
+  function updateMap(rows){
+    clusters.clearLayers();
+    markerById.clear();
+    if (!rows || rows.length === 0) return;
+
+    for (const r of rows){
+      if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+      const col = confColor(r.confidence);
+      const mk = L.marker([r.lat, r.lon], { icon: markerIcon(col) });
+
+      const html = `
+        <div style="font-family:system-ui; font-size:12px; line-height:1.35">
+          <div><b>${r.source}</b></div>
+          <div>UTC: ${r.datetime_utc || (r.acq_date + " " + r.acq_time)}</div>
+          <div>Conf: ${r.confidence || "—"} | FRP: ${r.frp ?? "—"}</div>
+          <div>Sat: ${r.satellite || "—"} | Inst: ${r.instrument || "—"}</div>
+          <div>Lat/Lon: ${r.lat?.toFixed(5)}, ${r.lon?.toFixed(5)}</div>
+        </div>
+      `;
+      mk.bindPopup(html);
+
+      markerById.set(r.id, mk);
+      clusters.addLayer(mk);
+    }
+  }
+
+  function exportCSV(){
+    if (!lastData.length) return;
+    const cols = ["datetime_utc","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
+    const lines = [cols.join(",")];
+    for (const r of lastData){
+      const row = cols.map(c => {
+        const v = (r[c] ?? "").toString();
+        if (v.includes(",") || v.includes('"') || v.includes("\n")) return `"${v.replaceAll('"','""')}"`;
+        return v;
+      });
+      lines.push(row.join(","));
+    }
+    const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "firs_hotspots.csv";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function exportGeoJSON(){
+    if (!lastData.length) return;
+    const fc = { type:"FeatureCollection", features: lastData.map(r => ({
+      type:"Feature",
+      geometry:{ type:"Point", coordinates:[r.lon, r.lat] },
+      properties:{ ...r }
+    }))};
+    const blob = new Blob([JSON.stringify(fc, null, 2)], { type:"application/geo+json;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "firs_hotspots.geojson";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  }
+
+  async function checkHealth(){
+    try{
+      const r = await fetch(`${PROXY_BASE}/health`);
+      const j = await r.json();
+      $("pillText").textContent = j.ok ? "Proxy: OK" : "Proxy: error";
+    }catch(e){
+      $("pillText").textContent = "Proxy: no responde";
+    }
+  }
+
+  async function run(){
+    const days = Number($("days").value);
+    const sensors = getSensors();
+    const bboxArr = getBBox();
+    const limit = Number($("limit").value);
+    const conf = $("conf").value;
+
+    if (!sensors.length) return setStatus("Selecciona al menos un sensor.");
+    if (!bboxArr) return setStatus("BBOX inválido. Revisa el modo 'Personalizado' o usa preset.");
+
+    const bbox = bboxStr(bboxArr);
+    const url = `${PROXY_BASE}/api/firms?bbox=${encodeURIComponent(bbox)}&days=${days}&sensors=${encodeURIComponent(sensors.join(","))}&limit=${limit}`;
+
+    setStatus(`Consultando...\n${url}`);
+
+    try{
+      const t0 = performance.now();
+      const r = await fetch(url);
+      const j = await r.json();
+      const ms = Math.round(performance.now() - t0);
+
+      if (!r.ok && !j.ok){
+        return setStatus(`Error (${r.status}).\n${j.error || (j.errors ? j.errors.join("\n") : "Sin detalle")}`);
+      }
+
+      if (!j.ok && j.errors?.length){
+        setStatus(`Parcial (${r.status}). Fallos:\n- ${j.errors.slice(0,8).join("\n- ")}${j.errors.length>8 ? "\n..." : ""}`);
+      }else{
+        setStatus(`OK. Total: ${j.total}. Filas: ${j.rows.length}. (${ms} ms)\nGenerado: ${j.request.generated_at_utc}\nBBOX: ${j.request.bbox_str}`);
+      }
+
+      lastData = (j.rows || []).filter(rr => conf === "all" ? true : confClass(rr.confidence) === conf);
+
+      updateMap(lastData);
+      buildTable(lastData);
+      updateKPIs(j);
+      updateCharts(j);
+
+      $("tableNote").textContent = `Filas: ${lastData.length} (tras filtro confianza). Total dedupe: ${j.total}.`;
+      applyFilter();
+
+      $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
+
+    }catch(e){
+      setStatus(`Fallo de red/CORS.\n${String(e)}`);
+    }
+  }
+
+  function setupAuto(){
+    if (autoTimer) clearInterval(autoTimer);
+    if ($("auto").checked){
+      autoTimer = setInterval(run, 10 * 60 * 1000);
+    }
+  }
+
+  $("bboxMode").addEventListener("change", () => {
+    $("manualBBox").style.display = $("bboxMode").value === "manual" ? "block" : "none";
+  });
+
+  $("btnRun").addEventListener("click", run);
+  $("btnFit").addEventListener("click", () => {
+    const b = getBBox();
+    if (!b) return setStatus("No hay BBOX válido para ajustar.");
+    fitBBox(b);
+    setStatus("Mapa ajustado al BBOX.");
+  });
+  $("btnClear").addEventListener("click", clearAll);
+
+  $("btnCSV").addEventListener("click", exportCSV);
+  $("btnGeoJSON").addEventListener("click", exportGeoJSON);
+
+  $("q").addEventListener("input", applyFilter);
+  $("auto").addEventListener("change", setupAuto);
+
+  (async function init(){
+    fitBBox(BBOX_PRESETS.solola);
+    await checkHealth();
+    setupAuto();
+    await run();
+  })();
+</script>
+
+</body>
+</html>
