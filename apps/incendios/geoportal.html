@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dashboard Incendios — FIRMS (Sololá/Guatemala)</title>
+  <title>Incendios — Dashboard FIRMS (NRT) · Sololá</title>
+  <meta name="description" content="Dashboard de anomalías térmicas (fuego activo) FIRMS NRT para Sololá: filtros por sensores, periodo y recortes espaciales (BBOX, municipios, microcuencas y áreas protegidas)." />
 
   <!-- Leaflet -->
   <link rel="stylesheet"
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
         crossorigin=""/>
-
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
           crossorigin=""></script>
@@ -22,71 +22,139 @@
         href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
+  <!-- Turf (geoprocesos en navegador) -->
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --bg:#eef6f4;
-      --card:#ffffff;
-      --ink:#0d2b26;
-      --muted:#4a6c66;
-      --brand:#1e9e8a;
-      --danger:#ff5a5f;
-      --warn:#ffb703;
-      --low:#6c757d;
-      --border: rgba(10,30,25,.10);
-      --shadow: 0 12px 30px rgba(10,40,35,.10);
-      --radius: 14px;
+      /* Pasteles “fuego” */
+      --bg-0:#fff7f0;
+      --bg-1:#fff2e6;
+      --bg-2:#fff6fb;
+      --card:rgba(255,255,255,.92);
+      --card2:rgba(255,255,255,.98);
+
+      --ink:#2b1d12;
+      --muted:#6a4e3c;
+
+      --brand:#ff7a45;    /* naranja */
+      --brand2:#ffd19a;   /* durazno */
+      --cool:#3aa0ff;     /* contraste frío */
+      --stroke:rgba(32,18,10,.12);
+
+      --hi:#ff5a5f;       /* confianza alta */
+      --nom:#ffb703;      /* nominal/media */
+      --low:#6c757d;      /* baja */
+
+      --shadow: 0 14px 40px rgba(40,20,10,.12);
+      --shadow-sm: 0 10px 22px rgba(40,20,10,.10);
+      --radius: 16px;
     }
-    *{box-sizing:border-box}
+
+    *{ box-sizing:border-box; }
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
       color:var(--ink);
-      background: linear-gradient(180deg, #f7fffd, var(--bg));
+      background:
+        radial-gradient(900px 560px at 0% 0%, rgba(255,122,69,.18), transparent 62%),
+        radial-gradient(900px 560px at 100% 0%, rgba(255,183,3,.16), transparent 62%),
+        radial-gradient(900px 560px at 100% 100%, rgba(58,160,255,.10), transparent 62%),
+        linear-gradient(180deg, var(--bg-0), var(--bg-1));
       min-height:100vh;
     }
 
-    .topbar{
-      position:sticky; top:0; z-index:10;
-      background: rgba(255,255,255,.85);
+    /* Header */
+    header{
+      position: sticky;
+      top: 0;
+      z-index: 50;
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
+      background: rgba(255,255,255,.78);
+      border-bottom: 1px solid var(--stroke);
+    }
+    .header-wrap{
+      padding: 10px 14px;
       display:flex;
+      gap:12px;
       align-items:center;
       justify-content:space-between;
-      gap:12px;
+      flex-wrap:wrap;
     }
-    .brand{ display:flex; flex-direction:column; gap:2px; }
-    .brand h1{ margin:0; font-size:16px; letter-spacing:.2px; }
-    .brand .sub{ font-size:12px; color:var(--muted); }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 260px;
+    }
+    .brand img{
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+      background: rgba(255,255,255,.92);
+      border-radius: 12px;
+      padding: 4px 6px;
+      box-shadow: var(--shadow-sm);
+    }
+    .title{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width: 0;
+    }
+    .title h1{
+      margin:0;
+      font-size: 15px;
+      letter-spacing:.2px;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 520px;
+    }
+    .title .sub{
+      font-size: 12px;
+      color: var(--muted);
+    }
 
-    .top-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
+    .chips{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
       padding:8px 10px;
-      background:#fff;
-      border:1px solid var(--border);
-      border-radius:999px;
-      box-shadow: var(--shadow);
+      background: var(--card2);
+      border:1px solid var(--stroke);
+      border-radius: 999px;
+      box-shadow: var(--shadow-sm);
       font-size:12px;
-      color:var(--muted);
+      color: var(--muted);
       white-space:nowrap;
     }
-    .dot{ width:10px; height:10px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 4px rgba(30,158,138,.15); }
+    .dot{
+      width:10px; height:10px; border-radius:50%;
+      background: #2fd08f;
+      box-shadow: 0 0 0 4px rgba(47,208,143,.18);
+    }
 
+    /* Layout */
     main{
       display:grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 380px 1fr;
       gap:14px;
       padding: 14px 14px 18px;
       align-items:stretch;
     }
     .panel{
       background: var(--card);
-      border: 1px solid var(--border);
+      border: 1px solid var(--stroke);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow:hidden;
@@ -96,12 +164,15 @@
       margin:0;
       padding:12px 14px;
       font-size:13px;
-      color:#0a3a33;
-      border-bottom:1px solid rgba(0,0,0,.06);
+      color:#3a2416;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.82));
     }
     .panel .content{ padding: 12px 14px 14px; }
 
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+
     select, input[type="text"], input[type="number"]{
       width:100%;
       padding:10px 10px;
@@ -110,7 +181,7 @@
       background: #fff;
       outline:none;
     }
-    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    input[type="checkbox"]{ transform: translateY(1px); }
 
     .checks{
       display:grid; gap:8px;
@@ -119,7 +190,7 @@
       border:1px solid rgba(0,0,0,.14);
       border-radius:12px;
     }
-    .checks .row{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:#234b45; }
+    .checks .row{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:#3a2416; }
     .checks small{ display:block; color:var(--muted); margin-top:2px; }
 
     .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
@@ -127,29 +198,37 @@
       border:none; cursor:pointer;
       padding:10px 12px;
       border-radius: 12px;
-      font-weight:700; font-size:12.5px;
+      font-weight:800; font-size:12.5px;
     }
-    .btn-primary{ background: linear-gradient(135deg, var(--brand), #40c6b3); color:#fff; }
-    .btn-ghost{ background:#fff; border:1px solid rgba(0,0,0,.14); color:#224843; }
+    .btn-primary{ background: linear-gradient(135deg, var(--brand), #ffb45a); color:#fff; }
+    .btn-ghost{ background:#fff; border:1px solid rgba(0,0,0,.14); color:#2b1d12; }
 
     .status{
       margin-top:10px;
       padding:10px;
       border-radius:12px;
-      background:#f7fffd;
-      border:1px dashed rgba(30,158,138,.25);
+      background:#fff;
+      border:1px dashed rgba(255,122,69,.35);
       color: var(--muted);
       font-size:12px;
       line-height:1.35;
       white-space:pre-wrap;
     }
-    .hint{
-      margin-top:10px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.35;
-    }
 
+    .notes{
+      margin-top:10px;
+      padding:10px;
+      border-radius:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.86));
+      border:1px solid rgba(0,0,0,.10);
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+    .notes ul{ margin:8px 0 0; padding-left: 18px; }
+    .notes li{ margin:6px 0; }
+
+    /* Right side */
     .right{
       display:grid;
       grid-template-rows: auto auto 1fr;
@@ -159,59 +238,6 @@
 
     #map{ height: 520px; border-radius: var(--radius); }
     .mapWrap{ padding:12px 14px 14px; }
-
-    .kpis{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:10px;
-      padding: 12px 14px 14px;
-    }
-    .kpi{
-      border:1px solid rgba(0,0,0,.08);
-      border-radius: 14px;
-      padding:10px;
-      background:#fff;
-      min-width:0;
-    }
-    .kpi .k{ font-size:11px; color:var(--muted); }
-    .kpi .v{ font-size:16px; font-weight:900; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-
-    .lower{
-      display:grid;
-      grid-template-columns: 1.25fr .75fr;
-      gap:14px;
-      min-width:0;
-      padding: 0 0 14px;
-    }
-
-    .filters{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
-    .filters input{ flex:1; }
-
-    .tableWrap{
-      overflow:auto;
-      max-height: 420px;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.08);
-      background:#fff;
-    }
-    table{ width:100%; border-collapse: collapse; font-size:12px; }
-    thead th{
-      position:sticky; top:0; z-index:1;
-      background:#f3fffb;
-      border-bottom:1px solid rgba(0,0,0,.10);
-      text-align:left;
-      padding:10px 8px;
-      color:#1f4a43;
-      white-space:nowrap;
-    }
-    tbody td{
-      border-bottom:1px solid rgba(0,0,0,.06);
-      padding:8px 8px;
-      color:#1e3d38;
-      vertical-align:top;
-      white-space:nowrap;
-    }
-    tbody tr:hover{ background:#f7fffd; cursor:pointer; }
 
     .legend{
       display:flex; gap:10px; flex-wrap:wrap;
@@ -227,11 +253,98 @@
     }
     .sw{ width:10px; height:10px; border-radius:50%; }
 
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      padding: 12px 14px 14px;
+    }
+    .kpi{
+      border:1px solid rgba(0,0,0,.10);
+      border-radius: 14px;
+      padding:10px;
+      background:#fff;
+      min-width:0;
+    }
+    .kpi .k{ font-size:11px; color:var(--muted); }
+    .kpi .v{ font-size:16px; font-weight:950; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+    .lower{
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:14px;
+      min-width:0;
+      padding-bottom: 14px;
+    }
+
+    .filters{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
+    .filters input{ flex:1; }
+
+    .tableWrap{
+      overflow:auto;
+      max-height: 420px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.10);
+      background:#fff;
+    }
+    table{ width:100%; border-collapse: collapse; font-size:12px; }
+    thead th{
+      position:sticky; top:0; z-index:1;
+      background:#fff3e6;
+      border-bottom:1px solid rgba(0,0,0,.10);
+      text-align:left;
+      padding:10px 8px;
+      color:#3a2416;
+      white-space:nowrap;
+    }
+    tbody td{
+      border-bottom:1px solid rgba(0,0,0,.06);
+      padding:8px 8px;
+      color:#2b1d12;
+      vertical-align:top;
+      white-space:nowrap;
+    }
+    tbody tr:hover{ background:#fff7f0; cursor:pointer; }
+
+    .hint{ font-size:12px; color:var(--muted); line-height:1.35; margin-top:8px; }
+
+    /* Hotspot marker (divIcon) */
     .hotspot{
       width:14px; height:14px;
       border-radius:50%;
-      border:2px solid rgba(255,255,255,.9);
+      border:2px solid rgba(255,255,255,.92);
       box-shadow: 0 6px 18px rgba(0,0,0,.18);
+    }
+
+    /* Footer */
+    footer{
+      padding: 10px 14px 24px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .footer-box{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+    }
+    .footer-logos{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      align-items:center;
+      justify-content:center;
+      margin-top:10px;
+    }
+    .footer-logos img{
+      max-height: 44px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
+      background: rgba(255,255,255,.94);
+      border-radius: 10px;
+      padding: 4px 6px;
     }
 
     @media (max-width: 1100px){
@@ -239,30 +352,40 @@
       .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
       .lower{ grid-template-columns: 1fr; }
       #map{ height: 440px; }
+      .title h1{ max-width: 88vw; }
     }
   </style>
 </head>
 
 <body>
-  <div class="topbar">
-    <div class="brand">
-      <h1>Dashboard Incendios — FIRMS (NRT)</h1>
-      <div class="sub">Sololá / Guatemala • Mapa + KPIs + gráficos + tabla • tiempos en <b>UTC</b></div>
-    </div>
-    <div class="top-actions">
-      <div class="pill" title="Estado del proxy">
-        <span class="dot"></span>
-        <span id="pillText">Proxy: sin verificar</span>
+  <header>
+    <div class="header-wrap">
+      <div class="brand" aria-label="Logos institucionales">
+        <!-- Rutas basadas en index.html del repositorio (archivos en la raíz) -->
+        <img src="../../BOSQUE.png" alt="Logo Eje de Bosques">
+        <img src="../../CODEMA%20%282%29.png" alt="Logo CODEMA Sololá">
+        <div class="title">
+          <h1>Incendios forestales — Anomalías térmicas (FIRMS NRT)</h1>
+          <div class="sub">Sololá · Recortes SIG (BBOX / Municipios / Microcuencas / Áreas protegidas) · UTC</div>
+        </div>
       </div>
-      <div class="pill" title="Auto actualización">
-        <input id="auto" type="checkbox" checked />
-        <label for="auto" style="margin:0; font-size:12px; color:var(--muted); cursor:pointer;">Auto (10 min)</label>
+
+      <div class="chips">
+        <div class="chip" title="Estado del proxy">
+          <span class="dot" id="dot"></span>
+          <span id="pillText">Proxy: sin verificar</span>
+        </div>
+        <div class="chip" title="Auto actualización">
+          <input id="auto" type="checkbox" checked />
+          <label for="auto" style="margin:0; cursor:pointer;">Auto (10 min)</label>
+        </div>
+        <div class="chip" id="lastRun">Última actualización: —</div>
       </div>
-      <div class="pill" id="lastRun">Última actualización: —</div>
     </div>
-  </div>
+  </header>
 
   <main>
+    <!-- Left controls -->
     <section class="panel">
       <h2>Filtros</h2>
       <div class="content">
@@ -274,38 +397,62 @@
               <option value="3" selected>72 horas (3 días)</option>
               <option value="7">7 días</option>
               <option value="30">30 días</option>
+              <option value="60">60 días</option>
+              <option value="90">90 días</option>
             </select>
           </div>
           <div>
-            <label for="bboxMode">Recorte (BBOX)</label>
-            <select id="bboxMode">
-              <option value="solola" selected>Sololá (preset)</option>
-              <option value="guatemala">Guatemala (preset)</option>
-              <option value="map">Extensión del mapa</option>
-              <option value="manual">Personalizado</option>
+            <label for="clipMode">Recorte espacial</label>
+            <select id="clipMode">
+              <option value="bbox_solola" selected>Sololá (BBOX)</option>
+              <option value="bbox_guatemala">Guatemala (BBOX)</option>
+              <option value="bbox_map">Extensión del mapa (BBOX)</option>
+              <option value="bbox_manual">BBOX personalizado</option>
+              <option value="muni">Municipio (Sololá)</option>
+              <option value="micro">Microcuenca (Atitlán)</option>
+              <option value="ap">Área protegida</option>
             </select>
           </div>
         </div>
 
+        <div id="manualBBox" style="display:none; margin-top:10px">
+          <label>BBOX manual (west,south,east,north)</label>
+          <div class="grid2">
+            <input type="number" step="0.000001" id="w" placeholder="west (lon)">
+            <input type="number" step="0.000001" id="e" placeholder="east (lon)">
+          </div>
+          <div style="height:8px"></div>
+          <div class="grid2">
+            <input type="number" step="0.000001" id="s" placeholder="south (lat)">
+            <input type="number" step="0.000001" id="n" placeholder="north (lat)">
+          </div>
+        </div>
+
+        <div id="polyPick" style="display:none; margin-top:10px">
+          <label id="polyLabel">Selección</label>
+          <select id="polySelect"></select>
+          <div class="hint" id="polyHint"></div>
+        </div>
+
         <div style="height:10px"></div>
 
-        <label>Sensores (NRT)</label>
+        <label>Sensores (Near Real-Time)</label>
         <div class="checks">
           <div class="row">
             <input type="checkbox" id="s_snpp" checked>
-            <div><b>VIIRS S-NPP</b><small>VIIRS_SNPP_NRT</small></div>
+            <div><b>VIIRS Suomi-NPP</b><small>VIIRS_SNPP_NRT</small></div>
           </div>
           <div class="row">
             <input type="checkbox" id="s_n20" checked>
-            <div><b>VIIRS NOAA-20</b><small>VIIRS_NOAA20_NRT</small></div>
+            <div><b>VIIRS NOAA-20 (JPSS-1)</b><small>VIIRS_NOAA20_NRT</small></div>
           </div>
           <div class="row">
             <input type="checkbox" id="s_n21" checked>
-            <div><b>VIIRS NOAA-21</b><small>VIIRS_NOAA21_NRT</small></div>
+            <div><b>VIIRS NOAA-21 (JPSS-2)</b><small>VIIRS_NOAA21_NRT</small></div>
           </div>
           <div class="row">
             <input type="checkbox" id="s_modis" checked>
-            <div><b>MODIS</b><small>MODIS_NRT</small></div>
+            <div><b>MODIS (Terra/Aqua) NRT</b><small>MODIS_NRT</small></div>
           </div>
         </div>
 
@@ -313,7 +460,7 @@
 
         <div class="grid2">
           <div>
-            <label for="conf">Confianza</label>
+            <label for="conf">Confianza del algoritmo</label>
             <select id="conf">
               <option value="all" selected>Todas</option>
               <option value="high">Alta</option>
@@ -332,19 +479,6 @@
           </div>
         </div>
 
-        <div id="manualBBox" style="display:none; margin-top:10px">
-          <label>BBOX manual (west,south,east,north)</label>
-          <div class="grid2">
-            <input type="number" step="0.000001" id="w" placeholder="west (lon)">
-            <input type="number" step="0.000001" id="e" placeholder="east (lon)">
-          </div>
-          <div style="height:8px"></div>
-          <div class="grid2">
-            <input type="number" step="0.000001" id="s" placeholder="south (lat)">
-            <input type="number" step="0.000001" id="n" placeholder="north (lat)">
-          </div>
-        </div>
-
         <div class="btns">
           <button class="btn-primary" id="btnRun">Actualizar</button>
           <button class="btn-ghost" id="btnFit">Ajustar mapa</button>
@@ -353,10 +487,21 @@
         </div>
 
         <div class="status" id="status">Listo.</div>
-        <div class="hint">Tip: Guatemala + 7/30 días puede traer muchos puntos; por eso usamos clustering.</div>
+
+        <div class="notes">
+          <b>Notas técnicas (FIRMS Active Fire / NRT)</b>
+          <ul>
+            <li>Las detecciones son <b>anomalías térmicas</b> (hotspots) derivadas de VIIRS/MODIS; no representan perímetros ni área quemada.</li>
+            <li>La observación depende de la <b>órbita/paso</b> (Suomi-NPP, NOAA-20/21, Terra/Aqua) y de condiciones atmosféricas (nubosidad/humo). Puede haber omisiones.</li>
+            <li>La <b>precisión espacial</b> es del orden del tamaño de píxel (VIIRS ~375 m; MODIS ~1 km). La ubicación es aproximada y debe validarse con información local.</li>
+            <li>La <b>confianza</b> es una clasificación del algoritmo FIRMS; fuentes no forestales (quemas agrícolas/industriales) pueden generar detecciones.</li>
+            <li>En Sololá, el análisis a 60–90 días se alinea con la <b>temporada seca</b> (variabilidad interanual). Ajuste el periodo según el contexto operativo.</li>
+          </ul>
+        </div>
       </div>
     </section>
 
+    <!-- Right -->
     <section class="right">
       <section class="panel">
         <h2>Mapa</h2>
@@ -364,8 +509,8 @@
           <div id="map"></div>
         </div>
         <div class="legend">
-          <div class="lg"><span class="sw" style="background:var(--danger)"></span> Alta</div>
-          <div class="lg"><span class="sw" style="background:var(--warn)"></span> Nominal/Media</div>
+          <div class="lg"><span class="sw" style="background:var(--hi)"></span> Alta</div>
+          <div class="lg"><span class="sw" style="background:var(--nom)"></span> Nominal/Media</div>
           <div class="lg"><span class="sw" style="background:var(--low)"></span> Baja</div>
         </div>
       </section>
@@ -375,7 +520,7 @@
         <div class="kpis">
           <div class="kpi"><div class="k">Detecciones (dedupe)</div><div class="v" id="k_total">—</div></div>
           <div class="kpi"><div class="k">Alta confianza</div><div class="v" id="k_high">—</div></div>
-          <div class="kpi"><div class="k">FRP (suma)</div><div class="v" id="k_frp">—</div></div>
+          <div class="kpi"><div class="k">FRP total (MW)</div><div class="v" id="k_frp">—</div></div>
           <div class="kpi"><div class="k">Última detección (UTC)</div><div class="v" id="k_last">—</div></div>
         </div>
       </section>
@@ -386,7 +531,7 @@
           <div class="lower">
             <div>
               <div class="filters">
-                <input id="q" type="text" placeholder="Filtrar tabla (sensor, fecha, satélite, confidence…)" />
+                <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite, confidence…)" />
                 <button class="btn-ghost" id="btnClear">Limpiar</button>
               </div>
               <div class="tableWrap">
@@ -394,6 +539,7 @@
                   <thead>
                     <tr>
                       <th>UTC</th>
+                      <th>Zona</th>
                       <th>Sensor</th>
                       <th>Conf.</th>
                       <th>Lat</th>
@@ -405,11 +551,12 @@
                 </table>
               </div>
               <div class="hint" id="tableNote"></div>
+              <div class="hint" id="trendNote"></div>
             </div>
             <div>
-              <canvas id="chartByDate" height="170"></canvas>
+              <canvas id="chartDaily" height="170"></canvas>
               <div style="height:12px"></div>
-              <canvas id="chartBySensor" height="170"></canvas>
+              <canvas id="chartSensors" height="170"></canvas>
             </div>
           </div>
         </div>
@@ -417,40 +564,49 @@
     </section>
   </main>
 
+  <footer>
+    <div class="footer-box">
+      <div style="text-align:center; font-weight:700;">
+        Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá
+      </div>
+      <div style="text-align:center; margin-top:6px;">
+        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Visualización SIG (Leaflet)
+      </div>
+
+      <div class="footer-logos" aria-label="Logos institucionales">
+        <!-- Rutas basadas en index.html del repositorio (archivos en la raíz) -->
+        <img src="../../marn.png" alt="MARN">
+        <img src="../../maga.png" alt="MAGA">
+        <img src="../../inab.png" alt="INAB">
+        <img src="../../conap.png" alt="CONAP">
+        <img src="../../amsclae.png" alt="AMSCLAE">
+        <img src="../../conred.png" alt="CONRED">
+        <img src="../../cea.png" alt="CEA - UVG">
+        <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
+        <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
+        <img src="../../aires.png" alt="AIR">
+      </div>
+    </div>
+  </footer>
+
 <script>
-  // TU WORKER ✅
+  // ======================
+  // CONFIG / RUTAS
+  // ======================
   const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
 
-  // Presets
+  const LAYER_SOURCES = {
+    muni:  { url: "./data/municipios_solola.geojson", label: "Municipio (Sololá)" },
+    micro: { url: "./data/microcuencas_atitlan.geojson", label: "Microcuenca (Atitlán)" },
+    ap:    { url: "./data/areas_protegidas.geojson", label: "Área protegida" },
+  };
+
   const BBOX_PRESETS = {
-    solola: [-91.586608, 14.495833, -91.040503, 14.992742],
+    solola:    [-91.586608, 14.495833, -91.040503, 14.992742],
     guatemala: [-92.3592, 13.5235, -88.0458, 18.0436],
   };
 
   const $ = (id) => document.getElementById(id);
-
-  const map = L.map("map", { zoomControl: true }).setView([14.77, -91.18], 10);
-
-  const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors',
-  }).addTo(map);
-
-  const imagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-    maxZoom: 19,
-    attribution: "Tiles &copy; Esri",
-  });
-
-  L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
-
-  const clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
-  map.addLayer(clusters);
-
-  let lastData = [];
-  let markerById = new Map();
-  let chart1 = null;
-  let chart2 = null;
-  let autoTimer = null;
 
   function setStatus(msg){ $("status").textContent = msg; }
   function fmt(n, d=0){
@@ -474,10 +630,12 @@
 
   function confColor(c){
     const k = confClass(c);
-    if (k === "high") return getComputedStyle(document.documentElement).getPropertyValue("--danger").trim();
-    if (k === "nominal") return getComputedStyle(document.documentElement).getPropertyValue("--warn").trim();
+    if (k === "high") return getComputedStyle(document.documentElement).getPropertyValue("--hi").trim();
+    if (k === "nominal") return getComputedStyle(document.documentElement).getPropertyValue("--nom").trim();
     return getComputedStyle(document.documentElement).getPropertyValue("--low").trim();
   }
+
+  function bboxStr(arr){ return arr.map(v => Number(v.toFixed(6))).join(","); }
 
   function getSensors(){
     const out = [];
@@ -488,24 +646,28 @@
     return out;
   }
 
-  function getBBox(){
-    const mode = $("bboxMode").value;
-    if (mode === "solola" || mode === "guatemala") return BBOX_PRESETS[mode];
-    if (mode === "map"){
-      const b = map.getBounds();
-      return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
-    }
-    const w = Number($("w").value), s = Number($("s").value), e = Number($("e").value), n = Number($("n").value);
-    if (![w,s,e,n].every(Number.isFinite) || e <= w || n <= s) return null;
-    return [w,s,e,n];
-  }
+  // ======================
+  // MAP
+  // ======================
+  const map = L.map("map", { zoomControl: true }).setView([14.77, -91.18], 10);
 
-  function bboxStr(arr){ return arr.map(v => Number(v.toFixed(6))).join(","); }
+  const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    attribution: '&copy; OpenStreetMap contributors',
+  }).addTo(map);
 
-  function fitBBox(arr){
-    const b = L.latLngBounds([arr[1], arr[0]], [arr[3], arr[2]]);
-    map.fitBounds(b.pad(0.06));
-  }
+  const imagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 19,
+    attribution: "Tiles &copy; Esri",
+  });
+
+  L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
+
+  const clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
+  map.addLayer(clusters);
+
+  const overlayGroup = L.layerGroup().addTo(map);
+  let overlayLayer = null;
 
   const iconCache = new Map();
   function markerIcon(color){
@@ -521,19 +683,246 @@
     return icon;
   }
 
+  // ======================
+  // POLYGON LAYERS
+  // ======================
+  const polyState = {
+    muni:  { loaded:false, gj:null, items:[], nameField:null },
+    micro: { loaded:false, gj:null, items:[], nameField:null },
+    ap:    { loaded:false, gj:null, items:[], nameField:null },
+  };
+
+  function pickNameField(gj){
+    if (!gj?.features?.length) return null;
+    const preferred = [
+      "NOMBRE","Nombre","nombre","MUNICIPIO","municipio","MUNI","MUN",
+      "NOM_MUNI","NOM_MUNIC","NOM_MICRO","MICROCUENCA","microcuenca",
+      "NOM_AP","AREA","AREA_PROT","NOM_AREA","NAME","Name","name"
+    ];
+    const props = gj.features.map(f => f.properties || {});
+    for (const key of preferred){
+      let hits = 0;
+      for (const p of props){
+        const v = p[key];
+        if (typeof v === "string" && v.trim()) hits++;
+      }
+      if (hits >= Math.max(2, Math.floor(props.length * 0.2))) return key;
+    }
+    const first = props[0];
+    for (const [k,v] of Object.entries(first)){
+      if (typeof v === "string" && v.trim()) return k;
+    }
+    return null;
+  }
+
+  function cleanName(v){
+    if (v == null) return "—";
+    const s = String(v).trim();
+    return s || "—";
+  }
+
+  async function ensurePolyLoaded(mode){
+    const st = polyState[mode];
+    if (!st || st.loaded) return;
+
+    const src = LAYER_SOURCES[mode];
+    setStatus(`Cargando capa: ${src.label}...
+${src.url}`);
+
+    const r = await fetch(src.url, { cache: "no-store" });
+    if (!r.ok) throw new Error(`No se pudo cargar ${src.url} (HTTP ${r.status})`);
+    const gj = await r.json();
+
+    st.gj = gj;
+    st.nameField = pickNameField(gj);
+
+    const items = [];
+    for (let i = 0; i < (gj.features || []).length; i++){
+      const f = gj.features[i];
+      const id = f.id ?? (f.properties?.id ?? i);
+      const nm = st.nameField ? cleanName(f.properties?.[st.nameField]) : `Polígono ${i+1}`;
+      const bb = turf.bbox(f);
+      items.push({ id: String(id), name: nm, feature: f, bbox: bb });
+    }
+    items.sort((a,b) => a.name.localeCompare(b.name, "es"));
+    st.items = items;
+    st.loaded = true;
+
+    setStatus(`Capa cargada: ${src.label}
+Campo nombre: ${st.nameField || "auto"}
+Polígonos: ${items.length}`);
+  }
+
+  function renderPolyOverlay(mode, selectedId){
+    overlayGroup.clearLayers();
+    overlayLayer = null;
+
+    const st = polyState[mode];
+    if (!st?.loaded) return;
+
+    let features = [];
+    if (selectedId === "all"){
+      features = st.gj.features;
+    } else {
+      const it = st.items.find(x => x.id === selectedId);
+      if (it) features = [it.feature];
+    }
+    if (!features.length) return;
+
+    overlayLayer = L.geoJSON({ type:"FeatureCollection", features }, {
+      style: {
+        color: "#ff7a45",
+        weight: 2,
+        opacity: 0.85,
+        fillColor: "#ffb703",
+        fillOpacity: 0.08
+      }
+    }).addTo(overlayGroup);
+  }
+
+  function populatePolySelect(mode){
+    const st = polyState[mode];
+    const src = LAYER_SOURCES[mode];
+
+    $("polyLabel").textContent = `Selecciona ${src.label}`;
+    $("polyHint").textContent = `Campo de etiqueta: ${st.nameField || "auto"} · Polígonos: ${st.items.length}`;
+
+    const sel = $("polySelect");
+    sel.innerHTML = "";
+
+    const optAll = document.createElement("option");
+    optAll.value = "all";
+    optAll.textContent = `Todos (${st.items.length})`;
+    sel.appendChild(optAll);
+
+    for (const it of st.items){
+      const opt = document.createElement("option");
+      opt.value = it.id;
+      opt.textContent = it.name;
+      sel.appendChild(opt);
+    }
+    sel.value = "all";
+  }
+
+  // ======================
+  // QUERY BBOX + FILTERS
+  // ======================
+  function getBBoxFromUI(){
+    const clipMode = $("clipMode").value;
+
+    if (clipMode === "bbox_solola") return BBOX_PRESETS.solola;
+    if (clipMode === "bbox_guatemala") return BBOX_PRESETS.guatemala;
+
+    if (clipMode === "bbox_map"){
+      const b = map.getBounds();
+      return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
+    }
+
+    if (clipMode === "bbox_manual"){
+      const w = Number($("w").value), s = Number($("s").value), e = Number($("e").value), n = Number($("n").value);
+      if (![w,s,e,n].every(Number.isFinite) || e <= w || n <= s) return null;
+      return [w,s,e,n];
+    }
+
+    if (["muni","micro","ap"].includes(clipMode)){
+      const st = polyState[clipMode];
+      if (!st?.loaded) return BBOX_PRESETS.solola;
+      const selectedId = $("polySelect").value || "all";
+      if (selectedId === "all") return turf.bbox(st.gj);
+      const it = st.items.find(x => x.id === selectedId);
+      return it ? it.bbox : turf.bbox(st.gj);
+    }
+
+    return BBOX_PRESETS.solola;
+  }
+
+  function fitToBBox(arr){
+    const b = L.latLngBounds([arr[1], arr[0]], [arr[3], arr[2]]);
+    map.fitBounds(b.pad(0.06));
+  }
+
+  function pointFilterByPolygon(rows){
+    const clipMode = $("clipMode").value;
+    if (!["muni","micro","ap"].includes(clipMode)) {
+      return rows.map(r => ({...r, zone_type: "BBOX", zone_name: "—"}));
+    }
+
+    const st = polyState[clipMode];
+    if (!st?.loaded) return rows.map(r => ({...r, zone_type: "SIG", zone_name: "—"}));
+
+    const selectedId = $("polySelect").value || "all";
+    const polys = (selectedId === "all") ? st.items : st.items.filter(x => x.id === selectedId);
+    const zoneType = LAYER_SOURCES[clipMode].label;
+
+    const out = [];
+    for (const r of rows){
+      if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+      const pt = turf.point([r.lon, r.lat]);
+
+      let matched = null;
+      for (const it of polys){
+        if (turf.booleanPointInPolygon(pt, it.feature)){
+          matched = it;
+          break;
+        }
+      }
+      if (matched){
+        out.push({ ...r, zone_type: zoneType, zone_name: matched.name });
+      }
+    }
+    return out;
+  }
+
+  // ======================
+  // TABLE + MAP
+  // ======================
+  let lastData = [];
+  let markerById = new Map();
+
   function clearAll(){
     clusters.clearLayers();
     markerById.clear();
+    overlayGroup.clearLayers();
     lastData = [];
     $("tbl").querySelector("tbody").innerHTML = "";
     $("tableNote").textContent = "";
+    $("trendNote").textContent = "";
     $("k_total").textContent = "—";
     $("k_high").textContent = "—";
     $("k_frp").textContent = "—";
     $("k_last").textContent = "—";
-    if (chart1){ chart1.destroy(); chart1=null; }
-    if (chart2){ chart2.destroy(); chart2=null; }
+    if (chartDaily) { chartDaily.destroy(); chartDaily = null; }
+    if (chartSensors) { chartSensors.destroy(); chartSensors = null; }
     setStatus("Limpio.");
+  }
+
+  function updateMap(rows){
+    clusters.clearLayers();
+    markerById.clear();
+    if (!rows?.length) return;
+
+    for (const r of rows){
+      const col = confColor(r.confidence);
+      const mk = L.marker([r.lat, r.lon], { icon: markerIcon(col) });
+
+      const zone = r.zone_name && r.zone_name !== "—"
+        ? `<div><b>${r.zone_type}:</b> ${r.zone_name}</div>` : "";
+
+      const html = `
+        <div style="font-family:system-ui; font-size:12px; line-height:1.35">
+          <div><b>${r.source}</b></div>
+          ${zone}
+          <div>UTC: ${r.datetime_utc || (r.acq_date + " " + r.acq_time)}</div>
+          <div>Conf: ${r.confidence || "—"} · FRP: ${r.frp ?? "—"} MW</div>
+          <div>Sat: ${r.satellite || "—"} · Inst: ${r.instrument || "—"}</div>
+          <div>Lat/Lon: ${r.lat?.toFixed(5)}, ${r.lon?.toFixed(5)}</div>
+        </div>
+      `;
+      mk.bindPopup(html);
+
+      markerById.set(r.id, mk);
+      clusters.addLayer(mk);
+    }
   }
 
   function buildTable(rows){
@@ -546,6 +935,7 @@
       tr.dataset.id = r.id;
       tr.innerHTML = `
         <td>${r.datetime_utc || "—"}</td>
+        <td>${r.zone_name || "—"}</td>
         <td>${r.source || "—"}</td>
         <td>${r.confidence || "—"}</td>
         <td>${Number.isFinite(r.lat) ? r.lat.toFixed(5) : "—"}</td>
@@ -571,96 +961,157 @@
     const q = $("q").value.trim().toLowerCase();
     const rows = $("tbl").querySelectorAll("tbody tr");
     let shown = 0;
-
     rows.forEach(tr => {
       const ok = !q || tr.textContent.toLowerCase().includes(q);
       tr.style.display = ok ? "" : "none";
       if (ok) shown++;
     });
-    $("tableNote").textContent = `Mostrando ${shown} / ${lastData.length} filas (filtro local). Click en una fila para acercar en el mapa.`;
+    $("tableNote").textContent = `Mostrando ${shown} / ${lastData.length} filas (filtro local). Click en una fila para acercar al punto.`;
   }
 
-  function updateKPIs(payload){
-    const total = payload?.total ?? 0;
-    const hi = payload?.summary?.byConfidence?.high ?? 0;
-    const frp = payload?.summary?.frp_sum ?? null;
-    const last = payload?.summary?.last_detection_utc ?? null;
+  // ======================
+  // KPIs + CHARTS (regresión)
+  // ======================
+  let chartDaily = null;
+  let chartSensors = null;
+
+  function updateKPIs(rawPayload, rows){
+    const total = rows.length;
+    const hi = rows.reduce((acc, r) => acc + (confClass(r.confidence) === "high" ? 1 : 0), 0);
+    const frpSum = rows.reduce((acc, r) => acc + (Number.isFinite(r.frp) ? r.frp : 0), 0);
 
     $("k_total").textContent = fmt(total);
     $("k_high").textContent = fmt(hi);
-    $("k_frp").textContent = (frp === null ? "—" : fmt(frp, 3));
-    $("k_last").textContent = last || "—";
+    $("k_frp").textContent = fmt(frpSum, 3);
+    $("k_last").textContent = rawPayload?.summary?.last_detection_utc || "—";
   }
 
-  function updateCharts(payload){
-    const byDate = payload?.summary?.byDate || {};
-    const bySensor = payload?.summary?.bySensor || {};
+  function linearRegression(xs, ys){
+    const n = xs.length;
+    if (n < 2) return { a: 0, b: ys[0] ?? 0, r2: 0 };
 
-    const dates = Object.keys(byDate).sort();
-    const counts = dates.map(d => byDate[d]);
+    const meanX = xs.reduce((s,v)=>s+v,0)/n;
+    const meanY = ys.reduce((s,v)=>s+v,0)/n;
 
-    const ctx1 = $("chartByDate").getContext("2d");
-    if (chart1) chart1.destroy();
-    chart1 = new Chart(ctx1, {
-      type: "bar",
-      data: { labels: dates, datasets: [{ label: "Detecciones por día", data: counts }] },
-      options: { responsive:true, plugins:{ legend:{ display:true }}, scales:{ y:{ beginAtZero:true } } }
-    });
+    let num = 0, den = 0;
+    for (let i=0;i<n;i++){
+      num += (xs[i]-meanX)*(ys[i]-meanY);
+      den += (xs[i]-meanX)*(xs[i]-meanX);
+    }
+    const a = den === 0 ? 0 : num/den;
+    const b = meanY - a*meanX;
 
-    const sensors = Object.keys(bySensor).sort();
-    const scounts = sensors.map(s => bySensor[s]);
-
-    const ctx2 = $("chartBySensor").getContext("2d");
-    if (chart2) chart2.destroy();
-    chart2 = new Chart(ctx2, {
-      type: "doughnut",
-      data: { labels: sensors, datasets: [{ label:"Por sensor", data: scounts }] },
-      options: { responsive:true, plugins:{ legend:{ position:"bottom" } } }
-    });
+    let ssTot = 0, ssRes = 0;
+    for (let i=0;i<n;i++){
+      const yHat = a*xs[i] + b;
+      ssTot += (ys[i]-meanY)**2;
+      ssRes += (ys[i]-yHat)**2;
+    }
+    const r2 = ssTot === 0 ? 0 : 1 - (ssRes/ssTot);
+    return { a, b, r2 };
   }
 
-  function updateMap(rows){
-    clusters.clearLayers();
-    markerById.clear();
-    if (!rows || rows.length === 0) return;
+  function buildDailySeries(rows){
+    const byDate = new Map();
+    const byDateFrp = new Map();
 
     for (const r of rows){
-      if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
-      const col = confColor(r.confidence);
-      const mk = L.marker([r.lat, r.lon], { icon: markerIcon(col) });
-
-      const html = `
-        <div style="font-family:system-ui; font-size:12px; line-height:1.35">
-          <div><b>${r.source}</b></div>
-          <div>UTC: ${r.datetime_utc || (r.acq_date + " " + r.acq_time)}</div>
-          <div>Conf: ${r.confidence || "—"} | FRP: ${r.frp ?? "—"}</div>
-          <div>Sat: ${r.satellite || "—"} | Inst: ${r.instrument || "—"}</div>
-          <div>Lat/Lon: ${r.lat?.toFixed(5)}, ${r.lon?.toFixed(5)}</div>
-        </div>
-      `;
-      mk.bindPopup(html);
-
-      markerById.set(r.id, mk);
-      clusters.addLayer(mk);
+      const d = r.acq_date || (r.datetime_utc ? r.datetime_utc.slice(0,10) : null);
+      if (!d) continue;
+      byDate.set(d, (byDate.get(d) || 0) + 1);
+      byDateFrp.set(d, (byDateFrp.get(d) || 0) + (Number.isFinite(r.frp) ? r.frp : 0));
     }
+
+    const dates = Array.from(byDate.keys()).sort();
+    const counts = dates.map(d => byDate.get(d) || 0);
+    const frps = dates.map(d => +(byDateFrp.get(d) || 0).toFixed(3));
+    return { dates, counts, frps };
   }
 
+  function updateCharts(rows){
+    const { dates, counts, frps } = buildDailySeries(rows);
+
+    const xs = dates.map((_,i)=>i);
+    const reg = linearRegression(xs, counts);
+    const trend = xs.map(x => reg.a*x + reg.b);
+
+    const eq = `y = ${reg.a.toFixed(3)}x + ${reg.b.toFixed(3)} · R² = ${Math.max(0, Math.min(1, reg.r2)).toFixed(3)}`;
+    $("trendNote").textContent = `Tendencia (detecciones/día): ${eq}`;
+
+    const ctx1 = $("chartDaily").getContext("2d");
+    if (chartDaily) chartDaily.destroy();
+    chartDaily = new Chart(ctx1, {
+      type: "line",
+      data: {
+        labels: dates,
+        datasets: [
+          { label: "Detecciones/día", data: counts, tension: 0.25 },
+          { label: "Tendencia (OLS)", data: trend, tension: 0, borderDash: [6,6], pointRadius: 0 },
+          { label: "FRP/día (MW)", data: frps, yAxisID: "y2", tension: 0.25 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: "bottom" } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "Detecciones" } },
+          y2: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "FRP (MW)" } }
+        }
+      }
+    });
+
+    const bySensor = {};
+    for (const r of rows){
+      const s = r.source || "—";
+      bySensor[s] = (bySensor[s] || 0) + 1;
+    }
+    const sensors = Object.keys(bySensor).sort();
+    const vals = sensors.map(s => bySensor[s]);
+    const total = vals.reduce((a,b)=>a+b,0) || 1;
+    const perc = vals.map(v => +(100*v/total).toFixed(2));
+
+    const ctx2 = $("chartSensors").getContext("2d");
+    if (chartSensors) chartSensors.destroy();
+    chartSensors = new Chart(ctx2, {
+      type: "bar",
+      data: {
+        labels: sensors,
+        datasets: [
+          { label: "Detecciones", data: vals },
+          { label: "%", data: perc }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: "bottom" } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // ======================
+  // EXPORTS
+  // ======================
   function exportCSV(){
     if (!lastData.length) return;
-    const cols = ["datetime_utc","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
+
+    const cols = ["datetime_utc","zone_type","zone_name","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
     const lines = [cols.join(",")];
+
     for (const r of lastData){
       const row = cols.map(c => {
         const v = (r[c] ?? "").toString();
-        if (v.includes(",") || v.includes('"') || v.includes("\n")) return `"${v.replaceAll('"','""')}"`;
+        if (v.includes(",") || v.includes('"') || v.includes("
+")) return `"${v.replaceAll('"','""')}"`;
         return v;
       });
       lines.push(row.join(","));
     }
+
     const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "firs_hotspots.csv";
+    a.download = "firs_hotspots_filtrados.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -669,45 +1120,56 @@
 
   function exportGeoJSON(){
     if (!lastData.length) return;
-    const fc = { type:"FeatureCollection", features: lastData.map(r => ({
-      type:"Feature",
-      geometry:{ type:"Point", coordinates:[r.lon, r.lat] },
-      properties:{ ...r }
-    }))};
+    const fc = {
+      type: "FeatureCollection",
+      features: lastData.map(r => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [r.lon, r.lat] },
+        properties: { ...r }
+      }))
+    };
     const blob = new Blob([JSON.stringify(fc, null, 2)], { type:"application/geo+json;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "firs_hotspots.geojson";
+    a.download = "firs_hotspots_filtrados.geojson";
     document.body.appendChild(a);
     a.click();
     a.remove();
     URL.revokeObjectURL(a.href);
   }
 
+  // ======================
+  // HEALTH + MAIN RUN
+  // ======================
+  let autoTimer = null;
+
   async function checkHealth(){
+    const dot = $("dot");
     try{
       const r = await fetch(`${PROXY_BASE}/health`);
       const j = await r.json();
       $("pillText").textContent = j.ok ? "Proxy: OK" : "Proxy: error";
+      if (dot){ dot.style.background = j.ok ? "#2fd08f" : "#f0b24d"; }
     }catch(e){
       $("pillText").textContent = "Proxy: no responde";
+      if (dot){ dot.style.background = "#f0b24d"; }
     }
   }
 
   async function run(){
     const days = Number($("days").value);
     const sensors = getSensors();
-    const bboxArr = getBBox();
+    const bboxArr = getBBoxFromUI();
     const limit = Number($("limit").value);
     const conf = $("conf").value;
 
     if (!sensors.length) return setStatus("Selecciona al menos un sensor.");
-    if (!bboxArr) return setStatus("BBOX inválido. Revisa el modo 'Personalizado' o usa preset.");
+    if (!bboxArr) return setStatus("BBOX inválido. Revisa el modo seleccionado.");
 
     const bbox = bboxStr(bboxArr);
     const url = `${PROXY_BASE}/api/firms?bbox=${encodeURIComponent(bbox)}&days=${days}&sensors=${encodeURIComponent(sensors.join(","))}&limit=${limit}`;
 
-    setStatus(`Consultando...\n${url}`);
+    setStatus(`Consultando FIRMS...\n${url}`);
 
     try{
       const t0 = performance.now();
@@ -716,26 +1178,40 @@
       const ms = Math.round(performance.now() - t0);
 
       if (!r.ok && !j.ok){
-        return setStatus(`Error (${r.status}).\n${j.error || (j.errors ? j.errors.join("\n") : "Sin detalle")}`);
+        const extra = (j?.error && String(j.error).includes("1..30"))
+          ? "\n\nNota: si deseas 60/90 días, actualiza MAX_DAYS=90 en tu Worker y redeploy."
+          : "";
+        return setStatus(`Error (${r.status}).\n${j.error || (j.errors ? j.errors.join("\n") : "Sin detalle")}${extra}`);
       }
 
       if (!j.ok && j.errors?.length){
         setStatus(`Parcial (${r.status}). Fallos:\n- ${j.errors.slice(0,8).join("\n- ")}${j.errors.length>8 ? "\n..." : ""}`);
       }else{
-        setStatus(`OK. Total: ${j.total}. Filas: ${j.rows.length}. (${ms} ms)\nGenerado: ${j.request.generated_at_utc}\nBBOX: ${j.request.bbox_str}`);
+        setStatus(`OK. Total (dedupe): ${j.total}. Filas devueltas: ${j.rows.length}. (${ms} ms)\nGenerado: ${j.request.generated_at_utc}`);
       }
 
-      lastData = (j.rows || []).filter(rr => conf === "all" ? true : confClass(rr.confidence) === conf);
+      let rows = (j.rows || []).filter(rr => conf === "all" ? true : confClass(rr.confidence) === conf);
+      rows = pointFilterByPolygon(rows);
+      rows.sort((a,b) => (a.datetime_utc || "") < (b.datetime_utc || "") ? 1 : -1);
+
+      lastData = rows;
 
       updateMap(lastData);
       buildTable(lastData);
-      updateKPIs(j);
-      updateCharts(j);
+      updateKPIs(j, lastData);
+      updateCharts(lastData);
 
-      $("tableNote").textContent = `Filas: ${lastData.length} (tras filtro confianza). Total dedupe: ${j.total}.`;
       applyFilter();
 
       $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
+      $("tableNote").textContent = `Filas: ${lastData.length}. Recorte: ${$("clipMode").selectedOptions[0].textContent}.`;
+
+      const clipMode = $("clipMode").value;
+      if (["muni","micro","ap"].includes(clipMode)){
+        renderPolyOverlay(clipMode, $("polySelect").value || "all");
+      } else {
+        overlayGroup.clearLayers();
+      }
 
     }catch(e){
       setStatus(`Fallo de red/CORS.\n${String(e)}`);
@@ -749,32 +1225,62 @@
     }
   }
 
-  $("bboxMode").addEventListener("change", () => {
-    $("manualBBox").style.display = $("bboxMode").value === "manual" ? "block" : "none";
+  // ======================
+  // UI WIRING
+  // ======================
+  function updateClipUI(){
+    const mode = $("clipMode").value;
+
+    $("manualBBox").style.display = (mode === "bbox_manual") ? "block" : "none";
+
+    const isPoly = ["muni","micro","ap"].includes(mode);
+    $("polyPick").style.display = isPoly ? "block" : "none";
+
+    if (!isPoly){
+      overlayGroup.clearLayers();
+      return;
+    }
+
+    ensurePolyLoaded(mode)
+      .then(() => {
+        populatePolySelect(mode);
+        renderPolyOverlay(mode, $("polySelect").value || "all");
+        const bb = getBBoxFromUI();
+        if (bb) fitToBBox(bb);
+      })
+      .catch(err => setStatus(`Error cargando capa SIG.\n${String(err)}`));
+  }
+
+  $("clipMode").addEventListener("change", updateClipUI);
+  $("polySelect").addEventListener("change", () => {
+    const mode = $("clipMode").value;
+    if (["muni","micro","ap"].includes(mode)){
+      renderPolyOverlay(mode, $("polySelect").value || "all");
+    }
   });
 
   $("btnRun").addEventListener("click", run);
   $("btnFit").addEventListener("click", () => {
-    const b = getBBox();
-    if (!b) return setStatus("No hay BBOX válido para ajustar.");
-    fitBBox(b);
-    setStatus("Mapa ajustado al BBOX.");
+    const bb = getBBoxFromUI();
+    if (!bb) return setStatus("No hay BBOX válido para ajustar.");
+    fitToBBox(bb);
+    setStatus("Mapa ajustado al recorte.");
   });
-  $("btnClear").addEventListener("click", clearAll);
 
   $("btnCSV").addEventListener("click", exportCSV);
   $("btnGeoJSON").addEventListener("click", exportGeoJSON);
 
+  $("btnClear").addEventListener("click", clearAll);
   $("q").addEventListener("input", applyFilter);
   $("auto").addEventListener("change", setupAuto);
 
   (async function init(){
-    fitBBox(BBOX_PRESETS.solola);
+    fitToBBox(BBOX_PRESETS.solola);
     await checkHealth();
     setupAuto();
+    updateClipUI();
     await run();
   })();
 </script>
-
 </body>
 </html>
