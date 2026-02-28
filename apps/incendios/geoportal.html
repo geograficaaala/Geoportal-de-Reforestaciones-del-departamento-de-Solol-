@@ -4,25 +4,17 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Incendios — Dashboard FIRMS (NRT) · Sololá</title>
-  <meta name="description" content="Dashboard de anomalías térmicas (fuego activo) FIRMS NRT para Sololá: filtros por sensores, periodo y recortes espaciales (BBOX, municipios, microcuencas y áreas protegidas)." />
 
-  <!-- Leaflet -->
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-        crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-          crossorigin=""></script>
+  <!-- Leaflet (sin integrity para evitar bloqueos por SRI) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
   <!-- MarkerCluster -->
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <link rel="stylesheet"
-        href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
 
-  <!-- Turf (geoprocesos en navegador) -->
+  <!-- Turf -->
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <!-- Chart.js -->
@@ -30,31 +22,22 @@
 
   <style>
     :root{
-      /* Pasteles “fuego” */
       --bg-0:#fff7f0;
       --bg-1:#fff2e6;
-      --bg-2:#fff6fb;
       --card:rgba(255,255,255,.92);
       --card2:rgba(255,255,255,.98);
-
       --ink:#2b1d12;
       --muted:#6a4e3c;
-
-      --brand:#ff7a45;    /* naranja */
-      --brand2:#ffd19a;   /* durazno */
-      --cool:#3aa0ff;     /* contraste frío */
+      --brand:#ff7a45;
       --stroke:rgba(32,18,10,.12);
-
-      --hi:#ff5a5f;       /* confianza alta */
-      --nom:#ffb703;      /* nominal/media */
-      --low:#6c757d;      /* baja */
-
+      --hi:#ff5a5f;
+      --nom:#ffb703;
+      --low:#6c757d;
       --shadow: 0 14px 40px rgba(40,20,10,.12);
       --shadow-sm: 0 10px 22px rgba(40,20,10,.10);
       --radius: 16px;
     }
-
-    *{ box-sizing:border-box; }
+    *{box-sizing:border-box}
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
@@ -62,12 +45,10 @@
       background:
         radial-gradient(900px 560px at 0% 0%, rgba(255,122,69,.18), transparent 62%),
         radial-gradient(900px 560px at 100% 0%, rgba(255,183,3,.16), transparent 62%),
-        radial-gradient(900px 560px at 100% 100%, rgba(58,160,255,.10), transparent 62%),
         linear-gradient(180deg, var(--bg-0), var(--bg-1));
       min-height:100vh;
     }
 
-    /* Header */
     header{
       position: sticky;
       top: 0;
@@ -99,12 +80,7 @@
       padding: 4px 6px;
       box-shadow: var(--shadow-sm);
     }
-    .title{
-      display:flex;
-      flex-direction:column;
-      gap:2px;
-      min-width: 0;
-    }
+    .title{ display:flex; flex-direction:column; gap:2px; min-width:0; }
     .title h1{
       margin:0;
       font-size: 15px;
@@ -114,17 +90,9 @@
       text-overflow: ellipsis;
       max-width: 520px;
     }
-    .title .sub{
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .title .sub{ font-size: 12px; color: var(--muted); }
 
-    .chips{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      flex-wrap:wrap;
-    }
+    .chips{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .chip{
       display:inline-flex;
       align-items:center;
@@ -144,7 +112,6 @@
       box-shadow: 0 0 0 4px rgba(47,208,143,.18);
     }
 
-    /* Layout */
     main{
       display:grid;
       grid-template-columns: 380px 1fr;
@@ -172,7 +139,6 @@
 
     .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
     label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
-
     select, input[type="text"], input[type="number"]{
       width:100%;
       padding:10px 10px;
@@ -228,7 +194,6 @@
     .notes ul{ margin:8px 0 0; padding-left: 18px; }
     .notes li{ margin:6px 0; }
 
-    /* Right side */
     .right{
       display:grid;
       grid-template-rows: auto auto 1fr;
@@ -236,8 +201,28 @@
       min-width:0;
     }
 
-    #map{ height: 520px; border-radius: var(--radius); }
-    .mapWrap{ padding:12px 14px 14px; }
+    .mapWrap{ padding:12px 14px 14px; position:relative; }
+    #map{
+      height: 520px;
+      min-height: 520px;
+      border-radius: var(--radius);
+      background: #f6efe9; /* para que siempre se vea el cuadro */
+      outline: 1px solid rgba(0,0,0,.06);
+    }
+    .mapError{
+      display:none;
+      position:absolute;
+      inset: 16px 18px auto 18px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(0,0,0,.14);
+      border-radius: 14px;
+      padding: 10px 12px;
+      box-shadow: var(--shadow-sm);
+      color: #7b3b1f;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+    .mapError code{ background:#f3f3f3; padding:2px 6px; border-radius:8px; }
 
     .legend{
       display:flex; gap:10px; flex-wrap:wrap;
@@ -276,7 +261,6 @@
       min-width:0;
       padding-bottom: 14px;
     }
-
     .filters{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
     .filters input{ flex:1; }
 
@@ -308,7 +292,6 @@
 
     .hint{ font-size:12px; color:var(--muted); line-height:1.35; margin-top:8px; }
 
-    /* Hotspot marker (divIcon) */
     .hotspot{
       width:14px; height:14px;
       border-radius:50%;
@@ -316,42 +299,11 @@
       box-shadow: 0 6px 18px rgba(0,0,0,.18);
     }
 
-    /* Footer */
-    footer{
-      padding: 10px 14px 24px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .footer-box{
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 12px 14px;
-    }
-    .footer-logos{
-      display:flex;
-      flex-wrap:wrap;
-      gap:14px;
-      align-items:center;
-      justify-content:center;
-      margin-top:10px;
-    }
-    .footer-logos img{
-      max-height: 44px;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
-      background: rgba(255,255,255,.94);
-      border-radius: 10px;
-      padding: 4px 6px;
-    }
-
     @media (max-width: 1100px){
       main{ grid-template-columns: 1fr; }
       .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
       .lower{ grid-template-columns: 1fr; }
-      #map{ height: 440px; }
+      #map{ height: 440px; min-height: 440px; }
       .title h1{ max-width: 88vw; }
     }
   </style>
@@ -361,7 +313,6 @@
   <header>
     <div class="header-wrap">
       <div class="brand" aria-label="Logos institucionales">
-        <!-- Rutas basadas en index.html del repositorio (archivos en la raíz) -->
         <img src="../../BOSQUE.png" alt="Logo Eje de Bosques">
         <img src="../../CODEMA%20%282%29.png" alt="Logo CODEMA Sololá">
         <div class="title">
@@ -385,7 +336,6 @@
   </header>
 
   <main>
-    <!-- Left controls -->
     <section class="panel">
       <h2>Filtros</h2>
       <div class="content">
@@ -491,22 +441,21 @@
         <div class="notes">
           <b>Notas técnicas (FIRMS Active Fire / NRT)</b>
           <ul>
-            <li>Las detecciones son <b>anomalías térmicas</b> (hotspots) derivadas de VIIRS/MODIS; no representan perímetros ni área quemada.</li>
-            <li>La observación depende de la <b>órbita/paso</b> (Suomi-NPP, NOAA-20/21, Terra/Aqua) y de condiciones atmosféricas (nubosidad/humo). Puede haber omisiones.</li>
-            <li>La <b>precisión espacial</b> es del orden del tamaño de píxel (VIIRS ~375 m; MODIS ~1 km). La ubicación es aproximada y debe validarse con información local.</li>
-            <li>La <b>confianza</b> es una clasificación del algoritmo FIRMS; fuentes no forestales (quemas agrícolas/industriales) pueden generar detecciones.</li>
-            <li>En Sololá, el análisis a 60–90 días se alinea con la <b>temporada seca</b> (variabilidad interanual). Ajuste el periodo según el contexto operativo.</li>
+            <li>Hotspots ≠ perímetro de incendio. VIIRS (Suomi-NPP / NOAA-20 / NOAA-21) y MODIS (Terra/Aqua) detectan <b>fuego activo/anomalía térmica</b>.</li>
+            <li>La observación depende del <b>paso orbital</b> y de nubosidad/humo; puede haber omisiones y múltiples detecciones del mismo evento.</li>
+            <li>Resolución aproximada: <b>VIIRS ~375 m</b> y <b>MODIS ~1 km</b>. La ubicación es una aproximación del píxel detectado.</li>
+            <li>FRP (MW) es un indicador radiativo de energía del fuego (no es área quemada).</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- Right -->
     <section class="right">
       <section class="panel">
         <h2>Mapa</h2>
         <div class="mapWrap">
           <div id="map"></div>
+          <div class="mapError" id="mapError"></div>
         </div>
         <div class="legend">
           <div class="lg"><span class="sw" style="background:var(--hi)"></span> Alta</div>
@@ -518,7 +467,7 @@
       <section class="panel">
         <h2>KPIs</h2>
         <div class="kpis">
-          <div class="kpi"><div class="k">Detecciones (dedupe)</div><div class="v" id="k_total">—</div></div>
+          <div class="kpi"><div class="k">Detecciones (filtradas)</div><div class="v" id="k_total">—</div></div>
           <div class="kpi"><div class="k">Alta confianza</div><div class="v" id="k_high">—</div></div>
           <div class="kpi"><div class="k">FRP total (MW)</div><div class="v" id="k_frp">—</div></div>
           <div class="kpi"><div class="k">Última detección (UTC)</div><div class="v" id="k_last">—</div></div>
@@ -531,7 +480,7 @@
           <div class="lower">
             <div>
               <div class="filters">
-                <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite, confidence…)" />
+                <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite…)" />
                 <button class="btn-ghost" id="btnClear">Limpiar</button>
               </div>
               <div class="tableWrap">
@@ -564,49 +513,33 @@
     </section>
   </main>
 
-  <footer>
-    <div class="footer-box">
-      <div style="text-align:center; font-weight:700;">
-        Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá
-      </div>
-      <div style="text-align:center; margin-top:6px;">
-        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Visualización SIG (Leaflet)
-      </div>
-
-      <div class="footer-logos" aria-label="Logos institucionales">
-        <!-- Rutas basadas en index.html del repositorio (archivos en la raíz) -->
-        <img src="../../marn.png" alt="MARN">
-        <img src="../../maga.png" alt="MAGA">
-        <img src="../../inab.png" alt="INAB">
-        <img src="../../conap.png" alt="CONAP">
-        <img src="../../amsclae.png" alt="AMSCLAE">
-        <img src="../../conred.png" alt="CONRED">
-        <img src="../../cea.png" alt="CEA - UVG">
-        <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
-        <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
-        <img src="../../aires.png" alt="AIR">
-      </div>
-    </div>
-  </footer>
-
 <script>
-  // ======================
-  // CONFIG / RUTAS
-  // ======================
+(() => {
   const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
-
   const LAYER_SOURCES = {
     muni:  { url: "./data/municipios_solola.geojson", label: "Municipio (Sololá)" },
     micro: { url: "./data/microcuencas_atitlan.geojson", label: "Microcuenca (Atitlán)" },
     ap:    { url: "./data/areas_protegidas.geojson", label: "Área protegida" },
   };
-
   const BBOX_PRESETS = {
     solola:    [-91.586608, 14.495833, -91.040503, 14.992742],
     guatemala: [-92.3592, 13.5235, -88.0458, 18.0436],
   };
 
   const $ = (id) => document.getElementById(id);
+  const mapError = $("mapError");
+
+  function showMapError(msg){
+    if (!mapError) return;
+    mapError.style.display = "block";
+    mapError.innerHTML = msg;
+  }
+
+  // Captura errores JS y los muestra en pantalla (sin tener que abrir consola)
+  window.addEventListener("error", (e) => {
+    const m = (e && e.message) ? e.message : "Error desconocido";
+    showMapError(`Error JavaScript: <code>${m}</code><br/>Abre DevTools → Console para ver detalles.`);
+  });
 
   function setStatus(msg){ $("status").textContent = msg; }
   function fmt(n, d=0){
@@ -627,16 +560,14 @@
     if (["l","low"].includes(s)) return "low";
     return "unknown";
   }
-
   function confColor(c){
     const k = confClass(c);
-    if (k === "high") return getComputedStyle(document.documentElement).getPropertyValue("--hi").trim();
-    if (k === "nominal") return getComputedStyle(document.documentElement).getPropertyValue("--nom").trim();
-    return getComputedStyle(document.documentElement).getPropertyValue("--low").trim();
+    const css = getComputedStyle(document.documentElement);
+    if (k === "high") return css.getPropertyValue("--hi").trim();
+    if (k === "nominal") return css.getPropertyValue("--nom").trim();
+    return css.getPropertyValue("--low").trim();
   }
-
   function bboxStr(arr){ return arr.map(v => Number(v.toFixed(6))).join(","); }
-
   function getSensors(){
     const out = [];
     if ($("s_snpp").checked) out.push("VIIRS_SNPP_NRT");
@@ -646,29 +577,17 @@
     return out;
   }
 
-  // ======================
-  // MAP
-  // ======================
-  const map = L.map("map", { zoomControl: true }).setView([14.77, -91.18], 10);
+  // ===== MAP INIT (con try/catch) =====
+  if (!window.L){
+    showMapError(`No se cargó Leaflet (L). Revisa tu conexión o si un bloqueador está deteniendo <code>unpkg.com</code>.`);
+    return;
+  }
+  if (!$("map")){
+    showMapError(`No se encontró el contenedor <code>#map</code>.`);
+    return;
+  }
 
-  const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    maxZoom: 19,
-    attribution: '&copy; OpenStreetMap contributors',
-  }).addTo(map);
-
-  const imagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-    maxZoom: 19,
-    attribution: "Tiles &copy; Esri",
-  });
-
-  L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
-
-  const clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
-  map.addLayer(clusters);
-
-  const overlayGroup = L.layerGroup().addTo(map);
-  let overlayLayer = null;
-
+  let map, clusters, overlayGroup;
   const iconCache = new Map();
   function markerIcon(color){
     if (iconCache.has(color)) return iconCache.get(color);
@@ -683,9 +602,40 @@
     return icon;
   }
 
-  // ======================
-  // POLYGON LAYERS
-  // ======================
+  try{
+    map = L.map("map", { zoomControl: true }).setView([14.77, -91.18], 10);
+
+    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap contributors',
+    }).addTo(map);
+
+    const imagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 19,
+      attribution: "Tiles &copy; Esri",
+    });
+
+    L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
+
+    // Si MarkerCluster no cargó, no rompemos el mapa: caemos a layerGroup
+    if (typeof L.markerClusterGroup === "function"){
+      clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
+    } else {
+      clusters = L.layerGroup();
+      setStatus("Aviso: no se cargó Leaflet.markercluster; usando capa simple.");
+    }
+    map.addLayer(clusters);
+
+    overlayGroup = L.layerGroup().addTo(map);
+
+    // Asegura render en móviles
+    setTimeout(() => map.invalidateSize(), 250);
+  }catch(err){
+    showMapError(`No se pudo inicializar el mapa: <code>${String(err)}</code>`);
+    return;
+  }
+
+  // ===== POLY DATA =====
   const polyState = {
     muni:  { loaded:false, gj:null, items:[], nameField:null },
     micro: { loaded:false, gj:null, items:[], nameField:null },
@@ -694,11 +644,7 @@
 
   function pickNameField(gj){
     if (!gj?.features?.length) return null;
-    const preferred = [
-      "NOMBRE","Nombre","nombre","MUNICIPIO","municipio","MUNI","MUN",
-      "NOM_MUNI","NOM_MUNIC","NOM_MICRO","MICROCUENCA","microcuenca",
-      "NOM_AP","AREA","AREA_PROT","NOM_AREA","NAME","Name","name"
-    ];
+    const preferred = ["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","MICROCUENCA","microcuenca","NOM_AREA","NAME","name"];
     const props = gj.features.map(f => f.properties || {});
     for (const key of preferred){
       let hits = 0;
@@ -708,7 +654,7 @@
       }
       if (hits >= Math.max(2, Math.floor(props.length * 0.2))) return key;
     }
-    const first = props[0];
+    const first = props[0] || {};
     for (const [k,v] of Object.entries(first)){
       if (typeof v === "string" && v.trim()) return k;
     }
@@ -716,8 +662,7 @@
   }
 
   function cleanName(v){
-    if (v == null) return "—";
-    const s = String(v).trim();
+    const s = (v == null) ? "" : String(v).trim();
     return s || "—";
   }
 
@@ -726,9 +671,6 @@
     if (!st || st.loaded) return;
 
     const src = LAYER_SOURCES[mode];
-    setStatus(`Cargando capa: ${src.label}...
-${src.url}`);
-
     const r = await fetch(src.url, { cache: "no-store" });
     if (!r.ok) throw new Error(`No se pudo cargar ${src.url} (HTTP ${r.status})`);
     const gj = await r.json();
@@ -741,22 +683,16 @@ ${src.url}`);
       const f = gj.features[i];
       const id = f.id ?? (f.properties?.id ?? i);
       const nm = st.nameField ? cleanName(f.properties?.[st.nameField]) : `Polígono ${i+1}`;
-      const bb = turf.bbox(f);
+      const bb = (window.turf && turf.bbox) ? turf.bbox(f) : BBOX_PRESETS.solola;
       items.push({ id: String(id), name: nm, feature: f, bbox: bb });
     }
     items.sort((a,b) => a.name.localeCompare(b.name, "es"));
     st.items = items;
     st.loaded = true;
-
-    setStatus(`Capa cargada: ${src.label}
-Campo nombre: ${st.nameField || "auto"}
-Polígonos: ${items.length}`);
   }
 
   function renderPolyOverlay(mode, selectedId){
     overlayGroup.clearLayers();
-    overlayLayer = null;
-
     const st = polyState[mode];
     if (!st?.loaded) return;
 
@@ -769,14 +705,8 @@ Polígonos: ${items.length}`);
     }
     if (!features.length) return;
 
-    overlayLayer = L.geoJSON({ type:"FeatureCollection", features }, {
-      style: {
-        color: "#ff7a45",
-        weight: 2,
-        opacity: 0.85,
-        fillColor: "#ffb703",
-        fillOpacity: 0.08
-      }
+    L.geoJSON({ type:"FeatureCollection", features }, {
+      style: { color:"#ff7a45", weight:2, opacity:0.85, fillColor:"#ffb703", fillOpacity:0.08 }
     }).addTo(overlayGroup);
   }
 
@@ -804,9 +734,6 @@ Polígonos: ${items.length}`);
     sel.value = "all";
   }
 
-  // ======================
-  // QUERY BBOX + FILTERS
-  // ======================
   function getBBoxFromUI(){
     const clipMode = $("clipMode").value;
 
@@ -817,22 +744,19 @@ Polígonos: ${items.length}`);
       const b = map.getBounds();
       return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
     }
-
     if (clipMode === "bbox_manual"){
       const w = Number($("w").value), s = Number($("s").value), e = Number($("e").value), n = Number($("n").value);
       if (![w,s,e,n].every(Number.isFinite) || e <= w || n <= s) return null;
       return [w,s,e,n];
     }
-
     if (["muni","micro","ap"].includes(clipMode)){
       const st = polyState[clipMode];
       if (!st?.loaded) return BBOX_PRESETS.solola;
       const selectedId = $("polySelect").value || "all";
-      if (selectedId === "all") return turf.bbox(st.gj);
+      if (selectedId === "all") return (window.turf && turf.bbox) ? turf.bbox(st.gj) : BBOX_PRESETS.solola;
       const it = st.items.find(x => x.id === selectedId);
-      return it ? it.bbox : turf.bbox(st.gj);
+      return it ? it.bbox : BBOX_PRESETS.solola;
     }
-
     return BBOX_PRESETS.solola;
   }
 
@@ -846,9 +770,10 @@ Polígonos: ${items.length}`);
     if (!["muni","micro","ap"].includes(clipMode)) {
       return rows.map(r => ({...r, zone_type: "BBOX", zone_name: "—"}));
     }
-
     const st = polyState[clipMode];
-    if (!st?.loaded) return rows.map(r => ({...r, zone_type: "SIG", zone_name: "—"}));
+    if (!st?.loaded || !(window.turf && turf.booleanPointInPolygon)){
+      return rows.map(r => ({...r, zone_type: "SIG", zone_name: "—"}));
+    }
 
     const selectedId = $("polySelect").value || "all";
     const polys = (selectedId === "all") ? st.items : st.items.filter(x => x.id === selectedId);
@@ -866,35 +791,17 @@ Polígonos: ${items.length}`);
           break;
         }
       }
-      if (matched){
-        out.push({ ...r, zone_type: zoneType, zone_name: matched.name });
-      }
+      if (matched) out.push({ ...r, zone_type: zoneType, zone_name: matched.name });
     }
     return out;
   }
 
-  // ======================
-  // TABLE + MAP
-  // ======================
+  // ===== DATA/UI =====
   let lastData = [];
   let markerById = new Map();
-
-  function clearAll(){
-    clusters.clearLayers();
-    markerById.clear();
-    overlayGroup.clearLayers();
-    lastData = [];
-    $("tbl").querySelector("tbody").innerHTML = "";
-    $("tableNote").textContent = "";
-    $("trendNote").textContent = "";
-    $("k_total").textContent = "—";
-    $("k_high").textContent = "—";
-    $("k_frp").textContent = "—";
-    $("k_last").textContent = "—";
-    if (chartDaily) { chartDaily.destroy(); chartDaily = null; }
-    if (chartSensors) { chartSensors.destroy(); chartSensors = null; }
-    setStatus("Limpio.");
-  }
+  let chartDaily = null;
+  let chartSensors = null;
+  let autoTimer = null;
 
   function updateMap(rows){
     clusters.clearLayers();
@@ -905,20 +812,16 @@ Polígonos: ${items.length}`);
       const col = confColor(r.confidence);
       const mk = L.marker([r.lat, r.lon], { icon: markerIcon(col) });
 
-      const zone = r.zone_name && r.zone_name !== "—"
-        ? `<div><b>${r.zone_type}:</b> ${r.zone_name}</div>` : "";
-
-      const html = `
+      const zone = r.zone_name && r.zone_name !== "—" ? `<div><b>${r.zone_type}:</b> ${r.zone_name}</div>` : "";
+      mk.bindPopup(`
         <div style="font-family:system-ui; font-size:12px; line-height:1.35">
           <div><b>${r.source}</b></div>
           ${zone}
           <div>UTC: ${r.datetime_utc || (r.acq_date + " " + r.acq_time)}</div>
           <div>Conf: ${r.confidence || "—"} · FRP: ${r.frp ?? "—"} MW</div>
           <div>Sat: ${r.satellite || "—"} · Inst: ${r.instrument || "—"}</div>
-          <div>Lat/Lon: ${r.lat?.toFixed(5)}, ${r.lon?.toFixed(5)}</div>
         </div>
-      `;
-      mk.bindPopup(html);
+      `);
 
       markerById.set(r.id, mk);
       clusters.addLayer(mk);
@@ -948,8 +851,7 @@ Polígonos: ${items.length}`);
 
     tbody.querySelectorAll("tr").forEach(tr => {
       tr.addEventListener("click", () => {
-        const id = tr.dataset.id;
-        const mk = markerById.get(id);
+        const mk = markerById.get(tr.dataset.id);
         if (!mk) return;
         map.setView(mk.getLatLng(), Math.max(map.getZoom(), 13));
         mk.openPopup();
@@ -966,14 +868,8 @@ Polígonos: ${items.length}`);
       tr.style.display = ok ? "" : "none";
       if (ok) shown++;
     });
-    $("tableNote").textContent = `Mostrando ${shown} / ${lastData.length} filas (filtro local). Click en una fila para acercar al punto.`;
+    $("tableNote").textContent = `Mostrando ${shown} / ${lastData.length} filas (filtro local).`;
   }
-
-  // ======================
-  // KPIs + CHARTS (regresión)
-  // ======================
-  let chartDaily = null;
-  let chartSensors = null;
 
   function updateKPIs(rawPayload, rows){
     const total = rows.length;
@@ -989,10 +885,8 @@ Polígonos: ${items.length}`);
   function linearRegression(xs, ys){
     const n = xs.length;
     if (n < 2) return { a: 0, b: ys[0] ?? 0, r2: 0 };
-
     const meanX = xs.reduce((s,v)=>s+v,0)/n;
     const meanY = ys.reduce((s,v)=>s+v,0)/n;
-
     let num = 0, den = 0;
     for (let i=0;i<n;i++){
       num += (xs[i]-meanX)*(ys[i]-meanY);
@@ -1014,14 +908,12 @@ Polígonos: ${items.length}`);
   function buildDailySeries(rows){
     const byDate = new Map();
     const byDateFrp = new Map();
-
     for (const r of rows){
       const d = r.acq_date || (r.datetime_utc ? r.datetime_utc.slice(0,10) : null);
       if (!d) continue;
       byDate.set(d, (byDate.get(d) || 0) + 1);
       byDateFrp.set(d, (byDateFrp.get(d) || 0) + (Number.isFinite(r.frp) ? r.frp : 0));
     }
-
     const dates = Array.from(byDate.keys()).sort();
     const counts = dates.map(d => byDate.get(d) || 0);
     const frps = dates.map(d => +(byDateFrp.get(d) || 0).toFixed(3));
@@ -1030,11 +922,9 @@ Polígonos: ${items.length}`);
 
   function updateCharts(rows){
     const { dates, counts, frps } = buildDailySeries(rows);
-
     const xs = dates.map((_,i)=>i);
     const reg = linearRegression(xs, counts);
     const trend = xs.map(x => reg.a*x + reg.b);
-
     const eq = `y = ${reg.a.toFixed(3)}x + ${reg.b.toFixed(3)} · R² = ${Math.max(0, Math.min(1, reg.r2)).toFixed(3)}`;
     $("trendNote").textContent = `Tendencia (detecciones/día): ${eq}`;
 
@@ -1076,72 +966,46 @@ Polígonos: ${items.length}`);
       type: "bar",
       data: {
         labels: sensors,
-        datasets: [
-          { label: "Detecciones", data: vals },
-          { label: "%", data: perc }
-        ]
+        datasets: [{ label: "Detecciones", data: vals }, { label: "%", data: perc }]
       },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: "bottom" } },
-        scales: { y: { beginAtZero: true } }
-      }
+      options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true } } }
     });
   }
 
-  // ======================
-  // EXPORTS
-  // ======================
   function exportCSV(){
     if (!lastData.length) return;
-
     const cols = ["datetime_utc","zone_type","zone_name","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
     const lines = [cols.join(",")];
-
     for (const r of lastData){
       const row = cols.map(c => {
         const v = (r[c] ?? "").toString();
-        if (v.includes(",") || v.includes('"') || v.includes("
-")) return `"${v.replaceAll('"','""')}"`;
+        if (v.includes(",") || v.includes('"') || v.includes("\n")) return `"${v.replaceAll('"','""')}"`;
         return v;
       });
       lines.push(row.join(","));
     }
-
     const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "firs_hotspots_filtrados.csv";
     document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
+    a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }
 
   function exportGeoJSON(){
     if (!lastData.length) return;
-    const fc = {
-      type: "FeatureCollection",
-      features: lastData.map(r => ({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [r.lon, r.lat] },
-        properties: { ...r }
-      }))
-    };
+    const fc = { type:"FeatureCollection", features: lastData.map(r => ({
+      type:"Feature",
+      geometry:{ type:"Point", coordinates:[r.lon, r.lat] },
+      properties:{ ...r }
+    }))};
     const blob = new Blob([JSON.stringify(fc, null, 2)], { type:"application/geo+json;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = "firs_hotspots_filtrados.geojson";
     document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(a.href);
+    a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }
-
-  // ======================
-  // HEALTH + MAIN RUN
-  // ======================
-  let autoTimer = null;
 
   async function checkHealth(){
     const dot = $("dot");
@@ -1149,11 +1013,16 @@ Polígonos: ${items.length}`);
       const r = await fetch(`${PROXY_BASE}/health`);
       const j = await r.json();
       $("pillText").textContent = j.ok ? "Proxy: OK" : "Proxy: error";
-      if (dot){ dot.style.background = j.ok ? "#2fd08f" : "#f0b24d"; }
+      if (dot) dot.style.background = j.ok ? "#2fd08f" : "#f0b24d";
     }catch(e){
       $("pillText").textContent = "Proxy: no responde";
-      if (dot){ dot.style.background = "#f0b24d"; }
+      if (dot) dot.style.background = "#f0b24d";
     }
+  }
+
+  function getBBoxOrDefault(){
+    const b = getBBoxFromUI();
+    return b || BBOX_PRESETS.solola;
   }
 
   async function run(){
@@ -1171,68 +1040,51 @@ Polígonos: ${items.length}`);
 
     setStatus(`Consultando FIRMS...\n${url}`);
 
-    try{
-      const t0 = performance.now();
-      const r = await fetch(url);
-      const j = await r.json();
-      const ms = Math.round(performance.now() - t0);
+    const t0 = performance.now();
+    const r = await fetch(url);
+    const j = await r.json();
+    const ms = Math.round(performance.now() - t0);
 
-      if (!r.ok && !j.ok){
-        const extra = (j?.error && String(j.error).includes("1..30"))
-          ? "\n\nNota: si deseas 60/90 días, actualiza MAX_DAYS=90 en tu Worker y redeploy."
-          : "";
-        return setStatus(`Error (${r.status}).\n${j.error || (j.errors ? j.errors.join("\n") : "Sin detalle")}${extra}`);
-      }
+    if (!r.ok && !j.ok){
+      const extra = (j?.error && String(j.error).includes("1..30"))
+        ? "\n\nNota: para 60/90 días, sube MAX_DAYS a 90 en el Worker y redeploy."
+        : "";
+      return setStatus(`Error (${r.status}).\n${j.error || "Sin detalle"}${extra}`);
+    }
 
-      if (!j.ok && j.errors?.length){
-        setStatus(`Parcial (${r.status}). Fallos:\n- ${j.errors.slice(0,8).join("\n- ")}${j.errors.length>8 ? "\n..." : ""}`);
-      }else{
-        setStatus(`OK. Total (dedupe): ${j.total}. Filas devueltas: ${j.rows.length}. (${ms} ms)\nGenerado: ${j.request.generated_at_utc}`);
-      }
+    setStatus(`OK. Total (dedupe): ${j.total}. Filas devueltas: ${j.rows.length}. (${ms} ms)`);
 
-      let rows = (j.rows || []).filter(rr => conf === "all" ? true : confClass(rr.confidence) === conf);
-      rows = pointFilterByPolygon(rows);
-      rows.sort((a,b) => (a.datetime_utc || "") < (b.datetime_utc || "") ? 1 : -1);
+    let rows = (j.rows || []).filter(rr => conf === "all" ? true : confClass(rr.confidence) === conf);
+    rows = pointFilterByPolygon(rows);
+    rows.sort((a,b) => (a.datetime_utc || "") < (b.datetime_utc || "") ? 1 : -1);
 
-      lastData = rows;
+    lastData = rows;
 
-      updateMap(lastData);
-      buildTable(lastData);
-      updateKPIs(j, lastData);
-      updateCharts(lastData);
+    updateMap(lastData);
+    buildTable(lastData);
+    updateKPIs(j, lastData);
+    updateCharts(lastData);
+    applyFilter();
 
-      applyFilter();
+    $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
 
-      $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
-      $("tableNote").textContent = `Filas: ${lastData.length}. Recorte: ${$("clipMode").selectedOptions[0].textContent}.`;
-
-      const clipMode = $("clipMode").value;
-      if (["muni","micro","ap"].includes(clipMode)){
-        renderPolyOverlay(clipMode, $("polySelect").value || "all");
-      } else {
-        overlayGroup.clearLayers();
-      }
-
-    }catch(e){
-      setStatus(`Fallo de red/CORS.\n${String(e)}`);
+    const clipMode = $("clipMode").value;
+    if (["muni","micro","ap"].includes(clipMode)){
+      renderPolyOverlay(clipMode, $("polySelect").value || "all");
+    } else {
+      overlayGroup.clearLayers();
     }
   }
 
   function setupAuto(){
     if (autoTimer) clearInterval(autoTimer);
-    if ($("auto").checked){
-      autoTimer = setInterval(run, 10 * 60 * 1000);
-    }
+    if ($("auto").checked) autoTimer = setInterval(run, 10 * 60 * 1000);
   }
 
-  // ======================
-  // UI WIRING
-  // ======================
-  function updateClipUI(){
+  async function updateClipUI(){
     const mode = $("clipMode").value;
 
     $("manualBBox").style.display = (mode === "bbox_manual") ? "block" : "none";
-
     const isPoly = ["muni","micro","ap"].includes(mode);
     $("polyPick").style.display = isPoly ? "block" : "none";
 
@@ -1241,17 +1093,18 @@ Polígonos: ${items.length}`);
       return;
     }
 
-    ensurePolyLoaded(mode)
-      .then(() => {
-        populatePolySelect(mode);
-        renderPolyOverlay(mode, $("polySelect").value || "all");
-        const bb = getBBoxFromUI();
-        if (bb) fitToBBox(bb);
-      })
-      .catch(err => setStatus(`Error cargando capa SIG.\n${String(err)}`));
+    try{
+      await ensurePolyLoaded(mode);
+      populatePolySelect(mode);
+      renderPolyOverlay(mode, $("polySelect").value || "all");
+      fitToBBox(getBBoxOrDefault());
+    }catch(err){
+      setStatus(`Error cargando capa SIG.\n${String(err)}`);
+    }
   }
 
-  $("clipMode").addEventListener("change", updateClipUI);
+  // Events
+  $("clipMode").addEventListener("change", () => updateClipUI());
   $("polySelect").addEventListener("change", () => {
     const mode = $("clipMode").value;
     if (["muni","micro","ap"].includes(mode)){
@@ -1260,27 +1113,25 @@ Polígonos: ${items.length}`);
   });
 
   $("btnRun").addEventListener("click", run);
-  $("btnFit").addEventListener("click", () => {
-    const bb = getBBoxFromUI();
-    if (!bb) return setStatus("No hay BBOX válido para ajustar.");
-    fitToBBox(bb);
-    setStatus("Mapa ajustado al recorte.");
-  });
+  $("btnFit").addEventListener("click", () => { fitToBBox(getBBoxOrDefault()); setStatus("Mapa ajustado al recorte."); });
 
   $("btnCSV").addEventListener("click", exportCSV);
   $("btnGeoJSON").addEventListener("click", exportGeoJSON);
 
-  $("btnClear").addEventListener("click", clearAll);
+  $("btnClear").addEventListener("click", () => { $("q").value=""; applyFilter(); });
+
   $("q").addEventListener("input", applyFilter);
   $("auto").addEventListener("change", setupAuto);
 
+  // Init
   (async function init(){
     fitToBBox(BBOX_PRESETS.solola);
     await checkHealth();
     setupAuto();
-    updateClipUI();
+    await updateClipUI();
     await run();
   })();
+})();
 </script>
 </body>
 </html>
