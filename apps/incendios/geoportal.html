@@ -86,6 +86,22 @@
     .title h1{ margin:0; font-size: 15px; letter-spacing:.2px; }
     .title .sub{ font-size:12px; color:var(--muted); }
 
+    .brand-logos{
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .brand-logos img{
+      height: 34px;
+      width: auto;
+      object-fit: contain;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 10px;
+      padding: 3px 6px;
+      box-shadow: var(--shadow-sm);
+    }
+
     .chips{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .chip{
       display:inline-flex; align-items:center; gap:8px;
@@ -406,6 +422,10 @@
 <body>
   <header>
     <div class="header-wrap">
+      <div class="brand-logos" aria-label="Logos institucionales">
+        <img src="../../BOSQUE.png" alt="Eje de Bosques">
+        <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
+      </div>
       <div class="title">
         <h1>Incendios — Anomalías térmicas (FIRMS NRT)</h1>
         <div class="sub">Recorte por capas SIG (Municipios / Microcuencas / Áreas protegidas) · UTC</div>
@@ -566,7 +586,14 @@
               <canvas id="chartSensors" height="150"></canvas>
             </div>
 
+            
+
             <div class="chartCard">
+              <div class="chartTitle" id="zoneChartTitle">Detecciones por zona</div>
+              <canvas id="chartZonesPie" height="150"></canvas>
+              <div class="chartEq" id="zoneChartNote"></div>
+            </div>
+<div class="chartCard">
               <div class="chartTitle">Ripley \(L(r)\) + envelope CSR</div>
               <canvas id="chartRipley" height="150"></canvas>
               <div class="chartEq" id="eqRipley"></div>
@@ -1117,6 +1144,7 @@ $$
   // ======================
   let chartDaily = null;
   let chartSensors = null;
+  let chartZonesPie = null;
   let chartRipley = null;
   let chartVariogram = null;
   let chartNN = null;
@@ -1461,6 +1489,79 @@ $$
       data: { labels: sensors, datasets: [{ label:"Detecciones", data: vals, backgroundColor: "rgba(163,230,53,.45)", borderColor: LIME, borderWidth: 1.5 }] },
       options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true } } }
     });
+
+
+    // Zona chart (dependiente de capa): conteo por zone_name
+    const mode = $("clipMode").value;
+    const layerLabel = (LAYER_SOURCES[mode] && LAYER_SOURCES[mode].label) ? LAYER_SOURCES[mode].label : "zona";
+    const byZone = {};
+    for (const r of rows){
+      const z = (r.zone_name && String(r.zone_name).trim()) ? String(r.zone_name).trim() : "Sin zona";
+      byZone[z] = (byZone[z] || 0) + 1;
+    }
+
+    const entries = Object.entries(byZone).sort((a,b)=>b[1]-a[1]);
+    const TOPK = 12;
+    const top = entries.slice(0, TOPK);
+    const rest = entries.slice(TOPK);
+    if (rest.length){
+      const s = rest.reduce((acc, x)=>acc+x[1], 0);
+      top.push(["Otros", s]);
+    }
+
+    const zoneLabels = top.map(x=>x[0]);
+    const zoneVals = top.map(x=>x[1]);
+
+    const zTitle = $("zoneChartTitle");
+    const zNote  = $("zoneChartNote");
+    if (zTitle) zTitle.textContent = `Detecciones por ${layerLabel}`;
+    if (zNote) zNote.innerHTML = `Conteo de detecciones (no eventos únicos). Capa activa: <b>${layerLabel}</b>.`;
+
+    const ctxZ = $("chartZonesPie")?.getContext?.("2d");
+    if (ctxZ){
+      if (chartZonesPie) chartZonesPie.destroy();
+
+      // Colores gradiente verde→amarillo (HSL)
+      const nC = Math.max(1, zoneLabels.length);
+      const bg = [];
+      const bd = [];
+      for (let i=0; i<nC; i++){
+        const t = (nC === 1) ? 0 : (i/(nC-1));
+        const hue = 120 - t*70; // 120 verde -> 50 amarillo
+        bg.push(`hsla(${hue}, 80%, 45%, 0.72)`);
+        bd.push(`hsla(${hue}, 80%, 35%, 1)`);
+      }
+
+      chartZonesPie = new Chart(ctxZ, {
+        type: "pie",
+        data: {
+          labels: zoneLabels,
+          datasets: [{
+            label: `Detecciones por ${layerLabel}`,
+            data: zoneVals,
+            backgroundColor: bg,
+            borderColor: bd,
+            borderWidth: 1.2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom" },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const v = ctx.parsed;
+                  const total = zoneVals.reduce((a,b)=>a+b,0) || 1;
+                  const p = (100*v/total);
+                  return ` ${ctx.label}: ${v} (${p.toFixed(1)}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
 
     // Geo sampling
     const MAX_GEO_N = 350;
