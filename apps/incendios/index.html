@@ -307,7 +307,55 @@
 
           <div class="mt-3 small text-body-secondary">
             Nota: FIRMS reporta “fuego activo” (hotspots) y FRP; no es perímetro ni área quemada. Requiere validación operativa local.
+          
+          <div class="mt-4 glass rounded-4 p-3 p-lg-4">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+              <div>
+                <div class="fw-semibold" style="text-align:left;"><i class="bi bi-card-checklist me-1"></i>Guías rápidas del módulo</div>
+                <div class="small text-body-secondary">Material de apoyo (visual) para recomendaciones y reporte</div>
+              </div>
+              <div class="d-flex gap-2">
+                <a class="btn btn-sm btn-outline-secondary" href="./recomendaciones.jpeg" target="_blank" rel="noopener">
+                  <i class="bi bi-box-arrow-up-right me-1"></i>Abrir
+                </a>
+              </div>
+            </div>
+
+            <ul class="nav nav-pills gap-2" id="tabsGuias" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="tab-rec" data-bs-toggle="pill" data-bs-target="#pane-rec" type="button" role="tab" aria-controls="pane-rec" aria-selected="true">
+                  <i class="bi bi-lightbulb me-1"></i>Recomendaciones
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="tab-rep" data-bs-toggle="pill" data-bs-target="#pane-rep" type="button" role="tab" aria-controls="pane-rep" aria-selected="false">
+                  <i class="bi bi-clipboard2-check me-1"></i>Cómo reportar
+                </button>
+              </li>
+            </ul>
+
+            <div class="tab-content mt-3" id="tabsGuiasContent">
+              <div class="tab-pane fade show active" id="pane-rec" role="tabpanel" aria-labelledby="tab-rec" tabindex="0">
+                <a href="./recomendaciones.jpeg" target="_blank" rel="noopener" class="hero-media d-block">
+                  <img src="./recomendaciones.jpeg" alt="Recomendaciones del módulo de incendios" class="img-fluid">
+                </a>
+                <div class="small text-body-secondary mt-2">
+                  Recomendaciones operativas para interpretar hotspots (FIRMS NRT) y priorizar verificación.
+                </div>
+              </div>
+
+              <div class="tab-pane fade" id="pane-rep" role="tabpanel" aria-labelledby="tab-rep" tabindex="0">
+                <a href="./reporta.jpeg" target="_blank" rel="noopener" class="hero-media d-block">
+                  <img src="./reporta.jpeg" alt="Guía para reportar incendios" class="img-fluid">
+                </a>
+                <div class="small text-body-secondary mt-2">
+                  Guía visual para reportar/registrar información en coordinación institucional.
+                </div>
+              </div>
+            </div>
           </div>
+
+</div>
         </div>
 
         <div class="col-lg-5">
@@ -348,7 +396,7 @@
 
             <div class="mt-4">
               <div class="hero-media">
-                <img src="./parpadeo.gif" alt="Identidad visual del módulo de incendios" loading="lazy">
+                <img src="./parpadeo.gif" alt="Identidad visual del Eje de Bosques" loading="lazy">
               </div>
             </div>
 
