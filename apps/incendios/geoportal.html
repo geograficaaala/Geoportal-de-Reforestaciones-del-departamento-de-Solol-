@@ -4,8 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Incendios — Dashboard FIRMS (NRT) · Sololá</title>
+  <meta name="description" content="Dashboard SIG de anomalías térmicas (FIRMS NRT): filtros por periodo, sensores y recortes espaciales (BBOX, municipios, microcuencas y áreas protegidas) con análisis geoestadístico." />
 
-  <!-- Leaflet (sin integrity para evitar bloqueos por SRI) -->
+  <!-- Leaflet (sin SRI para evitar bloqueos) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
@@ -20,8 +21,12 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
+  <!-- SheetJS (Excel export) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
   <style>
     :root{
+      /* Pasteles “fuego” */
       --bg-0:#fff7f0;
       --bg-1:#fff2e6;
       --card:rgba(255,255,255,.92);
@@ -30,9 +35,11 @@
       --muted:#6a4e3c;
       --brand:#ff7a45;
       --stroke:rgba(32,18,10,.12);
+
       --hi:#ff5a5f;
       --nom:#ffb703;
       --low:#6c757d;
+
       --shadow: 0 14px 40px rgba(40,20,10,.12);
       --shadow-sm: 0 10px 22px rgba(40,20,10,.10);
       --radius: 16px;
@@ -65,38 +72,13 @@
       justify-content:space-between;
       flex-wrap:wrap;
     }
-    .brand{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      min-width: 260px;
-    }
-    .brand img{
-      height: 42px;
-      width: auto;
-      object-fit: contain;
-      background: rgba(255,255,255,.92);
-      border-radius: 12px;
-      padding: 4px 6px;
-      box-shadow: var(--shadow-sm);
-    }
-    .title{ display:flex; flex-direction:column; gap:2px; min-width:0; }
-    .title h1{
-      margin:0;
-      font-size: 15px;
-      letter-spacing:.2px;
-      white-space: nowrap;
-      overflow:hidden;
-      text-overflow: ellipsis;
-      max-width: 520px;
-    }
-    .title .sub{ font-size: 12px; color: var(--muted); }
+    .title{ display:flex; flex-direction:column; gap:2px; min-width: 260px; }
+    .title h1{ margin:0; font-size: 15px; letter-spacing:.2px; }
+    .title .sub{ font-size:12px; color:var(--muted); }
 
     .chips{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
     .chip{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
+      display:inline-flex; align-items:center; gap:8px;
       padding:8px 10px;
       background: var(--card2);
       border:1px solid var(--stroke);
@@ -114,7 +96,7 @@
 
     main{
       display:grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 390px 1fr;
       gap:14px;
       padding: 14px 14px 18px;
       align-items:stretch;
@@ -206,7 +188,7 @@
       height: 520px;
       min-height: 520px;
       border-radius: var(--radius);
-      background: #f6efe9; /* para que siempre se vea el cuadro */
+      background: #f6efe9;
       outline: 1px solid rgba(0,0,0,.06);
     }
     .mapError{
@@ -254,15 +236,15 @@
     .kpi .k{ font-size:11px; color:var(--muted); }
     .kpi .v{ font-size:16px; font-weight:950; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-    .lower{
+    .analysisGrid{
       display:grid;
-      grid-template-columns: 1.25fr .75fr;
+      grid-template-columns: 1.15fr .85fr;
       gap:14px;
       min-width:0;
       padding-bottom: 14px;
     }
-    .filters{ display:flex; gap:10px; align-items:center; margin-bottom:10px; }
-    .filters input{ flex:1; }
+    .filters{ display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
+    .filters input{ flex:1; min-width: 220px; }
 
     .tableWrap{
       overflow:auto;
@@ -291,6 +273,8 @@
     tbody tr:hover{ background:#fff7f0; cursor:pointer; }
 
     .hint{ font-size:12px; color:var(--muted); line-height:1.35; margin-top:8px; }
+    .equations code{ background:#f3f3f3; padding:2px 6px; border-radius:8px; }
+    .equations .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
 
     .hotspot{
       width:14px; height:14px;
@@ -299,12 +283,41 @@
       box-shadow: 0 6px 18px rgba(0,0,0,.18);
     }
 
+    footer{
+      padding: 10px 14px 24px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .footer-box{
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 14px;
+    }
+    .footer-logos{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      align-items:center;
+      justify-content:center;
+      margin-top:10px;
+    }
+    .footer-logos img{
+      max-height: 44px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
+      background: rgba(255,255,255,.94);
+      border-radius: 10px;
+      padding: 4px 6px;
+    }
+
     @media (max-width: 1100px){
       main{ grid-template-columns: 1fr; }
       .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .lower{ grid-template-columns: 1fr; }
+      .analysisGrid{ grid-template-columns: 1fr; }
       #map{ height: 440px; min-height: 440px; }
-      .title h1{ max-width: 88vw; }
     }
   </style>
 </head>
@@ -312,13 +325,9 @@
 <body>
   <header>
     <div class="header-wrap">
-      <div class="brand" aria-label="Logos institucionales">
-        <img src="../../BOSQUE.png" alt="Logo Eje de Bosques">
-        <img src="../../CODEMA%20%282%29.png" alt="Logo CODEMA Sololá">
-        <div class="title">
-          <h1>Incendios forestales — Anomalías térmicas (FIRMS NRT)</h1>
-          <div class="sub">Sololá · Recortes SIG (BBOX / Municipios / Microcuencas / Áreas protegidas) · UTC</div>
-        </div>
+      <div class="title">
+        <h1>Incendios forestales — Anomalías térmicas (FIRMS NRT)</h1>
+        <div class="sub">Sololá · Recortes SIG (BBOX / Municipios / Microcuencas / Áreas protegidas) · UTC</div>
       </div>
 
       <div class="chips">
@@ -336,6 +345,7 @@
   </header>
 
   <main>
+    <!-- Left controls -->
     <section class="panel">
       <h2>Filtros</h2>
       <div class="content">
@@ -433,6 +443,7 @@
           <button class="btn-primary" id="btnRun">Actualizar</button>
           <button class="btn-ghost" id="btnFit">Ajustar mapa</button>
           <button class="btn-ghost" id="btnCSV">CSV</button>
+          <button class="btn-ghost" id="btnExcel">Excel</button>
           <button class="btn-ghost" id="btnGeoJSON">GeoJSON</button>
         </div>
 
@@ -441,7 +452,7 @@
         <div class="notes">
           <b>Notas técnicas (FIRMS Active Fire / NRT)</b>
           <ul>
-            <li>Hotspots ≠ perímetro de incendio. VIIRS (Suomi-NPP / NOAA-20 / NOAA-21) y MODIS (Terra/Aqua) detectan <b>fuego activo/anomalía térmica</b>.</li>
+            <li>Hotspots ≠ perímetro. VIIRS (Suomi‑NPP / NOAA‑20 / NOAA‑21) y MODIS (Terra/Aqua) detectan <b>fuego activo/anomalía térmica</b>.</li>
             <li>La observación depende del <b>paso orbital</b> y de nubosidad/humo; puede haber omisiones y múltiples detecciones del mismo evento.</li>
             <li>Resolución aproximada: <b>VIIRS ~375 m</b> y <b>MODIS ~1 km</b>. La ubicación es una aproximación del píxel detectado.</li>
             <li>FRP (MW) es un indicador radiativo de energía del fuego (no es área quemada).</li>
@@ -450,6 +461,7 @@
       </div>
     </section>
 
+    <!-- Right -->
     <section class="right">
       <section class="panel">
         <h2>Mapa</h2>
@@ -477,12 +489,13 @@
       <section class="panel">
         <h2>Análisis</h2>
         <div class="content">
-          <div class="lower">
+          <div class="analysisGrid">
             <div>
               <div class="filters">
                 <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite…)" />
-                <button class="btn-ghost" id="btnClear">Limpiar</button>
+                <button class="btn-ghost" id="btnClear">Limpiar filtro</button>
               </div>
+
               <div class="tableWrap">
                 <table id="tbl">
                   <thead>
@@ -499,13 +512,34 @@
                   <tbody></tbody>
                 </table>
               </div>
+
               <div class="hint" id="tableNote"></div>
-              <div class="hint" id="trendNote"></div>
+
+              <div class="notes equations">
+                <b>Geoestadística (interpretación)</b>
+                <div class="hint">
+                  <span class="mono">λ = n/A</span> (intensidad, puntos/km²) ·
+                  <span class="mono">r̄<sub>exp</sub> = 0.5/√λ</span> (CSR) ·
+                  <span class="mono">NNI = r̄<sub>obs</sub>/r̄<sub>exp</sub></span> ·
+                  <span class="mono">K(r) = (A/(n(n−1)))·2·#{d≤r}</span> ·
+                  <span class="mono">L(r)=√(K(r)/π)−r</span> ·
+                  <span class="mono">γ(h)=½·mean[(z<sub>i</sub>−z<sub>j</sub>)²]</span> (variograma)
+                </div>
+                <div class="hint" id="geoStatsNote">—</div>
+              </div>
             </div>
+
             <div>
-              <canvas id="chartDaily" height="170"></canvas>
+              <canvas id="chartDaily" height="160"></canvas>
               <div style="height:12px"></div>
-              <canvas id="chartSensors" height="170"></canvas>
+              <canvas id="chartSensors" height="160"></canvas>
+              <div style="height:12px"></div>
+              <canvas id="chartRipley" height="160"></canvas>
+              <div style="height:12px"></div>
+              <canvas id="chartVariogram" height="160"></canvas>
+              <div style="height:12px"></div>
+              <canvas id="chartNN" height="160"></canvas>
+              <div class="hint" id="trendNote"></div>
             </div>
           </div>
         </div>
@@ -513,8 +547,35 @@
     </section>
   </main>
 
+  <!-- Logos institucionales (abajo) -->
+  <footer>
+    <div class="footer-box">
+      <div style="text-align:center; font-weight:800;">Eje de Bosques · CODEMA Sololá · Instituciones participantes</div>
+      <div class="footer-logos" aria-label="Logos institucionales">
+        <img src="../../BOSQUE.png" alt="Eje de Bosques">
+        <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
+        <img src="../../marn.png" alt="MARN">
+        <img src="../../maga.png" alt="MAGA">
+        <img src="../../inab.png" alt="INAB">
+        <img src="../../conap.png" alt="CONAP">
+        <img src="../../amsclae.png" alt="AMSCLAE">
+        <img src="../../conred.png" alt="CONRED">
+        <img src="../../cea.png" alt="CEA - UVG">
+        <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
+        <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
+        <img src="../../aires.png" alt="AIR">
+      </div>
+      <div style="text-align:center; margin-top:10px;">
+        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Geoprocesos en navegador (Turf.js) · Visualización (Leaflet/Chart.js)
+      </div>
+    </div>
+  </footer>
+
 <script>
 (() => {
+  // ======================
+  // CONFIG
+  // ======================
   const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
   const LAYER_SOURCES = {
     muni:  { url: "./data/municipios_solola.geojson", label: "Municipio (Sololá)" },
@@ -535,7 +596,7 @@
     mapError.innerHTML = msg;
   }
 
-  // Captura errores JS y los muestra en pantalla (sin tener que abrir consola)
+  // Captura errores JS y los muestra en pantalla
   window.addEventListener("error", (e) => {
     const m = (e && e.message) ? e.message : "Error desconocido";
     showMapError(`Error JavaScript: <code>${m}</code><br/>Abre DevTools → Console para ver detalles.`);
@@ -577,9 +638,11 @@
     return out;
   }
 
-  // ===== MAP INIT (con try/catch) =====
+  // ======================
+  // MAP INIT
+  // ======================
   if (!window.L){
-    showMapError(`No se cargó Leaflet (L). Revisa tu conexión o si un bloqueador está deteniendo <code>unpkg.com</code>.`);
+    showMapError(`No se cargó Leaflet (<code>L</code>). Revisa tu conexión o si un bloqueador está deteniendo <code>unpkg.com</code>.`);
     return;
   }
   if (!$("map")){
@@ -617,7 +680,7 @@
 
     L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
 
-    // Si MarkerCluster no cargó, no rompemos el mapa: caemos a layerGroup
+    // Fallback si MarkerCluster no cargó
     if (typeof L.markerClusterGroup === "function"){
       clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
     } else {
@@ -628,14 +691,16 @@
 
     overlayGroup = L.layerGroup().addTo(map);
 
-    // Asegura render en móviles
+    // Asegura render
     setTimeout(() => map.invalidateSize(), 250);
   }catch(err){
     showMapError(`No se pudo inicializar el mapa: <code>${String(err)}</code>`);
     return;
   }
 
-  // ===== POLY DATA =====
+  // ======================
+  // POLY DATA
+  // ======================
   const polyState = {
     muni:  { loaded:false, gj:null, items:[], nameField:null },
     micro: { loaded:false, gj:null, items:[], nameField:null },
@@ -683,8 +748,8 @@
       const f = gj.features[i];
       const id = f.id ?? (f.properties?.id ?? i);
       const nm = st.nameField ? cleanName(f.properties?.[st.nameField]) : `Polígono ${i+1}`;
-      const bb = (window.turf && turf.bbox) ? turf.bbox(f) : BBOX_PRESETS.solola;
-      items.push({ id: String(id), name: nm, feature: f, bbox: bb });
+      const bb = (window.turf && turf.bbox) ? turf.bbox(f) : BBOX_PRESETS.solola; // [w,s,e,n]
+      items.push({ id: String(id), name: nm, feature: f, bbox: bb, area_m2: (window.turf && turf.area) ? turf.area(f) : null });
     }
     items.sort((a,b) => a.name.localeCompare(b.name, "es"));
     st.items = items;
@@ -715,7 +780,7 @@
     const src = LAYER_SOURCES[mode];
 
     $("polyLabel").textContent = `Selecciona ${src.label}`;
-    $("polyHint").textContent = `Campo de etiqueta: ${st.nameField || "auto"} · Polígonos: ${st.items.length}`;
+    $("polyHint").textContent = `Campo etiqueta: ${st.nameField || "auto"} · Polígonos: ${st.items.length}`;
 
     const sel = $("polySelect");
     sel.innerHTML = "";
@@ -732,6 +797,10 @@
       sel.appendChild(opt);
     }
     sel.value = "all";
+  }
+
+  function inBBox(lon, lat, bb){
+    return (lon >= bb[0] && lon <= bb[2] && lat >= bb[1] && lat <= bb[3]);
   }
 
   function getBBoxFromUI(){
@@ -765,6 +834,38 @@
     map.fitBounds(b.pad(0.06));
   }
 
+  function computeClipAreaKm2(){
+    const clipMode = $("clipMode").value;
+
+    // BBOX
+    if (!["muni","micro","ap"].includes(clipMode)){
+      const bb = getBBoxFromUI();
+      if (!bb || !(window.turf && turf.bboxPolygon && turf.area)) return null;
+      const poly = turf.bboxPolygon(bb);
+      return turf.area(poly) / 1e6;
+    }
+
+    // Polígono(s)
+    const st = polyState[clipMode];
+    if (!st?.loaded) return null;
+
+    const selectedId = $("polySelect").value || "all";
+    if (selectedId !== "all"){
+      const it = st.items.find(x => x.id === selectedId);
+      if (it?.area_m2 != null) return it.area_m2 / 1e6;
+      if (window.turf && turf.area) return turf.area(it.feature) / 1e6;
+      return null;
+    }
+
+    // Suma de áreas (aprox, sin corrección por solapes)
+    let sum = 0;
+    for (const it of st.items){
+      const a = it.area_m2 != null ? it.area_m2 : (window.turf && turf.area ? turf.area(it.feature) : 0);
+      sum += a || 0;
+    }
+    return sum ? (sum / 1e6) : null;
+  }
+
   function pointFilterByPolygon(rows){
     const clipMode = $("clipMode").value;
     if (!["muni","micro","ap"].includes(clipMode)) {
@@ -782,10 +883,12 @@
     const out = [];
     for (const r of rows){
       if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
-      const pt = turf.point([r.lon, r.lat]);
 
+      // bbox prefilter
       let matched = null;
       for (const it of polys){
+        if (!inBBox(r.lon, r.lat, it.bbox)) continue;
+        const pt = turf.point([r.lon, r.lat]);
         if (turf.booleanPointInPolygon(pt, it.feature)){
           matched = it;
           break;
@@ -796,12 +899,17 @@
     return out;
   }
 
-  // ===== DATA/UI =====
+  // ======================
+  // DATA/UI
+  // ======================
   let lastData = [];
   let markerById = new Map();
+
   let chartDaily = null;
   let chartSensors = null;
-  let autoTimer = null;
+  let chartRipley = null;
+  let chartVariogram = null;
+  let chartNN = null;
 
   function updateMap(rows){
     clusters.clearLayers();
@@ -882,6 +990,9 @@
     $("k_last").textContent = rawPayload?.summary?.last_detection_utc || "—";
   }
 
+  // ======================
+  // CHARTS + GEOESTATS
+  // ======================
   function linearRegression(xs, ys){
     const n = xs.length;
     if (n < 2) return { a: 0, b: ys[0] ?? 0, r2: 0 };
@@ -920,13 +1031,135 @@
     return { dates, counts, frps };
   }
 
-  function updateCharts(rows){
+  function sampleRows(rows, maxN){
+    if (rows.length <= maxN) return rows;
+    // muestreo aleatorio simple
+    const copy = rows.slice();
+    for (let i = copy.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, maxN);
+  }
+
+  function kmDistance(a, b){
+    // turf.distance usa Haversine
+    return turf.distance(turf.point([a.lon, a.lat]), turf.point([b.lon, b.lat]), { units: "kilometers" });
+  }
+
+  function computeNearestNeighborStats(points, areaKm2){
+    // points: [{lat,lon,frp?}] sample
+    const n = points.length;
+    if (n < 2 || !areaKm2 || areaKm2 <= 0) return null;
+
+    const nn = [];
+    for (let i=0;i<n;i++){
+      let best = Infinity;
+      for (let j=0;j<n;j++){
+        if (i===j) continue;
+        const d = kmDistance(points[i], points[j]);
+        if (d < best) best = d;
+      }
+      if (Number.isFinite(best)) nn.push(best);
+    }
+
+    const rObs = nn.reduce((a,b)=>a+b,0)/nn.length;
+    const lam = n / areaKm2; // puntos/km2
+    const rExp = 0.5 / Math.sqrt(lam);
+
+    // Clark–Evans SE (aprox) para CSR
+    const se = 0.26136 / Math.sqrt(n * lam);
+    const z = se > 0 ? (rObs - rExp) / se : null;
+
+    return { n, areaKm2, lam, rObs, rExp, nni: rObs/rExp, se, z, nn };
+  }
+
+  function computeRipleyL(points, areaKm2, rMaxKm=20, bins=25){
+    const n = points.length;
+    if (n < 2 || !areaKm2 || areaKm2 <= 0) return null;
+
+    const dr = rMaxKm / bins;
+    const hist = new Array(bins).fill(0); // conteo de pares por bin
+
+    for (let i=0;i<n;i++){
+      for (let j=i+1;j<n;j++){
+        const d = kmDistance(points[i], points[j]);
+        if (d <= rMaxKm){
+          const k = Math.min(bins-1, Math.floor(d / dr));
+          hist[k] += 1;
+        }
+      }
+    }
+
+    // acumulado de pares <= r
+    const cum = [];
+    let s = 0;
+    for (let k=0;k<bins;k++){
+      s += hist[k];
+      cum.push(s);
+    }
+
+    const rs = [];
+    const L = [];
+    for (let k=0;k<bins;k++){
+      const r = (k+1) * dr;
+      rs.push(+r.toFixed(3));
+      const pairLE = cum[k]; // unordered pairs
+      // K(r) = (A/(n(n-1))) * 2 * pairLE
+      const K = (areaKm2 / (n*(n-1))) * (2 * pairLE);
+      const Lr = Math.sqrt(K / Math.PI) - r;
+      L.push(+Lr.toFixed(4));
+    }
+
+    return { rs, L };
+  }
+
+  function computeVariogram(points, rMaxKm=20, bins=20){
+    // z = FRP
+    const usable = points.filter(p => Number.isFinite(p.frp));
+    const n = usable.length;
+    if (n < 3) return null;
+
+    const dr = rMaxKm / bins;
+    const count = new Array(bins).fill(0);
+    const sumSq = new Array(bins).fill(0);
+
+    for (let i=0;i<n;i++){
+      for (let j=i+1;j<n;j++){
+        const d = kmDistance(usable[i], usable[j]);
+        if (d <= rMaxKm){
+          const k = Math.min(bins-1, Math.floor(d / dr));
+          const diff = usable[i].frp - usable[j].frp;
+          sumSq[k] += diff*diff;
+          count[k] += 1;
+        }
+      }
+    }
+
+    const hs = [];
+    const gamma = [];
+    for (let k=0;k<bins;k++){
+      const h = (k+0.5)*dr;
+      hs.push(+h.toFixed(3));
+      if (count[k] > 0){
+        gamma.push(+((0.5 * (sumSq[k]/count[k]))).toFixed(4));
+      } else {
+        gamma.push(null);
+      }
+    }
+
+    return { hs, gamma, count };
+  }
+
+  function updateChartsAndStats(rows){
+    // 1) temporal + tendencia
     const { dates, counts, frps } = buildDailySeries(rows);
     const xs = dates.map((_,i)=>i);
     const reg = linearRegression(xs, counts);
     const trend = xs.map(x => reg.a*x + reg.b);
+
     const eq = `y = ${reg.a.toFixed(3)}x + ${reg.b.toFixed(3)} · R² = ${Math.max(0, Math.min(1, reg.r2)).toFixed(3)}`;
-    $("trendNote").textContent = `Tendencia (detecciones/día): ${eq}`;
+    $("trendNote").textContent = `Tendencia (detecciones/día, OLS): ${eq}`;
 
     const ctx1 = $("chartDaily").getContext("2d");
     if (chartDaily) chartDaily.destroy();
@@ -950,6 +1183,7 @@
       }
     });
 
+    // 2) sensores
     const bySensor = {};
     for (const r of rows){
       const s = r.source || "—";
@@ -964,14 +1198,118 @@
     if (chartSensors) chartSensors.destroy();
     chartSensors = new Chart(ctx2, {
       type: "bar",
-      data: {
-        labels: sensors,
-        datasets: [{ label: "Detecciones", data: vals }, { label: "%", data: perc }]
-      },
+      data: { labels: sensors, datasets: [{ label:"Detecciones", data: vals }, { label:"%", data: perc }] },
       options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true } } }
+    });
+
+    // 3) Geoestadística (muestreo para O(n^2))
+    const areaKm2 = computeClipAreaKm2();
+    const maxN = 2200; // seguridad de rendimiento
+    const pts = sampleRows(rows.map(r => ({ lat:r.lat, lon:r.lon, frp: (Number.isFinite(r.frp) ? r.frp : null) })), maxN);
+
+    let note = "";
+    if (!areaKm2 || !(window.turf && turf.distance)){
+      note = "Área A no disponible para el recorte; geoestadística no calculada.";
+      $("geoStatsNote").textContent = note;
+      return;
+    }
+    if (pts.length < 10){
+      note = "Muy pocos puntos para análisis geoestadístico (n < 10).";
+      $("geoStatsNote").textContent = note;
+      return;
+    }
+
+    const nni = computeNearestNeighborStats(pts, areaKm2);
+    if (!nni){
+      $("geoStatsNote").textContent = "No se pudo calcular NNI.";
+      return;
+    }
+
+    // Clasificación rápida
+    const pattern = (nni.nni < 1) ? "agrupamiento (cluster)" : (nni.nni > 1 ? "dispersión/regularidad" : "aleatorio ~CSR");
+    const ztxt = (nni.z == null) ? "—" : nni.z.toFixed(2);
+    const lamTxt = nni.lam.toFixed(4);
+
+    note =
+      `A≈${areaKm2.toFixed(2)} km² · n=${pts.length} (muestra; total=${rows.length}) · λ=${lamTxt} pts/km² · ` +
+      `r̄obs=${nni.rObs.toFixed(3)} km · r̄exp(CSR)=${nni.rExp.toFixed(3)} km · NNI=${nni.nni.toFixed(3)} · z≈${ztxt} → ${pattern}.`;
+    $("geoStatsNote").textContent = note;
+
+    // NN histogram chart
+    const nn = nni.nn.slice().sort((a,b)=>a-b);
+    const maxD = Math.min(10, nn[Math.floor(nn.length*0.98)] || 10); // cap 10 km para hist
+    const bins = 20;
+    const step = maxD / bins;
+    const h = new Array(bins).fill(0);
+    for (const d of nn){
+      if (d > maxD) continue;
+      const k = Math.min(bins-1, Math.floor(d/step));
+      h[k] += 1;
+    }
+    const xh = h.map((_,k)=>+( (k+0.5)*step ).toFixed(3));
+    const ctxNN = $("chartNN").getContext("2d");
+    if (chartNN) chartNN.destroy();
+    chartNN = new Chart(ctxNN, {
+      type: "bar",
+      data: {
+        labels: xh.map(v=>String(v)),
+        datasets: [{ label: "Distribución dist. vecino más cercano (km)", data: h }]
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{ y:{ beginAtZero:true }, x:{ title:{ display:true, text:"km" } } }
+      }
+    });
+
+    // Ripley L
+    const rip = computeRipleyL(pts, areaKm2, 20, 25);
+    const ctxR = $("chartRipley").getContext("2d");
+    if (chartRipley) chartRipley.destroy();
+    chartRipley = new Chart(ctxR, {
+      type: "line",
+      data: {
+        labels: rip ? rip.rs.map(r=>String(r)) : [],
+        datasets: rip ? [
+          { label: "L(r) = √(K/π) − r (km)", data: rip.L, tension: 0.15 }
+        ] : []
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{
+          y:{ title:{ display:true, text:"L(r) (km)" } },
+          x:{ title:{ display:true, text:"r (km)" } }
+        }
+      }
+    });
+
+    // Variogram FRP
+    const vario = computeVariogram(pts, 20, 20);
+    const ctxV = $("chartVariogram").getContext("2d");
+    if (chartVariogram) chartVariogram.destroy();
+    chartVariogram = new Chart(ctxV, {
+      type: "line",
+      data: {
+        labels: vario ? vario.hs.map(v=>String(v)) : [],
+        datasets: vario ? [
+          { label: "Variograma experimental γ(h) de FRP", data: vario.gamma, tension: 0.1 }
+        ] : []
+      },
+      options: {
+        responsive:true,
+        plugins:{ legend:{ position:"bottom" } },
+        scales:{
+          y:{ title:{ display:true, text:"γ(h)" } },
+          x:{ title:{ display:true, text:"h (km)" } }
+        }
+      }
     });
   }
 
+  // ======================
+  // EXPORTS
+  // ======================
   function exportCSV(){
     if (!lastData.length) return;
     const cols = ["datetime_utc","zone_type","zone_name","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
@@ -992,6 +1330,32 @@
     a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }
 
+  function exportExcel(){
+    if (!lastData.length) return;
+    if (!window.XLSX){
+      setStatus("No se cargó XLSX (SheetJS). Usa CSV por ahora.");
+      return;
+    }
+    const rows = lastData.map(r => ({
+      datetime_utc: r.datetime_utc || "",
+      zone_type: r.zone_type || "",
+      zone_name: r.zone_name || "",
+      source: r.source || "",
+      confidence: r.confidence || "",
+      lat: r.lat,
+      lon: r.lon,
+      frp: r.frp,
+      satellite: r.satellite || "",
+      instrument: r.instrument || "",
+      acq_date: r.acq_date || "",
+      acq_time: r.acq_time || "",
+    }));
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Hotspots");
+    XLSX.writeFile(wb, "firs_hotspots_filtrados.xlsx");
+  }
+
   function exportGeoJSON(){
     if (!lastData.length) return;
     const fc = { type:"FeatureCollection", features: lastData.map(r => ({
@@ -1007,6 +1371,11 @@
     a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }
 
+  // ======================
+  // HEALTH + MAIN RUN
+  // ======================
+  let autoTimer = null;
+
   async function checkHealth(){
     const dot = $("dot");
     try{
@@ -1018,11 +1387,6 @@
       $("pillText").textContent = "Proxy: no responde";
       if (dot) dot.style.background = "#f0b24d";
     }
-  }
-
-  function getBBoxOrDefault(){
-    const b = getBBoxFromUI();
-    return b || BBOX_PRESETS.solola;
   }
 
   async function run(){
@@ -1063,7 +1427,7 @@
     updateMap(lastData);
     buildTable(lastData);
     updateKPIs(j, lastData);
-    updateCharts(lastData);
+    updateChartsAndStats(lastData);
     applyFilter();
 
     $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
@@ -1074,6 +1438,9 @@
     } else {
       overlayGroup.clearLayers();
     }
+
+    // re-render map after layout changes (mobile)
+    setTimeout(() => map.invalidateSize(), 120);
   }
 
   function setupAuto(){
@@ -1097,13 +1464,16 @@
       await ensurePolyLoaded(mode);
       populatePolySelect(mode);
       renderPolyOverlay(mode, $("polySelect").value || "all");
-      fitToBBox(getBBoxOrDefault());
+      const bb = getBBoxFromUI();
+      if (bb) fitToBBox(bb);
     }catch(err){
       setStatus(`Error cargando capa SIG.\n${String(err)}`);
     }
   }
 
-  // Events
+  // ======================
+  // EVENTS
+  // ======================
   $("clipMode").addEventListener("change", () => updateClipUI());
   $("polySelect").addEventListener("change", () => {
     const mode = $("clipMode").value;
@@ -1113,13 +1483,18 @@
   });
 
   $("btnRun").addEventListener("click", run);
-  $("btnFit").addEventListener("click", () => { fitToBBox(getBBoxOrDefault()); setStatus("Mapa ajustado al recorte."); });
+  $("btnFit").addEventListener("click", () => {
+    const bb = getBBoxFromUI();
+    if (!bb) return setStatus("No hay BBOX válido para ajustar.");
+    fitToBBox(bb);
+    setStatus("Mapa ajustado al recorte.");
+  });
 
   $("btnCSV").addEventListener("click", exportCSV);
+  $("btnExcel").addEventListener("click", exportExcel);
   $("btnGeoJSON").addEventListener("click", exportGeoJSON);
 
   $("btnClear").addEventListener("click", () => { $("q").value=""; applyFilter(); });
-
   $("q").addEventListener("input", applyFilter);
   $("auto").addEventListener("change", setupAuto);
 
