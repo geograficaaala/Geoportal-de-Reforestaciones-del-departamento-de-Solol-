@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Módulo de Incendios forestales · Plataforma digital del Eje de Bosques</title>
+  <meta name="description" content="Módulo de Incendios forestales: visor SIG cuasi en tiempo real (NASA FIRMS NRT), análisis territorial y geoestadística aplicada para apoyo a monitoreo en Sololá." />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/flatly/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+
+  <style>
+    :root{
+      --bg-a:#f4fff7;
+      --bg-b:#fff6e8;
+      --bg-c:#ffffff;
+      --glass:rgba(255,255,255,.86);
+      --glass-2:rgba(255,255,255,.94);
+      --stroke:rgba(17, 89, 45, .12);
+      --shadow:0 18px 48px rgba(0,0,0,.10);
+      --shadow-sm:0 10px 22px rgba(0,0,0,.08);
+    }
+
+    body{
+      min-height: 100vh;
+      background:
+        radial-gradient(900px 560px at 0% 0%, rgba(31, 157, 85, .14), transparent 60%),
+        radial-gradient(900px 560px at 100% 0%, rgba(245, 158, 11, .14), transparent 60%),
+        linear-gradient(135deg,var(--bg-a),var(--bg-b) 55%, var(--bg-c));
+      padding-top: 76px;
+    }
+
+    .glass{
+      background: linear-gradient(180deg, var(--glass-2), var(--glass));
+      border: 1px solid rgba(255,255,255,.85);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero{
+      border: 1px solid rgba(255,255,255,.80);
+      box-shadow: var(--shadow);
+      border-radius: 1.25rem;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:auto -140px -140px auto;
+      width: 360px;
+      height: 360px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(245, 158, 11, .22), transparent 65%);
+      filter: blur(2px);
+      pointer-events:none;
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:-140px auto auto -140px;
+      width: 380px;
+      height: 380px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 35% 35%, rgba(31, 157, 85, .18), transparent 65%);
+      filter: blur(2px);
+      pointer-events:none;
+    }
+
+    .brand-logos{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 0;
+    }
+
+    .brand-logos img{
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
+      background: rgba(255,255,255,.94);
+      border-radius: 10px;
+      padding: 4px 6px;
+    }
+
+    @media (max-width: 420px){
+      .brand-logos img{ height: 36px; }
+    }
+
+    .muted{ color: rgba(0,0,0,.65); }
+
+    p, li, .text-body-secondary, .muted{
+      text-align: justify;
+      text-justify: inter-word;
+    }
+
+    .section-title{ letter-spacing: -.01em; }
+
+    .icon-badge{
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.90);
+    }
+
+    .navcard{
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      border: 1px solid rgba(255,255,255,.82);
+    }
+
+    .navcard:hover{
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: rgba(245, 158, 11, .25);
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      padding:.35rem .6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.65);
+      background: rgba(255,255,255,.18);
+    }
+
+    .led{
+      width: .55rem;
+      height: .55rem;
+      border-radius: 999px;
+      background: #2fd08f;
+      box-shadow: 0 0 0 .25rem rgba(47,208,143,.18);
+    }
+
+    .hero-media{
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 12px 26px rgba(0,0,0,.08);
+    }
+
+    .hero-media img{
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .callout{
+      border-left: 4px solid rgba(245, 158, 11, .60);
+      background: rgba(255,255,255,.55);
+      border-radius: 14px;
+      padding: 12px 14px;
+    }
+
+    .step{
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+    }
+
+    .step .num{
+      width: 34px;
+      height: 34px;
+      border-radius: 12px;
+      display:grid;
+      place-items:center;
+      background: rgba(245, 158, 11, .10);
+      border: 1px solid rgba(245, 158, 11, .18);
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+
+    .footer-logos{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 18px;
+      justify-content:center;
+      align-items:center;
+      margin-top: 14px;
+    }
+
+    .footer-logos a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding: 6px 4px;
+      text-decoration:none;
+    }
+
+    .footer-logos img{
+      max-height: 62px;
+      width:auto;
+      max-width: 240px;
+      object-fit:contain;
+      display:block;
+      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
+      transition: transform .12s ease, filter .12s ease;
+    }
+
+    .footer-logos a:hover img{
+      transform: translateY(-1px);
+      filter: drop-shadow(0 8px 16px rgba(0,0,0,.10));
+    }
+
+    .to-top{
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 1080;
+      display:none;
+    }
+
+    .to-top.show{ display:inline-flex; }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#inicio" style="min-width:0;">
+        <span class="brand-logos" aria-label="Logos institucionales">
+          <img src="../../corrected.gif" alt="Logo del Eje de Bosques" loading="eager">
+          <img src="../../CODEMA%20%282%29.png" alt="Logo de la Comisión Departamental de Medio Ambiente de Sololá" loading="eager">
+        </span>
+        <span class="d-none d-md-inline text-truncate">Plataforma digital del Eje de Bosques · Sololá</span>
+        <span class="badge text-bg-warning d-none d-lg-inline ms-2"><i class="bi bi-fire me-1"></i>Incendios</span>
+      </a>
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="navMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="../../index.html"><i class="bi bi-house-door me-1"></i>Inicio</a>
+          </li>
+
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle active" href="#" id="ddModulos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Módulos
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="ddModulos">
+              <li><h6 class="dropdown-header">Incendios (activo)</h6></li>
+              <li><a class="dropdown-item" href="./index.html"><i class="bi bi-fire me-2"></i>Inicio del módulo</a></li>
+              <li><a class="dropdown-item" href="./geoportal.html"><i class="bi bi-map me-2"></i>Geoportal</a></li>
+              <li><span class="dropdown-item-text"><i class="bi bi-file-earmark-text me-2"></i>Resumen (próximamente)</span></li>
+              <li><span class="dropdown-item-text"><i class="bi bi-journal-text me-2"></i>Informes (próximamente)</span></li>
+              <li><hr class="dropdown-divider"></li>
+
+              <li><h6 class="dropdown-header">Otros módulos</h6></li>
+              <li><a class="dropdown-item" href="../reforestacion/index.html"><i class="bi bi-tree me-2"></i>Reforestaciones</a></li>
+              <li><span class="dropdown-item-text"><i class="bi bi-diagram-3 me-2"></i>Ecología del paisaje forestal (próximamente)</span></li>
+            </ul>
+          </li>
+
+          <li class="nav-item"><a class="nav-link" href="#productos">Productos</a></li>
+          <li class="nav-item"><a class="nav-link" href="#metodologia">Metodología</a></li>
+          <li class="nav-item"><a class="nav-link" href="#analisis">Análisis territorial</a></li>
+          <li class="nav-item"><a class="nav-link" href="#geoestadistica">Geoestadística</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container my-4">
+    <section id="inicio" class="hero glass p-4 p-lg-5">
+      <div class="row g-4 align-items-start position-relative" style="z-index:1">
+        <div class="col-lg-7">
+          <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="badge text-bg-warning"><i class="bi bi-fire me-1"></i>Módulo activo</span>
+            <span class="badge text-bg-secondary pill">
+              <span class="led" aria-hidden="true"></span>
+              <span>En operación</span>
+            </span>
+          </div>
+
+          <h1 class="display-6 fw-bold mb-2" style="text-align:left;">Módulo de Incendios forestales</h1>
+
+          <p class="lead muted mb-3" style="max-width: 72ch;">
+            Este módulo integra detecciones de <b>fuego activo/anomalías térmicas</b> (NASA FIRMS — Near Real-Time) y las organiza como
+            información territorial consultable para apoyar monitoreo y coordinación. Incluye recorte por unidades de gestión (municipios,
+            microcuencas y áreas protegidas), KPIs y lectura geoestadística.
+          </p>
+
+          <div class="callout muted">
+            <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-compass me-1"></i>Propósito del módulo</div>
+            <ul class="mb-0" style="padding-left: 1.1rem;">
+              <li>Explorar focos de calor por periodo (24h / 72h / 7d / 30–90d) y sensor (VIIRS/MODIS NRT).</li>
+              <li>Priorizar atención territorial por unidad administrativa o ambiental.</li>
+              <li>Interpretar patrones espaciales (clústeres, escala, dispersión) para apoyo operativo.</li>
+              <li>Documentar insumos para coordinación interinstitucional (sin almacenar histórico en el repositorio).</li>
+            </ul>
+          </div>
+
+          <div class="mt-4 d-flex flex-wrap gap-2">
+            <a class="btn btn-warning" href="./geoportal.html"><i class="bi bi-map me-1"></i>Abrir Geoportal</a>
+            <a class="btn btn-outline-primary" href="#productos"><i class="bi bi-grid-3x3-gap-fill me-1"></i>Ver productos</a>
+          </div>
+
+          <div class="mt-3 small text-body-secondary">
+            Nota: FIRMS reporta “fuego activo” (hotspots) y FRP; no es perímetro ni área quemada. Requiere validación operativa local.
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="glass rounded-4 p-3 p-lg-4">
+            <div class="d-flex align-items-start justify-content-between gap-3">
+              <div>
+                <h2 class="h5 mb-1 section-title" style="text-align:left;">Fuentes y trazabilidad</h2>
+                <div class="text-body-secondary small">De FIRMS (NRT) a visor SIG</div>
+              </div>
+              <span class="badge text-bg-light border">
+                <i class="bi bi-shield-lock me-1"></i>Proxy seguro
+              </span>
+            </div>
+
+            <hr class="my-3">
+
+            <div class="row g-2">
+              <div class="col-12">
+                <div class="p-3 bg-body rounded-4 border">
+                  <div class="small text-body-secondary">Fuente principal</div>
+                  <div class="fw-semibold" style="text-align:left;">NASA FIRMS / LANCE — Active Fire (NRT)</div>
+                  <div class="small text-body-secondary mt-1">
+                    Sensores: VIIRS (Suomi‑NPP, NOAA‑20, NOAA‑21) y MODIS (Terra/Aqua) en modo NRT.
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-12">
+                <div class="p-3 bg-body rounded-4 border">
+                  <div class="small text-body-secondary">Publicación</div>
+                  <div class="fw-semibold" style="text-align:left;">GitHub Pages + Cloudflare Worker</div>
+                  <div class="small text-body-secondary mt-1">
+                    El Worker protege la MAP_KEY y entrega JSON con cache corto (sin guardar histórico en el repo).
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="hero-media">
+                <img src="../../corrected.gif" alt="Identidad visual del Eje de Bosques" loading="lazy">
+              </div>
+            </div>
+
+            <div class="mt-3 d-flex flex-wrap gap-2">
+              <a class="btn btn-sm btn-outline-secondary" href="#metodologia"><i class="bi bi-journal-text me-1"></i>Metodología</a>
+              <a class="btn btn-sm btn-outline-secondary" href="#geoestadistica"><i class="bi bi-graph-up-arrow me-1"></i>Geoestadística</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="productos" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
+        <div>
+          <h2 class="h4 mb-1 section-title" style="text-align:left;">Productos del módulo</h2>
+          <div class="text-body-secondary">Herramientas para explorar, interpretar y coordinar</div>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mb-3">
+        <a class="btn btn-warning btn-sm" href="./geoportal.html"><i class="bi bi-map me-1"></i>Geoportal</a>
+        <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-file-earmark-text me-1"></i>Resumen (próximamente)</button>
+        <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-journal-text me-1"></i>Informes (próximamente)</button>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6 col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-map"></i></div>
+                <div>
+                  <h3 class="h5 mb-1" style="text-align:left;">Geoportal</h3>
+                  <p class="mb-2 muted">
+                    Visor SIG cuasi en tiempo real: filtros por periodo y sensor, recorte por municipios/microcuencas/áreas protegidas,
+                    KPIs y gráficas (incluye descarga de tabla).
+                  </p>
+                  <a class="link-primary" href="./geoportal.html">Abrir Geoportal <i class="bi bi-arrow-right ms-1"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-file-earmark-text"></i></div>
+                <div>
+                  <h3 class="h5 mb-1" style="text-align:left;">Resumen</h3>
+                  <p class="mb-2 muted">
+                    Síntesis del periodo con indicadores y notas técnicas para lectura rápida y comunicación interna.
+                  </p>
+                  <span class="text-body-secondary small"><i class="bi bi-clock me-1"></i>Próximamente</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card glass navcard h-100">
+            <div class="card-body">
+              <div class="d-flex gap-3">
+                <div class="icon-badge"><i class="bi bi-journal-text"></i></div>
+                <div>
+                  <h3 class="h5 mb-1" style="text-align:left;">Informes</h3>
+                  <p class="mb-2 muted">
+                    Plantillas y salidas para coordinación (por municipio/microcuenca/área protegida) con tablas exportables y mapas.
+                  </p>
+                  <span class="text-body-secondary small"><i class="bi bi-clock me-1"></i>Próximamente</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="metodologia" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+          <h2 class="h4 mb-1 section-title" style="text-align:left;">Metodología de trabajo</h2>
+          <div class="text-body-secondary">Cómo se consulta FIRMS sin exponer la MAP_KEY y se entrega al geoportal</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-6">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-shuffle me-1"></i>Flujo técnico</h3>
+
+              <div class="step mb-3">
+                <div class="num">1</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Consulta NRT</div>
+                  <div class="muted">El geoportal solicita al proxy (Cloudflare Worker) datos recientes por periodo y sensor.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">2</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Proxy seguro</div>
+                  <div class="muted">La MAP_KEY se guarda como Secret en Cloudflare; se aplica cache corto y CORS para GitHub Pages.</div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="num">3</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Normalización</div>
+                  <div class="muted">Se unen ventanas temporales, se deduplica y se entrega JSON uniforme con resumen y filas.</div>
+                </div>
+              </div>
+
+              <hr class="my-3">
+
+              <div class="callout muted">
+                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-exclamation-triangle me-1"></i>Limitaciones técnicas</div>
+                <ul class="mb-0" style="padding-left: 1.1rem;">
+                  <li>La detección depende de nubosidad/humo y del paso orbital (no es monitoreo continuo).</li>
+                  <li>VIIRS (~375 m) y MODIS (~1 km) son resoluciones de píxel: ubicación aproximada.</li>
+                  <li>FRP (MW) indica potencia radiativa; no equivale a área quemada.</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-layers me-1"></i>Recorte por unidades territoriales</h3>
+              <p class="muted mb-3">
+                El geoportal interpreta los puntos en relación con capas de referencia. Esto permite lecturas comparables y reportes por unidad de gestión.
+              </p>
+
+              <ul class="muted mb-0" style="padding-left: 1.1rem;">
+                <li>Municipios (Sololá)</li>
+                <li>Microcuencas (cuenca Atitlán)</li>
+                <li>Áreas protegidas (CONAP y polígonos de referencia)</li>
+              </ul>
+
+              <div class="mt-3 small text-body-secondary">
+                Las capas se publican como GeoJSON y se usan para recorte espacial y estadísticas por zona.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="analisis" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+          <h2 class="h4 mb-1 section-title" style="text-align:left;">Análisis territorial para apoyo a monitoreo</h2>
+          <div class="text-body-secondary">De detecciones a lectura espacial operativa</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <p class="muted mb-3">
+                El módulo permite ubicar concentraciones de focos de calor por periodo y evaluar consistencia por sensor. La lectura
+                territorial prioriza zonas recurrentes y facilita coordinación entre instituciones para verificación.
+              </p>
+
+              <div class="step mb-3">
+                <div class="num">1</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Filtrado por periodo y sensor</div>
+                  <div class="muted">Comparación VIIRS/MODIS NRT, series diarias y FRP para evaluar intensidad relativa.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">2</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Cruce por unidad territorial</div>
+                  <div class="muted">Conteos por municipio/microcuenca/área protegida para reportes rápidos y priorización.</div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="num">3</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Salida para coordinación</div>
+                  <div class="muted">Tabla exportable (Excel/CSV) y GeoJSON para integrarse a otros flujos SIG.</div>
+                </div>
+              </div>
+
+              <hr class="my-3">
+
+              <div class="callout muted">
+                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-check2-circle me-1"></i>Uso recomendado</div>
+                <ul class="mb-0" style="padding-left: 1.1rem;">
+                  <li>Verificar con reportes locales (CONRED/UGAM/brigadas) y condiciones meteorológicas.</li>
+                  <li>Usar “Alta confianza” para priorización rápida y revisar “Nominal” para contexto.</li>
+                  <li>Interpretar clusters como señal de persistencia/repetición, no como perímetro.</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-2" style="text-align:left;"><i class="bi bi-question-circle me-1"></i>Preguntas clave</h3>
+              <ul class="muted mb-3" style="padding-left: 1.1rem;">
+                <li>¿Qué unidades territoriales concentran más detecciones recientes?</li>
+                <li>¿Hay recurrencia por varios días (persistencia) o eventos puntuales?</li>
+                <li>¿Qué sensores confirman el patrón (VIIRS vs MODIS)?</li>
+                <li>¿Cuál es la escala espacial dominante del agrupamiento?</li>
+              </ul>
+
+              <h3 class="h6 section-title mb-2" style="text-align:left;"><i class="bi bi-clipboard2-data me-1"></i>Resultado esperado</h3>
+              <p class="muted mb-0">
+                Lectura espacial rápida para apoyo a coordinación: “dónde, cuánto, cuándo y con qué confianza”, con evidencia estadística básica.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="geoestadistica" class="mt-5">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
+        <div>
+          <h2 class="h4 mb-1 section-title" style="text-align:left;">Geoestadística aplicada</h2>
+          <div class="text-body-secondary">Patrones espaciales (CSR/NNI/Ripley/variograma) para interpretar distribución</div>
+        </div>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <p class="muted mb-3">
+                La geoestadística ayuda a responder si las detecciones se comportan como un patrón aleatorio (CSR) o si existe
+                <b>agrupamiento</b> (clusters) significativo a ciertas escalas. También resume dispersión (SDE) y continuidad de FRP (variograma).
+              </p>
+
+              <div class="callout muted">
+                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-bullseye me-1"></i>Lecturas típicas</div>
+                <ul class="mb-0" style="padding-left: 1.1rem;">
+                  <li><b>NNI</b> y z/p: evidencia de agrupamiento vs CSR a escala de vecino más cercano.</li>
+                  <li><b>Ripley L(r)</b>: evaluación multiescala; identifica una distancia r* con mayor señal.</li>
+                  <li><b>SDE</b>: dispersión y orientación (anisotropía) de la nube de detecciones.</li>
+                  <li><b>Variograma</b> de FRP: indicios de autocorrelación espacial de intensidad radiativa.</li>
+                </ul>
+              </div>
+
+              <div class="mt-3 small text-body-secondary">
+                Estos resultados apoyan interpretación, pero no sustituyen verificación en campo ni análisis de combustibles/cobertura.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card glass h-100">
+            <div class="card-body">
+              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-tools me-1"></i>Buenas prácticas</h3>
+
+              <div class="step mb-3">
+                <div class="num">1</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Control de periodo</div>
+                  <div class="muted">Comparar 24–72h vs 7–30d para separar eventos puntuales de recurrencia.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">2</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Control de sensor</div>
+                  <div class="muted">Cruzar VIIRS y MODIS para reducir falsos positivos y entender diferencias de resolución.</div>
+                </div>
+              </div>
+
+              <div class="step mb-3">
+                <div class="num">3</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Control territorial</div>
+                  <div class="muted">Interpretar por municipio/microcuenca/área protegida para asignación de responsabilidad y coordinación.</div>
+                </div>
+              </div>
+
+              <div class="step">
+                <div class="num">4</div>
+                <div>
+                  <div class="fw-semibold" style="text-align:left;">Validación</div>
+                  <div class="muted">Integrar reportes locales, meteorología y condiciones de combustible/cobertura forestal.</div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="mt-5 pb-4">
+      <div class="text-center mb-3" style="font-size:.98rem; text-align:center;">
+        <strong>Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
+      </div>
+
+      <div class="text-center mb-2" style="text-align:center;">
+        <div class="fw-semibold">Instituciones y organizaciones</div>
+        <div class="text-body-secondary" style="text-align:center;">
+          El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
+        </div>
+      </div>
+
+      <div class="footer-logos" aria-label="Logos institucionales">
+        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Ambiente y Recursos Naturales">
+          <img src="../../marn.png" alt="MARN">
+        </a>
+        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Agricultura, Ganadería y Alimentación">
+          <img src="../../maga.png" alt="MAGA">
+        </a>
+        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" aria-label="Instituto Nacional de Bosques">
+          <img src="../../inab.png" alt="INAB">
+        </a>
+        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="Consejo Nacional de Áreas Protegidas">
+          <img src="../../conap.png" alt="CONAP">
+        </a>
+        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" aria-label="Autoridad para el Manejo Sustentable de la Cuenca del Lago de Atitlán y su Entorno">
+          <img src="../../amsclae.png" alt="AMSCLAE">
+        </a>
+        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="Coordinadora Nacional para la Reducción de Desastres">
+          <img src="../../conred.png" alt="CONRED">
+        </a>
+        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" aria-label="Centro de Estudios Atitlán - Universidad del Valle de Guatemala">
+          <img src="../../cea.png" alt="CEA - UVG">
+        </a>
+        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" aria-label="Asociación Amigos del Lago de Atitlán">
+          <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
+        </a>
+        <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener" aria-label="Vivamos Mejor Guatemala">
+          <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
+        </a>
+        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" aria-label="Alliance for International Reforestation">
+          <img src="../../aires.png" alt="AIR">
+        </a>
+      </div>
+    </footer>
+  </main>
+
+  <button class="btn btn-primary to-top" id="toTop" type="button" aria-label="Volver arriba">
+    <i class="bi bi-arrow-up"></i>
+  </button>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    (function(){
+      const btn = document.getElementById('toTop');
+      const toggleTop = () => {
+        if (!btn) return;
+        if (window.scrollY > 700) btn.classList.add('show');
+        else btn.classList.remove('show');
+      };
+      window.addEventListener('scroll', toggleTop, { passive: true });
+      toggleTop();
+      if (btn){
+        btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      }
+    })();
+  </script>
+</body>
+</html>
