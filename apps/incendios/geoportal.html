@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Incendios — Dashboard FIRMS (NRT) · Sololá</title>
+  <title>Centro de detección de anomalías térmicas (FIRMS NRT)</title>
 
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -82,12 +82,17 @@
       justify-content:space-between;
       flex-wrap:wrap;
     }
-    .title{ display:flex; flex-direction:column; gap:2px; min-width: 260px; }
-    .title h1{ margin:0; font-size: 15px; letter-spacing:.2px; }
+    .title{ display:flex; flex-direction:column; gap:2px; min-width: 260px; flex:1; align-items:center; text-align:center; }
+    .title h1{ margin:0; font-size: 16px; letter-spacing:.2px; font-weight: 950;
+      background: linear-gradient(135deg, var(--green), var(--gold));
+      -webkit-background-clip: text; background-clip:text; color: transparent;
+      text-align:center;
+    }
     .title .sub{ font-size:12px; color:var(--muted); }
 
     .brand-logos{
       display:flex;
+      flex:0 0 auto;
       gap:10px;
       align-items:center;
     }
@@ -102,7 +107,7 @@
       box-shadow: var(--shadow-sm);
     }
 
-    .chips{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .chips{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex:0 0 auto; }
     .chip{
       display:inline-flex; align-items:center; gap:8px;
       padding:8px 10px;
@@ -316,6 +321,9 @@
     .geoKpi .s{ font-size:11px; color:var(--muted); margin-top:4px; line-height:1.25; }
 
     .geoInterpret{
+      text-align: justify;
+      text-justify: inter-word;
+
       margin: 0 14px 14px;
       padding: 12px 12px;
       border-radius: 14px;
@@ -400,13 +408,13 @@
       margin-top:10px;
     }
     .footer-logos img{
-      max-height: 44px;
+      max-height: 52px;
       width: auto;
       object-fit: contain;
       filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
-      background: rgba(255,255,255,.94);
-      border-radius: 10px;
-      padding: 4px 6px;
+      background: transparent;
+      border-radius: 0;
+      padding: 0;
     }
 
     @media (max-width: 1120px){
@@ -427,7 +435,7 @@
         <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
       </div>
       <div class="title">
-        <h1>Incendios — Anomalías térmicas (FIRMS NRT)</h1>
+        <h1>Centro de detección de anomalías térmicas (FIRMS NRT)</h1>
         <div class="sub">Recorte por capas SIG (Municipios / Microcuencas / Áreas protegidas) · UTC</div>
       </div>
 
@@ -629,19 +637,16 @@
         </div>
 
         <div class="geoInterpret" id="geoInterpret">
-          Interpretación: — 
+          — 
         </div>
 
+        
         <div class="eq">
-          <div class="eq-title">Ecuaciones </div>
-          <div class="eq-box" id="eqBox">
-$$
-\begin{aligned}
-\bar r_{\mathrm{exp}} &= \frac{1}{2\sqrt{\lambda}}, \qquad \mathrm{NNI}=\frac{\bar r_{\mathrm{obs}}}{\bar r_{\mathrm{exp}}} \\
-K(r) &= \frac{A}{n(n-1)}\sum_{i\ne j}\mathbf{1}\{d_{ij}\le r\}, \qquad L(r)=\sqrt{\frac{K(r)}{\pi}}-r \\
-\gamma(h) &= \frac{1}{2}\,\mathbb{E}\left[(z(\mathbf{s})-z(\mathbf{s+h}))^2\right]
-\end{aligned}
-$$
+          <div class="eq-title">Modelo matemático dependiente del filtro</div>
+          <div class="eq-box" id="modelBox">
+            <div style="color:var(--muted); font-size:12px; line-height:1.5;">
+              Ejecuta una consulta para estimar parámetros del modelo.
+            </div>
           </div>
         </div>
       </section>
@@ -684,28 +689,28 @@ $$
     </section>
   </main>
 
+  
   <footer>
-    <div class="footer-box">
-      <div style="text-align:center; font-weight:850;">Eje de Bosques · CODEMA Sololá · Instituciones participantes</div>
-      <div class="footer-logos" aria-label="Logos institucionales">
-        <img src="../../BOSQUE.png" alt="Eje de Bosques">
-        <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
-        <img src="../../marn.png" alt="MARN">
-        <img src="../../maga.png" alt="MAGA">
-        <img src="../../inab.png" alt="INAB">
-        <img src="../../conap.png" alt="CONAP">
-        <img src="../../amsclae.png" alt="AMSCLAE">
-        <img src="../../conred.png" alt="CONRED">
-        <img src="../../cea.png" alt="CEA - UVG">
-        <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
-        <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
-        <img src="../../aires.png" alt="AIR">
-      </div>
-      <div style="text-align:center; margin-top:10px;">
-        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Turf.js · Leaflet · Chart.js · KaTeX
-      </div>
+    <div style="text-align:center; font-weight:850; margin-bottom:10px; color: var(--muted);">
+      Instituciones participantes
+    </div>
+    <div class="footer-logos" aria-label="Logos institucionales">
+      <img src="../../marn.png" alt="MARN">
+      <img src="../../maga.png" alt="MAGA">
+      <img src="../../inab.png" alt="INAB">
+      <img src="../../conap.png" alt="CONAP">
+      <img src="../../amsclae.png" alt="AMSCLAE">
+      <img src="../../conred.png" alt="CONRED">
+      <img src="../../cea.png" alt="CEA - UVG">
+      <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
+      <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
+      <img src="../../aires.png" alt="AIR">
+    </div>
+    <div style="text-align:center; margin-top:10px; color: var(--muted); font-size:12px;">
+      Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Turf.js · Leaflet · Chart.js · KaTeX
     </div>
   </footer>
+
 
 <script>
 (() => {
@@ -1181,6 +1186,122 @@ $$
     return { a, b, r2 };
   }
 
+
+  function poissonTrendIRLS(y){
+    // GLM Poisson: y_t ~ Poisson(mu_t), log(mu_t)=a + b t
+    const n = y.length;
+    if (n < 2) return null;
+    const eps = 1e-9;
+
+    let a = Math.log((y.reduce((s,v)=>s+v,0)/n) + eps);
+    let b = 0;
+
+    for (let it=0; it<12; it++){
+      let S00=0, S01=0, S11=0, B0=0, B1=0;
+      for (let t=0; t<n; t++){
+        const eta = a + b*t;
+        const mu = Math.exp(eta);
+        const w = Math.max(mu, eps);
+        const z = eta + (y[t]-mu)/w;
+
+        S00 += w;
+        S01 += w*t;
+        S11 += w*t*t;
+        B0  += w*z;
+        B1  += w*z*t;
+      }
+      const det = S00*S11 - S01*S01;
+      if (Math.abs(det) < 1e-12) break;
+      const na = ( B0*S11 - B1*S01) / det;
+      const nb = (-B0*S01 + B1*S00) / det;
+
+      if (!Number.isFinite(na) || !Number.isFinite(nb)) break;
+      if (Math.abs(na-a) < 1e-6 && Math.abs(nb-b) < 1e-6){ a=na; b=nb; break; }
+      a=na; b=nb;
+    }
+
+    const muHat = y.map((_,t)=>Math.exp(a + b*t));
+    const meanY = y.reduce((s,v)=>s+v,0)/n;
+    let ssTot=0, ssRes=0;
+    for (let i=0;i<n;i++){
+      ssTot += (y[i]-meanY)*(y[i]-meanY);
+      ssRes += (y[i]-muHat[i])*(y[i]-muHat[i]);
+    }
+    const r2 = ssTot > 0 ? Math.max(0, 1 - (ssRes/ssTot)) : 0;
+
+    return { a, b, muHat, r2 };
+  }
+
+  function kdeBandwidthKm(points){
+    // Scott/Silverman style bandwidth on projected km coordinates
+    const n = points.length;
+    if (n < 2) return null;
+    const lat0 = points.reduce((s,p)=>s+p.lat,0)/n;
+    const lon0 = points.reduce((s,p)=>s+p.lon,0)/n;
+
+    const kx = 111.32 * Math.cos(lat0 * Math.PI/180);
+    const ky = 110.574;
+    const xs = points.map(p => (p.lon - lon0) * kx);
+    const ys = points.map(p => (p.lat - lat0) * ky);
+
+    const meanX = xs.reduce((s,v)=>s+v,0)/n;
+    const meanY = ys.reduce((s,v)=>s+v,0)/n;
+    let vx=0, vy=0;
+    for (let i=0;i<n;i++){
+      vx += (xs[i]-meanX)*(xs[i]-meanX);
+      vy += (ys[i]-meanY)*(ys[i]-meanY);
+    }
+    vx /= n; vy /= n;
+    const sd = Math.sqrt((vx+vy)/2);
+    const h = 1.06 * sd * Math.pow(n, -0.2);
+    return { h, sd, lat0, lon0 };
+  }
+
+  function updateModelBox(domain, dates, counts, points){
+    const box = document.getElementById("modelBox");
+    if (!box) return;
+
+    const n = points.length;
+    const A = domain.areaKm2;
+    const lam = (A && A>0) ? (n/A) : null;
+
+    // Poisson trend on daily counts
+    const glm = poissonTrendIRLS(counts);
+
+    // KDE bandwidth
+    const bw = kdeBandwidthKm(points);
+
+    const parts = [];
+
+    parts.push(`$$\\textbf{Modelo 1 (temporal):}\\quad y_t \\sim \\mathrm{Poisson}(\\mu_t),\\; \\log(\\mu_t)=\\alpha + \\beta\\,t$$`);
+
+    if (glm){
+      const pct = 100*(Math.exp(glm.b)-1);
+      parts.push(`$$\\hat\\alpha=${glm.a.toFixed(4)},\\;\\hat\\beta=${glm.b.toFixed(4)},\\;R^2_{\\mathrm{aj}}\\approx ${glm.r2.toFixed(3)}$$`);
+      parts.push(`$$\\Rightarrow\\; \\hat\\mu_t = e^{\\hat\\alpha}\\,e^{\\hat\\beta t}\\;\\;\\text{(cambio diario }\\approx ${pct.toFixed(2)}\\%\\text{)}$$`);
+    } else {
+      parts.push(`\\(\\)`);
+    }
+
+    parts.push(`$$\\textbf{Modelo 2 (espacial):}\\quad \\hat\\lambda(\\mathbf{s})=\\frac{1}{2\\pi h^2}\\sum_{i=1}^{n}\\exp\\left(-\\frac{\\|\\mathbf{s}-\\mathbf{s}_i\\|^2}{2h^2}\\right)$$`);
+
+    if (bw){
+      parts.push(`$$\\hat h\\approx ${bw.h.toFixed(2)}\\,\\text{km}\\quad (\\sigma\\approx ${bw.sd.toFixed(2)}\\,\\text{km},\\;n=${n})$$`);
+    }
+
+    if (lam != null){
+      parts.push(`$$\\textbf{Intensidad media:}\\quad \\lambda=\\frac{n}{A}\\approx ${lam.toFixed(4)}\\;\\text{puntos/km}^2$$`);
+    }
+
+    parts.push(`<div style="margin-top:8px; color:var(--muted); font-size:12px; line-height:1.55; text-align:justify;">
+      <b>Lectura:</b> el <i>Modelo 1</i> cuantifica tendencia temporal del conteo diario (Poisson con enlace log). El <i>Modelo 2</i> define una superficie de densidad (Kernel Gaussiano) con banda \\(h\\) estimada desde la dispersión de puntos; útil para identificar “zonas calientes” (hotspots) como picos de \\(\\hat\\lambda(\\mathbf{s})\\). 
+      Estos modelos describen patrones de detecciones FIRMS NRT; no equivalen a perímetro/área quemada y dependen de nubosidad, hora de sobrevuelo y resolución del sensor.
+    </div>`);
+
+    box.innerHTML = parts.join("\n");
+  }
+
+
   function buildDailySeries(rows){
     const byDate = new Map();
     const byDateFrp = new Map();
@@ -1414,29 +1535,72 @@ $$
   }
 
   function buildInterpretation(geo){
-    // Reglas de interpretación (cortas, técnicas)
-    const lines = [];
-    lines.push(`• Dominio de estudio: ${geo.areaLabel}. Intensidad λ mide densidad de detecciones (puntos/km²) en el recorte.`);
+    // Interpretación ampliada y numerada (HTML). Se apoya en NNI/z/p, Ripley-L(r) y SDE.
+    const items = [];
+
+    const dom = geo.areaLabel || "dominio";
+    const A = (geo.areaKm2 != null) ? geo.areaKm2 : null;
+    const n = geo.nSample ?? null;
+    const lam = geo.lam ?? null;
+
+    items.push(
+      `Dominio de estudio: <b>${dom}</b>. ` +
+      `Área de referencia <b>A</b>${A!=null?` ≈ <b>${A.toFixed(2)} km²</b>`:""}; ` +
+      `muestra usada <b>n</b>${n!=null?` = <b>${n}</b>`:""} (subconjunto si hay muestreo). ` +
+      `La intensidad espacial \\(\\lambda\\) cuantifica densidad de detecciones: \\(\\lambda=n/A\\) (puntos/km²).`
+    );
+
     if (geo.nni != null){
-      if (geo.nni < 1){
-        lines.push(`• NNI < 1 sugiere *agrupamiento* (clusters) de focos de calor; si p < 0.05, el agrupamiento es estadísticamente significativo vs CSR.`);
-      } else if (geo.nni > 1){
-        lines.push(`• NNI > 1 sugiere patrón más *regular/inhibido* (separación entre focos); si p < 0.05, la regularidad es significativa vs CSR.`);
-      } else {
-        lines.push(`• NNI ≈ 1 sugiere patrón compatible con Aleatoriedad Completa Espacial (CSR) a escala de vecino más cercano.`);
-      }
+      const nni = geo.nni;
+      const z = geo.z;
+      const p = geo.p;
+      let desc = "";
+      if (nni < 1) desc = "patrón <b>agrupado (cluster)</b> a escala de vecino más cercano";
+      else if (nni > 1) desc = "patrón <b>regular/inhibido</b> (separación entre detecciones)";
+      else desc = "patrón compatible con <b>CSR</b> (aleatoriedad completa espacial)";
+      items.push(
+        `Índice de Vecino Más Cercano (Clark–Evans): \\(\\mathrm{NNI}=\\bar r_{obs}/\\bar r_{exp}\\). ` +
+        `Resultado: <b>NNI = ${nni.toFixed(3)}</b> ⇒ ${desc}. ` +
+        `${(z!=null && p!=null) ? `Contraste normal aproximado: <b>z = ${z.toFixed(2)}</b>, <b>p = ${p.toExponential(2)}</b>. ` : ""}` +
+        `Interpretación: si <b>p &lt; 0.05</b>, el patrón difiere significativamente de CSR (no aleatorio).`
+      );
+    } else {
+      items.push(
+        `NNI: no calculable (se requieren ≥2 puntos y área válida).`
+      );
     }
+
     if (geo.mcLabel){
-      lines.push(`• Ripley L(r) + envelope CSR evalúa *multiescala*: clustering si L(r) excede el envelope; inhibición si cae por debajo. Reporte: ${geo.mcLabel}.`);
+      items.push(
+        `Ripley \\(L(r)\\) con envelope CSR (Monte Carlo) evalúa <b>multiescala</b>: ` +
+        `hay <i>clustering</i> si \\(L(r)\\) supera el envelope; hay <i>inhibición</i> si cae por debajo. ` +
+        `Reporte: <b>${geo.mcLabel}</b>. ` +
+        `${geo.mcP ? `(${geo.mcP})` : ""}`
+      );
     }
+
     if (geo.lAt != null){
-      lines.push(`• Escala característica (r*): ${geo.lAt.toFixed(2)} km donde L(r) alcanza su pico (máxima evidencia de agrupamiento a esa distancia).`);
+      items.push(
+        `Escala característica \\(r^*\\): <b>${geo.lAt.toFixed(2)} km</b> donde \\(L(r)\\) alcanza su máximo (pico). ` +
+        `Implicación: la mayor evidencia de agrupamiento/inhibición ocurre alrededor de esa distancia (útil para definir radio de patrullaje o agregación territorial).`
+      );
     }
+
     if (geo.sdeText){
-      lines.push(`• SDE resume dispersión espacial global y orientación (anisotropía). Útil para ver “hacia dónde” se extiende la nube de focos.`);
+      items.push(
+        `Elipse de Desviación Estándar (SDE): resume dispersión y anisotropía de la nube de detecciones. ` +
+        `Parámetros: ${geo.sdeText}. ` +
+        `Implicación: su orientación puede sugerir control por topografía, vientos dominantes o corredores de actividad (interpretar junto a contexto local).`
+      );
     }
-    lines.push(`• Implicación operativa: clusters persistentes pueden indicar frentes activos o quemas repetidas; combinar con viento, uso/cobertura y verificación local.`);
-    return lines.join("\n");
+
+    items.push(
+      `Implicación operativa: <b>clusters persistentes</b> (en varios días/sensores) pueden indicar frentes activos, quemas repetidas o fuentes térmicas recurrentes. ` +
+      `Cruzar con viento/meteorología, uso/cobertura y reportes locales; recordar que FIRMS es “fuego activo” (hotspots), no perímetro/área quemada.`
+    );
+
+    const lis = items.map(t => `<li>${t}</li>`).join("");
+    return `<ol>${lis}</ol>`;
   }
 
   function updateChartsAndGeo(rows, domain){
@@ -1569,6 +1733,10 @@ $$
                       .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lon));
     const pts = sampleRows(ptsAll, MAX_GEO_N);
 
+    // Modelo matemático (dependiente del filtro)
+    updateModelBox(domain, dates, counts, pts);
+
+
     const geo = {
       areaKm2: domain.areaKm2,
       areaLabel: domain.label,
@@ -1587,7 +1755,7 @@ $$
       updateGeoKPIs(geo);
       $("eqRipley").innerHTML = "Se requieren ≥10 puntos y área válida.";
       $("eqVario").innerHTML = "Se requieren suficientes puntos con FRP.";
-      $("geoInterpret").textContent = "Interpretación: no hay suficientes datos para geoestadística en este recorte.";
+      $("geoInterpret").innerHTML = "<ol><li>No hay suficientes datos para geoestadística en este recorte (se requieren ≥10 puntos y área válida).</li><li>Prueba ampliar el período o seleccionar un recorte más grande.</li></ol>";
       return;
     }
 
@@ -1672,7 +1840,7 @@ $$
         });
         geo.mcLabel = "CSR: sin envelope";
         updateGeoKPIs(geo);
-        $("geoInterpret").textContent = buildInterpretation(geo);
+        $("geoInterpret").innerHTML = buildInterpretation(geo);
         renderMath();
         return;
       }
@@ -1698,12 +1866,12 @@ $$
         options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ title:{ display:true, text:"L(r) (km)" } }, x:{ title:{ display:true, text:"r (km)" } } } }
       });
 
-      $("geoInterpret").textContent = buildInterpretation(geo);
+      $("geoInterpret").innerHTML = buildInterpretation(geo);
       renderMath();
     })();
 
     // quick interpretation even before MC finishes
-    $("geoInterpret").textContent = buildInterpretation(geo);
+    $("geoInterpret").innerHTML = buildInterpretation(geo);
   }
 
   // ======================
