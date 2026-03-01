@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Incendios — Dashboard FIRMS (NRT) · Sololá</title>
-  <meta name="description" content="Dashboard SIG de anomalías térmicas (FIRMS NRT): filtros por periodo, sensores y recortes espaciales (BBOX, municipios, microcuencas y áreas protegidas) con análisis geoestadístico." />
+  <meta name="description" content="Dashboard SIG de anomalías térmicas (FIRMS NRT): filtros por periodo, sensores y recortes espaciales con KPIs geoestadísticos." />
 
   <!-- Leaflet (sin SRI para evitar bloqueos) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
@@ -26,7 +26,6 @@
 
   <style>
     :root{
-      /* Pasteles “fuego” */
       --bg-0:#fff7f0;
       --bg-1:#fff2e6;
       --card:rgba(255,255,255,.92);
@@ -178,7 +177,7 @@
 
     .right{
       display:grid;
-      grid-template-rows: auto auto 1fr;
+      grid-template-rows: auto auto auto 1fr;
       gap:14px;
       min-width:0;
     }
@@ -236,6 +235,23 @@
     .kpi .k{ font-size:11px; color:var(--muted); }
     .kpi .v{ font-size:16px; font-weight:950; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
+    .geoKpiGrid{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      padding: 12px 14px 14px;
+    }
+    .geoKpi{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:14px;
+      padding:10px;
+      min-width:0;
+    }
+    .geoKpi .k{ font-size:11px; color:var(--muted); }
+    .geoKpi .v{ font-size:15px; font-weight:950; margin-top:4px; }
+    .geoKpi .s{ font-size:11px; color:var(--muted); margin-top:4px; line-height:1.25; }
+
     .analysisGrid{
       display:grid;
       grid-template-columns: 1.15fr .85fr;
@@ -273,8 +289,6 @@
     tbody tr:hover{ background:#fff7f0; cursor:pointer; }
 
     .hint{ font-size:12px; color:var(--muted); line-height:1.35; margin-top:8px; }
-    .equations code{ background:#f3f3f3; padding:2px 6px; border-radius:8px; }
-    .equations .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
 
     .hotspot{
       width:14px; height:14px;
@@ -316,6 +330,7 @@
     @media (max-width: 1100px){
       main{ grid-template-columns: 1fr; }
       .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .geoKpiGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .analysisGrid{ grid-template-columns: 1fr; }
       #map{ height: 440px; min-height: 440px; }
     }
@@ -487,6 +502,26 @@
       </section>
 
       <section class="panel">
+        <h2>Geoestadística</h2>
+        <div class="geoKpiGrid">
+          <div class="geoKpi"><div class="k">Área A (km²)</div><div class="v" id="g_area">—</div><div class="s" id="g_area_s">recorte actual</div></div>
+          <div class="geoKpi"><div class="k">n (muestra / total)</div><div class="v" id="g_n">—</div><div class="s" id="g_n_s">cap O(n²)</div></div>
+          <div class="geoKpi"><div class="k">Intensidad λ (pts/km²)</div><div class="v" id="g_lambda">—</div><div class="s">λ = n/A</div></div>
+          <div class="geoKpi"><div class="k">NNI (Clark–Evans)</div><div class="v" id="g_nni">—</div><div class="s" id="g_nni_s">r̄obs / r̄exp</div></div>
+
+          <div class="geoKpi"><div class="k">z-score (NNI)</div><div class="v" id="g_z">—</div><div class="s" id="g_p">p: —</div></div>
+          <div class="geoKpi"><div class="k">Ripley L(r) pico</div><div class="v" id="g_lmax">—</div><div class="s" id="g_lr">escala r: — km</div></div>
+          <div class="geoKpi"><div class="k">CSR Monte Carlo</div><div class="v" id="g_mc">—</div><div class="s" id="g_mc_s">p(cluster): —</div></div>
+          <div class="geoKpi"><div class="k">SDE (σ, km)</div><div class="v" id="g_sd">—</div><div class="s" id="g_sde">elipse: —</div></div>
+        </div>
+        <div class="content">
+          <div class="hint" id="g_note">
+            Ecuaciones: r̄exp = 0.5/√λ (CSR) · K(r)=(A/(n(n−1)))·2·#{d≤r} · L(r)=√(K/π)−r · γ(h)=½·mean[(zᵢ−zⱼ)²]
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
         <h2>Análisis</h2>
         <div class="content">
           <div class="analysisGrid">
@@ -514,19 +549,6 @@
               </div>
 
               <div class="hint" id="tableNote"></div>
-
-              <div class="notes equations">
-                <b>Geoestadística (interpretación)</b>
-                <div class="hint">
-                  <span class="mono">λ = n/A</span> (intensidad, puntos/km²) ·
-                  <span class="mono">r̄<sub>exp</sub> = 0.5/√λ</span> (CSR) ·
-                  <span class="mono">NNI = r̄<sub>obs</sub>/r̄<sub>exp</sub></span> ·
-                  <span class="mono">K(r) = (A/(n(n−1)))·2·#{d≤r}</span> ·
-                  <span class="mono">L(r)=√(K(r)/π)−r</span> ·
-                  <span class="mono">γ(h)=½·mean[(z<sub>i</sub>−z<sub>j</sub>)²]</span> (variograma)
-                </div>
-                <div class="hint" id="geoStatsNote">—</div>
-              </div>
             </div>
 
             <div>
@@ -547,7 +569,6 @@
     </section>
   </main>
 
-  <!-- Logos institucionales (abajo) -->
   <footer>
     <div class="footer-box">
       <div style="text-align:center; font-weight:800;">Eje de Bosques · CODEMA Sololá · Instituciones participantes</div>
@@ -566,16 +587,13 @@
         <img src="../../aires.png" alt="AIR">
       </div>
       <div style="text-align:center; margin-top:10px;">
-        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Geoprocesos en navegador (Turf.js) · Visualización (Leaflet/Chart.js)
+        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Geoprocesos (Turf.js) · Visualización (Leaflet/Chart.js)
       </div>
     </div>
   </footer>
 
 <script>
 (() => {
-  // ======================
-  // CONFIG
-  // ======================
   const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
   const LAYER_SOURCES = {
     muni:  { url: "./data/municipios_solola.geojson", label: "Municipio (Sololá)" },
@@ -596,17 +614,10 @@
     mapError.innerHTML = msg;
   }
 
-  // Captura errores JS y los muestra en pantalla
   window.addEventListener("error", (e) => {
     const m = (e && e.message) ? e.message : "Error desconocido";
     showMapError(`Error JavaScript: <code>${m}</code><br/>Abre DevTools → Console para ver detalles.`);
   });
-
-  function setStatus(msg){ $("status").textContent = msg; }
-  function fmt(n, d=0){
-    if (n === null || n === undefined || Number.isNaN(n)) return "—";
-    return new Intl.NumberFormat("es-GT",{ maximumFractionDigits:d }).format(n);
-  }
 
   function confClass(c){
     const s = String(c ?? "").trim().toLowerCase();
@@ -628,7 +639,13 @@
     if (k === "nominal") return css.getPropertyValue("--nom").trim();
     return css.getPropertyValue("--low").trim();
   }
+  function fmt(n, d=0){
+    if (n === null || n === undefined || Number.isNaN(n)) return "—";
+    return new Intl.NumberFormat("es-GT",{ maximumFractionDigits:d }).format(n);
+  }
   function bboxStr(arr){ return arr.map(v => Number(v.toFixed(6))).join(","); }
+  function setStatus(msg){ $("status").textContent = msg; }
+
   function getSensors(){
     const out = [];
     if ($("s_snpp").checked) out.push("VIIRS_SNPP_NRT");
@@ -638,15 +655,9 @@
     return out;
   }
 
-  // ======================
   // MAP INIT
-  // ======================
   if (!window.L){
     showMapError(`No se cargó Leaflet (<code>L</code>). Revisa tu conexión o si un bloqueador está deteniendo <code>unpkg.com</code>.`);
-    return;
-  }
-  if (!$("map")){
-    showMapError(`No se encontró el contenedor <code>#map</code>.`);
     return;
   }
 
@@ -680,7 +691,6 @@
 
     L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
 
-    // Fallback si MarkerCluster no cargó
     if (typeof L.markerClusterGroup === "function"){
       clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
     } else {
@@ -690,17 +700,13 @@
     map.addLayer(clusters);
 
     overlayGroup = L.layerGroup().addTo(map);
-
-    // Asegura render
     setTimeout(() => map.invalidateSize(), 250);
   }catch(err){
     showMapError(`No se pudo inicializar el mapa: <code>${String(err)}</code>`);
     return;
   }
 
-  // ======================
-  // POLY DATA
-  // ======================
+  // POLYGONS
   const polyState = {
     muni:  { loaded:false, gj:null, items:[], nameField:null },
     micro: { loaded:false, gj:null, items:[], nameField:null },
@@ -726,11 +732,6 @@
     return null;
   }
 
-  function cleanName(v){
-    const s = (v == null) ? "" : String(v).trim();
-    return s || "—";
-  }
-
   async function ensurePolyLoaded(mode){
     const st = polyState[mode];
     if (!st || st.loaded) return;
@@ -747,9 +748,9 @@
     for (let i = 0; i < (gj.features || []).length; i++){
       const f = gj.features[i];
       const id = f.id ?? (f.properties?.id ?? i);
-      const nm = st.nameField ? cleanName(f.properties?.[st.nameField]) : `Polígono ${i+1}`;
-      const bb = (window.turf && turf.bbox) ? turf.bbox(f) : BBOX_PRESETS.solola; // [w,s,e,n]
-      items.push({ id: String(id), name: nm, feature: f, bbox: bb, area_m2: (window.turf && turf.area) ? turf.area(f) : null });
+      const nm = st.nameField ? String(f.properties?.[st.nameField] ?? "").trim() : `Polígono ${i+1}`;
+      const bb = turf.bbox(f);
+      items.push({ id: String(id), name: nm || `Polígono ${i+1}`, feature: f, bbox: bb, area_m2: turf.area(f) });
     }
     items.sort((a,b) => a.name.localeCompare(b.name, "es"));
     st.items = items;
@@ -799,10 +800,6 @@
     sel.value = "all";
   }
 
-  function inBBox(lon, lat, bb){
-    return (lon >= bb[0] && lon <= bb[2] && lat >= bb[1] && lat <= bb[3]);
-  }
-
   function getBBoxFromUI(){
     const clipMode = $("clipMode").value;
 
@@ -822,9 +819,9 @@
       const st = polyState[clipMode];
       if (!st?.loaded) return BBOX_PRESETS.solola;
       const selectedId = $("polySelect").value || "all";
-      if (selectedId === "all") return (window.turf && turf.bbox) ? turf.bbox(st.gj) : BBOX_PRESETS.solola;
+      if (selectedId === "all") return turf.bbox(st.gj);
       const it = st.items.find(x => x.id === selectedId);
-      return it ? it.bbox : BBOX_PRESETS.solola;
+      return it ? it.bbox : turf.bbox(st.gj);
     }
     return BBOX_PRESETS.solola;
   }
@@ -834,36 +831,33 @@
     map.fitBounds(b.pad(0.06));
   }
 
-  function computeClipAreaKm2(){
+  function getStudyPolygonForCSR(){
     const clipMode = $("clipMode").value;
 
-    // BBOX
     if (!["muni","micro","ap"].includes(clipMode)){
       const bb = getBBoxFromUI();
-      if (!bb || !(window.turf && turf.bboxPolygon && turf.area)) return null;
       const poly = turf.bboxPolygon(bb);
-      return turf.area(poly) / 1e6;
+      return { poly, bbox: bb, areaKm2: turf.area(poly)/1e6, label: "BBOX" };
     }
 
-    // Polígono(s)
     const st = polyState[clipMode];
-    if (!st?.loaded) return null;
+    if (!st?.loaded){
+      const bb = BBOX_PRESETS.solola;
+      const poly = turf.bboxPolygon(bb);
+      return { poly, bbox: bb, areaKm2: turf.area(poly)/1e6, label: "BBOX" };
+    }
 
     const selectedId = $("polySelect").value || "all";
     if (selectedId !== "all"){
       const it = st.items.find(x => x.id === selectedId);
-      if (it?.area_m2 != null) return it.area_m2 / 1e6;
-      if (window.turf && turf.area) return turf.area(it.feature) / 1e6;
-      return null;
+      if (it){
+        return { poly: it.feature, bbox: it.bbox, areaKm2: it.area_m2/1e6, label: it.name };
+      }
     }
 
-    // Suma de áreas (aprox, sin corrección por solapes)
-    let sum = 0;
-    for (const it of st.items){
-      const a = it.area_m2 != null ? it.area_m2 : (window.turf && turf.area ? turf.area(it.feature) : 0);
-      sum += a || 0;
-    }
-    return sum ? (sum / 1e6) : null;
+    const bb = turf.bbox(st.gj);
+    const poly = turf.bboxPolygon(bb);
+    return { poly, bbox: bb, areaKm2: turf.area(poly)/1e6, label: `${LAYER_SOURCES[clipMode].label} (bbox)` };
   }
 
   function pointFilterByPolygon(rows){
@@ -872,7 +866,7 @@
       return rows.map(r => ({...r, zone_type: "BBOX", zone_name: "—"}));
     }
     const st = polyState[clipMode];
-    if (!st?.loaded || !(window.turf && turf.booleanPointInPolygon)){
+    if (!st?.loaded){
       return rows.map(r => ({...r, zone_type: "SIG", zone_name: "—"}));
     }
 
@@ -883,12 +877,11 @@
     const out = [];
     for (const r of rows){
       if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
+      const pt = turf.point([r.lon, r.lat]);
 
-      // bbox prefilter
       let matched = null;
       for (const it of polys){
-        if (!inBBox(r.lon, r.lat, it.bbox)) continue;
-        const pt = turf.point([r.lon, r.lat]);
+        if (r.lon < it.bbox[0] || r.lon > it.bbox[2] || r.lat < it.bbox[1] || r.lat > it.bbox[3]) continue;
         if (turf.booleanPointInPolygon(pt, it.feature)){
           matched = it;
           break;
@@ -899,9 +892,7 @@
     return out;
   }
 
-  // ======================
-  // DATA/UI
-  // ======================
+  // TABLE + MAP
   let lastData = [];
   let markerById = new Map();
 
@@ -990,326 +981,7 @@
     $("k_last").textContent = rawPayload?.summary?.last_detection_utc || "—";
   }
 
-  // ======================
-  // CHARTS + GEOESTATS
-  // ======================
-  function linearRegression(xs, ys){
-    const n = xs.length;
-    if (n < 2) return { a: 0, b: ys[0] ?? 0, r2: 0 };
-    const meanX = xs.reduce((s,v)=>s+v,0)/n;
-    const meanY = ys.reduce((s,v)=>s+v,0)/n;
-    let num = 0, den = 0;
-    for (let i=0;i<n;i++){
-      num += (xs[i]-meanX)*(ys[i]-meanY);
-      den += (xs[i]-meanX)*(xs[i]-meanX);
-    }
-    const a = den === 0 ? 0 : num/den;
-    const b = meanY - a*meanX;
-
-    let ssTot = 0, ssRes = 0;
-    for (let i=0;i<n;i++){
-      const yHat = a*xs[i] + b;
-      ssTot += (ys[i]-meanY)**2;
-      ssRes += (ys[i]-yHat)**2;
-    }
-    const r2 = ssTot === 0 ? 0 : 1 - (ssRes/ssTot);
-    return { a, b, r2 };
-  }
-
-  function buildDailySeries(rows){
-    const byDate = new Map();
-    const byDateFrp = new Map();
-    for (const r of rows){
-      const d = r.acq_date || (r.datetime_utc ? r.datetime_utc.slice(0,10) : null);
-      if (!d) continue;
-      byDate.set(d, (byDate.get(d) || 0) + 1);
-      byDateFrp.set(d, (byDateFrp.get(d) || 0) + (Number.isFinite(r.frp) ? r.frp : 0));
-    }
-    const dates = Array.from(byDate.keys()).sort();
-    const counts = dates.map(d => byDate.get(d) || 0);
-    const frps = dates.map(d => +(byDateFrp.get(d) || 0).toFixed(3));
-    return { dates, counts, frps };
-  }
-
-  function sampleRows(rows, maxN){
-    if (rows.length <= maxN) return rows;
-    // muestreo aleatorio simple
-    const copy = rows.slice();
-    for (let i = copy.length - 1; i > 0; i--){
-      const j = Math.floor(Math.random() * (i + 1));
-      [copy[i], copy[j]] = [copy[j], copy[i]];
-    }
-    return copy.slice(0, maxN);
-  }
-
-  function kmDistance(a, b){
-    // turf.distance usa Haversine
-    return turf.distance(turf.point([a.lon, a.lat]), turf.point([b.lon, b.lat]), { units: "kilometers" });
-  }
-
-  function computeNearestNeighborStats(points, areaKm2){
-    // points: [{lat,lon,frp?}] sample
-    const n = points.length;
-    if (n < 2 || !areaKm2 || areaKm2 <= 0) return null;
-
-    const nn = [];
-    for (let i=0;i<n;i++){
-      let best = Infinity;
-      for (let j=0;j<n;j++){
-        if (i===j) continue;
-        const d = kmDistance(points[i], points[j]);
-        if (d < best) best = d;
-      }
-      if (Number.isFinite(best)) nn.push(best);
-    }
-
-    const rObs = nn.reduce((a,b)=>a+b,0)/nn.length;
-    const lam = n / areaKm2; // puntos/km2
-    const rExp = 0.5 / Math.sqrt(lam);
-
-    // Clark–Evans SE (aprox) para CSR
-    const se = 0.26136 / Math.sqrt(n * lam);
-    const z = se > 0 ? (rObs - rExp) / se : null;
-
-    return { n, areaKm2, lam, rObs, rExp, nni: rObs/rExp, se, z, nn };
-  }
-
-  function computeRipleyL(points, areaKm2, rMaxKm=20, bins=25){
-    const n = points.length;
-    if (n < 2 || !areaKm2 || areaKm2 <= 0) return null;
-
-    const dr = rMaxKm / bins;
-    const hist = new Array(bins).fill(0); // conteo de pares por bin
-
-    for (let i=0;i<n;i++){
-      for (let j=i+1;j<n;j++){
-        const d = kmDistance(points[i], points[j]);
-        if (d <= rMaxKm){
-          const k = Math.min(bins-1, Math.floor(d / dr));
-          hist[k] += 1;
-        }
-      }
-    }
-
-    // acumulado de pares <= r
-    const cum = [];
-    let s = 0;
-    for (let k=0;k<bins;k++){
-      s += hist[k];
-      cum.push(s);
-    }
-
-    const rs = [];
-    const L = [];
-    for (let k=0;k<bins;k++){
-      const r = (k+1) * dr;
-      rs.push(+r.toFixed(3));
-      const pairLE = cum[k]; // unordered pairs
-      // K(r) = (A/(n(n-1))) * 2 * pairLE
-      const K = (areaKm2 / (n*(n-1))) * (2 * pairLE);
-      const Lr = Math.sqrt(K / Math.PI) - r;
-      L.push(+Lr.toFixed(4));
-    }
-
-    return { rs, L };
-  }
-
-  function computeVariogram(points, rMaxKm=20, bins=20){
-    // z = FRP
-    const usable = points.filter(p => Number.isFinite(p.frp));
-    const n = usable.length;
-    if (n < 3) return null;
-
-    const dr = rMaxKm / bins;
-    const count = new Array(bins).fill(0);
-    const sumSq = new Array(bins).fill(0);
-
-    for (let i=0;i<n;i++){
-      for (let j=i+1;j<n;j++){
-        const d = kmDistance(usable[i], usable[j]);
-        if (d <= rMaxKm){
-          const k = Math.min(bins-1, Math.floor(d / dr));
-          const diff = usable[i].frp - usable[j].frp;
-          sumSq[k] += diff*diff;
-          count[k] += 1;
-        }
-      }
-    }
-
-    const hs = [];
-    const gamma = [];
-    for (let k=0;k<bins;k++){
-      const h = (k+0.5)*dr;
-      hs.push(+h.toFixed(3));
-      if (count[k] > 0){
-        gamma.push(+((0.5 * (sumSq[k]/count[k]))).toFixed(4));
-      } else {
-        gamma.push(null);
-      }
-    }
-
-    return { hs, gamma, count };
-  }
-
-  function updateChartsAndStats(rows){
-    // 1) temporal + tendencia
-    const { dates, counts, frps } = buildDailySeries(rows);
-    const xs = dates.map((_,i)=>i);
-    const reg = linearRegression(xs, counts);
-    const trend = xs.map(x => reg.a*x + reg.b);
-
-    const eq = `y = ${reg.a.toFixed(3)}x + ${reg.b.toFixed(3)} · R² = ${Math.max(0, Math.min(1, reg.r2)).toFixed(3)}`;
-    $("trendNote").textContent = `Tendencia (detecciones/día, OLS): ${eq}`;
-
-    const ctx1 = $("chartDaily").getContext("2d");
-    if (chartDaily) chartDaily.destroy();
-    chartDaily = new Chart(ctx1, {
-      type: "line",
-      data: {
-        labels: dates,
-        datasets: [
-          { label: "Detecciones/día", data: counts, tension: 0.25 },
-          { label: "Tendencia (OLS)", data: trend, tension: 0, borderDash: [6,6], pointRadius: 0 },
-          { label: "FRP/día (MW)", data: frps, yAxisID: "y2", tension: 0.25 }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: { legend: { position: "bottom" } },
-        scales: {
-          y: { beginAtZero: true, title: { display: true, text: "Detecciones" } },
-          y2: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "FRP (MW)" } }
-        }
-      }
-    });
-
-    // 2) sensores
-    const bySensor = {};
-    for (const r of rows){
-      const s = r.source || "—";
-      bySensor[s] = (bySensor[s] || 0) + 1;
-    }
-    const sensors = Object.keys(bySensor).sort();
-    const vals = sensors.map(s => bySensor[s]);
-    const total = vals.reduce((a,b)=>a+b,0) || 1;
-    const perc = vals.map(v => +(100*v/total).toFixed(2));
-
-    const ctx2 = $("chartSensors").getContext("2d");
-    if (chartSensors) chartSensors.destroy();
-    chartSensors = new Chart(ctx2, {
-      type: "bar",
-      data: { labels: sensors, datasets: [{ label:"Detecciones", data: vals }, { label:"%", data: perc }] },
-      options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true } } }
-    });
-
-    // 3) Geoestadística (muestreo para O(n^2))
-    const areaKm2 = computeClipAreaKm2();
-    const maxN = 2200; // seguridad de rendimiento
-    const pts = sampleRows(rows.map(r => ({ lat:r.lat, lon:r.lon, frp: (Number.isFinite(r.frp) ? r.frp : null) })), maxN);
-
-    let note = "";
-    if (!areaKm2 || !(window.turf && turf.distance)){
-      note = "Área A no disponible para el recorte; geoestadística no calculada.";
-      $("geoStatsNote").textContent = note;
-      return;
-    }
-    if (pts.length < 10){
-      note = "Muy pocos puntos para análisis geoestadístico (n < 10).";
-      $("geoStatsNote").textContent = note;
-      return;
-    }
-
-    const nni = computeNearestNeighborStats(pts, areaKm2);
-    if (!nni){
-      $("geoStatsNote").textContent = "No se pudo calcular NNI.";
-      return;
-    }
-
-    // Clasificación rápida
-    const pattern = (nni.nni < 1) ? "agrupamiento (cluster)" : (nni.nni > 1 ? "dispersión/regularidad" : "aleatorio ~CSR");
-    const ztxt = (nni.z == null) ? "—" : nni.z.toFixed(2);
-    const lamTxt = nni.lam.toFixed(4);
-
-    note =
-      `A≈${areaKm2.toFixed(2)} km² · n=${pts.length} (muestra; total=${rows.length}) · λ=${lamTxt} pts/km² · ` +
-      `r̄obs=${nni.rObs.toFixed(3)} km · r̄exp(CSR)=${nni.rExp.toFixed(3)} km · NNI=${nni.nni.toFixed(3)} · z≈${ztxt} → ${pattern}.`;
-    $("geoStatsNote").textContent = note;
-
-    // NN histogram chart
-    const nn = nni.nn.slice().sort((a,b)=>a-b);
-    const maxD = Math.min(10, nn[Math.floor(nn.length*0.98)] || 10); // cap 10 km para hist
-    const bins = 20;
-    const step = maxD / bins;
-    const h = new Array(bins).fill(0);
-    for (const d of nn){
-      if (d > maxD) continue;
-      const k = Math.min(bins-1, Math.floor(d/step));
-      h[k] += 1;
-    }
-    const xh = h.map((_,k)=>+( (k+0.5)*step ).toFixed(3));
-    const ctxNN = $("chartNN").getContext("2d");
-    if (chartNN) chartNN.destroy();
-    chartNN = new Chart(ctxNN, {
-      type: "bar",
-      data: {
-        labels: xh.map(v=>String(v)),
-        datasets: [{ label: "Distribución dist. vecino más cercano (km)", data: h }]
-      },
-      options: {
-        responsive:true,
-        plugins:{ legend:{ position:"bottom" } },
-        scales:{ y:{ beginAtZero:true }, x:{ title:{ display:true, text:"km" } } }
-      }
-    });
-
-    // Ripley L
-    const rip = computeRipleyL(pts, areaKm2, 20, 25);
-    const ctxR = $("chartRipley").getContext("2d");
-    if (chartRipley) chartRipley.destroy();
-    chartRipley = new Chart(ctxR, {
-      type: "line",
-      data: {
-        labels: rip ? rip.rs.map(r=>String(r)) : [],
-        datasets: rip ? [
-          { label: "L(r) = √(K/π) − r (km)", data: rip.L, tension: 0.15 }
-        ] : []
-      },
-      options: {
-        responsive:true,
-        plugins:{ legend:{ position:"bottom" } },
-        scales:{
-          y:{ title:{ display:true, text:"L(r) (km)" } },
-          x:{ title:{ display:true, text:"r (km)" } }
-        }
-      }
-    });
-
-    // Variogram FRP
-    const vario = computeVariogram(pts, 20, 20);
-    const ctxV = $("chartVariogram").getContext("2d");
-    if (chartVariogram) chartVariogram.destroy();
-    chartVariogram = new Chart(ctxV, {
-      type: "line",
-      data: {
-        labels: vario ? vario.hs.map(v=>String(v)) : [],
-        datasets: vario ? [
-          { label: "Variograma experimental γ(h) de FRP", data: vario.gamma, tension: 0.1 }
-        ] : []
-      },
-      options: {
-        responsive:true,
-        plugins:{ legend:{ position:"bottom" } },
-        scales:{
-          y:{ title:{ display:true, text:"γ(h)" } },
-          x:{ title:{ display:true, text:"h (km)" } }
-        }
-      }
-    });
-  }
-
-  // ======================
   // EXPORTS
-  // ======================
   function exportCSV(){
     if (!lastData.length) return;
     const cols = ["datetime_utc","zone_type","zone_name","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
@@ -1371,9 +1043,459 @@
     a.click(); a.remove(); URL.revokeObjectURL(a.href);
   }
 
-  // ======================
-  // HEALTH + MAIN RUN
-  // ======================
+  // GEOESTATS
+  function normalCdf(z){
+    const sign = z < 0 ? -1 : 1;
+    z = Math.abs(z) / Math.sqrt(2);
+    const t = 1 / (1 + 0.3275911 * z);
+    const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
+    const erf = 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-z*z);
+    const cdf = 0.5 * (1 + sign * erf);
+    return cdf;
+  }
+
+  function linearRegression(xs, ys){
+    const n = xs.length;
+    if (n < 2) return { a: 0, b: ys[0] ?? 0, r2: 0 };
+    const meanX = xs.reduce((s,v)=>s+v,0)/n;
+    const meanY = ys.reduce((s,v)=>s+v,0)/n;
+    let num = 0, den = 0;
+    for (let i=0;i<n;i++){
+      num += (xs[i]-meanX)*(ys[i]-meanY);
+      den += (xs[i]-meanX)*(xs[i]-meanX);
+    }
+    const a = den === 0 ? 0 : num/den;
+    const b = meanY - a*meanX;
+    let ssTot = 0, ssRes = 0;
+    for (let i=0;i<n;i++){
+      const yHat = a*xs[i] + b;
+      ssTot += (ys[i]-meanY)**2;
+      ssRes += (ys[i]-yHat)**2;
+    }
+    const r2 = ssTot === 0 ? 0 : 1 - (ssRes/ssTot);
+    return { a, b, r2 };
+  }
+
+  function buildDailySeries(rows){
+    const byDate = new Map();
+    const byDateFrp = new Map();
+    for (const r of rows){
+      const d = r.acq_date || (r.datetime_utc ? r.datetime_utc.slice(0,10) : null);
+      if (!d) continue;
+      byDate.set(d, (byDate.get(d) || 0) + 1);
+      byDateFrp.set(d, (byDateFrp.get(d) || 0) + (Number.isFinite(r.frp) ? r.frp : 0));
+    }
+    const dates = Array.from(byDate.keys()).sort();
+    const counts = dates.map(d => byDate.get(d) || 0);
+    const frps = dates.map(d => +(byDateFrp.get(d) || 0).toFixed(3));
+    return { dates, counts, frps };
+  }
+
+  function sampleRows(rows, maxN){
+    if (rows.length <= maxN) return rows;
+    const copy = rows.slice();
+    for (let i = copy.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy.slice(0, maxN);
+  }
+
+  function kmDistance(a, b){
+    return turf.distance(turf.point([a.lon, a.lat]), turf.point([b.lon, b.lat]), { units: "kilometers" });
+  }
+
+  function computeNearestNeighborStats(points, areaKm2){
+    const n = points.length;
+    if (n < 2 || !areaKm2 || areaKm2 <= 0) return null;
+
+    const nn = [];
+    for (let i=0;i<n;i++){
+      let best = Infinity;
+      for (let j=0;j<n;j++){
+        if (i===j) continue;
+        const d = kmDistance(points[i], points[j]);
+        if (d < best) best = d;
+      }
+      if (Number.isFinite(best)) nn.push(best);
+    }
+
+    const rObs = nn.reduce((a,b)=>a+b,0)/nn.length;
+    const lam = n / areaKm2;
+    const rExp = 0.5 / Math.sqrt(lam);
+
+    const se = 0.26136 / Math.sqrt(n * lam);
+    const z = se > 0 ? (rObs - rExp) / se : null;
+    const p = (z == null) ? null : 2 * (1 - normalCdf(Math.abs(z)));
+
+    return { n, areaKm2, lam, rObs, rExp, nni: rObs/rExp, z, p, nn };
+  }
+
+  function computeRipleyL(points, areaKm2, rMaxKm=20, bins=25){
+    const n = points.length;
+    if (n < 2 || !areaKm2 || areaKm2 <= 0) return null;
+
+    const dr = rMaxKm / bins;
+    const hist = new Array(bins).fill(0);
+
+    for (let i=0;i<n;i++){
+      for (let j=i+1;j<n;j++){
+        const d = kmDistance(points[i], points[j]);
+        if (d <= rMaxKm){
+          const k = Math.min(bins-1, Math.floor(d / dr));
+          hist[k] += 1;
+        }
+      }
+    }
+
+    const cum = [];
+    let s = 0;
+    for (let k=0;k<bins;k++){ s += hist[k]; cum.push(s); }
+
+    const rs = [];
+    const L = [];
+    for (let k=0;k<bins;k++){
+      const r = (k+1) * dr;
+      rs.push(r);
+      const pairLE = cum[k];
+      const K = (areaKm2 / (n*(n-1))) * (2 * pairLE);
+      L.push(Math.sqrt(K / Math.PI) - r);
+    }
+    return { rs, L };
+  }
+
+  function randomPointsInPolygon(n, poly, bbox){
+    const pts = [];
+    let attempts = 0;
+    const maxAttempts = n * 120;
+    while (pts.length < n && attempts < maxAttempts){
+      const x = bbox[0] + Math.random() * (bbox[2]-bbox[0]);
+      const y = bbox[1] + Math.random() * (bbox[3]-bbox[1]);
+      const p = turf.point([x,y]);
+      if (turf.booleanPointInPolygon(p, poly)){
+        pts.push({ lon:x, lat:y });
+      }
+      attempts++;
+    }
+    return pts;
+  }
+
+  async function ripleyMonteCarlo(obsPts, study, rMaxKm=20, bins=25){
+    const n = obsPts.length;
+    if (n < 10) return null;
+
+    let sims = 99;
+    if (n > 200) sims = 39;
+    if (n > 350) sims = 19;
+
+    const obs = computeRipleyL(obsPts, study.areaKm2, rMaxKm, bins);
+    if (!obs) return null;
+
+    const upper = new Array(obs.L.length).fill(-Infinity);
+    const lower = new Array(obs.L.length).fill(Infinity);
+
+    const obsMax = Math.max(...obs.L);
+    const obsMin = Math.min(...obs.L);
+
+    let geMax = 0;
+    let leMin = 0;
+
+    for (let s=0; s<sims; s++){
+      const simPts = randomPointsInPolygon(n, study.poly, study.bbox);
+      if (simPts.length < n) continue;
+
+      const sim = computeRipleyL(simPts, study.areaKm2, rMaxKm, bins);
+      if (!sim) continue;
+
+      for (let i=0;i<sim.L.length;i++){
+        upper[i] = Math.max(upper[i], sim.L[i]);
+        lower[i] = Math.min(lower[i], sim.L[i]);
+      }
+
+      const mx = Math.max(...sim.L);
+      const mn = Math.min(...sim.L);
+      if (mx >= obsMax) geMax++;
+      if (mn <= obsMin) leMin++;
+    }
+
+    const pCluster = (geMax + 1) / (sims + 1);
+    const pRegular = (leMin + 1) / (sims + 1);
+
+    return { sims, obs, upper, lower, pCluster, pRegular };
+  }
+
+  function computeSDE(points){
+    const n = points.length;
+    if (n < 2) return null;
+    const lat0 = points.reduce((a,p)=>a+p.lat,0)/n;
+    const lon0 = points.reduce((a,p)=>a+p.lon,0)/n;
+
+    const kx = 111.32 * Math.cos(lat0 * Math.PI/180);
+    const ky = 110.574;
+
+    const xs = points.map(p => (p.lon - lon0) * kx);
+    const ys = points.map(p => (p.lat - lat0) * ky);
+
+    let sdx2 = 0, sdy2 = 0, sxy = 0;
+    for (let i=0;i<n;i++){
+      sdx2 += xs[i]*xs[i];
+      sdy2 += ys[i]*ys[i];
+      sxy  += xs[i]*ys[i];
+    }
+    const varx = sdx2/n;
+    const vary = sdy2/n;
+    const cov  = sxy/n;
+
+    const tr = varx + vary;
+    const det = varx*vary - cov*cov;
+    const disc = Math.max(0, tr*tr - 4*det);
+    const l1 = (tr + Math.sqrt(disc)) / 2;
+    const l2 = (tr - Math.sqrt(disc)) / 2;
+
+    const major = Math.sqrt(Math.max(0,l1));
+    const minor = Math.sqrt(Math.max(0,l2));
+    const angle = 0.5 * Math.atan2(2*cov, (varx - vary));
+    const az = (angle * 180/Math.PI + 360) % 180;
+
+    const sd = Math.sqrt((varx + vary));
+    return { sd, major, minor, az };
+  }
+
+  function computeVariogram(points, rMaxKm=20, bins=20){
+    const usable = points.filter(p => Number.isFinite(p.frp));
+    const n = usable.length;
+    if (n < 6) return null;
+
+    const dr = rMaxKm / bins;
+    const count = new Array(bins).fill(0);
+    const sumSq = new Array(bins).fill(0);
+
+    for (let i=0;i<n;i++){
+      for (let j=i+1;j<n;j++){
+        const d = kmDistance(usable[i], usable[j]);
+        if (d <= rMaxKm){
+          const k = Math.min(bins-1, Math.floor(d / dr));
+          const diff = usable[i].frp - usable[j].frp;
+          sumSq[k] += diff*diff;
+          count[k] += 1;
+        }
+      }
+    }
+
+    const hs = [];
+    const gamma = [];
+    for (let k=0;k<bins;k++){
+      const h = (k+0.5)*dr;
+      hs.push(+h.toFixed(3));
+      if (count[k] > 0){
+        gamma.push(0.5 * (sumSq[k]/count[k]));
+      } else {
+        gamma.push(null);
+      }
+    }
+
+    return { hs, gamma };
+  }
+
+  function updateGeoKPIs(geo){
+    $("g_area").textContent = geo.areaKm2 != null ? geo.areaKm2.toFixed(2) : "—";
+    $("g_area_s").textContent = geo.areaLabel || "recorte actual";
+
+    $("g_n").textContent = `${geo.nSample} / ${geo.nTotal}`;
+    $("g_n_s").textContent = geo.sampleNote || "";
+
+    $("g_lambda").textContent = geo.lam != null ? geo.lam.toFixed(4) : "—";
+
+    $("g_nni").textContent = geo.nni != null ? geo.nni.toFixed(3) : "—";
+    $("g_nni_s").textContent = geo.nniText || "—";
+
+    $("g_z").textContent = geo.z != null ? geo.z.toFixed(2) : "—";
+    $("g_p").textContent = geo.p != null ? `p: ${geo.p.toExponential(2)}` : "p: —";
+
+    $("g_lmax").textContent = geo.lmax != null ? `${geo.lmax.toFixed(3)} km` : "—";
+    $("g_lr").textContent = geo.lAt != null ? `escala r: ${geo.lAt.toFixed(2)} km` : "escala r: — km";
+
+    $("g_mc").textContent = geo.mcLabel || "—";
+    $("g_mc_s").textContent = geo.mcP || "p(cluster): —";
+
+    $("g_sd").textContent = geo.sd != null ? `${geo.sd.toFixed(2)} km` : "—";
+    $("g_sde").textContent = geo.sdeText || "elipse: —";
+  }
+
+  function updateChartsAndGeo(rows){
+    // Temporal + tendencia
+    const { dates, counts, frps } = buildDailySeries(rows);
+    const xs = dates.map((_,i)=>i);
+    const reg = linearRegression(xs, counts);
+    const trend = xs.map(x => reg.a*x + reg.b);
+    $("trendNote").textContent = `Tendencia (detecciones/día, OLS): y = ${reg.a.toFixed(3)}x + ${reg.b.toFixed(3)} · R² = ${Math.max(0, Math.min(1, reg.r2)).toFixed(3)}`;
+
+    const ctx1 = $("chartDaily").getContext("2d");
+    if (chartDaily) chartDaily.destroy();
+    chartDaily = new Chart(ctx1, {
+      type: "line",
+      data: {
+        labels: dates,
+        datasets: [
+          { label: "Detecciones/día", data: counts, tension: 0.25 },
+          { label: "Tendencia (OLS)", data: trend, tension: 0, borderDash: [6,6], pointRadius: 0 },
+          { label: "FRP/día (MW)", data: frps, yAxisID: "y2", tension: 0.25 }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: "bottom" } },
+        scales: {
+          y: { beginAtZero: true, title: { display: true, text: "Detecciones" } },
+          y2: { beginAtZero: true, position: "right", grid: { drawOnChartArea: false }, title: { display: true, text: "FRP (MW)" } }
+        }
+      }
+    });
+
+    // Sensor chart
+    const bySensor = {};
+    for (const r of rows){ bySensor[r.source || "—"] = (bySensor[r.source || "—"] || 0) + 1; }
+    const sensors = Object.keys(bySensor).sort();
+    const vals = sensors.map(s => bySensor[s]);
+    const total = vals.reduce((a,b)=>a+b,0) || 1;
+    const perc = vals.map(v => 100*v/total);
+
+    const ctx2 = $("chartSensors").getContext("2d");
+    if (chartSensors) chartSensors.destroy();
+    chartSensors = new Chart(ctx2, {
+      type: "bar",
+      data: { labels: sensors, datasets: [{ label:"Detecciones", data: vals }, { label:"%", data: perc.map(v=>+v.toFixed(2)) }] },
+      options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true } } }
+    });
+
+    // Geo stats
+    const study = getStudyPolygonForCSR();
+    const areaKm2 = study.areaKm2;
+
+    const MAX_GEO_N = 350;
+    const ptsAll = rows.map(r => ({ lat:r.lat, lon:r.lon, frp: (Number.isFinite(r.frp)?r.frp:null) }))
+                      .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lon));
+    const pts = sampleRows(ptsAll, MAX_GEO_N);
+
+    const geo = {
+      areaKm2,
+      areaLabel: study.label,
+      nSample: pts.length,
+      nTotal: ptsAll.length,
+      sampleNote: ptsAll.length > pts.length ? `muestra aleatoria (cap=${MAX_GEO_N})` : "sin muestreo",
+      lam: (areaKm2 && pts.length) ? (pts.length/areaKm2) : null,
+      nni: null, z: null, p: null, nniText: "—",
+      lmax: null, lAt: null,
+      mcLabel: "—", mcP: "p(cluster): —",
+      sd: null, sdeText: null
+    };
+
+    if (!areaKm2 || pts.length < 10){
+      updateGeoKPIs(geo);
+      return;
+    }
+
+    const nni = computeNearestNeighborStats(pts, areaKm2);
+    if (nni){
+      geo.nni = nni.nni;
+      geo.z = nni.z;
+      geo.p = nni.p;
+      const pattern = (nni.nni < 1) ? "cluster" : (nni.nni > 1 ? "regular" : "CSR~1");
+      geo.nniText = `r̄obs=${nni.rObs.toFixed(3)} km · r̄exp=${nni.rExp.toFixed(3)} km · ${pattern}`;
+    }
+
+    const sde = computeSDE(pts);
+    if (sde){
+      geo.sd = sde.sd;
+      geo.sdeText = `a=${sde.major.toFixed(2)} km · b=${sde.minor.toFixed(2)} km · az=${sde.az.toFixed(1)}°`;
+    }
+
+    const rip = computeRipleyL(pts, areaKm2, 20, 25);
+    if (rip){
+      let imax = 0;
+      for (let i=1;i<rip.L.length;i++){
+        if (rip.L[i] > rip.L[imax]) imax = i;
+      }
+      geo.lmax = rip.L[imax];
+      geo.lAt = rip.rs[imax];
+    }
+
+    updateGeoKPIs(geo);
+
+    // NN chart
+    if (nni && nni.nn?.length){
+      const nnSorted = nni.nn.slice().sort((a,b)=>a-b);
+      const maxD = Math.min(10, nnSorted[Math.floor(nnSorted.length*0.98)] || 10);
+      const bins = 20;
+      const step = maxD / bins;
+      const h = new Array(bins).fill(0);
+      for (const d of nnSorted){
+        if (d > maxD) continue;
+        const k = Math.min(bins-1, Math.floor(d/step));
+        h[k] += 1;
+      }
+      const xh = h.map((_,k)=>+( (k+0.5)*step ).toFixed(3));
+      const ctxNN = $("chartNN").getContext("2d");
+      if (chartNN) chartNN.destroy();
+      chartNN = new Chart(ctxNN, {
+        type: "bar",
+        data: { labels: xh.map(v=>String(v)), datasets: [{ label: "Vecino más cercano (km) — histograma", data: h }] },
+        options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true }, x:{ title:{ display:true, text:"km" } } } }
+      });
+    }
+
+    // Variogram
+    const vario = computeVariogram(pts, 20, 20);
+    const ctxV = $("chartVariogram").getContext("2d");
+    if (chartVariogram) chartVariogram.destroy();
+    chartVariogram = new Chart(ctxV, {
+      type: "line",
+      data: {
+        labels: vario ? vario.hs.map(v=>String(v)) : [],
+        datasets: vario ? [{ label: "Variograma experimental γ(h) de FRP", data: vario.gamma.map(v => v==null?null:+v.toFixed(4)), tension: 0.1 }] : []
+      },
+      options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ title:{ display:true, text:"γ(h)" } }, x:{ title:{ display:true, text:"h (km)" } } } }
+    });
+
+    // Ripley with envelope
+    (async () => {
+      const ctxR = $("chartRipley").getContext("2d");
+      if (chartRipley) chartRipley.destroy();
+
+      const mc = await ripleyMonteCarlo(pts, study, 20, 25);
+      if (!mc){
+        chartRipley = new Chart(ctxR, {
+          type: "line",
+          data: { labels: rip ? rip.rs.map(r=>String(r.toFixed(3))) : [], datasets: rip ? [{ label: "L(r) observado", data: rip.L.map(v=>+v.toFixed(4)), tension:0.1 }] : [] },
+          options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ title:{ display:true, text:"L(r) (km)" } }, x:{ title:{ display:true, text:"r (km)" } } } }
+        });
+        return;
+      }
+
+      let label = "CSR: no concluyente";
+      if (mc.pCluster < 0.05) label = "CSR: cluster (p<0.05)";
+      else if (mc.pRegular < 0.05) label = "CSR: regular (p<0.05)";
+
+      geo.mcLabel = label;
+      geo.mcP = `p(cluster): ${mc.pCluster.toExponential(2)} · p(regular): ${mc.pRegular.toExponential(2)} · sims=${mc.sims}`;
+      updateGeoKPIs(geo);
+
+      chartRipley = new Chart(ctxR, {
+        type: "line",
+        data: {
+          labels: mc.obs.rs.map(r=>String(r.toFixed(3))),
+          datasets: [
+            { label: "L(r) observado", data: mc.obs.L.map(v=>+v.toFixed(4)), tension: 0.1 },
+            { label: "Envelope superior (CSR)", data: mc.upper.map(v=>+v.toFixed(4)), tension: 0.1, pointRadius: 0, borderDash: [6,6] },
+            { label: "Envelope inferior (CSR)", data: mc.lower.map(v=>+v.toFixed(4)), tension: 0.1, pointRadius: 0, borderDash: [6,6] },
+          ]
+        },
+        options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ title:{ display:true, text:"L(r) (km)" } }, x:{ title:{ display:true, text:"r (km)" } } } }
+      });
+    })();
+  }
+
+  // MAIN RUN
   let autoTimer = null;
 
   async function checkHealth(){
@@ -1427,7 +1549,7 @@
     updateMap(lastData);
     buildTable(lastData);
     updateKPIs(j, lastData);
-    updateChartsAndStats(lastData);
+    updateChartsAndGeo(lastData);
     applyFilter();
 
     $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
@@ -1439,7 +1561,6 @@
       overlayGroup.clearLayers();
     }
 
-    // re-render map after layout changes (mobile)
     setTimeout(() => map.invalidateSize(), 120);
   }
 
@@ -1471,14 +1592,13 @@
     }
   }
 
-  // ======================
   // EVENTS
-  // ======================
   $("clipMode").addEventListener("change", () => updateClipUI());
   $("polySelect").addEventListener("change", () => {
     const mode = $("clipMode").value;
     if (["muni","micro","ap"].includes(mode)){
       renderPolyOverlay(mode, $("polySelect").value || "all");
+      updateChartsAndGeo(lastData);
     }
   });
 
@@ -1498,7 +1618,6 @@
   $("q").addEventListener("input", applyFilter);
   $("auto").addEventListener("change", setupAuto);
 
-  // Init
   (async function init(){
     fitToBBox(BBOX_PRESETS.solola);
     await checkHealth();
