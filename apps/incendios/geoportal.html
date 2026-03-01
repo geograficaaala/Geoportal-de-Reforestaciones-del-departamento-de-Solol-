@@ -4,9 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Incendios — Dashboard FIRMS (NRT) · Sololá</title>
-  <meta name="description" content="Dashboard SIG de anomalías térmicas (FIRMS NRT): filtros por periodo, sensores y recortes espaciales con KPIs geoestadísticos." />
 
-  <!-- Leaflet (sin SRI para evitar bloqueos) -->
+  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
@@ -21,44 +20,56 @@
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-  <!-- SheetJS (Excel export) -->
+  <!-- SheetJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
 
   <style>
     :root{
-      --bg-0:#fff7f0;
-      --bg-1:#fff2e6;
+      /* Verde / amarillo */
+      --bg0:#f6fff7;
+      --bg1:#fffdf1;
       --card:rgba(255,255,255,.92);
       --card2:rgba(255,255,255,.98);
-      --ink:#2b1d12;
-      --muted:#6a4e3c;
-      --brand:#ff7a45;
-      --stroke:rgba(32,18,10,.12);
 
-      --hi:#ff5a5f;
-      --nom:#ffb703;
-      --low:#6c757d;
+      --ink:#1a2a1e;
+      --muted:#4b6354;
+      --stroke:rgba(18,42,28,.12);
 
-      --shadow: 0 14px 40px rgba(40,20,10,.12);
-      --shadow-sm: 0 10px 22px rgba(40,20,10,.10);
-      --radius: 16px;
+      --green:#1f9d55;
+      --lime:#a3e635;
+      --amber:#fbbf24;
+      --gold:#f59e0b;
+
+      --hi:#16a34a;
+      --nom:#f59e0b;
+      --low:#94a3b8;
+
+      --shadow: 0 14px 40px rgba(20,60,30,.12);
+      --shadow-sm: 0 10px 22px rgba(20,60,30,.10);
+      --radius: 18px;
     }
+
     *{box-sizing:border-box}
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
       color:var(--ink);
       background:
-        radial-gradient(900px 560px at 0% 0%, rgba(255,122,69,.18), transparent 62%),
-        radial-gradient(900px 560px at 100% 0%, rgba(255,183,3,.16), transparent 62%),
-        linear-gradient(180deg, var(--bg-0), var(--bg-1));
+        radial-gradient(900px 560px at 0% 0%, rgba(31,157,85,.16), transparent 62%),
+        radial-gradient(900px 560px at 100% 0%, rgba(245,158,11,.14), transparent 62%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
       min-height:100vh;
     }
 
     header{
       position: sticky;
       top: 0;
-      z-index: 50;
+      z-index: 60;
       backdrop-filter: blur(10px);
       background: rgba(255,255,255,.78);
       border-bottom: 1px solid var(--stroke);
@@ -95,11 +106,12 @@
 
     main{
       display:grid;
-      grid-template-columns: 390px 1fr;
+      grid-template-columns: 400px 1fr;
       gap:14px;
       padding: 14px 14px 18px;
       align-items:stretch;
     }
+
     .panel{
       background: var(--card);
       border: 1px solid var(--stroke);
@@ -112,10 +124,15 @@
       margin:0;
       padding:12px 14px;
       font-size:13px;
-      color:#3a2416;
+      color:#183522;
       border-bottom: 1px solid rgba(0,0,0,.06);
       background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.82));
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
     }
+    .panel h2 small{ font-weight:600; color: var(--muted); }
     .panel .content{ padding: 12px 14px 14px; }
 
     .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
@@ -137,7 +154,7 @@
       border:1px solid rgba(0,0,0,.14);
       border-radius:12px;
     }
-    .checks .row{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:#3a2416; }
+    .checks .row{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:#183522; }
     .checks small{ display:block; color:var(--muted); margin-top:2px; }
 
     .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
@@ -145,17 +162,17 @@
       border:none; cursor:pointer;
       padding:10px 12px;
       border-radius: 12px;
-      font-weight:800; font-size:12.5px;
+      font-weight:850; font-size:12.5px;
     }
-    .btn-primary{ background: linear-gradient(135deg, var(--brand), #ffb45a); color:#fff; }
-    .btn-ghost{ background:#fff; border:1px solid rgba(0,0,0,.14); color:#2b1d12; }
+    .btn-primary{ background: linear-gradient(135deg, var(--green), var(--amber)); color:#fff; }
+    .btn-ghost{ background:#fff; border:1px solid rgba(0,0,0,.14); color:#153220; }
 
     .status{
       margin-top:10px;
       padding:10px;
       border-radius:12px;
       background:#fff;
-      border:1px dashed rgba(255,122,69,.35);
+      border:1px dashed rgba(31,157,85,.35);
       color: var(--muted);
       font-size:12px;
       line-height:1.35;
@@ -170,24 +187,24 @@
       border:1px solid rgba(0,0,0,.10);
       color: var(--muted);
       font-size:12px;
-      line-height:1.4;
+      line-height:1.45;
     }
     .notes ul{ margin:8px 0 0; padding-left: 18px; }
     .notes li{ margin:6px 0; }
 
     .right{
       display:grid;
-      grid-template-rows: auto auto auto 1fr;
+      grid-template-rows: auto auto auto auto auto;
       gap:14px;
       min-width:0;
     }
 
     .mapWrap{ padding:12px 14px 14px; position:relative; }
     #map{
-      height: 520px;
-      min-height: 520px;
+      height: 460px;
+      min-height: 460px;
       border-radius: var(--radius);
-      background: #f6efe9;
+      background: #f2fbf4;
       outline: 1px solid rgba(0,0,0,.06);
     }
     .mapError{
@@ -233,7 +250,37 @@
       min-width:0;
     }
     .kpi .k{ font-size:11px; color:var(--muted); }
-    .kpi .v{ font-size:16px; font-weight:950; margin-top:4px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .kpi .v{ font-size:16px; font-weight:950; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+    .chartsGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    .chartCard{
+      background:#fff;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius:14px;
+      padding:10px;
+      min-width:0;
+    }
+    .chartTitle{
+      font-size:12px;
+      font-weight:850;
+      color:#183522;
+      margin-bottom:6px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .chartEq{
+      margin-top:6px;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+      overflow:auto;
+    }
 
     .geoKpiGrid{
       display:grid;
@@ -252,15 +299,33 @@
     .geoKpi .v{ font-size:15px; font-weight:950; margin-top:4px; }
     .geoKpi .s{ font-size:11px; color:var(--muted); margin-top:4px; line-height:1.25; }
 
-    .analysisGrid{
-      display:grid;
-      grid-template-columns: 1.15fr .85fr;
-      gap:14px;
-      min-width:0;
-      padding-bottom: 14px;
+    .geoInterpret{
+      margin: 0 14px 14px;
+      padding: 12px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.88);
+      border: 1px dashed rgba(0,0,0,.12);
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
     }
-    .filters{ display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
-    .filters input{ flex:1; min-width: 220px; }
+
+    .eq{
+      padding: 10px 14px 14px;
+      border-top: 1px dashed rgba(0,0,0,.10);
+      background: rgba(255,255,255,.7);
+    }
+    .eq .eq-title{ font-size:12px; color:var(--muted); font-weight:850; margin-bottom:8px; }
+    .eq .eq-box{
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: 14px;
+      padding: 10px 12px;
+      background:#fff;
+      overflow:auto;
+    }
+
+    .filtersRow{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .filtersRow input{ flex:1; min-width: 220px; }
 
     .tableWrap{
       overflow:auto;
@@ -268,25 +333,26 @@
       border-radius: 14px;
       border: 1px solid rgba(0,0,0,.10);
       background:#fff;
+      margin-top:10px;
     }
     table{ width:100%; border-collapse: collapse; font-size:12px; }
     thead th{
       position:sticky; top:0; z-index:1;
-      background:#fff3e6;
+      background:#f0fff2;
       border-bottom:1px solid rgba(0,0,0,.10);
       text-align:left;
       padding:10px 8px;
-      color:#3a2416;
+      color:#183522;
       white-space:nowrap;
     }
     tbody td{
       border-bottom:1px solid rgba(0,0,0,.06);
       padding:8px 8px;
-      color:#2b1d12;
+      color:#153220;
       vertical-align:top;
       white-space:nowrap;
     }
-    tbody tr:hover{ background:#fff7f0; cursor:pointer; }
+    tbody tr:hover{ background:#f6fff7; cursor:pointer; }
 
     .hint{ font-size:12px; color:var(--muted); line-height:1.35; margin-top:8px; }
 
@@ -327,12 +393,12 @@
       padding: 4px 6px;
     }
 
-    @media (max-width: 1100px){
+    @media (max-width: 1120px){
       main{ grid-template-columns: 1fr; }
       .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .geoKpiGrid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .analysisGrid{ grid-template-columns: 1fr; }
-      #map{ height: 440px; min-height: 440px; }
+      .geoKpiGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .chartsGrid{ grid-template-columns: 1fr; }
+      #map{ height: 420px; min-height: 420px; }
     }
   </style>
 </head>
@@ -341,8 +407,8 @@
   <header>
     <div class="header-wrap">
       <div class="title">
-        <h1>Incendios forestales — Anomalías térmicas (FIRMS NRT)</h1>
-        <div class="sub">Sololá · Recortes SIG (BBOX / Municipios / Microcuencas / Áreas protegidas) · UTC</div>
+        <h1>Incendios — Anomalías térmicas (FIRMS NRT)</h1>
+        <div class="sub">Recorte por capas SIG (Municipios / Microcuencas / Áreas protegidas) · UTC</div>
       </div>
 
       <div class="chips">
@@ -360,9 +426,9 @@
   </header>
 
   <main>
-    <!-- Left controls -->
+    <!-- LEFT: filtros -->
     <section class="panel">
-      <h2>Filtros</h2>
+      <h2>Consulta y recorte <small>(solo capas)</small></h2>
       <div class="content">
         <div class="grid2">
           <div>
@@ -377,34 +443,19 @@
             </select>
           </div>
           <div>
-            <label for="clipMode">Recorte espacial</label>
+            <label for="clipMode">Capa de recorte</label>
             <select id="clipMode">
-              <option value="bbox_solola" selected>Sololá (BBOX)</option>
-              <option value="bbox_guatemala">Guatemala (BBOX)</option>
-              <option value="bbox_map">Extensión del mapa (BBOX)</option>
-              <option value="bbox_manual">BBOX personalizado</option>
-              <option value="muni">Municipio (Sololá)</option>
-              <option value="micro">Microcuenca (Atitlán)</option>
-              <option value="ap">Área protegida</option>
+              <option value="muni" selected>Municipios (Sololá)</option>
+              <option value="micro">Microcuencas (Atitlán)</option>
+              <option value="ap">Áreas protegidas</option>
             </select>
           </div>
         </div>
 
-        <div id="manualBBox" style="display:none; margin-top:10px">
-          <label>BBOX manual (west,south,east,north)</label>
-          <div class="grid2">
-            <input type="number" step="0.000001" id="w" placeholder="west (lon)">
-            <input type="number" step="0.000001" id="e" placeholder="east (lon)">
-          </div>
-          <div style="height:8px"></div>
-          <div class="grid2">
-            <input type="number" step="0.000001" id="s" placeholder="south (lat)">
-            <input type="number" step="0.000001" id="n" placeholder="north (lat)">
-          </div>
-        </div>
+        <div style="height:10px"></div>
 
-        <div id="polyPick" style="display:none; margin-top:10px">
-          <label id="polyLabel">Selección</label>
+        <div>
+          <label id="polyLabel">Elemento de recorte</label>
           <select id="polySelect"></select>
           <div class="hint" id="polyHint"></div>
         </div>
@@ -457,29 +508,26 @@
         <div class="btns">
           <button class="btn-primary" id="btnRun">Actualizar</button>
           <button class="btn-ghost" id="btnFit">Ajustar mapa</button>
-          <button class="btn-ghost" id="btnCSV">CSV</button>
-          <button class="btn-ghost" id="btnExcel">Excel</button>
-          <button class="btn-ghost" id="btnGeoJSON">GeoJSON</button>
         </div>
 
         <div class="status" id="status">Listo.</div>
 
         <div class="notes">
-          <b>Notas técnicas (FIRMS Active Fire / NRT)</b>
+          <b>Notas técnicas</b>
           <ul>
-            <li>Hotspots ≠ perímetro. VIIRS (Suomi‑NPP / NOAA‑20 / NOAA‑21) y MODIS (Terra/Aqua) detectan <b>fuego activo/anomalía térmica</b>.</li>
-            <li>La observación depende del <b>paso orbital</b> y de nubosidad/humo; puede haber omisiones y múltiples detecciones del mismo evento.</li>
-            <li>Resolución aproximada: <b>VIIRS ~375 m</b> y <b>MODIS ~1 km</b>. La ubicación es una aproximación del píxel detectado.</li>
-            <li>FRP (MW) es un indicador radiativo de energía del fuego (no es área quemada).</li>
+            <li>Hotspots (fuego activo) ≠ perímetro ni área quemada. Ubicación aproximada al píxel (VIIRS ~375 m; MODIS ~1 km).</li>
+            <li>Nubosidad/humo y tiempo de paso orbital pueden ocultar focos; se recomienda verificación operativa local.</li>
+            <li>FRP (MW) es potencia radiativa del fuego (indicador energético), no equivale directamente a superficie afectada.</li>
           </ul>
         </div>
       </div>
     </section>
 
-    <!-- Right -->
+    <!-- RIGHT -->
     <section class="right">
+      <!-- 1) MAPA -->
       <section class="panel">
-        <h2>Mapa</h2>
+        <h2>Mapa <small id="mapSubtitle">—</small></h2>
         <div class="mapWrap">
           <div id="map"></div>
           <div class="mapError" id="mapError"></div>
@@ -491,79 +539,119 @@
         </div>
       </section>
 
+      <!-- 2) KPIs operativos -->
       <section class="panel">
-        <h2>KPIs</h2>
+        <h2>KPIs operativos <small>(recorte actual)</small></h2>
         <div class="kpis">
-          <div class="kpi"><div class="k">Detecciones (filtradas)</div><div class="v" id="k_total">—</div></div>
+          <div class="kpi"><div class="k">Detecciones</div><div class="v" id="k_total">—</div></div>
           <div class="kpi"><div class="k">Alta confianza</div><div class="v" id="k_high">—</div></div>
           <div class="kpi"><div class="k">FRP total (MW)</div><div class="v" id="k_frp">—</div></div>
           <div class="kpi"><div class="k">Última detección (UTC)</div><div class="v" id="k_last">—</div></div>
         </div>
       </section>
 
+      <!-- 3) GRÁFICAS -->
       <section class="panel">
-        <h2>Geoestadística</h2>
-        <div class="geoKpiGrid">
-          <div class="geoKpi"><div class="k">Área A (km²)</div><div class="v" id="g_area">—</div><div class="s" id="g_area_s">recorte actual</div></div>
-          <div class="geoKpi"><div class="k">n (muestra / total)</div><div class="v" id="g_n">—</div><div class="s" id="g_n_s">cap O(n²)</div></div>
-          <div class="geoKpi"><div class="k">Intensidad λ (pts/km²)</div><div class="v" id="g_lambda">—</div><div class="s">λ = n/A</div></div>
-          <div class="geoKpi"><div class="k">NNI (Clark–Evans)</div><div class="v" id="g_nni">—</div><div class="s" id="g_nni_s">r̄obs / r̄exp</div></div>
-
-          <div class="geoKpi"><div class="k">z-score (NNI)</div><div class="v" id="g_z">—</div><div class="s" id="g_p">p: —</div></div>
-          <div class="geoKpi"><div class="k">Ripley L(r) pico</div><div class="v" id="g_lmax">—</div><div class="s" id="g_lr">escala r: — km</div></div>
-          <div class="geoKpi"><div class="k">CSR Monte Carlo</div><div class="v" id="g_mc">—</div><div class="s" id="g_mc_s">p(cluster): —</div></div>
-          <div class="geoKpi"><div class="k">SDE (σ, km)</div><div class="v" id="g_sd">—</div><div class="s" id="g_sde">elipse: —</div></div>
-        </div>
+        <h2>Gráficas <small>(recorte espacial)</small></h2>
         <div class="content">
-          <div class="hint" id="g_note">
-            Ecuaciones: r̄exp = 0.5/√λ (CSR) · K(r)=(A/(n(n−1)))·2·#{d≤r} · L(r)=√(K/π)−r · γ(h)=½·mean[(zᵢ−zⱼ)²]
+          <div class="chartsGrid">
+            <div class="chartCard">
+              <div class="chartTitle">Serie temporal & tendencia (OLS)</div>
+              <canvas id="chartDaily" height="150"></canvas>
+              <div class="chartEq" id="eqDaily"></div>
+            </div>
+
+            <div class="chartCard">
+              <div class="chartTitle">Detecciones por sensor</div>
+              <canvas id="chartSensors" height="150"></canvas>
+            </div>
+
+            <div class="chartCard">
+              <div class="chartTitle">Ripley \(L(r)\) + envelope CSR</div>
+              <canvas id="chartRipley" height="150"></canvas>
+              <div class="chartEq" id="eqRipley"></div>
+            </div>
+
+            <div class="chartCard">
+              <div class="chartTitle">Variograma experimental \(\gamma(h)\) (FRP)</div>
+              <canvas id="chartVariogram" height="150"></canvas>
+              <div class="chartEq" id="eqVario"></div>
+            </div>
+
+            <div class="chartCard">
+              <div class="chartTitle">Histograma vecino más cercano</div>
+              <canvas id="chartNN" height="150"></canvas>
+            </div>
           </div>
         </div>
       </section>
 
+      <!-- 4) GEOESTADÍSTICA -->
       <section class="panel">
-        <h2>Análisis</h2>
-        <div class="content">
-          <div class="analysisGrid">
-            <div>
-              <div class="filters">
-                <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite…)" />
-                <button class="btn-ghost" id="btnClear">Limpiar filtro</button>
-              </div>
+        <h2>Geoestadística <small>(NNI / CSR / SDE)</small></h2>
+        <div class="geoKpiGrid">
+          <div class="geoKpi"><div class="k">Área \(A\)</div><div class="v" id="g_area">—</div><div class="s" id="g_area_s">—</div></div>
+          <div class="geoKpi"><div class="k">Muestra \(n\) / Total</div><div class="v" id="g_n">—</div><div class="s" id="g_n_s">—</div></div>
+          <div class="geoKpi"><div class="k">Intensidad \(\lambda\)</div><div class="v" id="g_lambda">—</div><div class="s">\(\lambda=n/A\)</div></div>
+          <div class="geoKpi"><div class="k">NNI</div><div class="v" id="g_nni">—</div><div class="s" id="g_nni_s">—</div></div>
 
-              <div class="tableWrap">
-                <table id="tbl">
-                  <thead>
-                    <tr>
-                      <th>UTC</th>
-                      <th>Zona</th>
-                      <th>Sensor</th>
-                      <th>Conf.</th>
-                      <th>Lat</th>
-                      <th>Lon</th>
-                      <th>FRP</th>
-                    </tr>
-                  </thead>
-                  <tbody></tbody>
-                </table>
-              </div>
+          <div class="geoKpi"><div class="k">z / p</div><div class="v" id="g_z">—</div><div class="s" id="g_p">p: —</div></div>
+          <div class="geoKpi"><div class="k">Pico \(L(r)\)</div><div class="v" id="g_lmax">—</div><div class="s" id="g_lr">—</div></div>
+          <div class="geoKpi"><div class="k">CSR (Monte Carlo)</div><div class="v" id="g_mc">—</div><div class="s" id="g_mc_s">—</div></div>
+          <div class="geoKpi"><div class="k">SDE / Elipse</div><div class="v" id="g_sd">—</div><div class="s" id="g_sde">—</div></div>
+        </div>
 
-              <div class="hint" id="tableNote"></div>
-            </div>
+        <div class="geoInterpret" id="geoInterpret">
+          Interpretación: — 
+        </div>
 
-            <div>
-              <canvas id="chartDaily" height="160"></canvas>
-              <div style="height:12px"></div>
-              <canvas id="chartSensors" height="160"></canvas>
-              <div style="height:12px"></div>
-              <canvas id="chartRipley" height="160"></canvas>
-              <div style="height:12px"></div>
-              <canvas id="chartVariogram" height="160"></canvas>
-              <div style="height:12px"></div>
-              <canvas id="chartNN" height="160"></canvas>
-              <div class="hint" id="trendNote"></div>
-            </div>
+        <div class="eq">
+          <div class="eq-title">Ecuaciones (render tipo “Word”)</div>
+          <div class="eq-box" id="eqBox">
+$$
+\begin{aligned}
+\bar r_{\mathrm{exp}} &= \frac{1}{2\sqrt{\lambda}}, \qquad \mathrm{NNI}=\frac{\bar r_{\mathrm{obs}}}{\bar r_{\mathrm{exp}}} \\
+K(r) &= \frac{A}{n(n-1)}\sum_{i\ne j}\mathbf{1}\{d_{ij}\le r\}, \qquad L(r)=\sqrt{\frac{K(r)}{\pi}}-r \\
+\gamma(h) &= \frac{1}{2}\,\mathbb{E}\left[(z(\mathbf{s})-z(\mathbf{s+h}))^2\right]
+\end{aligned}
+$$
           </div>
+        </div>
+      </section>
+
+      <!-- 5) TABLA -->
+      <section class="panel">
+        <h2>Tabla de resultados <small>(descarga Excel/CSV)</small></h2>
+        <div class="content">
+          <div class="filtersRow">
+            <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite…)" />
+            <button class="btn-ghost" id="btnClear">Limpiar</button>
+          </div>
+
+          <div class="btns" style="margin-top:10px">
+            <button class="btn-ghost" id="btnExcel">Excel (tabla)</button>
+            <button class="btn-ghost" id="btnCSV">CSV (tabla)</button>
+            <button class="btn-ghost" id="btnGeoJSON">GeoJSON (puntos)</button>
+          </div>
+
+          <div class="tableWrap">
+            <table id="tbl">
+              <thead>
+                <tr>
+                  <th>UTC</th>
+                  <th>Zona</th>
+                  <th>Sensor</th>
+                  <th>Conf.</th>
+                  <th>Lat</th>
+                  <th>Lon</th>
+                  <th>FRP</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="hint" id="tableNote"></div>
         </div>
       </section>
     </section>
@@ -571,7 +659,7 @@
 
   <footer>
     <div class="footer-box">
-      <div style="text-align:center; font-weight:800;">Eje de Bosques · CODEMA Sololá · Instituciones participantes</div>
+      <div style="text-align:center; font-weight:850;">Eje de Bosques · CODEMA Sololá · Instituciones participantes</div>
       <div class="footer-logos" aria-label="Logos institucionales">
         <img src="../../BOSQUE.png" alt="Eje de Bosques">
         <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
@@ -587,22 +675,21 @@
         <img src="../../aires.png" alt="AIR">
       </div>
       <div style="text-align:center; margin-top:10px;">
-        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Geoprocesos (Turf.js) · Visualización (Leaflet/Chart.js)
+        Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Turf.js · Leaflet · Chart.js · KaTeX
       </div>
     </div>
   </footer>
 
 <script>
 (() => {
+  // ======================
+  // CONFIG
+  // ======================
   const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
   const LAYER_SOURCES = {
-    muni:  { url: "./data/municipios_solola.geojson", label: "Municipio (Sololá)" },
-    micro: { url: "./data/microcuencas_atitlan.geojson", label: "Microcuenca (Atitlán)" },
-    ap:    { url: "./data/areas_protegidas.geojson", label: "Área protegida" },
-  };
-  const BBOX_PRESETS = {
-    solola:    [-91.586608, 14.495833, -91.040503, 14.992742],
-    guatemala: [-92.3592, 13.5235, -88.0458, 18.0436],
+    muni:  { url: "./data/municipios_solola.geojson", label: "Municipios (Sololá)" },
+    micro: { url: "./data/microcuencas_atitlan.geojson", label: "Microcuencas (Atitlán)" },
+    ap:    { url: "./data/areas_protegidas.geojson", label: "Áreas protegidas" },
   };
 
   const $ = (id) => document.getElementById(id);
@@ -619,6 +706,12 @@
     showMapError(`Error JavaScript: <code>${m}</code><br/>Abre DevTools → Console para ver detalles.`);
   });
 
+  function setStatus(msg){ $("status").textContent = msg; }
+  function fmt(n, d=0){
+    if (n === null || n === undefined || Number.isNaN(n)) return "—";
+    return new Intl.NumberFormat("es-GT",{ maximumFractionDigits:d }).format(n);
+  }
+
   function confClass(c){
     const s = String(c ?? "").trim().toLowerCase();
     const n = Number(s);
@@ -632,19 +725,16 @@
     if (["l","low"].includes(s)) return "low";
     return "unknown";
   }
+
   function confColor(c){
-    const k = confClass(c);
     const css = getComputedStyle(document.documentElement);
+    const k = confClass(c);
     if (k === "high") return css.getPropertyValue("--hi").trim();
     if (k === "nominal") return css.getPropertyValue("--nom").trim();
     return css.getPropertyValue("--low").trim();
   }
-  function fmt(n, d=0){
-    if (n === null || n === undefined || Number.isNaN(n)) return "—";
-    return new Intl.NumberFormat("es-GT",{ maximumFractionDigits:d }).format(n);
-  }
+
   function bboxStr(arr){ return arr.map(v => Number(v.toFixed(6))).join(","); }
-  function setStatus(msg){ $("status").textContent = msg; }
 
   function getSensors(){
     const out = [];
@@ -655,13 +745,16 @@
     return out;
   }
 
+  // ======================
   // MAP INIT
+  // ======================
   if (!window.L){
     showMapError(`No se cargó Leaflet (<code>L</code>). Revisa tu conexión o si un bloqueador está deteniendo <code>unpkg.com</code>.`);
     return;
   }
 
   let map, clusters, overlayGroup;
+
   const iconCache = new Map();
   function markerIcon(color){
     if (iconCache.has(color)) return iconCache.get(color);
@@ -691,22 +784,27 @@
 
     L.control.layers({ "OSM": osm, "Satélite (Esri)": imagery }, {}, { position: "topleft" }).addTo(map);
 
-    if (typeof L.markerClusterGroup === "function"){
-      clusters = L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 });
-    } else {
-      clusters = L.layerGroup();
-      setStatus("Aviso: no se cargó Leaflet.markercluster; usando capa simple.");
-    }
-    map.addLayer(clusters);
+    clusters = (typeof L.markerClusterGroup === "function")
+      ? L.markerClusterGroup({ chunkedLoading: true, showCoverageOnHover: false, maxClusterRadius: 55 })
+      : L.layerGroup();
 
+    map.addLayer(clusters);
     overlayGroup = L.layerGroup().addTo(map);
+
     setTimeout(() => map.invalidateSize(), 250);
   }catch(err){
     showMapError(`No se pudo inicializar el mapa: <code>${String(err)}</code>`);
     return;
   }
 
-  // POLYGONS
+  function fitToBBox(arr){
+    const b = L.latLngBounds([arr[1], arr[0]], [arr[3], arr[2]]);
+    map.fitBounds(b.pad(0.06));
+  }
+
+  // ======================
+  // POLYGONS (capas)
+  // ======================
   const polyState = {
     muni:  { loaded:false, gj:null, items:[], nameField:null },
     micro: { loaded:false, gj:null, items:[], nameField:null },
@@ -737,6 +835,8 @@
     if (!st || st.loaded) return;
 
     const src = LAYER_SOURCES[mode];
+    setStatus(`Cargando capa: ${src.label}...`);
+
     const r = await fetch(src.url, { cache: "no-store" });
     if (!r.ok) throw new Error(`No se pudo cargar ${src.url} (HTTP ${r.status})`);
     const gj = await r.json();
@@ -749,38 +849,21 @@
       const f = gj.features[i];
       const id = f.id ?? (f.properties?.id ?? i);
       const nm = st.nameField ? String(f.properties?.[st.nameField] ?? "").trim() : `Polígono ${i+1}`;
-      const bb = turf.bbox(f);
+      const bb = turf.bbox(f); // [w,s,e,n]
       items.push({ id: String(id), name: nm || `Polígono ${i+1}`, feature: f, bbox: bb, area_m2: turf.area(f) });
     }
     items.sort((a,b) => a.name.localeCompare(b.name, "es"));
     st.items = items;
     st.loaded = true;
-  }
 
-  function renderPolyOverlay(mode, selectedId){
-    overlayGroup.clearLayers();
-    const st = polyState[mode];
-    if (!st?.loaded) return;
-
-    let features = [];
-    if (selectedId === "all"){
-      features = st.gj.features;
-    } else {
-      const it = st.items.find(x => x.id === selectedId);
-      if (it) features = [it.feature];
-    }
-    if (!features.length) return;
-
-    L.geoJSON({ type:"FeatureCollection", features }, {
-      style: { color:"#ff7a45", weight:2, opacity:0.85, fillColor:"#ffb703", fillOpacity:0.08 }
-    }).addTo(overlayGroup);
+    setStatus(`Capa lista: ${src.label} · ${items.length} polígonos`);
   }
 
   function populatePolySelect(mode){
     const st = polyState[mode];
     const src = LAYER_SOURCES[mode];
 
-    $("polyLabel").textContent = `Selecciona ${src.label}`;
+    $("polyLabel").textContent = `Elemento de recorte — ${src.label}`;
     $("polyHint").textContent = `Campo etiqueta: ${st.nameField || "auto"} · Polígonos: ${st.items.length}`;
 
     const sel = $("polySelect");
@@ -800,86 +883,61 @@
     sel.value = "all";
   }
 
-  function getBBoxFromUI(){
-    const clipMode = $("clipMode").value;
+  function renderPolyOverlay(mode, selectedId){
+    overlayGroup.clearLayers();
+    const st = polyState[mode];
+    if (!st?.loaded) return;
 
-    if (clipMode === "bbox_solola") return BBOX_PRESETS.solola;
-    if (clipMode === "bbox_guatemala") return BBOX_PRESETS.guatemala;
-
-    if (clipMode === "bbox_map"){
-      const b = map.getBounds();
-      return [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()];
-    }
-    if (clipMode === "bbox_manual"){
-      const w = Number($("w").value), s = Number($("s").value), e = Number($("e").value), n = Number($("n").value);
-      if (![w,s,e,n].every(Number.isFinite) || e <= w || n <= s) return null;
-      return [w,s,e,n];
-    }
-    if (["muni","micro","ap"].includes(clipMode)){
-      const st = polyState[clipMode];
-      if (!st?.loaded) return BBOX_PRESETS.solola;
-      const selectedId = $("polySelect").value || "all";
-      if (selectedId === "all") return turf.bbox(st.gj);
+    let features = [];
+    if (selectedId === "all"){
+      features = st.gj.features;
+    } else {
       const it = st.items.find(x => x.id === selectedId);
-      return it ? it.bbox : turf.bbox(st.gj);
+      if (it) features = [it.feature];
     }
-    return BBOX_PRESETS.solola;
+    if (!features.length) return;
+
+    L.geoJSON({ type:"FeatureCollection", features }, {
+      style: { color:"#1f9d55", weight:2, opacity:0.85, fillColor:"#fbbf24", fillOpacity:0.08 }
+    }).addTo(overlayGroup);
   }
 
-  function fitToBBox(arr){
-    const b = L.latLngBounds([arr[1], arr[0]], [arr[3], arr[2]]);
-    map.fitBounds(b.pad(0.06));
-  }
+  function getStudyDomain(){
+    const mode = $("clipMode").value;
+    const st = polyState[mode];
+    const sel = $("polySelect").value || "all";
 
-  function getStudyPolygonForCSR(){
-    const clipMode = $("clipMode").value;
-
-    if (!["muni","micro","ap"].includes(clipMode)){
-      const bb = getBBoxFromUI();
-      const poly = turf.bboxPolygon(bb);
-      return { poly, bbox: bb, areaKm2: turf.area(poly)/1e6, label: "BBOX" };
-    }
-
-    const st = polyState[clipMode];
     if (!st?.loaded){
-      const bb = BBOX_PRESETS.solola;
-      const poly = turf.bboxPolygon(bb);
-      return { poly, bbox: bb, areaKm2: turf.area(poly)/1e6, label: "BBOX" };
+      const fallback = [-91.586608, 14.495833, -91.040503, 14.992742];
+      return { bbox: fallback, areaKm2: turf.area(turf.bboxPolygon(fallback))/1e6, label: "Sololá (fallback bbox)", poly: turf.bboxPolygon(fallback) };
     }
 
-    const selectedId = $("polySelect").value || "all";
-    if (selectedId !== "all"){
-      const it = st.items.find(x => x.id === selectedId);
+    if (sel !== "all"){
+      const it = st.items.find(x => x.id === sel);
       if (it){
-        return { poly: it.feature, bbox: it.bbox, areaKm2: it.area_m2/1e6, label: it.name };
+        return { bbox: it.bbox, areaKm2: it.area_m2/1e6, label: it.name, poly: it.feature };
       }
     }
 
     const bb = turf.bbox(st.gj);
-    const poly = turf.bboxPolygon(bb);
-    return { poly, bbox: bb, areaKm2: turf.area(poly)/1e6, label: `${LAYER_SOURCES[clipMode].label} (bbox)` };
+    return { bbox: bb, areaKm2: turf.area(turf.bboxPolygon(bb))/1e6, label: `${LAYER_SOURCES[mode].label} (bbox)`, poly: turf.bboxPolygon(bb) };
   }
 
-  function pointFilterByPolygon(rows){
-    const clipMode = $("clipMode").value;
-    if (!["muni","micro","ap"].includes(clipMode)) {
-      return rows.map(r => ({...r, zone_type: "BBOX", zone_name: "—"}));
-    }
-    const st = polyState[clipMode];
-    if (!st?.loaded){
-      return rows.map(r => ({...r, zone_type: "SIG", zone_name: "—"}));
-    }
+  function pointInSelectedPolygons(rows){
+    const mode = $("clipMode").value;
+    const st = polyState[mode];
+    if (!st?.loaded) return rows;
 
-    const selectedId = $("polySelect").value || "all";
-    const polys = (selectedId === "all") ? st.items : st.items.filter(x => x.id === selectedId);
-    const zoneType = LAYER_SOURCES[clipMode].label;
+    const sel = $("polySelect").value || "all";
+    const polys = (sel === "all") ? st.items : st.items.filter(x => x.id === sel);
+    const zoneType = LAYER_SOURCES[mode].label;
 
     const out = [];
     for (const r of rows){
       if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) continue;
       const pt = turf.point([r.lon, r.lat]);
-
       let matched = null;
+
       for (const it of polys){
         if (r.lon < it.bbox[0] || r.lon > it.bbox[2] || r.lat < it.bbox[1] || r.lat > it.bbox[3]) continue;
         if (turf.booleanPointInPolygon(pt, it.feature)){
@@ -887,20 +945,19 @@
           break;
         }
       }
-      if (matched) out.push({ ...r, zone_type: zoneType, zone_name: matched.name });
+      if (matched){
+        out.push({ ...r, zone_type: zoneType, zone_name: matched.name });
+      }
     }
     return out;
   }
 
-  // TABLE + MAP
-  let lastData = [];
+  // ======================
+  // TABLE + MAP DATA
+  // ======================
+  let dataSpatial = [];
+  let dataTableView = [];
   let markerById = new Map();
-
-  let chartDaily = null;
-  let chartSensors = null;
-  let chartRipley = null;
-  let chartVariogram = null;
-  let chartNN = null;
 
   function updateMap(rows){
     clusters.clearLayers();
@@ -911,7 +968,7 @@
       const col = confColor(r.confidence);
       const mk = L.marker([r.lat, r.lon], { icon: markerIcon(col) });
 
-      const zone = r.zone_name && r.zone_name !== "—" ? `<div><b>${r.zone_type}:</b> ${r.zone_name}</div>` : "";
+      const zone = r.zone_name ? `<div><b>${r.zone_type}:</b> ${r.zone_name}</div>` : "";
       mk.bindPopup(`
         <div style="font-family:system-ui; font-size:12px; line-height:1.35">
           <div><b>${r.source}</b></div>
@@ -958,19 +1015,18 @@
     });
   }
 
-  function applyFilter(){
+  function applyTableFilter(){
     const q = $("q").value.trim().toLowerCase();
-    const rows = $("tbl").querySelectorAll("tbody tr");
-    let shown = 0;
-    rows.forEach(tr => {
-      const ok = !q || tr.textContent.toLowerCase().includes(q);
-      tr.style.display = ok ? "" : "none";
-      if (ok) shown++;
-    });
-    $("tableNote").textContent = `Mostrando ${shown} / ${lastData.length} filas (filtro local).`;
+    if (!q){
+      dataTableView = dataSpatial.slice();
+    } else {
+      dataTableView = dataSpatial.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+    }
+    buildTable(dataTableView);
+    $("tableNote").textContent = `Mostrando ${dataTableView.length} / ${dataSpatial.length} filas (filtro de tabla).`;
   }
 
-  function updateKPIs(rawPayload, rows){
+  function updateKPIs(rows, payload){
     const total = rows.length;
     const hi = rows.reduce((acc, r) => acc + (confClass(r.confidence) === "high" ? 1 : 0), 0);
     const frpSum = rows.reduce((acc, r) => acc + (Number.isFinite(r.frp) ? r.frp : 0), 0);
@@ -978,37 +1034,21 @@
     $("k_total").textContent = fmt(total);
     $("k_high").textContent = fmt(hi);
     $("k_frp").textContent = fmt(frpSum, 3);
-    $("k_last").textContent = rawPayload?.summary?.last_detection_utc || "—";
+    $("k_last").textContent = payload?.summary?.last_detection_utc || "—";
   }
 
+  // ======================
   // EXPORTS
-  function exportCSV(){
-    if (!lastData.length) return;
-    const cols = ["datetime_utc","zone_type","zone_name","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
-    const lines = [cols.join(",")];
-    for (const r of lastData){
-      const row = cols.map(c => {
-        const v = (r[c] ?? "").toString();
-        if (v.includes(",") || v.includes('"') || v.includes("\n")) return `"${v.replaceAll('"','""')}"`;
-        return v;
-      });
-      lines.push(row.join(","));
-    }
-    const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "firs_hotspots_filtrados.csv";
-    document.body.appendChild(a);
-    a.click(); a.remove(); URL.revokeObjectURL(a.href);
-  }
-
+  // ======================
   function exportExcel(){
-    if (!lastData.length) return;
+    const rows = dataTableView.length ? dataTableView : dataSpatial;
+    if (!rows.length) return;
+
     if (!window.XLSX){
       setStatus("No se cargó XLSX (SheetJS). Usa CSV por ahora.");
       return;
     }
-    const rows = lastData.map(r => ({
+    const out = rows.map(r => ({
       datetime_utc: r.datetime_utc || "",
       zone_type: r.zone_type || "",
       zone_name: r.zone_name || "",
@@ -1022,36 +1062,73 @@
       acq_date: r.acq_date || "",
       acq_time: r.acq_time || "",
     }));
-    const ws = XLSX.utils.json_to_sheet(rows);
+    const ws = XLSX.utils.json_to_sheet(out);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Hotspots");
-    XLSX.writeFile(wb, "firs_hotspots_filtrados.xlsx");
+    XLSX.writeFile(wb, "firs_hotspots_tabla.xlsx");
+  }
+
+  function exportCSV(){
+    const rows = dataTableView.length ? dataTableView : dataSpatial;
+    if (!rows.length) return;
+
+    const cols = ["datetime_utc","zone_type","zone_name","source","confidence","lat","lon","frp","satellite","instrument","acq_date","acq_time"];
+    const lines = [cols.join(",")];
+    for (const r of rows){
+      const row = cols.map(c => {
+        const v = (r[c] ?? "").toString();
+        if (v.includes(",") || v.includes('"') || v.includes("\n")) return `"${v.replaceAll('"','""')}"`;
+        return v;
+      });
+      lines.push(row.join(","));
+    }
+    const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "firs_hotspots_tabla.csv";
+    document.body.appendChild(a);
+    a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
   }
 
   function exportGeoJSON(){
-    if (!lastData.length) return;
-    const fc = { type:"FeatureCollection", features: lastData.map(r => ({
-      type:"Feature",
-      geometry:{ type:"Point", coordinates:[r.lon, r.lat] },
-      properties:{ ...r }
-    }))};
+    const rows = dataSpatial;
+    if (!rows.length) return;
+
+    const fc = {
+      type: "FeatureCollection",
+      features: rows.map(r => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [r.lon, r.lat] },
+        properties: { ...r }
+      }))
+    };
     const blob = new Blob([JSON.stringify(fc, null, 2)], { type:"application/geo+json;charset=utf-8" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "firs_hotspots_filtrados.geojson";
+    a.download = "firs_hotspots_puntos.geojson";
     document.body.appendChild(a);
-    a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    a.click(); a.remove();
+    URL.revokeObjectURL(a.href);
   }
 
-  // GEOESTATS
+  // ======================
+  // GEOESTATS + CHARTS
+  // ======================
+  let chartDaily = null;
+  let chartSensors = null;
+  let chartRipley = null;
+  let chartVariogram = null;
+  let chartNN = null;
+
   function normalCdf(z){
+    // Abramowitz-Stegun approximation
     const sign = z < 0 ? -1 : 1;
     z = Math.abs(z) / Math.sqrt(2);
     const t = 1 / (1 + 0.3275911 * z);
     const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741, a4 = -1.453152027, a5 = 1.061405429;
     const erf = 1 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*Math.exp(-z*z);
-    const cdf = 0.5 * (1 + sign * erf);
-    return cdf;
+    return 0.5 * (1 + sign * erf);
   }
 
   function linearRegression(xs, ys){
@@ -1128,7 +1205,7 @@
     const z = se > 0 ? (rObs - rExp) / se : null;
     const p = (z == null) ? null : 2 * (1 - normalCdf(Math.abs(z)));
 
-    return { n, areaKm2, lam, rObs, rExp, nni: rObs/rExp, z, p, nn };
+    return { n, lam, rObs, rExp, nni: rObs/rExp, z, p, nn };
   }
 
   function computeRipleyL(points, areaKm2, rMaxKm=20, bins=25){
@@ -1172,15 +1249,13 @@
       const x = bbox[0] + Math.random() * (bbox[2]-bbox[0]);
       const y = bbox[1] + Math.random() * (bbox[3]-bbox[1]);
       const p = turf.point([x,y]);
-      if (turf.booleanPointInPolygon(p, poly)){
-        pts.push({ lon:x, lat:y });
-      }
+      if (turf.booleanPointInPolygon(p, poly)) pts.push({ lon:x, lat:y });
       attempts++;
     }
     return pts;
   }
 
-  async function ripleyMonteCarlo(obsPts, study, rMaxKm=20, bins=25){
+  async function ripleyMonteCarlo(obsPts, domain, rMaxKm=20, bins=25){
     const n = obsPts.length;
     if (n < 10) return null;
 
@@ -1188,7 +1263,7 @@
     if (n > 200) sims = 39;
     if (n > 350) sims = 19;
 
-    const obs = computeRipleyL(obsPts, study.areaKm2, rMaxKm, bins);
+    const obs = computeRipleyL(obsPts, domain.areaKm2, rMaxKm, bins);
     if (!obs) return null;
 
     const upper = new Array(obs.L.length).fill(-Infinity);
@@ -1197,14 +1272,13 @@
     const obsMax = Math.max(...obs.L);
     const obsMin = Math.min(...obs.L);
 
-    let geMax = 0;
-    let leMin = 0;
+    let geMax = 0, leMin = 0;
 
     for (let s=0; s<sims; s++){
-      const simPts = randomPointsInPolygon(n, study.poly, study.bbox);
+      const simPts = randomPointsInPolygon(n, domain.poly, domain.bbox);
       if (simPts.length < n) continue;
 
-      const sim = computeRipleyL(simPts, study.areaKm2, rMaxKm, bins);
+      const sim = computeRipleyL(simPts, domain.areaKm2, rMaxKm, bins);
       if (!sim) continue;
 
       for (let i=0;i<sim.L.length;i++){
@@ -1220,7 +1294,6 @@
 
     const pCluster = (geMax + 1) / (sims + 1);
     const pRegular = (leMin + 1) / (sims + 1);
-
     return { sims, obs, upper, lower, pCluster, pRegular };
   }
 
@@ -1236,28 +1309,25 @@
     const xs = points.map(p => (p.lon - lon0) * kx);
     const ys = points.map(p => (p.lat - lat0) * ky);
 
-    let sdx2 = 0, sdy2 = 0, sxy = 0;
+    let sdx2=0, sdy2=0, sxy=0;
     for (let i=0;i<n;i++){
       sdx2 += xs[i]*xs[i];
       sdy2 += ys[i]*ys[i];
       sxy  += xs[i]*ys[i];
     }
-    const varx = sdx2/n;
-    const vary = sdy2/n;
-    const cov  = sxy/n;
-
+    const varx = sdx2/n, vary=sdy2/n, cov=sxy/n;
     const tr = varx + vary;
     const det = varx*vary - cov*cov;
     const disc = Math.max(0, tr*tr - 4*det);
-    const l1 = (tr + Math.sqrt(disc)) / 2;
-    const l2 = (tr - Math.sqrt(disc)) / 2;
+    const l1 = (tr + Math.sqrt(disc))/2;
+    const l2 = (tr - Math.sqrt(disc))/2;
 
     const major = Math.sqrt(Math.max(0,l1));
     const minor = Math.sqrt(Math.max(0,l2));
     const angle = 0.5 * Math.atan2(2*cov, (varx - vary));
     const az = (angle * 180/Math.PI + 360) % 180;
 
-    const sd = Math.sqrt((varx + vary));
+    const sd = Math.sqrt(varx + vary);
     return { sd, major, minor, az };
   }
 
@@ -1282,53 +1352,79 @@
       }
     }
 
-    const hs = [];
-    const gamma = [];
+    const hs=[], gamma=[];
     for (let k=0;k<bins;k++){
-      const h = (k+0.5)*dr;
-      hs.push(+h.toFixed(3));
-      if (count[k] > 0){
-        gamma.push(0.5 * (sumSq[k]/count[k]));
-      } else {
-        gamma.push(null);
-      }
+      hs.push(+(((k+0.5)*dr).toFixed(3)));
+      gamma.push(count[k] ? (0.5*(sumSq[k]/count[k])) : null);
     }
-
     return { hs, gamma };
   }
 
-  function updateGeoKPIs(geo){
-    $("g_area").textContent = geo.areaKm2 != null ? geo.areaKm2.toFixed(2) : "—";
-    $("g_area_s").textContent = geo.areaLabel || "recorte actual";
-
-    $("g_n").textContent = `${geo.nSample} / ${geo.nTotal}`;
-    $("g_n_s").textContent = geo.sampleNote || "";
-
-    $("g_lambda").textContent = geo.lam != null ? geo.lam.toFixed(4) : "—";
-
-    $("g_nni").textContent = geo.nni != null ? geo.nni.toFixed(3) : "—";
-    $("g_nni_s").textContent = geo.nniText || "—";
-
-    $("g_z").textContent = geo.z != null ? geo.z.toFixed(2) : "—";
-    $("g_p").textContent = geo.p != null ? `p: ${geo.p.toExponential(2)}` : "p: —";
-
-    $("g_lmax").textContent = geo.lmax != null ? `${geo.lmax.toFixed(3)} km` : "—";
-    $("g_lr").textContent = geo.lAt != null ? `escala r: ${geo.lAt.toFixed(2)} km` : "escala r: — km";
-
-    $("g_mc").textContent = geo.mcLabel || "—";
-    $("g_mc_s").textContent = geo.mcP || "p(cluster): —";
-
-    $("g_sd").textContent = geo.sd != null ? `${geo.sd.toFixed(2)} km` : "—";
-    $("g_sde").textContent = geo.sdeText || "elipse: —";
+  function setChartColors(ds, border, fill){
+    ds.borderColor = border;
+    ds.backgroundColor = fill;
+    ds.pointBackgroundColor = border;
+    return ds;
   }
 
-  function updateChartsAndGeo(rows){
-    // Temporal + tendencia
+  function updateGeoKPIs(geo){
+    $("g_area").textContent = geo.areaKm2 != null ? `${geo.areaKm2.toFixed(2)} km²` : "—";
+    $("g_area_s").textContent = geo.areaLabel || "—";
+    $("g_n").textContent = `${geo.nSample} / ${geo.nTotal}`;
+    $("g_n_s").textContent = geo.sampleNote || "";
+    $("g_lambda").textContent = geo.lam != null ? geo.lam.toFixed(4) : "—";
+    $("g_nni").textContent = geo.nni != null ? geo.nni.toFixed(3) : "—";
+    $("g_nni_s").textContent = geo.nniText || "—";
+    $("g_z").textContent = geo.z != null ? geo.z.toFixed(2) : "—";
+    $("g_p").textContent = geo.p != null ? `p: ${geo.p.toExponential(2)}` : "p: —";
+    $("g_lmax").textContent = geo.lmax != null ? `${geo.lmax.toFixed(3)} km` : "—";
+    $("g_lr").textContent = geo.lAt != null ? `r*: ${geo.lAt.toFixed(2)} km` : "r*: —";
+    $("g_mc").textContent = geo.mcLabel || "CSR: —";
+    $("g_mc_s").textContent = geo.mcP || "—";
+    $("g_sd").textContent = geo.sd != null ? `${geo.sd.toFixed(2)} km` : "—";
+    $("g_sde").textContent = geo.sdeText || "—";
+  }
+
+  function buildInterpretation(geo){
+    // Reglas de interpretación (cortas, técnicas)
+    const lines = [];
+    lines.push(`• Dominio de estudio: ${geo.areaLabel}. Intensidad λ mide densidad de detecciones (puntos/km²) en el recorte.`);
+    if (geo.nni != null){
+      if (geo.nni < 1){
+        lines.push(`• NNI < 1 sugiere *agrupamiento* (clusters) de focos de calor; si p < 0.05, el agrupamiento es estadísticamente significativo vs CSR.`);
+      } else if (geo.nni > 1){
+        lines.push(`• NNI > 1 sugiere patrón más *regular/inhibido* (separación entre focos); si p < 0.05, la regularidad es significativa vs CSR.`);
+      } else {
+        lines.push(`• NNI ≈ 1 sugiere patrón compatible con Aleatoriedad Completa Espacial (CSR) a escala de vecino más cercano.`);
+      }
+    }
+    if (geo.mcLabel){
+      lines.push(`• Ripley L(r) + envelope CSR evalúa *multiescala*: clustering si L(r) excede el envelope; inhibición si cae por debajo. Reporte: ${geo.mcLabel}.`);
+    }
+    if (geo.lAt != null){
+      lines.push(`• Escala característica (r*): ${geo.lAt.toFixed(2)} km donde L(r) alcanza su pico (máxima evidencia de agrupamiento a esa distancia).`);
+    }
+    if (geo.sdeText){
+      lines.push(`• SDE resume dispersión espacial global y orientación (anisotropía). Útil para ver “hacia dónde” se extiende la nube de focos.`);
+    }
+    lines.push(`• Implicación operativa: clusters persistentes pueden indicar frentes activos o quemas repetidas; combinar con viento, uso/cobertura y verificación local.`);
+    return lines.join("\n");
+  }
+
+  function updateChartsAndGeo(rows, domain){
+    const css = getComputedStyle(document.documentElement);
+    const GREEN = css.getPropertyValue("--green").trim() || "#1f9d55";
+    const AMBER = css.getPropertyValue("--amber").trim() || "#fbbf24";
+    const GOLD  = css.getPropertyValue("--gold").trim() || "#f59e0b";
+    const LIME  = css.getPropertyValue("--lime").trim() || "#a3e635";
+
+    // Serie temporal + OLS
     const { dates, counts, frps } = buildDailySeries(rows);
     const xs = dates.map((_,i)=>i);
     const reg = linearRegression(xs, counts);
     const trend = xs.map(x => reg.a*x + reg.b);
-    $("trendNote").textContent = `Tendencia (detecciones/día, OLS): y = ${reg.a.toFixed(3)}x + ${reg.b.toFixed(3)} · R² = ${Math.max(0, Math.min(1, reg.r2)).toFixed(3)}`;
+
+    $("eqDaily").innerHTML = `\\(y=${reg.a.toFixed(3)}x+${reg.b.toFixed(3)},\\;R^2=${Math.max(0,Math.min(1,reg.r2)).toFixed(3)}\\)`;
 
     const ctx1 = $("chartDaily").getContext("2d");
     if (chartDaily) chartDaily.destroy();
@@ -1337,9 +1433,9 @@
       data: {
         labels: dates,
         datasets: [
-          { label: "Detecciones/día", data: counts, tension: 0.25 },
-          { label: "Tendencia (OLS)", data: trend, tension: 0, borderDash: [6,6], pointRadius: 0 },
-          { label: "FRP/día (MW)", data: frps, yAxisID: "y2", tension: 0.25 }
+          setChartColors({ label: "Detecciones/día", data: counts, tension: 0.25 }, GREEN, "rgba(31,157,85,.12)"),
+          { label: "Tendencia (OLS)", data: trend, tension: 0, borderDash: [6,6], pointRadius: 0, borderColor: GOLD },
+          setChartColors({ label: "FRP/día (MW)", data: frps, yAxisID: "y2", tension: 0.25 }, AMBER, "rgba(245,158,11,.12)")
         ]
       },
       options: {
@@ -1357,60 +1453,62 @@
     for (const r of rows){ bySensor[r.source || "—"] = (bySensor[r.source || "—"] || 0) + 1; }
     const sensors = Object.keys(bySensor).sort();
     const vals = sensors.map(s => bySensor[s]);
-    const total = vals.reduce((a,b)=>a+b,0) || 1;
-    const perc = vals.map(v => 100*v/total);
 
     const ctx2 = $("chartSensors").getContext("2d");
     if (chartSensors) chartSensors.destroy();
     chartSensors = new Chart(ctx2, {
       type: "bar",
-      data: { labels: sensors, datasets: [{ label:"Detecciones", data: vals }, { label:"%", data: perc.map(v=>+v.toFixed(2)) }] },
+      data: { labels: sensors, datasets: [{ label:"Detecciones", data: vals, backgroundColor: "rgba(163,230,53,.45)", borderColor: LIME, borderWidth: 1.5 }] },
       options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true } } }
     });
 
-    // Geo stats
-    const study = getStudyPolygonForCSR();
-    const areaKm2 = study.areaKm2;
-
+    // Geo sampling
     const MAX_GEO_N = 350;
     const ptsAll = rows.map(r => ({ lat:r.lat, lon:r.lon, frp: (Number.isFinite(r.frp)?r.frp:null) }))
                       .filter(p => Number.isFinite(p.lat) && Number.isFinite(p.lon));
     const pts = sampleRows(ptsAll, MAX_GEO_N);
 
     const geo = {
-      areaKm2,
-      areaLabel: study.label,
+      areaKm2: domain.areaKm2,
+      areaLabel: domain.label,
       nSample: pts.length,
       nTotal: ptsAll.length,
       sampleNote: ptsAll.length > pts.length ? `muestra aleatoria (cap=${MAX_GEO_N})` : "sin muestreo",
-      lam: (areaKm2 && pts.length) ? (pts.length/areaKm2) : null,
+      lam: (domain.areaKm2 && pts.length) ? (pts.length/domain.areaKm2) : null,
       nni: null, z: null, p: null, nniText: "—",
       lmax: null, lAt: null,
-      mcLabel: "—", mcP: "p(cluster): —",
-      sd: null, sdeText: null
+      mcLabel: "CSR: calculando…",
+      mcP: "—",
+      sd: null, sdeText: "—"
     };
 
-    if (!areaKm2 || pts.length < 10){
+    if (!domain.areaKm2 || pts.length < 10){
       updateGeoKPIs(geo);
+      $("eqRipley").innerHTML = "Se requieren ≥10 puntos y área válida.";
+      $("eqVario").innerHTML = "Se requieren suficientes puntos con FRP.";
+      $("geoInterpret").textContent = "Interpretación: no hay suficientes datos para geoestadística en este recorte.";
       return;
     }
 
-    const nni = computeNearestNeighborStats(pts, areaKm2);
+    // NNI
+    const nni = computeNearestNeighborStats(pts, domain.areaKm2);
     if (nni){
       geo.nni = nni.nni;
       geo.z = nni.z;
       geo.p = nni.p;
       const pattern = (nni.nni < 1) ? "cluster" : (nni.nni > 1 ? "regular" : "CSR~1");
-      geo.nniText = `r̄obs=${nni.rObs.toFixed(3)} km · r̄exp=${nni.rExp.toFixed(3)} km · ${pattern}`;
+      geo.nniText = `\\(\\bar r_{obs}=${nni.rObs.toFixed(3)}\\,km,\\;\\bar r_{exp}=${nni.rExp.toFixed(3)}\\,km\\) · ${pattern}`;
     }
 
+    // SDE
     const sde = computeSDE(pts);
     if (sde){
       geo.sd = sde.sd;
-      geo.sdeText = `a=${sde.major.toFixed(2)} km · b=${sde.minor.toFixed(2)} km · az=${sde.az.toFixed(1)}°`;
+      geo.sdeText = `\\(a=${sde.major.toFixed(2)}\\,km,\\;b=${sde.minor.toFixed(2)}\\,km,\\;az=${sde.az.toFixed(1)}^\\circ\\)`;
     }
 
-    const rip = computeRipleyL(pts, areaKm2, 20, 25);
+    // Ripley observed
+    const rip = computeRipleyL(pts, domain.areaKm2, 20, 25);
     if (rip){
       let imax = 0;
       for (let i=1;i<rip.L.length;i++){
@@ -1422,7 +1520,7 @@
 
     updateGeoKPIs(geo);
 
-    // NN chart
+    // NN hist
     if (nni && nni.nn?.length){
       const nnSorted = nni.nn.slice().sort((a,b)=>a-b);
       const maxD = Math.min(10, nnSorted[Math.floor(nnSorted.length*0.98)] || 10);
@@ -1439,36 +1537,42 @@
       if (chartNN) chartNN.destroy();
       chartNN = new Chart(ctxNN, {
         type: "bar",
-        data: { labels: xh.map(v=>String(v)), datasets: [{ label: "Vecino más cercano (km) — histograma", data: h }] },
+        data: { labels: xh.map(v=>String(v)), datasets: [{ label: "Vecino más cercano (km)", data: h, backgroundColor:"rgba(31,157,85,.25)", borderColor: GREEN, borderWidth: 1.2 }] },
         options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ beginAtZero:true }, x:{ title:{ display:true, text:"km" } } } }
       });
     }
 
     // Variogram
     const vario = computeVariogram(pts, 20, 20);
+    $("eqVario").innerHTML = `\\(\\gamma(h)=\\tfrac{1}{2}\\,E[(z(s)-z(s+h))^2]\\) (\\(z=\\) FRP).`;
     const ctxV = $("chartVariogram").getContext("2d");
     if (chartVariogram) chartVariogram.destroy();
     chartVariogram = new Chart(ctxV, {
       type: "line",
-      data: {
-        labels: vario ? vario.hs.map(v=>String(v)) : [],
-        datasets: vario ? [{ label: "Variograma experimental γ(h) de FRP", data: vario.gamma.map(v => v==null?null:+v.toFixed(4)), tension: 0.1 }] : []
-      },
+      data: { labels: vario ? vario.hs.map(v=>String(v)) : [],
+              datasets: vario ? [ setChartColors({ label: "γ(h) — FRP", data: vario.gamma.map(v => v==null?null:+v.toFixed(4)), tension: 0.1 }, GOLD, "rgba(245,158,11,.14)") ] : [] },
       options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ title:{ display:true, text:"γ(h)" } }, x:{ title:{ display:true, text:"h (km)" } } } }
     });
 
     // Ripley with envelope
     (async () => {
+      $("eqRipley").innerHTML = `\\(L(r)=\\sqrt{K(r)/\\pi}-r\\) con envelope CSR (Monte Carlo).`;
+
       const ctxR = $("chartRipley").getContext("2d");
       if (chartRipley) chartRipley.destroy();
 
-      const mc = await ripleyMonteCarlo(pts, study, 20, 25);
+      const mc = await ripleyMonteCarlo(pts, domain, 20, 25);
       if (!mc){
         chartRipley = new Chart(ctxR, {
           type: "line",
-          data: { labels: rip ? rip.rs.map(r=>String(r.toFixed(3))) : [], datasets: rip ? [{ label: "L(r) observado", data: rip.L.map(v=>+v.toFixed(4)), tension:0.1 }] : [] },
+          data: { labels: rip ? rip.rs.map(r=>String(r.toFixed(3))) : [],
+                  datasets: rip ? [ setChartColors({ label: "L(r) observado", data: rip.L.map(v=>+v.toFixed(4)), tension:0.1 }, GREEN, "rgba(31,157,85,.12)") ] : [] },
           options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ title:{ display:true, text:"L(r) (km)" } }, x:{ title:{ display:true, text:"r (km)" } } } }
         });
+        geo.mcLabel = "CSR: sin envelope";
+        updateGeoKPIs(geo);
+        $("geoInterpret").textContent = buildInterpretation(geo);
+        renderMath();
         return;
       }
 
@@ -1485,17 +1589,41 @@
         data: {
           labels: mc.obs.rs.map(r=>String(r.toFixed(3))),
           datasets: [
-            { label: "L(r) observado", data: mc.obs.L.map(v=>+v.toFixed(4)), tension: 0.1 },
-            { label: "Envelope superior (CSR)", data: mc.upper.map(v=>+v.toFixed(4)), tension: 0.1, pointRadius: 0, borderDash: [6,6] },
-            { label: "Envelope inferior (CSR)", data: mc.lower.map(v=>+v.toFixed(4)), tension: 0.1, pointRadius: 0, borderDash: [6,6] },
+            setChartColors({ label: "L(r) observado", data: mc.obs.L.map(v=>+v.toFixed(4)), tension: 0.1 }, GREEN, "rgba(31,157,85,.12)"),
+            { label: "Envelope superior (CSR)", data: mc.upper.map(v=>+v.toFixed(4)), tension: 0.1, pointRadius: 0, borderDash: [6,6], borderColor: AMBER },
+            { label: "Envelope inferior (CSR)", data: mc.lower.map(v=>+v.toFixed(4)), tension: 0.1, pointRadius: 0, borderDash: [6,6], borderColor: AMBER },
           ]
         },
         options: { responsive:true, plugins:{ legend:{ position:"bottom" } }, scales:{ y:{ title:{ display:true, text:"L(r) (km)" } }, x:{ title:{ display:true, text:"r (km)" } } } }
       });
+
+      $("geoInterpret").textContent = buildInterpretation(geo);
+      renderMath();
     })();
+
+    // quick interpretation even before MC finishes
+    $("geoInterpret").textContent = buildInterpretation(geo);
   }
 
-  // MAIN RUN
+  // ======================
+  // KaTeX render
+  // ======================
+  function renderMath(){
+    if (window.renderMathInElement){
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\[", right: "\\]", display: true },
+          { left: "\\(", right: "\\)", display: false },
+        ],
+        throwOnError: false
+      });
+    }
+  }
+
+  // ======================
+  // HEALTH + AUTO
+  // ======================
   let autoTimer = null;
 
   async function checkHealth(){
@@ -1511,19 +1639,26 @@
     }
   }
 
+  function setupAuto(){
+    if (autoTimer) clearInterval(autoTimer);
+    if ($("auto").checked) autoTimer = setInterval(run, 10 * 60 * 1000);
+  }
+
+  // ======================
+  // RUN
+  // ======================
   async function run(){
     const days = Number($("days").value);
     const sensors = getSensors();
-    const bboxArr = getBBoxFromUI();
     const limit = Number($("limit").value);
     const conf = $("conf").value;
 
     if (!sensors.length) return setStatus("Selecciona al menos un sensor.");
-    if (!bboxArr) return setStatus("BBOX inválido. Revisa el modo seleccionado.");
 
-    const bbox = bboxStr(bboxArr);
+    const domain = getStudyDomain();
+    const bbox = bboxStr(domain.bbox);
+
     const url = `${PROXY_BASE}/api/firms?bbox=${encodeURIComponent(bbox)}&days=${days}&sensors=${encodeURIComponent(sensors.join(","))}&limit=${limit}`;
-
     setStatus(`Consultando FIRMS...\n${url}`);
 
     const t0 = performance.now();
@@ -1538,92 +1673,90 @@
       return setStatus(`Error (${r.status}).\n${j.error || "Sin detalle"}${extra}`);
     }
 
-    setStatus(`OK. Total (dedupe): ${j.total}. Filas devueltas: ${j.rows.length}. (${ms} ms)`);
-
     let rows = (j.rows || []).filter(rr => conf === "all" ? true : confClass(rr.confidence) === conf);
-    rows = pointFilterByPolygon(rows);
+    rows = pointInSelectedPolygons(rows);
     rows.sort((a,b) => (a.datetime_utc || "") < (b.datetime_utc || "") ? 1 : -1);
 
-    lastData = rows;
+    dataSpatial = rows;
+    dataTableView = rows.slice();
 
-    updateMap(lastData);
-    buildTable(lastData);
-    updateKPIs(j, lastData);
-    updateChartsAndGeo(lastData);
-    applyFilter();
-
+    setStatus(`OK. Detecciones: ${rows.length} (ya recortadas). Respuesta FIRMS: ${j.rows.length} filas. (${ms} ms)`);
     $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
 
-    const clipMode = $("clipMode").value;
-    if (["muni","micro","ap"].includes(clipMode)){
-      renderPolyOverlay(clipMode, $("polySelect").value || "all");
-    } else {
-      overlayGroup.clearLayers();
-    }
+    updateMap(dataSpatial);
+    applyTableFilter();
+    updateKPIs(dataSpatial, j);
 
+    updateChartsAndGeo(dataSpatial, domain);
+
+    renderPolyOverlay($("clipMode").value, $("polySelect").value || "all");
+    fitToBBox(domain.bbox);
+
+    $("mapSubtitle").textContent = `${LAYER_SOURCES[$("clipMode").value].label} · ${domain.label}`;
     setTimeout(() => map.invalidateSize(), 120);
+
+    renderMath();
   }
 
-  function setupAuto(){
-    if (autoTimer) clearInterval(autoTimer);
-    if ($("auto").checked) autoTimer = setInterval(run, 10 * 60 * 1000);
-  }
-
+  // ======================
+  // UI update
+  // ======================
   async function updateClipUI(){
     const mode = $("clipMode").value;
-
-    $("manualBBox").style.display = (mode === "bbox_manual") ? "block" : "none";
-    const isPoly = ["muni","micro","ap"].includes(mode);
-    $("polyPick").style.display = isPoly ? "block" : "none";
-
-    if (!isPoly){
-      overlayGroup.clearLayers();
-      return;
-    }
-
-    try{
-      await ensurePolyLoaded(mode);
-      populatePolySelect(mode);
-      renderPolyOverlay(mode, $("polySelect").value || "all");
-      const bb = getBBoxFromUI();
-      if (bb) fitToBBox(bb);
-    }catch(err){
-      setStatus(`Error cargando capa SIG.\n${String(err)}`);
-    }
+    await ensurePolyLoaded(mode);
+    populatePolySelect(mode);
+    renderPolyOverlay(mode, $("polySelect").value || "all");
+    const domain = getStudyDomain();
+    $("mapSubtitle").textContent = `${LAYER_SOURCES[mode].label} · ${domain.label}`;
+    fitToBBox(domain.bbox);
+    renderMath();
   }
 
+  // ======================
   // EVENTS
-  $("clipMode").addEventListener("change", () => updateClipUI());
-  $("polySelect").addEventListener("change", () => {
-    const mode = $("clipMode").value;
-    if (["muni","micro","ap"].includes(mode)){
-      renderPolyOverlay(mode, $("polySelect").value || "all");
-      updateChartsAndGeo(lastData);
-    }
-  });
-
+  // ======================
   $("btnRun").addEventListener("click", run);
   $("btnFit").addEventListener("click", () => {
-    const bb = getBBoxFromUI();
-    if (!bb) return setStatus("No hay BBOX válido para ajustar.");
-    fitToBBox(bb);
+    const domain = getStudyDomain();
+    fitToBBox(domain.bbox);
     setStatus("Mapa ajustado al recorte.");
   });
 
-  $("btnCSV").addEventListener("click", exportCSV);
   $("btnExcel").addEventListener("click", exportExcel);
+  $("btnCSV").addEventListener("click", exportCSV);
   $("btnGeoJSON").addEventListener("click", exportGeoJSON);
 
-  $("btnClear").addEventListener("click", () => { $("q").value=""; applyFilter(); });
-  $("q").addEventListener("input", applyFilter);
-  $("auto").addEventListener("change", setupAuto);
+  $("q").addEventListener("input", applyTableFilter);
+  $("btnClear").addEventListener("click", () => { $("q").value=""; applyTableFilter(); });
 
-  (async function init(){
-    fitToBBox(BBOX_PRESETS.solola);
-    await checkHealth();
-    setupAuto();
+  $("clipMode").addEventListener("change", async () => {
     await updateClipUI();
     await run();
+  });
+
+  $("polySelect").addEventListener("change", async () => {
+    await run();
+  });
+
+  $("auto").addEventListener("change", setupAuto);
+
+  // INIT
+  (async function init(){
+    await checkHealth();
+    setupAuto();
+
+    // wait for KaTeX scripts to load (defer)
+    const waitKatex = async () => {
+      for (let i=0; i<30; i++){
+        if (window.renderMathInElement) return;
+        await new Promise(res => setTimeout(res, 150));
+      }
+    };
+    await waitKatex();
+
+    await updateClipUI();
+    await run();
+    renderMath();
   })();
 })();
 </script>
