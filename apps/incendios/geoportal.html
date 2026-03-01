@@ -125,6 +125,39 @@
       box-shadow: 0 0 0 4px rgba(47,208,143,.18);
     }
 
+    /* Navegación superior (botones) — inspirado en tu módulo de referencia */
+    .navbtns{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; flex:0 0 auto; }
+    .navbtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px;
+      background: var(--card2);
+      border:1px solid var(--stroke);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      font-size:12px;
+      font-weight:850;
+      color:#153220;
+      text-decoration:none;
+      white-space:nowrap;
+      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+    }
+    .navbtn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(31,157,85,.35);
+      box-shadow: 0 12px 26px rgba(20,60,30,.12);
+      background: rgba(255,255,255,.98);
+    }
+    .navbtn-primary{
+      background: linear-gradient(135deg, rgba(31,157,85,.16), rgba(245,158,11,.16));
+      border-color: rgba(31,157,85,.28);
+    }
+    .navbtn[aria-current="page"]{
+      outline: 2px solid rgba(31,157,85,.22);
+      outline-offset: 2px;
+    }
+
+
+
     main{
       display:grid;
       grid-template-columns: 400px 1fr;
@@ -437,6 +470,15 @@
       <div class="title">
         <h1>Centro de detección de anomalías térmicas (FIRMS NRT)</h1>
         <div class="sub">Recorte por capas SIG (Municipios / Microcuencas / Áreas protegidas) · UTC</div>
+      </div>
+
+
+      <div class="navbtns" aria-label="Navegación del geoportal">
+        <a class="navbtn" href="../../index.html">Inicio</a>
+        <a class="navbtn" href="./index.html">Módulo</a>
+        <a class="navbtn navbtn-primary" href="./geoportal.html" aria-current="page">Geoportal</a>
+        <a class="navbtn" href="./dashboard.html">Dashboard</a>
+        <a class="navbtn" href="./informes.html">Informes</a>
       </div>
 
       <div class="chips">
@@ -1535,68 +1577,113 @@
   }
 
   function buildInterpretation(geo){
-    // Interpretación ampliada y numerada (HTML). Se apoya en NNI/z/p, Ripley-L(r) y SDE.
+    // Interpretación operativa (incendios / anomalías térmicas). Mantiene KaTeX con \( \).
     const items = [];
 
     const dom = geo.areaLabel || "dominio";
     const A = (geo.areaKm2 != null) ? geo.areaKm2 : null;
-    const n = geo.nSample ?? null;
-    const lam = geo.lam ?? null;
+    const n = (geo.nSample != null) ? geo.nSample : null;
+    const N = (geo.nTotal != null) ? geo.nTotal : null;
+    const lam = (geo.lam != null) ? geo.lam : null;
+
+    const sampleNote = geo.sampleNote ? ` <span style="color:var(--muted)">(${geo.sampleNote})</span>` : "";
 
     items.push(
-      `Dominio de estudio: <b>${dom}</b>. ` +
-      `Área de referencia <b>A</b>${A!=null?` ≈ <b>${A.toFixed(2)} km²</b>`:""}; ` +
-      `muestra usada <b>n</b>${n!=null?` = <b>${n}</b>`:""} (subconjunto si hay muestreo). ` +
-      `La intensidad espacial \\(\\lambda\\) cuantifica densidad de detecciones: \\(\\lambda=n/A\\) (puntos/km²).`
+      `Contexto del recorte: <b>${dom}</b>` +
+      `${A!=null?` · <b>A</b> ≈ <b>${A.toFixed(2)} km²</b>`:""}` +
+      `${n!=null?` · <b>n</b> = <b>${n}</b>`:" · <b>n</b> = —"}` +
+      `${N!=null?` (total disponible: <b>${N}</b>)`:""}` +
+      `${sampleNote}. ` +
+      `Estas métricas describen <b>dónde</b> y <b>a qué escala</b> se concentran los hotspots; ayudan a priorizar verificación en territorio.`
     );
 
+    // λ
+    if (lam != null){
+      items.push(
+        `<b>Intensidad \(\lambda\):</b> <b>${lam.toFixed(3)}</b> puntos/km² (\(\lambda=n/A\)). ` +
+        `Lectura: valores más altos implican <b>mayor densidad de anomalías térmicas</b> dentro del recorte (mejor para comparar zonas que el conteo bruto). ` +
+        `Implicación en incendios: si \(\lambda\) se mantiene alta al ampliar a 7–30 días, suele indicar <b>actividad recurrente</b> (quemas repetidas) o un frente que reaparece en pasadas satelitales.`
+      );
+    } else {
+      items.push(`<b>Intensidad \(\lambda\):</b> no calculable (requiere área válida y n&gt;0).`);
+    }
+
+    // NNI / z / p
     if (geo.nni != null){
       const nni = geo.nni;
       const z = geo.z;
       const p = geo.p;
-      let desc = "";
-      if (nni < 1) desc = "patrón <b>agrupado (cluster)</b> a escala de vecino más cercano";
-      else if (nni > 1) desc = "patrón <b>regular/inhibido</b> (separación entre detecciones)";
-      else desc = "patrón compatible con <b>CSR</b> (aleatoriedad completa espacial)";
+
+      const sig = (p != null && p < 0.05);
+
+      let pat = "";
+      if (nni < 1) pat = "agrupado (clusters)";
+      else if (nni > 1) pat = "regular / disperso";
+      else pat = "compatible con CSR (aleatorio)";
+
+      let implication = "";
+      if (sig && nni < 1){
+        implication =
+          `Implica <b>concentración espacial</b> a escala de vecino más cercano: suele corresponder a ` +
+          `<b>foco persistente</b> (mismo incendio detectado en varias pasadas) o varios focos cercanos (misma ladera/microcuenca).`;
+      } else if (sig && nni > 1){
+        implication =
+          `Implica <b>separación</b> entre detecciones: más consistente con <b>múltiples focos aislados</b> repartidos en el territorio.`;
+      } else {
+        implication =
+          `No hay evidencia fuerte (a esta escala) de que el patrón sea distinto al azar; conviene mirar la lectura multiescala (Ripley) y el período.`;
+      }
+
+      let action = "";
+      if (sig && nni < 1){
+        action =
+          `Acción sugerida: prioriza verificación en el/los <b>núcleos</b> y su entorno; ` +
+          `si hay pico \(L(r)\), úsalo como radio operativo (ver abajo) para agrupar reportes y definir “zona de atención”.`;
+      } else if (sig && nni > 1){
+        action =
+          `Acción sugerida: planifica patrullaje por <b>sectores</b> (eventos dispersos), y cruza con uso/cobertura del suelo (p.ej. quemas agrícolas).`;
+      } else {
+        action =
+          `Acción sugerida: prueba ampliar el período o cambiar el recorte para ver si emerge estructura; complementa con serie temporal y persistencia por sensor.`;
+      }
+
       items.push(
-        `Índice de Vecino Más Cercano (Clark–Evans): \\(\\mathrm{NNI}=\\bar r_{obs}/\\bar r_{exp}\\). ` +
-        `Resultado: <b>NNI = ${nni.toFixed(3)}</b> ⇒ ${desc}. ` +
-        `${(z!=null && p!=null) ? `Contraste normal aproximado: <b>z = ${z.toFixed(2)}</b>, <b>p = ${p.toExponential(2)}</b>. ` : ""}` +
-        `Interpretación: si <b>p &lt; 0.05</b>, el patrón difiere significativamente de CSR (no aleatorio).`
+        `<b>NNI (vecino más cercano):</b> <b>${nni.toFixed(3)}</b> ⇒ patrón <b>${pat}</b>. ` +
+        `${(z!=null && p!=null) ? `Contraste: <b>z=${z.toFixed(2)}</b>, <b>p=${p.toExponential(2)}</b>${sig ? " (significativo a 5%)" : ""}. ` : ""}` +
+        `${implication} ${action} ` +
+        `<span style="color:var(--muted)">Nota: la resolución del sensor y duplicados por píxel pueden aumentar el clustering aparente.</span>`
       );
     } else {
-      items.push(
-        `NNI: no calculable (se requieren ≥2 puntos y área válida).`
-      );
+      items.push(`<b>NNI (vecino más cercano):</b> no calculable (se requieren ≥2 puntos y área válida).`);
     }
 
+    // Ripley / CSR (Monte Carlo) + escala
     if (geo.mcLabel){
-      items.push(
-        `Ripley \\(L(r)\\) con envelope CSR (Monte Carlo) evalúa <b>multiescala</b>: ` +
-        `hay <i>clustering</i> si \\(L(r)\\) supera el envelope; hay <i>inhibición</i> si cae por debajo. ` +
-        `Reporte: <b>${geo.mcLabel}</b>. ` +
-        `${geo.mcP ? `(${geo.mcP})` : ""}`
-      );
+      let s =
+        `<b>Ripley \(L(r)\) + CSR:</b> ${geo.mcLabel}${geo.mcP ? ` (${geo.mcP})` : ""}. ` +
+        `Evalúa <b>estructura multiescala</b>: por encima del envelope = <i>clustering</i>; por debajo = <i>inhibición</i>.`;
+      if (geo.lAt != null){
+        s +=
+          ` <b>Escala dominante \(r^*\):</b> <b>${geo.lAt.toFixed(2)} km</b> (pico de \(L(r)\)). ` +
+          `Implicación en incendios: los focos tienden a agruparse dentro de ~<b>${geo.lAt.toFixed(2)} km</b>; ` +
+          `úsalo para: (1) agrupar puntos en “incidentes” y (2) definir radio de verificación alrededor de un núcleo.`;
+      }
+      items.push(s);
     }
 
-    if (geo.lAt != null){
-      items.push(
-        `Escala característica \\(r^*\\): <b>${geo.lAt.toFixed(2)} km</b> donde \\(L(r)\\) alcanza su máximo (pico). ` +
-        `Implicación: la mayor evidencia de agrupamiento/inhibición ocurre alrededor de esa distancia (útil para definir radio de patrullaje o agregación territorial).`
-      );
-    }
-
+    // SDE
     if (geo.sdeText){
       items.push(
-        `Elipse de Desviación Estándar (SDE): resume dispersión y anisotropía de la nube de detecciones. ` +
-        `Parámetros: ${geo.sdeText}. ` +
-        `Implicación: su orientación puede sugerir control por topografía, vientos dominantes o corredores de actividad (interpretar junto a contexto local).`
+        `<b>SDE / Elipse:</b> ${geo.sdeText}. ` +
+        `Si la elipse es alargada, sugiere <b>direccionalidad</b> (corredor de actividad) que puede alinearse con laderas/valles, vientos dominantes o infraestructura; ` +
+        `para monitoreo, prioriza recorridos a lo largo del eje mayor.`
       );
     }
 
+    // Cierre: límites de interpretación
     items.push(
-      `Implicación operativa: <b>clusters persistentes</b> (en varios días/sensores) pueden indicar frentes activos, quemas repetidas o fuentes térmicas recurrentes. ` +
-      `Cruzar con viento/meteorología, uso/cobertura y reportes locales; recordar que FIRMS es “fuego activo” (hotspots), no perímetro/área quemada.`
+      `<b>Limitaciones (importante):</b> “hotspots” = <b>fuego activo / anomalía térmica</b>; no equivalen a perímetro ni a área quemada. ` +
+      `Nubosidad/humo y tiempos de paso pueden ocultar focos; confirma con reportes locales y contexto meteorológico.`
     );
 
     const lis = items.map(t => `<li>${t}</li>`).join("");
