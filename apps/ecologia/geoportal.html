@@ -22,8 +22,8 @@
 
   <style>
     :root{
-      --bgA:#effff6;
-      --bgB:#eefbff;
+      --bgA:#f0fff6;
+      --bgB:#f2fbf5;
       --card: rgba(255,255,255,.92);
       --card2: rgba(255,255,255,.98);
       --ink:#0f2a1a;
@@ -32,7 +32,7 @@
       --stroke2: rgba(15,42,26,.08);
       --green:#2bb673;
       --teal:#22c1c3;
-      --sky:#38bdf8;
+      --sky:#34d399;
       --shadow: 0 14px 40px rgba(10,50,20,.10);
       --shadowSm: 0 10px 22px rgba(10,50,20,.08);
       --radius: 18px;
@@ -57,7 +57,7 @@
       gap:12px;
       padding: 10px 14px;
       border-bottom: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.78);
+      background: rgba(255,255,255,.86);
       backdrop-filter: blur(10px);
       position: sticky;
       top: 0;
@@ -194,7 +194,7 @@
       padding: 8px 10px;
       border-radius: 12px;
       border: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.78);
+      background: rgba(255,255,255,.86);
     }
     .status.ok{ color:#0a7b4d; }
     .status.warn{ color:#9a6b00; }
@@ -233,7 +233,7 @@
     }
     .kpis{
       display:grid;
-      grid-template-columns: 1.1fr 1fr 1fr 1fr;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr 1fr 1fr;
       gap: 10px;
       margin-top: 10px;
     }
@@ -433,14 +433,14 @@
     </div>
     <div class="brandTitle">
       <p class="h">Geoportal · Ecología del paisaje forestal · Sololá</p>
-      <p class="s">Clasificación fenológica forestal · Estadísticas por municipio y microcuenca</p>
+      <p class="s">Fenología y Biomasa · Estadísticas por municipio y microcuenca</p>
     </div>
     <div class="slot right">
       <div class="navBtns">
         <a class="navBtn" href="../../index.html" title="Regresar al inicio"><span class="dot"></span>Inicio</a>
         <a class="navBtn secondary" href="#informes" title="Ir a informes (próximamente)"><span class="dot"></span>Informes</a>
       </div>
-      <img class="logo" src="../../aala_logo.png" alt="Laboratorio SIG">
+      
     </div>
   </header>
 
@@ -461,7 +461,7 @@
           <button id="btnClear" class="btn" type="button">Limpiar selección</button>
         </div>
         <div class="mt-2 status" id="status">Listo.</div>
-        <div class="muted mt-2">Tip: haz clic en un polígono para calcular hectáreas por categoría (sin incluir 0/nulos).</div>
+        
       </div>
     </aside>
 
@@ -481,16 +481,24 @@
             <div class="val" id="kpiArea">—</div>
           </div>
           <div class="kpi">
-            <div class="lab">Índice Shannon (H')</div>
+            <div class="lab">Shannon (H')</div>
             <div class="val" id="kpiH">—</div>
           </div>
           <div class="kpi">
-            <div class="lab">Evenness (J)</div>
-            <div class="val" id="kpiJ">—</div>
+            <div class="lab">Simpson (1−D)</div>
+            <div class="val" id="kpiSimpson">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Dominancia (d)</div>
+            <div class="val" id="kpiDom">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Nº efectivo (e^{H'})</div>
+            <div class="val" id="kpiNeff">—</div>
           </div>
         </div>
 
-        <div class="grid2">
+        <div class="grid2" style="grid-template-columns: 1fr 1fr;">
           <div class="chartCard">
             <div class="chartTitle">
               <span>Hectáreas por categoría</span>
@@ -505,6 +513,20 @@
             </div>
             <canvas id="chartDonut" height="190"></canvas>
           </div>
+          <div class="chartCard">
+            <div class="chartTitle">
+              <span>Curva rango–abundancia</span>
+              <span class="muted" id="chartNote3">—</span>
+            </div>
+            <canvas id="chartRank" height="190"></canvas>
+          </div>
+          <div class="chartCard">
+            <div class="chartTitle">
+              <span>Curva de Lorenz</span>
+              <span class="muted" id="chartNote4">—</span>
+            </div>
+            <canvas id="chartLorenz" height="190"></canvas>
+          </div>
         </div>
 
         <div class="interp">
@@ -518,9 +540,11 @@
           <div class="eq">
             <div class="lbl">Proporción</div><div id="eqP"></div>
             <div class="lbl">Shannon</div><div id="eqH"></div>
-            <div class="lbl">Evenness</div><div id="eqJ"></div>
+            <div class="lbl">Equidad</div><div id="eqJ"></div>
           </div>
-          <div class="muted" style="margin-top:10px;">Las métricas se calculan a partir de hectáreas por clase dentro del recorte seleccionado (sin 0/nulos).</div>
+          <div id="eqExtra" class="muted" style="margin-top:10px;"></div>
+          <div id="eqModel" class="muted" style="margin-top:10px;"></div>
+          
         </div>
 
         <div class="tblWrap">
@@ -546,7 +570,6 @@
         </div>
         <div class="eqBlock" id="informes" style="margin-top:12px;">
           <h4>Informes</h4>
-          <div class="muted">Esta sección se configurará después (reportes descargables, series temporales, comparaciones y mapas temáticos).</div>
         </div>
 
 
@@ -557,7 +580,7 @@
   <footer class="footer">
     <div class="t">Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
     <div class="p"><strong>Instituciones y organizaciones</strong><br>El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
-    <div class="logos">
+        <div class="logos">
       <img src="../../marn.png" alt="MARN">
       <img src="../../maga.png" alt="MAGA">
       <img src="../../inab.png" alt="INAB">
@@ -595,18 +618,28 @@
     const kpiAreaEl = $("kpiArea");
     const kpiHEl = $("kpiH");
     const kpiJEl = $("kpiJ");
+    const kpiSimpsonEl = $("kpiSimpson");
+    const kpiDomEl = $("kpiDom");
+    const kpiNeffEl = $("kpiNeff");
 
     const interpTextEl = $("interpText");
     const tblBodyEl = $("tblBody");
     const chartNoteEl = $("chartNote");
     const chartNote2El = $("chartNote2");
+    const chartNote3El = $("chartNote3");
+    const chartNote4El = $("chartNote4");
 
     const map = L.map("map", { zoomControl: true });
-    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap" });
-    const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "&copy; OpenTopoMap" });
+    map.createPane("basePane");
+    map.getPane("basePane").style.zIndex = 200;
+    map.createPane("rasterPane");
+    map.getPane("rasterPane").style.zIndex = 650;
+    map.getPane("rasterPane").style.pointerEvents = "none";
+    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap", pane: "basePane" });
+    const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "&copy; OpenTopoMap", pane: "basePane" });
     const sat = L.tileLayer(
       "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      { maxZoom: 20, attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community" }
+      { maxZoom: 20, attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community", pane: "basePane" }
     );
     osm.addTo(map);
     map.setView([14.65, -91.2], 10);
@@ -621,6 +654,8 @@
 
     let chartBar = null;
     let chartDonut = null;
+    let chartRank = null;
+    let chartLorenz = null;
     let lastStats = null;
 
     function setStatus(msg, kind) {
@@ -643,7 +678,7 @@
 
     function friendlyLayerName(layer) {
       const id = (layer.id || "").toLowerCase();
-      if (id.includes("biomasa")) return "Biomasa forestal (y su dimensional)";
+      if (id.includes("biomasa")) return "Biomasa forestal (Mg/ha)";
       const n = (layer.nombre || "").trim();
       if (n) return n;
       if (id.includes("fenologia")) return "Clasificación fenológica forestal";
@@ -651,9 +686,31 @@
     }
 
     function legendFor(layer) {
+      const id = (layer.id || "").toLowerCase();
+
       if (layer.legend && layer.legend.items && Array.isArray(layer.legend.items) && layer.legend.items.length) {
-        return layer.legend.items.filter(x => !NODATA_VALUES.has(Number(x.value)));
+        const items = layer.legend.items.filter(x => !NODATA_VALUES.has(Number(x.value)));
+        if (id.includes("biomasa")) {
+          const pal = ["#e8f5e9","#c8e6c9","#81c784","#43a047","#1b5e20"];
+          return items.map((it, i) => ({...it, color: it.color || pal[Math.min(i, pal.length-1)]}));
+        }
+        if (id.includes("fenologia")) {
+          const pal = ["#f1e3b3","#2f855a","#84cc16","#0ea5e9","#7c3aed"];
+          return items.map((it, i) => ({...it, color: it.color || pal[Math.min(i, pal.length-1)]}));
+        }
+        return items;
       }
+
+      if (id.includes("biomasa")) {
+        return [
+          { value: 1, label: "Biomasa baja", color: "#c8e6c9" },
+          { value: 2, label: "Biomasa media", color: "#66bb6a" },
+          { value: 3, label: "Biomasa alta", color: "#1b5e20" }
+        ];
+      }
+
+      return DEFAULT_LEGEND;
+    }
       return DEFAULT_LEGEND;
     }
 
@@ -667,7 +724,7 @@
       name.textContent = friendlyLayerName(layer);
       const desc = document.createElement("div");
       desc.className = "desc";
-      desc.textContent = "COG · análisis por recorte (sin 0/nulos)";
+      desc.textContent = "";
       left.appendChild(name);
       left.appendChild(desc);
 
@@ -753,6 +810,7 @@
       const colorMap = new Map(legend.map(x => [Number(x.value), String(x.color)]));
 
       const layerObj = new GeoRasterLayer({
+        pane: "rasterPane",
         georaster: georasterObj,
         opacity: (layer.opacity ?? 0.85),
         resolution: 256,
@@ -854,6 +912,38 @@
 
     function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 
+    function fitRankModel(proportions) {
+      const y = [];
+      const x = [];
+      for (let i = 0; i < proportions.length; i++) {
+        const p = proportions[i];
+        const r = i + 1;
+        if (p > 0) {
+          y.push(Math.log(p));
+          x.push(Math.log(r));
+        }
+      }
+      const n = y.length;
+      if (n < 2) return null;
+
+      let sx=0, sy=0, sxx=0, sxy=0;
+      for (let i=0;i<n;i++){ sx += x[i]; sy += y[i]; sxx += x[i]*x[i]; sxy += x[i]*y[i]; }
+      const denom = (n*sxx - sx*sx);
+      if (denom === 0) return null;
+      const b = (n*sxy - sx*sy)/denom;
+      const a = (sy - b*sx)/n;
+
+      let ssTot=0, ssRes=0;
+      const ybar = sy/n;
+      for (let i=0;i<n;i++){
+        const yhat = a + b*x[i];
+        ssTot += (y[i]-ybar)*(y[i]-ybar);
+        ssRes += (y[i]-yhat)*(y[i]-yhat);
+      }
+      const r2 = ssTot > 0 ? 1 - ssRes/ssTot : 0;
+      return { a, b, r2 };
+    }
+
     function computeStats(gr, featureProj, legend) {
       const bbox = turf.bbox(featureProj);
       const xmin = bbox[0], ymin = bbox[1], xmax = bbox[2], ymax = bbox[3];
@@ -907,11 +997,20 @@
       const totalHa = byCat.reduce((s, r) => s + r.ha, 0);
       const p = byCat.map(r => (totalHa > 0 ? r.ha / totalHa : 0));
 
+      const sorted = [...byCat].sort((a,b)=> b.ha - a.ha);
+      const pr = sorted.map(r => (totalHa > 0 ? r.ha / totalHa : 0));
+      const rankModel = fitRankModel(pr);
+
       const shannon = p.reduce((s, pi) => (pi > 0 ? s - (pi * Math.log(pi)) : s), 0);
       const sCount = byCat.length;
       const evenness = (sCount > 1 ? (shannon / Math.log(sCount)) : 0);
 
-      return { pix, areaHa, totalHa, byCat, shannon, evenness };
+      const simpson = 1 - p.reduce((s, pi) => s + (pi*pi), 0);
+
+      const dominance = p.length ? Math.max(...p) : 0;
+      const neff = Math.exp(shannon);
+
+      return { pix, areaHa, totalHa, byCat, shannon, evenness, simpson, dominance, neff, rankModel };
     }
 
     function resetOutputs() {
@@ -919,29 +1018,80 @@
       kpiAreaEl.textContent = "—";
       kpiHEl.textContent = "—";
       kpiJEl.textContent = "—";
+      kpiSimpsonEl.textContent = "—";
+      kpiDomEl.textContent = "—";
+      kpiNeffEl.textContent = "—";
       tblBodyEl.innerHTML = `<tr><td class="muted" colspan="3">Selecciona un recorte en el mapa.</td></tr>`;
-      interpTextEl.textContent = "Selecciona un municipio o microcuenca para generar interpretación.";
+      interpTextEl.textContent = "Seleccione un municipio o microcuenca para ver resultados.";
       chartNoteEl.textContent = "—";
       chartNote2El.textContent = "—";
+      chartNote3El.textContent = "—";
+      chartNote4El.textContent = "—";
       renderCharts(null);
       renderEquations();
     }
 
-    function renderEquations() {
+    function renderEquations(stats) {
       const elP = $("eqP");
       const elH = $("eqH");
       const elJ = $("eqJ");
       elP.innerHTML = "";
       elH.innerHTML = "";
       elJ.innerHTML = "";
+
+      const H = stats ? stats.shannon : null;
+      const J = stats ? stats.evenness : null;
+      const S = stats ? stats.byCat.length : null;
+      const D = stats ? stats.simpson : null;
+      const d = stats ? stats.dominance : null;
+
+      const Hs = (H === null ? "\\,?\\" : H.toFixed(3));
+      const Js = (J === null ? "\\,?\\" : J.toFixed(3));
+      const Ss = (S === null ? "\\,?\\" : String(S));
+      const Ds = (D === null ? "\\,?\\" : D.toFixed(3));
+      const ds = (d === null ? "\\,?\\" : d.toFixed(3));
+
       katex.render("p_i = \\frac{A_i}{\\sum A_i}", elP, { throwOnError:false });
-      katex.render("H' = -\\sum_{i=1}^{S} p_i\\,\\ln(p_i)", elH, { throwOnError:false });
-      katex.render("J = \\frac{H'}{\\ln(S)}", elJ, { throwOnError:false });
+      katex.render("H' = -\\sum_{i=1}^{S} p_i\\,\\ln(p_i)\\;=\\;" + Hs, elH, { throwOnError:false });
+      katex.render("J = \\frac{H'}{\\ln(S)}\\;=\\;" + Js + "\\;\\; (S=" + Ss + ")", elJ, { throwOnError:false });
+
+      const box = document.getElementById("eqExtra");
+      if (box) {
+        box.innerHTML = "";
+        const wrap = document.createElement("div");
+        wrap.style.display = "flex";
+        wrap.style.flexWrap = "wrap";
+        wrap.style.gap = "10px 16px";
+        wrap.style.alignItems = "center";
+
+        const a1 = document.createElement("div");
+        const a2 = document.createElement("div");
+        katex.render("1-D = 1-\\sum p_i^2\\;=\\;" + Ds, a1, { throwOnError:false });
+        katex.render("d = \\max(p_i)\\;=\\;" + ds, a2, { throwOnError:false });
+        wrap.appendChild(a1);
+        wrap.appendChild(a2);
+        box.appendChild(wrap);
+      }
+
+      const modelBox = document.getElementById("eqModel");
+      if (modelBox) {
+        modelBox.innerHTML = "";
+        const el = document.createElement("div");
+        if (stats && stats.rankModel) {
+          const { a, b, r2 } = stats.rankModel;
+          katex.render("\\ln(p_r)=a+b\\,\\ln(r)\\;\\Rightarrow\\; p_r=e^a\\,r^b\\; (a=" + a.toFixed(3) + ",\\; b=" + b.toFixed(3) + ",\\; R^2=" + r2.toFixed(3) + ")", el, { throwOnError:false });
+        } else {
+          katex.render("\\ln(p_r)=a+b\\,\\ln(r)\\;\\Rightarrow\\; p_r=e^a\\,r^b", el, { throwOnError:false });
+        }
+        modelBox.appendChild(el);
+      }
     }
 
-    function renderCharts(stats) {
+    function renderCharts    function renderCharts(stats) {
       const barCtx = $("chartBar");
       const donutCtx = $("chartDonut");
+      const rankCtx = $("chartRank");
+      const lorenzCtx = $("chartLorenz");
 
       const labels = stats ? stats.byCat.map(r => r.label) : [];
       const vals = stats ? stats.byCat.map(r => Math.round(r.ha * 100) / 100) : [];
@@ -979,9 +1129,80 @@
         chartDonut.data.datasets[0].backgroundColor = colors;
         chartDonut.update();
       }
+
+      const rankData = [];
+      const rankLabels = [];
+      if (stats && stats.byCat.length) {
+        const sorted = [...stats.byCat].sort((a,b) => b.ha - a.ha);
+        const total = sorted.reduce((s, r) => s + r.ha, 0);
+        for (let i = 0; i < sorted.length; i++) {
+          rankLabels.push(String(i+1));
+          rankData.push(total > 0 ? sorted[i].ha / total : 0);
+        }
+      }
+
+      if (!chartRank) {
+        chartRank = new Chart(rankCtx, {
+          type: "line",
+          data: { labels: rankLabels, datasets: [{ label: "p(r)", data: rankData, tension: 0.25, pointRadius: 3 }] },
+          options: {
+            responsive:true,
+            plugins: { legend: { display:false } },
+            scales: {
+              x: { title: { display:true, text:"Rango (r)" }, ticks:{ color:"#2a5a40" }, grid:{ color:"rgba(15,42,26,.08)" } },
+              y: { title: { display:true, text:"Proporción p" }, ticks:{ color:"#2a5a40" }, grid:{ color:"rgba(15,42,26,.08)" }, suggestedMin:0, suggestedMax:1 }
+            }
+          }
+        });
+      } else {
+        chartRank.data.labels = rankLabels;
+        chartRank.data.datasets[0].data = rankData;
+        chartRank.update();
+      }
+
+      const lorenzX = [];
+      const lorenzY = [];
+      if (rankData.length) {
+        const sortedAsc = [...rankData].sort((a,b) => a-b);
+        const n = sortedAsc.length;
+        let cum = 0;
+        lorenzX.push(0);
+        lorenzY.push(0);
+        for (let i = 0; i < n; i++) {
+          cum += sortedAsc[i];
+          lorenzX.push((i+1)/n);
+          lorenzY.push(cum);
+        }
+      }
+
+      if (!chartLorenz) {
+        chartLorenz = new Chart(lorenzCtx, {
+          type:"line",
+          data:{
+            labels: lorenzX.map(v => (Math.round(v*1000)/10).toString()),
+            datasets:[
+              { label:"Lorenz", data: lorenzY, tension:0.15, pointRadius:2 },
+              { label:"Igualdad", data: lorenzY.map((_,i)=> lorenzX[i] || 0), tension:0, pointRadius:0, borderDash:[6,6] }
+            ]
+          },
+          options:{
+            responsive:true,
+            plugins:{ legend:{ position:"bottom", labels:{ color:"#2a5a40" } } },
+            scales:{
+              x:{ title:{ display:true, text:"Proporción acumulada de clases" }, ticks:{ color:"#2a5a40" }, grid:{ color:"rgba(15,42,26,.08)" } },
+              y:{ title:{ display:true, text:"Proporción acumulada de área" }, ticks:{ color:"#2a5a40" }, grid:{ color:"rgba(15,42,26,.08)" }, suggestedMin:0, suggestedMax:1 }
+            }
+          }
+        });
+      } else {
+        chartLorenz.data.labels = lorenzX.map(v => (Math.round(v*1000)/10).toString());
+        chartLorenz.data.datasets[0].data = lorenzY;
+        chartLorenz.data.datasets[1].data = lorenzY.map((_,i)=> lorenzX[i] || 0);
+        chartLorenz.update();
+      }
     }
 
-    function dominantQuadrant(q) {
+    function dominantQuadrant    function dominantQuadrant(q) {
       const idx = q.indexOf(Math.max(...q));
       if (idx === 0) return "noroeste";
       if (idx === 1) return "noreste";
@@ -1066,13 +1287,19 @@
       kpiHEl.textContent = fmt(stats.shannon, 3);
       kpiJEl.textContent = fmt(stats.evenness, 3);
 
+      kpiSimpsonEl.textContent = fmt(stats.simpson, 3);
+      kpiDomEl.textContent = fmt(stats.dominance, 3);
+      kpiNeffEl.textContent = fmt(stats.neff, 2);
+
       chartNoteEl.textContent = lastStats.layerName;
       chartNote2El.textContent = name;
+      chartNote3El.textContent = lastStats.layerName;
+      chartNote4El.textContent = lastStats.layerName;
 
       renderCharts(stats);
       renderTable(stats);
       interpTextEl.textContent = buildInterpretation(stats);
-      renderEquations();
+      renderEquations(stats);
 
       setStatus("Listo.", "ok");
     }
@@ -1142,7 +1369,7 @@
         renderEquations();
         await loadLayersConfig();
         await loadRecorte(recorteKey);
-        setStatus("Listo. Activa una capa y selecciona un recorte.", "ok");
+        setStatus("Listo.", "ok");
       } catch (e) {
         setStatus("Error de inicio: " + String(e.message || e), "err");
       }
