@@ -375,7 +375,7 @@
       color: var(--muted);
       line-height: 1.35;
     }
-    .logos{
+    .footerLogos{
       display:flex;
       flex-wrap: wrap;
       gap: 14px;
@@ -383,7 +383,7 @@
       align-items:center;
       padding-top: 6px;
     }
-    .logos img{
+    .footerLogos img{
       height: 34px;
       width:auto;
       filter: drop-shadow(0 6px 14px rgba(0,0,0,.10));
@@ -422,27 +422,71 @@
       width: 8px; height: 8px; border-radius: 999px;
       background: linear-gradient(180deg, var(--teal), var(--green));
     }
+  
+    /* ===== Encabezado (igual que Reforestación) ===== */
+    header{
+      position:sticky;top:0;z-index:1000;
+      background:
+        linear-gradient(100deg, rgba(38,132,103,.92) 0%, rgba(72,179,194,.86) 55%, rgba(154,226,213,.88) 100%);
+      border-bottom:1px solid rgba(26,92,101,.20);
+      box-shadow:0 8px 28px rgba(14,63,74,.14);
+      backdrop-filter:blur(8px);
+      padding:10px 12px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    }
+    .brand{display:flex;align-items:center;gap:10px;min-width:280px}
+    .logos{display:flex;gap:8px;align-items:center}
+    .logos img{
+      height:56px;width:auto;border-radius:14px;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(20,91,100,.16);
+      box-shadow:0 8px 22px rgba(15,62,72,.10);
+      padding:7px;
+    }
+    .titleWrap{display:flex;flex-direction:column;gap:2px}
+    .ttl{font-weight:900;letter-spacing:.2px}
+    .sub{font-size:12px;color:rgba(18,50,61,.84)}
+    .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{
+      border:1px solid rgba(24,96,108,.16);
+      background:linear-gradient(180deg, rgba(255,255,255,.90), rgba(241,252,250,.88));
+      color:rgba(18,50,61,.96);
+      box-shadow:0 6px 14px rgba(15,62,72,.06);
+      padding:8px 10px;
+      border-radius:14px;
+      font-size:13px;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;align-items:center;gap:8px;
+      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    }
+    .btn:hover{
+      border-color:rgba(47,174,120,.45);
+      box-shadow:0 10px 20px rgba(15,62,72,.10);
+      transform:translateY(-1px);
+    }
+
   </style>
 </head>
 
 <body>
-  <header class="topbar">
-    <div class="slot left">
-      <img class="logo" src="../../BOSQUE.png" alt="Eje de Bosques">
-      <img class="logo" src="../../CODEMA%20%282%29.png" alt="CODEMA">
+  <header>
+  <div class="brand">
+    <div class="logos">
+      <img src="../../assets/img/BOSQUE.png" alt="BOSQUE" />
+      <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" />
     </div>
-    <div class="brandTitle">
-      <p class="h">Geoportal · Ecología del paisaje forestal · Sololá</p>
-      <p class="s">Fenología y Biomasa · Estadísticas por municipio y microcuenca</p>
+    <div class="titleWrap">
+      <div class="ttl">Geoportal · Ecología del paisaje forestal</div>
+      <div class="sub">Fenología y Biomasa · Departamento de Sololá, Guatemala</div>
     </div>
-    <div class="slot right">
-      <div class="navBtns">
-        <a class="navBtn" href="../../index.html" title="Regresar al inicio"><span class="dot"></span>Inicio</a>
-        <a class="navBtn secondary" href="#informes" title="Ir a informes (próximamente)"><span class="dot"></span>Informes</a>
-      </div>
-      
-    </div>
-  </header>
+  </div>
+
+  <div class="btns">
+    <a class="btn" href="../../index.html">Inicio</a>
+    <a class="btn" href="#informes">Informes</a>
+  </div>
+</header>
 
   <div class="wrap">
     <aside class="panel">
@@ -580,7 +624,7 @@
   <footer class="footer">
     <div class="t">Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
     <div class="p"><strong>Instituciones y organizaciones</strong><br>El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
-        <div class="logos">
+        <div class="footerLogos">
       <img src="../../marn.png" alt="MARN">
       <img src="../../maga.png" alt="MAGA">
       <img src="../../inab.png" alt="INAB">
@@ -709,8 +753,6 @@
         ];
       }
 
-      return DEFAULT_LEGEND;
-    }
       return DEFAULT_LEGEND;
     }
 
@@ -1202,7 +1244,7 @@
       }
     }
 
-    function dominantQuadrant    function dominantQuadrant(q) {
+    function dominantQuadrant(q) {
       const idx = q.indexOf(Math.max(...q));
       if (idx === 0) return "noroeste";
       if (idx === 1) return "noreste";
