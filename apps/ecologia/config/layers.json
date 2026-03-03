@@ -3,12 +3,13 @@
     "id": "fenologia_phenoClass_v2",
     "nombre": "Clasificación fenológica v2",
     "tipo": "cog",
-    "url": "./data/fenologia_forestal_solola_v2_phenoClass_cog.tif"
+    "url": "./data/fenologia_forestal_solola_v2_phenoClass_cog.tif",
     "visible": false,
     "opacity": 0.85,
     "legend": {
       "type": "categorical",
       "items": [
+        { "value": 0, "label": "Sin datos", "color": "#9ca3af" },
         { "value": 1, "label": "Vegetación herbácea estacional", "color": "#d4b483" },
         { "value": 2, "label": "Bosque perennifolio", "color": "#2d6a4f" },
         { "value": 3, "label": "Bosque caducifolio", "color": "#95d5b2" },
