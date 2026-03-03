@@ -604,9 +604,13 @@
     const map = L.map("map", { zoomControl: true });
     const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap" });
     const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "&copy; OpenTopoMap" });
+    const sat = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom: 20, attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community" }
+    );
     osm.addTo(map);
     map.setView([14.65, -91.2], 10);
-    L.control.layers({ "OSM": osm, "Topo": topo }, null, { collapsed: true }).addTo(map);
+    L.control.layers({ "OSM": osm, "Topo": topo, "Satélite": sat }, null, { collapsed: true }).addTo(map);
 
     let layersCfg = [];
     let rasterState = new Map();
@@ -638,9 +642,10 @@
     }
 
     function friendlyLayerName(layer) {
+      const id = (layer.id || "").toLowerCase();
+      if (id.includes("biomasa")) return "Biomasa forestal (y su dimensional)";
       const n = (layer.nombre || "").trim();
       if (n) return n;
-      const id = (layer.id || "").toLowerCase();
       if (id.includes("fenologia")) return "Clasificación fenológica forestal";
       return layer.id || "Capa";
     }
@@ -662,7 +667,7 @@
       name.textContent = friendlyLayerName(layer);
       const desc = document.createElement("div");
       desc.className = "desc";
-      desc.textContent = "Raster categórico (COG) · valores sin 0/nulos";
+      desc.textContent = "COG · análisis por recorte (sin 0/nulos)";
       left.appendChild(name);
       left.appendChild(desc);
 
