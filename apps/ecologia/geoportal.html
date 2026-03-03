@@ -1,221 +1,573 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Geoportal · Ecología del paisaje forestal · Sololá</title>
 
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <script src="https://unpkg.com/proj4@2.9.2/dist/proj4.js"></script>
+  <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+
+  <script src="https://unpkg.com/georaster/dist/georaster.browser.bundle.min.js"></script>
+  <script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
     :root{
-      --bg: #0b1220;
-      --card: rgba(255,255,255,.06);
-      --card2: rgba(255,255,255,.08);
-      --line: rgba(255,255,255,.10);
-      --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.70);
-      --accent: #38bdf8;
-      --danger: #fb7185;
+      --bgA:#effff6;
+      --bgB:#eefbff;
+      --card: rgba(255,255,255,.92);
+      --card2: rgba(255,255,255,.98);
+      --ink:#0f2a1a;
+      --muted:#3c5b4a;
+      --stroke: rgba(15,42,26,.12);
+      --stroke2: rgba(15,42,26,.08);
+      --green:#2bb673;
+      --teal:#22c1c3;
+      --sky:#38bdf8;
+      --shadow: 0 14px 40px rgba(10,50,20,.10);
+      --shadowSm: 0 10px 22px rgba(10,50,20,.08);
+      --radius: 18px;
+      --radiusSm: 14px;
     }
-    html, body { height: 100%; margin: 0; background: var(--bg); }
-    .app { height: 100%; display: grid; grid-template-columns: 380px 1fr; }
-    @media (max-width: 992px){ .app { grid-template-columns: 1fr; grid-template-rows: auto 1fr; } }
-    .sidebar {
-      padding: 14px;
-      border-right: 1px solid var(--line);
-      background: linear-gradient(180deg, rgba(56,189,248,.10), rgba(56,189,248,0) 40%), var(--bg);
-      overflow: auto;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      color:var(--ink);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif;
+      background: radial-gradient(1200px 420px at 18% 0%, rgba(43,182,115,.22), transparent 60%),
+                  radial-gradient(980px 520px at 74% 6%, rgba(34,193,195,.16), transparent 60%),
+                  radial-gradient(760px 520px at 56% 18%, rgba(180,240,210,.20), transparent 65%),
+                  linear-gradient(180deg, var(--bgB), var(--bgA));
+      min-height:100vh;
     }
-    .mapwrap { position: relative; }
-    #map { height: 100%; width: 100%; }
-    .brand {
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      padding: 14px 14px 12px 14px;
-      background: var(--card);
+    .topbar{
+      height:72px;
+      display:grid;
+      grid-template-columns: 1fr minmax(280px, 520px) 1fr;
+      align-items:center;
+      gap:12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.78);
       backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
-    .brand h1 { font-size: 16px; margin: 0; color: var(--text); font-weight: 800; letter-spacing: .2px; }
-    .brand .sub { font-size: 12px; margin: 6px 0 0 0; color: var(--muted); line-height: 1.25; }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.04);
-      color: var(--muted);
+    .topbar .slot{display:flex; align-items:center; gap:12px;}
+    .topbar .slot.right{justify-content:flex-end;}
+    .brandTitle{
+      text-align:center;
+      line-height:1.1;
+    }
+    .brandTitle .h{
+      font-weight:900;
+      letter-spacing:.2px;
+      font-size: 16px;
+      margin:0;
+    }
+    .brandTitle .s{
+      margin:4px 0 0 0;
       font-size: 12px;
+      color: var(--muted);
     }
-    .cardx {
-      border: 1px solid var(--line);
-      border-radius: 18px;
+    .logo{
+      height: 42px;
+      width:auto;
+      border-radius: 10px;
+      background: transparent;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.12));
+    }
+    .wrap{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap: 14px;
+      padding: 14px;
+    }
+    @media (max-width: 980px){
+      .wrap{grid-template-columns: 1fr; }
+    }
+    .panel{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      min-width: 0;
+    }
+    .card{
       background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadowSm);
       padding: 12px;
-      margin-top: 12px;
-      backdrop-filter: blur(10px);
     }
-    .cardx .title { color: var(--text); font-weight: 700; font-size: 13px; margin: 0 0 8px 0; display:flex; align-items:center; gap:8px;}
-    .muted { color: var(--muted); }
-    .smallmuted { color: var(--muted); font-size: 12px; }
-    .btnx {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      border-radius: 12px;
-      padding: 8px 10px;
+    .card h3{
+      margin:0 0 10px 0;
       font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .badgeDot{
+      width: 10px; height: 10px; border-radius: 999px;
+      background: linear-gradient(180deg, var(--green), var(--teal));
+      box-shadow: 0 6px 14px rgba(34,193,195,.25);
+    }
+    .row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: var(--radiusSm);
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.75);
+    }
+    .row .name{
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+    .row .desc{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .toggle{
+      width: 54px;
+      height: 30px;
+      border-radius: 999px;
+      position: relative;
+      background: rgba(15,42,26,.10);
+      border: 1px solid rgba(15,42,26,.15);
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+    .toggle::after{
+      content:"";
+      position:absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 10px 18px rgba(0,0,0,.10);
+      transition: transform .18s ease;
+    }
+    .toggle.on{
+      background: rgba(56,189,248,.28);
+      border-color: rgba(56,189,248,.45);
+    }
+    .toggle.on::after{ transform: translateX(24px); }
+    .select, .btn{
+      width:100%;
+      padding: 10px 10px;
+      border-radius: var(--radiusSm);
+      border: 1px solid rgba(15,42,26,.14);
+      background: rgba(255,255,255,.92);
+      color: var(--ink);
+      outline: none;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn{
+      cursor:pointer;
+      background: linear-gradient(180deg, rgba(56,189,248,.18), rgba(43,182,115,.12));
+    }
+    .btn:hover{ filter: brightness(0.98); }
+    .btnRow{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .muted{ color: var(--muted); font-size: 12px; }
+    .status{
+      font-size:12px;
+      font-weight: 800;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.78);
+    }
+    .status.ok{ color:#0a7b4d; }
+    .status.warn{ color:#9a6b00; }
+    .status.err{ color:#a3162b; }
+    .mapcol{
+      min-width: 0;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+    #map{
+      height: 560px;
+      border-radius: var(--radius);
+      overflow:hidden;
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      background: #fff;
+    }
+    @media (max-width: 980px){
+      #map{ height: 520px; }
+    }
+    .below{
+      background: var(--card2);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadowSm);
+      padding: 12px;
+    }
+    .below h2{
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .kpis{
+      display:grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (max-width: 980px){
+      .kpis{ grid-template-columns: 1fr 1fr; }
+    }
+    .kpi{
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radiusSm);
+      background: rgba(255,255,255,.82);
+      padding: 10px;
+    }
+    .kpi .lab{ font-size: 12px; color: var(--muted); font-weight: 700; }
+    .kpi .val{ font-size: 18px; font-weight: 1000; margin-top: 2px; }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 980px){ .grid2{ grid-template-columns: 1fr; } }
+    .chartCard{
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.82);
+      padding: 10px;
+      overflow:hidden;
+    }
+    .chartTitle{
+      font-size: 12px;
+      font-weight: 900;
+      margin: 2px 0 10px 0;
+      color: var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    canvas{ max-width: 100%; }
+    .interp{
+      margin-top: 12px;
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.84);
+      padding: 12px;
+    }
+    .interp h4{
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      font-weight: 1000;
+      color: var(--muted);
+    }
+    .interp p{
+      margin: 8px 0 0 0;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+    .eqBlock{
+      margin-top: 12px;
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.84);
+      padding: 12px;
+    }
+    .eqBlock h4{
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      font-weight: 1000;
+      color: var(--muted);
+    }
+    .eq{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items:center;
+      justify-content:flex-start;
+      padding: 10px 10px;
+      border-radius: var(--radiusSm);
+      border: 1px solid rgba(15,42,26,.10);
+      background: rgba(238,255,246,.72);
+    }
+    .eq .lbl{
+      font-size:12px;
+      color: var(--muted);
+      font-weight: 900;
+    }
+    .tblWrap{
+      margin-top: 12px;
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.86);
+      overflow:hidden;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    thead th{
+      text-align:left;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(15,42,26,.10);
+      background: rgba(238,251,255,.70);
+    }
+    tbody td{
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(15,42,26,.08);
+    }
+    tbody tr:hover{ background: rgba(56,189,248,.06); }
+    .right{ text-align:right; }
+    .sw{
+      display:inline-block;
+      width: 12px; height: 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.12);
+      margin-right: 8px;
+      vertical-align: -2px;
+    }
+    .footer{
+      margin: 16px 14px 20px 14px;
+      padding: 18px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.82);
+      box-shadow: var(--shadowSm);
+      text-align:center;
+    }
+    .footer .t{
+      font-weight: 900;
+      font-size: 13px;
+      margin: 0 0 10px 0;
+    }
+    .footer .p{
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .logos{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+      align-items:center;
+      padding-top: 6px;
+    }
+    .logos img{
+      height: 34px;
+      width:auto;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.10));
+      border-radius: 8px;
+    }
+    .leaflet-control-layers, .leaflet-bar a{
+      background: rgba(255,255,255,.94) !important;
+      border-color: rgba(15,42,26,.14) !important;
+    }
+
+    .navBtns{display:flex; gap:10px; align-items:center;}
+    .navBtn{
       display:inline-flex;
       align-items:center;
       gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,42,26,.14);
+      background: linear-gradient(180deg, rgba(43,182,115,.22), rgba(255,255,255,.70));
+      box-shadow: 0 10px 18px rgba(10,50,20,.08);
+      color: var(--ink);
+      text-decoration:none;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing:.2px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .12s ease, filter .12s ease;
     }
-    .btnx:hover { background: rgba(255,255,255,.10); }
-    .form-select, .form-check-input { cursor: pointer; }
-    .form-select {
-      background-color: rgba(255,255,255,.06);
-      border: 1px solid var(--line);
-      color: var(--text);
-      border-radius: 12px;
+    .navBtn:hover{ filter: brightness(0.98); transform: translateY(-1px); }
+    .navBtn:active{ transform: translateY(0px); }
+    .navBtn.secondary{
+      background: linear-gradient(180deg, rgba(34,193,195,.16), rgba(255,255,255,.74));
     }
-    .form-select:focus { box-shadow: none; border-color: rgba(56,189,248,.55); }
-    .form-check-input { background-color: rgba(255,255,255,.08); border: 1px solid var(--line); }
-    .form-check-input:checked { background-color: var(--accent); border-color: var(--accent); }
-    .kpi { display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    .kpi .box {
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.06);
-      border-radius: 16px;
-      padding: 10px;
+    .navBtn .dot{
+      width: 8px; height: 8px; border-radius: 999px;
+      background: linear-gradient(180deg, var(--teal), var(--green));
     }
-    .kpi .lab { font-size: 12px; color: var(--muted); }
-    .kpi .val { font-size: 18px; font-weight: 800; color: var(--text); margin-top: 2px; }
-    .table { --bs-table-bg: transparent; --bs-table-color: var(--text); --bs-table-border-color: rgba(255,255,255,.08); }
-    .table th { color: var(--muted); font-weight: 600; font-size: 12px; }
-    .table td { font-size: 13px; }
-    .sw { display:inline-block; width: 12px; height: 12px; border-radius: 4px; border: 1px solid rgba(0,0,0,.18); margin-right: 8px; vertical-align: -2px; }
-    .status { font-size: 12px; }
-    .status.ok { color: #34d399; }
-    .status.warn { color: #fbbf24; }
-    .status.err { color: var(--danger); }
-    .legendgrid { display:grid; grid-template-columns: 1fr 1fr; gap:6px 10px; }
-    .legenditem { display:flex; align-items:center; gap:8px; color: var(--muted); font-size: 12px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.04); border-radius: 12px; padding: 6px 8px; }
-    .logos { display:flex; flex-wrap: wrap; gap:10px; justify-content: center; }
-    .logos img { height: 32px; width: auto; opacity: .92; filter: drop-shadow(0 4px 10px rgba(0,0,0,.25)); }
-    .foot { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.08); }
-    .leaflet-control-layers, .leaflet-bar a {
-      background: rgba(255,255,255,.92) !important;
-    }
-    .chip { display:inline-flex; align-items:center; gap:6px; padding: 6px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04); color: var(--muted); font-size: 12px; }
   </style>
 </head>
 
 <body>
-  <div class="app">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="d-flex align-items-start justify-content-between gap-2">
-          <div>
-            <h1><i class="bi bi-diagram-3 me-1"></i>Geoportal · Ecología del paisaje forestal</h1>
-            <div class="sub">Sololá · Visualización y estadísticas por municipio/microcuenca para la clasificación fenológica</div>
-          </div>
-          <span class="pill"><i class="bi bi-globe2"></i><span id="pillCapa">Fenología</span></span>
-        </div>
+  <header class="topbar">
+    <div class="slot left">
+      <img class="logo" src="../../BOSQUE.png" alt="Eje de Bosques">
+      <img class="logo" src="../../CODEMA%20%282%29.png" alt="CODEMA">
+    </div>
+    <div class="brandTitle">
+      <p class="h">Geoportal · Ecología del paisaje forestal · Sololá</p>
+      <p class="s">Clasificación fenológica forestal · Estadísticas por municipio y microcuenca</p>
+    </div>
+    <div class="slot right">
+      <div class="navBtns">
+        <a class="navBtn" href="../../index.html" title="Regresar al inicio"><span class="dot"></span>Inicio</a>
+        <a class="navBtn secondary" href="#informes" title="Ir a informes (próximamente)"><span class="dot"></span>Informes</a>
       </div>
+      <img class="logo" src="../../aala_logo.png" alt="Laboratorio SIG">
+    </div>
+  </header>
 
-      <div class="cardx">
-        <div class="title"><i class="bi bi-layers"></i>Capas</div>
-        <div class="d-flex align-items-center justify-content-between gap-2">
-          <div class="form-check form-switch m-0">
-            <input class="form-check-input" type="checkbox" role="switch" id="chkFenologia">
-            <label class="form-check-label smallmuted" for="chkFenologia">Clasificación fenológica v2</label>
-          </div>
-          <button class="btnx" id="btnZoomSolola" type="button"><i class="bi bi-bounding-box"></i>Sololá</button>
-        </div>
-        <div class="mt-3">
-          <div class="smallmuted mb-2">Recorte</div>
-          <select class="form-select form-select-sm" id="selRecorte">
+  <div class="wrap">
+    <aside class="panel">
+      <div class="card">
+        <h3><span class="badgeDot"></span>Capas</h3>
+        <div id="layersList"></div>
+        <div class="mt-2">
+          <div class="muted mb-2">Recorte</div>
+          <select id="selRecorte" class="select">
             <option value="muni" selected>Municipios (Sololá)</option>
             <option value="micro">Microcuencas (Atitlán)</option>
           </select>
         </div>
-        <div class="mt-3 legendgrid" id="legendGrid"></div>
-        <div class="mt-3 status muted" id="status">Listo.</div>
-      </div>
-
-      <div class="cardx">
-        <div class="title"><i class="bi bi-geo-alt"></i>Selección</div>
-        <div class="d-flex flex-wrap align-items-center gap-2">
-          <span class="chip"><i class="bi bi-cursor"></i><span id="selName">Ninguna</span></span>
-          <span class="chip"><i class="bi bi-grid"></i><span id="rasterInfo">—</span></span>
+        <div class="mt-2 btnRow">
+          <button id="btnZoom" class="btn" type="button">Zoom a Sololá</button>
+          <button id="btnClear" class="btn" type="button">Limpiar selección</button>
         </div>
-
-        <div class="mt-3 kpi">
-          <div class="box">
-            <div class="lab">Área evaluada (ha)</div>
-            <div class="val" id="kpiAreaHa">—</div>
-          </div>
-          <div class="box">
-            <div class="lab">Pixeles contados</div>
-            <div class="val" id="kpiPix">—</div>
-          </div>
-        </div>
-
-        <div class="mt-3">
-          <canvas id="chartHa" height="160"></canvas>
-        </div>
-
-        <div class="mt-3 table-responsive">
-          <table class="table table-sm align-middle mb-0">
-            <thead>
-              <tr><th>Categoría</th><th class="text-end">Ha</th></tr>
-            </thead>
-            <tbody id="tblStats">
-              <tr><td class="muted" colspan="2">Selecciona un recorte en el mapa.</td></tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="mt-3 d-flex gap-2 flex-wrap">
-          <button class="btnx" id="btnLimpiar" type="button"><i class="bi bi-x-circle"></i>Limpiar</button>
-          <button class="btnx" id="btnExportCSV" type="button"><i class="bi bi-download"></i>Exportar CSV</button>
-        </div>
-
-        <div class="mt-3 status warn d-none" id="warnCrs"></div>
-      </div>
-
-      <div class="cardx foot">
-        <div class="smallmuted text-center mb-2">Instituciones</div>
-        <div class="logos">
-          <img src="../../BOSQUE.png" alt="Eje de Bosques">
-          <img src="../../CODEMA%20%282%29.png" alt="CODEMA">
-          <img src="../../marn.png" alt="MARN">
-          <img src="../../maga.png" alt="MAGA">
-          <img src="../../inab.png" alt="INAB">
-          <img src="../../conap.png" alt="CONAP">
-          <img src="../../amsclae.png" alt="AMSCLAE">
-          <img src="../../conred.png" alt="CONRED">
-          <img src="../../cea.png" alt="CEA">
-          <img src="../../aala_logo.png" alt="AALA">
-        </div>
-        <div class="smallmuted text-center mt-2">Geoportal estático · GitHub Pages</div>
+        <div class="mt-2 status" id="status">Listo.</div>
+        <div class="muted mt-2">Tip: haz clic en un polígono para calcular hectáreas por categoría (sin incluir 0/nulos).</div>
       </div>
     </aside>
 
-    <main class="mapwrap">
+    <section class="mapcol">
       <div id="map"></div>
-    </main>
+
+      <div class="below">
+        <h2><span class="badgeDot"></span>Resultados y análisis</h2>
+
+        <div class="kpis">
+          <div class="kpi">
+            <div class="lab">Selección</div>
+            <div class="val" id="kpiSel">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Área evaluada (ha)</div>
+            <div class="val" id="kpiArea">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Índice Shannon (H')</div>
+            <div class="val" id="kpiH">—</div>
+          </div>
+          <div class="kpi">
+            <div class="lab">Evenness (J)</div>
+            <div class="val" id="kpiJ">—</div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="chartCard">
+            <div class="chartTitle">
+              <span>Hectáreas por categoría</span>
+              <span class="muted" id="chartNote">—</span>
+            </div>
+            <canvas id="chartBar" height="190"></canvas>
+          </div>
+          <div class="chartCard">
+            <div class="chartTitle">
+              <span>Participación relativa</span>
+              <span class="muted" id="chartNote2">—</span>
+            </div>
+            <canvas id="chartDonut" height="190"></canvas>
+          </div>
+        </div>
+
+        <div class="interp">
+          <h4>Interpretación espacial</h4>
+          <div class="muted">Se infiere a partir de la distribución de pixeles por cuadrantes dentro del recorte (NO/NE/SO/SE).</div>
+          <p id="interpText">Selecciona un municipio o microcuenca para generar interpretación.</p>
+        </div>
+
+        <div class="eqBlock">
+          <h4>Ecuaciones (métricas ecológicas)</h4>
+          <div class="eq">
+            <div class="lbl">Proporción</div><div id="eqP"></div>
+            <div class="lbl">Shannon</div><div id="eqH"></div>
+            <div class="lbl">Evenness</div><div id="eqJ"></div>
+          </div>
+          <div class="muted" style="margin-top:10px;">Las métricas se calculan a partir de hectáreas por clase dentro del recorte seleccionado (sin 0/nulos).</div>
+        </div>
+
+        <div class="tblWrap">
+          <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; padding: 10px 10px; border-bottom: 1px solid rgba(15,42,26,.08); background: rgba(238,251,255,.55);">
+            <div style="font-weight:900; font-size:12px; color: var(--muted);">Resumen por categoría</div>
+            <div style="display:flex; gap:10px;">
+              <button id="btnCSV" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar CSV</button>
+              <button id="btnXLSX" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar Excel</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th class="right">Ha</th>
+                <th class="right">%</th>
+              </tr>
+            </thead>
+            <tbody id="tblBody">
+              <tr><td class="muted" colspan="3">Selecciona un recorte en el mapa.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="eqBlock" id="informes" style="margin-top:12px;">
+          <h4>Informes</h4>
+          <div class="muted">Esta sección se configurará después (reportes descargables, series temporales, comparaciones y mapas temáticos).</div>
+        </div>
+
+
+      </div>
+    </section>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/proj4@2.9.2/dist/proj4.js"></script>
-  <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-  <script src="https://unpkg.com/georaster/dist/georaster.browser.bundle.min.js"></script>
-  <script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <footer class="footer">
+    <div class="t">Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
+    <div class="p"><strong>Instituciones y organizaciones</strong><br>El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
+    <div class="logos">
+      <img src="../../marn.png" alt="MARN">
+      <img src="../../maga.png" alt="MAGA">
+      <img src="../../inab.png" alt="INAB">
+      <img src="../../conap.png" alt="CONAP">
+      <img src="../../amsclae.png" alt="AMSCLAE">
+      <img src="../../conred.png" alt="CONRED">
+      <img src="../../cea.png" alt="CEA">
+      <img src="../../aala_logo.png" alt="AALA">
+    </div>
+  </footer>
 
   <script>
     const LAYERS_URL = "./config/layers.json";
@@ -224,23 +576,30 @@
       micro: { url: "../incendios/data/microcuencas_atitlan.geojson", label: "Microcuencas (Atitlán)" }
     };
 
-    const CATEGORIES = [
-      { value: 0, label: "Sin datos", color: "#9ca3af" },
+    const DEFAULT_LEGEND = [
       { value: 1, label: "Vegetación herbácea estacional", color: "#d4b483" },
-      { value: 2, label: "Bosque perennifolio", color: "#2d6a4f" },
+      { value: 2, label: "Bosque perennifolio", color: "#2bb673" },
       { value: 3, label: "Bosque caducifolio", color: "#95d5b2" },
       { value: 4, label: "Bosque semi-caducifolio", color: "#b5179e" }
     ];
 
+    const NODATA_VALUES = new Set([0, -9999, 255]);
+
     const $ = (id) => document.getElementById(id);
 
     const statusEl = $("status");
-    const warnCrsEl = $("warnCrs");
-    const tblStatsEl = $("tblStats");
-    const selNameEl = $("selName");
-    const kpiAreaHaEl = $("kpiAreaHa");
-    const kpiPixEl = $("kpiPix");
-    const rasterInfoEl = $("rasterInfo");
+    const layersListEl = $("layersList");
+    const selRecorteEl = $("selRecorte");
+
+    const kpiSelEl = $("kpiSel");
+    const kpiAreaEl = $("kpiArea");
+    const kpiHEl = $("kpiH");
+    const kpiJEl = $("kpiJ");
+
+    const interpTextEl = $("interpText");
+    const tblBodyEl = $("tblBody");
+    const chartNoteEl = $("chartNote");
+    const chartNote2El = $("chartNote2");
 
     const map = L.map("map", { zoomControl: true });
     const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap" });
@@ -249,31 +608,100 @@
     map.setView([14.65, -91.2], 10);
     L.control.layers({ "OSM": osm, "Topo": topo }, null, { collapsed: true }).addTo(map);
 
-    let fenologiaCfg = null;
-    let georasterObj = null;
-    let rasterLayer = null;
-    let rasterEpsg = null;
-    let projRaster = null;
-
+    let layersCfg = [];
+    let rasterState = new Map();
     let recorteKey = "muni";
     let recorteLayer = null;
-    let recorteData = null;
     let selectedFeatureLayer = null;
     let selectedFeature = null;
 
-    let chart = null;
+    let chartBar = null;
+    let chartDonut = null;
     let lastStats = null;
 
     function setStatus(msg, kind) {
       statusEl.textContent = msg;
-      statusEl.classList.remove("ok","warn","err","muted");
+      statusEl.classList.remove("ok","warn","err");
       if (kind) statusEl.classList.add(kind);
-      else statusEl.classList.add("muted");
     }
 
-    function buildLegend() {
-      const g = $("legendGrid");
-      g.innerHTML = CATEGORIES.map(c => `<div class="legenditem"><span class="sw" style="background:${c.color}"></span><span>${c.value} · ${c.label}</span></div>`).join("");
+    function fmt(x, digits=2) {
+      if (x === null || x === undefined || Number.isNaN(x)) return "—";
+      const v = Math.round(x * Math.pow(10, digits)) / Math.pow(10, digits);
+      return v.toLocaleString("es-GT", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    }
+
+    function pct(x) {
+      if (x === null || x === undefined || Number.isNaN(x)) return "—";
+      const v = Math.round(x * 10) / 10;
+      return v.toLocaleString("es-GT", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    }
+
+    function friendlyLayerName(layer) {
+      const n = (layer.nombre || "").trim();
+      if (n) return n;
+      const id = (layer.id || "").toLowerCase();
+      if (id.includes("fenologia")) return "Clasificación fenológica forestal";
+      return layer.id || "Capa";
+    }
+
+    function legendFor(layer) {
+      if (layer.legend && layer.legend.items && Array.isArray(layer.legend.items) && layer.legend.items.length) {
+        return layer.legend.items.filter(x => !NODATA_VALUES.has(Number(x.value)));
+      }
+      return DEFAULT_LEGEND;
+    }
+
+    function buildLayerRow(layer) {
+      const row = document.createElement("div");
+      row.className = "row";
+      const left = document.createElement("div");
+      left.style.minWidth = "0";
+      const name = document.createElement("div");
+      name.className = "name";
+      name.textContent = friendlyLayerName(layer);
+      const desc = document.createElement("div");
+      desc.className = "desc";
+      desc.textContent = "Raster categórico (COG) · valores sin 0/nulos";
+      left.appendChild(name);
+      left.appendChild(desc);
+
+      const toggle = document.createElement("div");
+      toggle.className = "toggle";
+      toggle.setAttribute("role", "switch");
+      toggle.setAttribute("aria-checked", "false");
+
+      toggle.addEventListener("click", async () => {
+        const on = toggle.classList.contains("on");
+        if (on) {
+          await deactivateLayer(layer.id);
+          toggle.classList.remove("on");
+          toggle.setAttribute("aria-checked", "false");
+        } else {
+          try {
+            await activateLayer(layer.id);
+            toggle.classList.add("on");
+            toggle.setAttribute("aria-checked", "true");
+          } catch (e) {
+            setStatus("Error: " + String(e.message || e), "err");
+          }
+        }
+        if (selectedFeature) recomputeStats();
+      });
+
+      row.appendChild(left);
+      row.appendChild(toggle);
+      return row;
+    }
+
+    async function loadLayersConfig() {
+      const res = await fetch(LAYERS_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error("No se pudo cargar layers.json");
+      const cfg = await res.json();
+      layersCfg = Array.isArray(cfg) ? cfg : [];
+      if (!layersCfg.length) throw new Error("layers.json no tiene capas");
+      layersListEl.innerHTML = "";
+      for (const layer of layersCfg) layersListEl.appendChild(buildLayerRow(layer));
     }
 
     function parseEpsgCode(gr) {
@@ -301,6 +729,62 @@
       try { return new URL(u, window.location.href).toString(); } catch (_) { return u; }
     }
 
+    async function loadRasterForLayer(layer) {
+      const state = rasterState.get(layer.id) || {};
+      if (state.georaster) return state;
+
+      setStatus("Cargando raster…", null);
+
+      const url = resolveUrl(layer.url);
+      const res = await fetch(url, { cache: "no-store" });
+      if (!res.ok) throw new Error("No se pudo descargar el raster");
+
+      const ab = await res.arrayBuffer();
+      const georasterObj = await parseGeoraster(ab);
+      const epsg = parseEpsgCode(georasterObj);
+      const proj = ensureProj(epsg);
+
+      const legend = legendFor(layer);
+      const colorMap = new Map(legend.map(x => [Number(x.value), String(x.color)]));
+
+      const layerObj = new GeoRasterLayer({
+        georaster: georasterObj,
+        opacity: (layer.opacity ?? 0.85),
+        resolution: 256,
+        pixelValuesToColorFn: (values) => {
+          const v = values && values.length ? Number(values[0]) : null;
+          if (v === null || v === undefined || Number.isNaN(v)) return null;
+          if (NODATA_VALUES.has(v)) return null;
+          return colorMap.get(v) || null;
+        }
+      });
+
+      const out = { georaster: georasterObj, epsg, proj, leafletLayer: layerObj, legend };
+      rasterState.set(layer.id, out);
+      setStatus("Raster cargado.", "ok");
+      return out;
+    }
+
+    async function activateLayer(id) {
+      const layer = layersCfg.find(x => x.id === id) || layersCfg[0];
+      const state = await loadRasterForLayer(layer);
+      if (!map.hasLayer(state.leafletLayer)) state.leafletLayer.addTo(map);
+      setStatus("Capa activa.", "ok");
+    }
+
+    async function deactivateLayer(id) {
+      const state = rasterState.get(id);
+      if (state && state.leafletLayer && map.hasLayer(state.leafletLayer)) map.removeLayer(state.leafletLayer);
+      setStatus("Capa desactivada.", null);
+    }
+
+    function styleRecorte() {
+      return { color: "#38bdf8", weight: 2, fillColor: "#38bdf8", fillOpacity: 0.08 };
+    }
+    function styleSelected() {
+      return { color: "#2bb673", weight: 3, fillColor: "#2bb673", fillOpacity: 0.12 };
+    }
+
     function humanizeFeatureName(props) {
       const preferred = ["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","MICROCUENCA","microcuenca","NAME","name"];
       for (const k of preferred) if (props && props[k]) return String(props[k]);
@@ -311,116 +795,38 @@
       return "Sin nombre";
     }
 
-    function styleRecorte() {
-      return { color: "#38bdf8", weight: 2, fillColor: "#38bdf8", fillOpacity: 0.08 };
-    }
-    function styleSelected() {
-      return { color: "#fb7185", weight: 3, fillColor: "#fb7185", fillOpacity: 0.10 };
-    }
-
-    async function loadLayersConfig() {
-      const res = await fetch(LAYERS_URL, { cache: "no-store" });
-      if (!res.ok) throw new Error("No se pudo cargar layers.json");
-      const cfg = await res.json();
-      fenologiaCfg = cfg.find(x => (x.id || "").includes("fenologia")) || cfg[0];
-      if (!fenologiaCfg || !fenologiaCfg.url) throw new Error("layers.json no tiene URL de capa");
-      return fenologiaCfg;
-    }
-
-    function colorForValue(v) {
-      const item = CATEGORIES.find(x => x.value === v);
-      return item ? item.color : "#111827";
-    }
-
-    function buildRasterLayer(gr) {
-      const colorFn = (values) => {
-        const v = values && values.length ? values[0] : null;
-        if (v === null || v === undefined || Number.isNaN(v)) return null;
-        return colorForValue(Number(v));
-      };
-      return new GeoRasterLayer({
-        georaster: gr,
-        opacity: fenologiaCfg.opacity ?? 0.85,
-        pixelValuesToColorFn: colorFn,
-        resolution: 256
-      });
-    }
-
-    function updateRasterInfo() {
-      if (!georasterObj) { rasterInfoEl.textContent = "—"; return; }
-      const info = `epsg=${rasterEpsg ?? "?"} · px=${georasterObj.pixelWidth}×${georasterObj.pixelHeight} · size=${georasterObj.width}×${georasterObj.height}`;
-      rasterInfoEl.textContent = info;
-    }
-
-    async function loadRaster() {
-      if (georasterObj) return georasterObj;
-      setStatus("Cargando raster…", "muted");
-      const url = resolveUrl(fenologiaCfg.url);
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error("No se pudo descargar el raster");
-      const ab = await res.arrayBuffer();
-      georasterObj = await parseGeoraster(ab);
-      rasterEpsg = parseEpsgCode(georasterObj);
-      projRaster = ensureProj(rasterEpsg);
-      updateRasterInfo();
-      if (!rasterEpsg || !projRaster) {
-        warnCrsEl.classList.remove("d-none");
-        warnCrsEl.textContent = "Aviso: no pude confirmar el EPSG del raster. Si no es compatible con WGS84/UTM 15N, el recorte puede fallar.";
-      } else {
-        warnCrsEl.classList.add("d-none");
-      }
-      setStatus("Raster cargado.", "ok");
-      return georasterObj;
-    }
-
-    async function toggleRaster(on) {
-      if (on) {
-        await loadLayersConfig();
-        const gr = await loadRaster();
-        if (!rasterLayer) rasterLayer = buildRasterLayer(gr);
-        rasterLayer.addTo(map);
-        setStatus("Capa activa.", "ok");
-      } else {
-        if (rasterLayer) map.removeLayer(rasterLayer);
-        setStatus("Capa desactivada.", "muted");
-      }
-    }
-
     async function loadRecorte(key) {
       recorteKey = key;
       if (recorteLayer) map.removeLayer(recorteLayer);
       recorteLayer = null;
-      recorteData = null;
       selectedFeatureLayer = null;
       selectedFeature = null;
-      selNameEl.textContent = "Ninguna";
-      kpiAreaHaEl.textContent = "—";
-      kpiPixEl.textContent = "—";
       lastStats = null;
-      renderStats(null);
+      resetOutputs();
+
       const res = await fetch(RECORTES[key].url, { cache: "no-store" });
-      if (!res.ok) { setStatus("No se pudo cargar recorte.", "warn"); return; }
-      recorteData = await res.json();
-      recorteLayer = L.geoJSON(recorteData, {
+      if (!res.ok) { setStatus("No se pudo cargar recorte.", "err"); return; }
+      const data = await res.json();
+
+      recorteLayer = L.geoJSON(data, {
         style: styleRecorte,
         onEachFeature: (feature, layer) => {
-          layer.on("click", async () => {
+          layer.on("click", () => {
             if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
             selectedFeatureLayer = layer;
             selectedFeature = feature;
             layer.setStyle(styleSelected());
             layer.bringToFront();
-            selNameEl.textContent = humanizeFeatureName(feature.properties || {});
-            if ($("chkFenologia").checked) await recomputeStats();
-            else setStatus("Activa la capa para calcular hectáreas.", "warn");
+            recomputeStats();
           });
         }
       }).addTo(map);
-      try { map.fitBounds(recorteLayer.getBounds(), { padding: [14, 14] }); } catch (_) {}
+
+      try { map.fitBounds(recorteLayer.getBounds(), { padding: [16, 16] }); } catch (_) {}
       setStatus("Recorte cargado: " + RECORTES[key].label, "ok");
     }
 
-    function projectFeatureToRasterCrs(feature) {
+    function projectFeatureToRasterCrs(feature, projRaster) {
       if (!projRaster || !feature) return feature;
       const coords = feature.geometry.coordinates;
       const t = (lng, lat) => {
@@ -443,10 +849,8 @@
 
     function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
 
-    function computeStatsForFeature(gr, feature) {
-      if (!projRaster) throw new Error("Sin proyección del raster");
-      const fProj = projectFeatureToRasterCrs(feature);
-      const bbox = turf.bbox(fProj);
+    function computeStats(gr, featureProj, legend) {
+      const bbox = turf.bbox(featureProj);
       const xmin = bbox[0], ymin = bbox[1], xmax = bbox[2], ymax = bbox[3];
 
       const colMin = clamp(Math.floor((xmin - gr.xmin) / gr.pixelWidth), 0, gr.width - 1);
@@ -454,171 +858,286 @@
       const rowMin = clamp(Math.floor((gr.ymax - ymax) / Math.abs(gr.pixelHeight)), 0, gr.height - 1);
       const rowMax = clamp(Math.ceil((gr.ymax - ymin) / Math.abs(gr.pixelHeight)), 0, gr.height - 1);
 
-      const counts = new Map();
-      for (const c of CATEGORIES) counts.set(c.value, 0);
-
+      const cats = legend.map(x => Number(x.value));
+      const counts = new Map(cats.map(v => [v, 0]));
+      const quad = new Map(cats.map(v => [v, [0,0,0,0]]));
       let pix = 0;
-      const poly = fProj;
+
+      const poly = featureProj;
+      const cx = (xmin + xmax) / 2;
+      const cy = (ymin + ymax) / 2;
 
       for (let row = rowMin; row <= rowMax; row++) {
         const rowArr = gr.values[0][row];
         if (!rowArr) continue;
         for (let col = colMin; col <= colMax; col++) {
-          const v = rowArr[col];
-          if (v === null || v === undefined || Number.isNaN(v)) continue;
+          const raw = rowArr[col];
+          if (raw === null || raw === undefined || Number.isNaN(raw)) continue;
+          const v = Number(raw);
+          if (NODATA_VALUES.has(v)) continue;
+          if (!counts.has(v)) continue;
+
           const [x, y] = cellCenterXY(col, row, gr);
           if (!turf.booleanPointInPolygon(turf.point([x, y]), poly)) continue;
+
           pix++;
-          const vv = Number(v);
-          counts.set(vv, (counts.get(vv) || 0) + 1);
+          counts.set(v, (counts.get(v) || 0) + 1);
+
+          const q = (y >= cy ? 0 : 2) + (x >= cx ? 1 : 0);
+          const a = quad.get(v);
+          a[q] = a[q] + 1;
         }
       }
 
       const pixelArea = Math.abs(gr.pixelWidth * gr.pixelHeight);
       const areaHa = (pix * pixelArea) / 10000;
 
-      const byCat = CATEGORIES.map(c => {
-        const n = counts.get(c.value) || 0;
+      const byCat = legend.map(c => {
+        const vv = Number(c.value);
+        const n = counts.get(vv) || 0;
         const ha = (n * pixelArea) / 10000;
-        return { value: c.value, label: c.label, color: c.color, count: n, ha };
-      });
+        return { value: vv, label: c.label, color: c.color, count: n, ha, quad: quad.get(vv) || [0,0,0,0] };
+      }).filter(x => x.count > 0);
 
-      return { pix, areaHa, byCat };
+      const totalHa = byCat.reduce((s, r) => s + r.ha, 0);
+      const p = byCat.map(r => (totalHa > 0 ? r.ha / totalHa : 0));
+
+      const shannon = p.reduce((s, pi) => (pi > 0 ? s - (pi * Math.log(pi)) : s), 0);
+      const sCount = byCat.length;
+      const evenness = (sCount > 1 ? (shannon / Math.log(sCount)) : 0);
+
+      return { pix, areaHa, totalHa, byCat, shannon, evenness };
     }
 
-    function formatHa(x) {
-      if (x === null || x === undefined || Number.isNaN(x)) return "—";
-      const v = Math.round(x * 100) / 100;
-      return v.toLocaleString("es-GT", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    function resetOutputs() {
+      kpiSelEl.textContent = "—";
+      kpiAreaEl.textContent = "—";
+      kpiHEl.textContent = "—";
+      kpiJEl.textContent = "—";
+      tblBodyEl.innerHTML = `<tr><td class="muted" colspan="3">Selecciona un recorte en el mapa.</td></tr>`;
+      interpTextEl.textContent = "Selecciona un municipio o microcuenca para generar interpretación.";
+      chartNoteEl.textContent = "—";
+      chartNote2El.textContent = "—";
+      renderCharts(null);
+      renderEquations();
     }
 
-    function renderChart(stats) {
-      const ctx = $("chartHa");
-      const labels = stats ? stats.byCat.map(x => x.label) : [];
-      const data = stats ? stats.byCat.map(x => Math.round(x.ha * 100) / 100) : [];
-      const colors = stats ? stats.byCat.map(x => x.color) : [];
+    function renderEquations() {
+      const elP = $("eqP");
+      const elH = $("eqH");
+      const elJ = $("eqJ");
+      elP.innerHTML = "";
+      elH.innerHTML = "";
+      elJ.innerHTML = "";
+      katex.render("p_i = \\frac{A_i}{\\sum A_i}", elP, { throwOnError:false });
+      katex.render("H' = -\\sum_{i=1}^{S} p_i\\,\\ln(p_i)", elH, { throwOnError:false });
+      katex.render("J = \\frac{H'}{\\ln(S)}", elJ, { throwOnError:false });
+    }
 
-      if (!chart) {
-        chart = new Chart(ctx, {
+    function renderCharts(stats) {
+      const barCtx = $("chartBar");
+      const donutCtx = $("chartDonut");
+
+      const labels = stats ? stats.byCat.map(r => r.label) : [];
+      const vals = stats ? stats.byCat.map(r => Math.round(r.ha * 100) / 100) : [];
+      const colors = stats ? stats.byCat.map(r => r.color) : [];
+
+      if (!chartBar) {
+        chartBar = new Chart(barCtx, {
           type: "bar",
-          data: { labels, datasets: [{ label: "Hectáreas", data, backgroundColor: colors }] },
+          data: { labels, datasets: [{ label: "Hectáreas", data: vals, backgroundColor: colors, borderWidth: 0 }] },
           options: {
             responsive: true,
-            plugins: {
-              legend: { display: false },
-              tooltip: { callbacks: { label: (ctx) => `${ctx.parsed.y.toLocaleString("es-GT")} ha` } }
-            },
+            plugins: { legend: { display:false } },
             scales: {
-              x: { ticks: { color: "rgba(255,255,255,.78)" }, grid: { color: "rgba(255,255,255,.08)" } },
-              y: { ticks: { color: "rgba(255,255,255,.78)" }, grid: { color: "rgba(255,255,255,.08)" } }
+              x: { ticks: { color: "#2a5a40" }, grid: { color: "rgba(15,42,26,.08)" } },
+              y: { ticks: { color: "#2a5a40" }, grid: { color: "rgba(15,42,26,.08)" } }
             }
           }
         });
       } else {
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = data;
-        chart.data.datasets[0].backgroundColor = colors;
-        chart.update();
+        chartBar.data.labels = labels;
+        chartBar.data.datasets[0].data = vals;
+        chartBar.data.datasets[0].backgroundColor = colors;
+        chartBar.update();
+      }
+
+      if (!chartDonut) {
+        chartDonut = new Chart(donutCtx, {
+          type: "doughnut",
+          data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0 }] },
+          options: { responsive:true, plugins: { legend: { position: "bottom", labels: { color: "#2a5a40" } } } }
+        });
+      } else {
+        chartDonut.data.labels = labels;
+        chartDonut.data.datasets[0].data = vals;
+        chartDonut.data.datasets[0].backgroundColor = colors;
+        chartDonut.update();
       }
     }
 
-    function renderStats(stats) {
-      if (!stats) {
-        tblStatsEl.innerHTML = `<tr><td class="muted" colspan="2">Selecciona un recorte en el mapa.</td></tr>`;
-        renderChart(null);
+    function dominantQuadrant(q) {
+      const idx = q.indexOf(Math.max(...q));
+      if (idx === 0) return "noroeste";
+      if (idx === 1) return "noreste";
+      if (idx === 2) return "suroeste";
+      return "sureste";
+    }
+
+    function buildInterpretation(stats) {
+      if (!stats || !stats.byCat.length) return "Sin datos suficientes para interpretar.";
+      const top = [...stats.byCat].sort((a,b) => b.ha - a.ha)[0];
+      const parts = [];
+      parts.push(`${top.label} abarcan aproximadamente ${fmt(top.ha)} ha (${pct((top.ha / stats.totalHa)*100)}%). Se concentran hacia el ${dominantQuadrant(top.quad)} del recorte.`);
+
+      const others = [...stats.byCat].sort((a,b) => b.ha - a.ha).slice(1,3);
+      for (const r of others) {
+        parts.push(`${r.label} suman ${fmt(r.ha)} ha y muestran mayor presencia hacia el ${dominantQuadrant(r.quad)}.`);
+      }
+
+      parts.push(`La diversidad de clases (H'=${fmt(stats.shannon, 3)}) y su equidad (J=${fmt(stats.evenness, 3)}) resumen qué tan balanceadas están las categorías dentro del recorte.`);
+      return parts.join(" ");
+    }
+
+    function renderTable(stats) {
+      if (!stats || !stats.byCat.length) {
+        tblBodyEl.innerHTML = `<tr><td class="muted" colspan="3">Sin datos en el recorte seleccionado.</td></tr>`;
         return;
       }
-      const rows = stats.byCat
-        .filter(r => r.count > 0)
-        .sort((a, b) => b.ha - a.ha)
-        .map(r => `<tr><td><span class="sw" style="background:${r.color}"></span>${r.value} · ${r.label}</td><td class="text-end">${formatHa(r.ha)}</td></tr>`)
-        .join("");
-      tblStatsEl.innerHTML = rows || `<tr><td class="muted" colspan="2">Sin datos en el recorte seleccionado.</td></tr>`;
-      renderChart({ ...stats, byCat: stats.byCat });
+      const rows = [...stats.byCat]
+        .sort((a,b) => b.ha - a.ha)
+        .map(r => {
+          const share = stats.totalHa > 0 ? (r.ha / stats.totalHa) * 100 : 0;
+          return `<tr>
+            <td><span class="sw" style="background:${r.color}"></span>${r.label}</td>
+            <td class="right">${fmt(r.ha)}</td>
+            <td class="right">${pct(share)}</td>
+          </tr>`;
+        }).join("");
+      tblBodyEl.innerHTML = rows;
+    }
+
+    function activeLayerIds() {
+      const ids = [];
+      for (const [id, st] of rasterState.entries()) {
+        if (st.leafletLayer && map.hasLayer(st.leafletLayer)) ids.push(id);
+      }
+      return ids;
     }
 
     async function recomputeStats() {
-      if (!selectedFeature) return;
-      if (!$("chkFenologia").checked) return;
-      try {
-        setStatus("Calculando hectáreas…", "muted");
-        const gr = await loadRaster();
-        const stats = computeStatsForFeature(gr, selectedFeature);
-        lastStats = stats;
-        kpiAreaHaEl.textContent = formatHa(stats.areaHa);
-        kpiPixEl.textContent = String(stats.pix);
-        renderStats(stats);
-        setStatus("Listo.", "ok");
-      } catch (e) {
-        kpiAreaHaEl.textContent = "—";
-        kpiPixEl.textContent = "—";
-        tblStatsEl.innerHTML = `<tr><td class="text-danger" colspan="2">No se pudo calcular: ${String(e.message || e)}</td></tr>`;
-        setStatus("Error al calcular.", "err");
+      if (!selectedFeature) {
+        resetOutputs();
+        return;
       }
-    }
 
-    function clearSelection() {
-      if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
-      selectedFeatureLayer = null;
-      selectedFeature = null;
-      selNameEl.textContent = "Ninguna";
-      kpiAreaHaEl.textContent = "—";
-      kpiPixEl.textContent = "—";
-      lastStats = null;
-      renderStats(null);
+      const ids = activeLayerIds();
+      const name = humanizeFeatureName(selectedFeature.properties || {});
+      kpiSelEl.textContent = name;
+
+      if (!ids.length) {
+        setStatus("Activa al menos una capa para calcular.", "warn");
+        interpTextEl.textContent = "Activa una capa y luego selecciona el recorte para ver análisis.";
+        return;
+      }
+
+      const id = ids[0];
+      const layer = layersCfg.find(x => x.id === id) || layersCfg[0];
+      const state = await loadRasterForLayer(layer);
+
+      if (!state.proj) {
+        setStatus("No se pudo determinar la proyección del raster.", "err");
+        return;
+      }
+
+      setStatus("Calculando…", null);
+
+      const featureProj = projectFeatureToRasterCrs(selectedFeature, state.proj);
+      const stats = computeStats(state.georaster, featureProj, state.legend);
+
+      lastStats = { name, layerName: friendlyLayerName(layer), ...stats };
+
+      kpiAreaEl.textContent = fmt(stats.areaHa);
+      kpiHEl.textContent = fmt(stats.shannon, 3);
+      kpiJEl.textContent = fmt(stats.evenness, 3);
+
+      chartNoteEl.textContent = lastStats.layerName;
+      chartNote2El.textContent = name;
+
+      renderCharts(stats);
+      renderTable(stats);
+      interpTextEl.textContent = buildInterpretation(stats);
+      renderEquations();
+
       setStatus("Listo.", "ok");
     }
 
-    function exportCSV() {
-      if (!lastStats || !selectedFeature) return;
-      const name = (selNameEl.textContent || "seleccion").replaceAll(",", " ");
+    function downloadCSV() {
+      if (!lastStats || !lastStats.byCat) return;
       const lines = [];
-      lines.push("recorte,categoria_valor,categoria_nombre,ha,pixeles");
+      lines.push("recorte,capa,categoria,ha,porcentaje");
       for (const r of lastStats.byCat) {
-        lines.push([name, r.value, `"${r.label.replaceAll('"','""')}"`, (Math.round(r.ha*100)/100), r.count].join(","));
+        const share = lastStats.totalHa > 0 ? (r.ha / lastStats.totalHa) * 100 : 0;
+        lines.push([`"${lastStats.name}"`,`"${lastStats.layerName}"`,`"${r.label}"`, (Math.round(r.ha*100)/100), (Math.round(share*10)/10)].join(","));
       }
-      const blob = new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = `fenologia_${name}.csv`;
+      a.download = `resumen_${lastStats.name}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
     }
 
-    $("chkFenologia").addEventListener("change", async (e) => {
-      try {
-        await toggleRaster(e.target.checked);
-        if (e.target.checked && selectedFeature) await recomputeStats();
-      } catch (err) {
-        setStatus("Error: " + String(err.message || err), "err");
-        e.target.checked = false;
-      }
+    function downloadXLSX() {
+      if (!lastStats || !lastStats.byCat) return;
+      const rows = lastStats.byCat.map(r => {
+        const share = lastStats.totalHa > 0 ? (r.ha / lastStats.totalHa) * 100 : 0;
+        return {
+          Recorte: lastStats.name,
+          Capa: lastStats.layerName,
+          Categoria: r.label,
+          Ha: Math.round(r.ha * 100) / 100,
+          Porcentaje: Math.round(share * 10) / 10
+        };
+      });
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Resumen");
+      XLSX.writeFile(wb, `resumen_${lastStats.name}.xlsx`);
+    }
+
+    $("btnCSV").addEventListener("click", downloadCSV);
+    $("btnXLSX").addEventListener("click", downloadXLSX);
+
+    $("btnClear").addEventListener("click", () => {
+      if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
+      selectedFeatureLayer = null;
+      selectedFeature = null;
+      lastStats = null;
+      resetOutputs();
+      setStatus("Listo.", null);
     });
 
-    $("selRecorte").addEventListener("change", async (e) => {
-      await loadRecorte(e.target.value);
-      if ($("chkFenologia").checked && selectedFeature) await recomputeStats();
-    });
-
-    $("btnLimpiar").addEventListener("click", () => clearSelection());
-    $("btnExportCSV").addEventListener("click", () => exportCSV());
-
-    $("btnZoomSolola").addEventListener("click", () => {
+    $("btnZoom").addEventListener("click", () => {
       try {
-        if (recorteLayer) map.fitBounds(recorteLayer.getBounds(), { padding: [14,14] });
+        if (recorteLayer) map.fitBounds(recorteLayer.getBounds(), { padding: [16,16] });
         else map.setView([14.65, -91.2], 10);
       } catch (_) { map.setView([14.65, -91.2], 10); }
     });
 
-    buildLegend();
+    selRecorteEl.addEventListener("change", async (e) => {
+      await loadRecorte(e.target.value);
+      recomputeStats();
+    });
 
     (async () => {
       try {
+        renderEquations();
         await loadLayersConfig();
         await loadRecorte(recorteKey);
-        setStatus("Listo. Activa la capa y selecciona un recorte.", "ok");
+        setStatus("Listo. Activa una capa y selecciona un recorte.", "ok");
       } catch (e) {
         setStatus("Error de inicio: " + String(e.message || e), "err");
       }
