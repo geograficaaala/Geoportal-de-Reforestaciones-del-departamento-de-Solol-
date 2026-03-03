@@ -1,7 +1,7 @@
 [
   {
     "id": "fenologia_phenoClass_v2",
-    "nombre": "Clasificación fenológica v2",
+    "nombre": "Clasificación fenológica forestal",
     "tipo": "cog",
     "url": "./data/fenologia_forestal_solola_v2_phenoClass_cog.tif",
     "visible": false,
@@ -14,6 +14,23 @@
         { "value": 2, "label": "Bosque perennifolio", "color": "#2d6a4f" },
         { "value": 3, "label": "Bosque caducifolio", "color": "#95d5b2" },
         { "value": 4, "label": "Bosque semi-caducifolio", "color": "#b5179e" }
+      ]
+    }
+  },
+  {
+    "id": "biomasa_30m",
+    "nombre": "Biomasa forestal aérea (30 m)",
+    "tipo": "cog",
+    "url": "./data/biomasa_clasificada_solola_30m_cog.tif",
+    "visible": false,
+    "opacity": 0.85,
+    "legend": {
+      "type": "categorical",
+      "items": [
+        { "value": 0, "label": "Sin datos", "color": "#9ca3af" },
+        { "value": 1, "label": "Biomasa baja", "color": "#d9f99d" },
+        { "value": 2, "label": "Biomasa media", "color": "#4ade80" },
+        { "value": 3, "label": "Biomasa alta", "color": "#166534" }
       ]
     }
   }
