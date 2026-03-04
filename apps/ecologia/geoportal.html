@@ -327,25 +327,20 @@
 
 <!-- Leaflet JS al final del body — garantiza que L esté definido antes del script -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<!-- georaster: expone window.parseGeoraster -->
-<script src="https://cdn.jsdelivr.net/npm/georaster@1.5.6/dist/georaster.browser.bundle.js"></script>
-<!-- georaster-layer-for-leaflet v0.6.x: la única versión que expone GeoRasterLayer como UMD global -->
-<script src="https://unpkg.com/georaster-layer-for-leaflet@0.6.8/dist/georaster-layer-for-leaflet.bundle.min.js"></script>
+<script src="https://unpkg.com/georaster@1.6.1/dist/georaster.browser.min.js"></script>
+<script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
 
 <script>
 window.addEventListener('load', function(){
 
   /* ─── CONFIG ─── */
-  const GITHUB_GEOJSON = 'https://raw.githubusercontent.com/geograficaaala/Geoportal-de-Reforestaciones-del-departamento-de-Solol-/main/apps/incendios/data';
   const LAYER_SOURCES = {
-    muni:  {url: GITHUB_GEOJSON+'/municipios_solola.geojson',    label:'Municipios (Solorá)'},
-    micro: {url: GITHUB_GEOJSON+'/microcuencas_atitlan.geojson', label:'Microcuencas (Atitlán)'},
+    muni:  {url:'../incendios/data/municipios_solola.geojson',    label:'Municipios (Solorá)'},
+    micro: {url:'../incendios/data/microcuencas_atitlan.geojson', label:'Microcuencas (Atitlán)'},
   };
-  // RUTAS: ajusta GITHUB_BASE a tu usuario/repo/branch si cambian
-  const GITHUB_BASE = 'https://raw.githubusercontent.com/geograficaaala/Geoportal-de-Reforestaciones-del-departamento-de-Solol-/main/apps/ecologia/data';
   const RASTER_SOURCES = {
-    feno:    {url: GITHUB_BASE+'/fenologia_forestal_solola_v2_phenoClass_cog.tif',  label:'Fenología Forestal'},
-    biomasa: {url: GITHUB_BASE+'/biomasa_clasificada_solola_30m_cog.tif',            label:'Biomasa forestal aérea (Mg/ha)'},
+    feno:    {url:'./data/fenologia_forestal_solola_v2_phenoClass_cog.tif',  label:'Fenología Forestal'},
+    biomasa: {url:'./data/biomasa_clasificada_solola_30m_cog.tif',            label:'Biomasa forestal aérea (Mg/ha)'},
   };
   // Paletas — valor 0 y noData → null (transparente)
   const FENO_PAL = {1:[132,180,131],2:[45,106,79],3:[149,213,178],4:[181,23,158]};
@@ -367,79 +362,74 @@ window.addEventListener('load', function(){
 
   /* ─── RASTER STATE ─── */
   const RS = {
-    feno:    {layer:null,opacity:.85,visible:false,gr:null,loading:false},
-    biomasa: {layer:null,opacity:.85,visible:false,gr:null,loading:false},
+    feno:    {layer:null,opacity:.85,visible:false,tiff:null,loading:false},
+    biomasa: {layer:null,opacity:.85,visible:false,tiff:null,loading:false},
   };
 
-  function resolveParseGeoraster(){
-    if(typeof parseGeoraster==='function') return parseGeoraster;
-    if(window.parseGeoraster && typeof window.parseGeoraster==='function') return window.parseGeoraster;
-    if(window.GeoRaster && typeof window.GeoRaster==='function') return window.GeoRaster;
-    if(window.georaster && typeof window.georaster==='function') return window.georaster;
-    return null;
-  }
-  function resolveGRLayer(){
-    // v0.6.x expone el global como GeoRasterLayer directamente en window
-    if(typeof GeoRasterLayer !== 'undefined' && GeoRasterLayer) return GeoRasterLayer;
-    if(window.GeoRasterLayer) return window.GeoRasterLayer;
-    // otros nombres posibles segun version
-    if(window.georasterLayerForLeaflet) return window.georasterLayerForLeaflet;
-    if(window.GeoRasterLayerForLeaflet) return window.GeoRasterLayerForLeaflet;
-    if(window.L && window.L.GridLayer && window.L.GridLayer.GeoRasterLayer) return window.L.GridLayer.GeoRasterLayer;
-    return null;
-  }
+  // ── RASTER: parseGeoraster + GeoRasterLayer (versiones exactas del geoportal de incendios) ──
 
   async function loadRaster(key){
-    if(RS[key].gr) return RS[key].gr;
+    if(RS[key].tiff) return RS[key].tiff;
     if(RS[key].loading) return null;
-    RS[key].loading=true;
-    setStatus('⏳ Cargando raster: '+RASTER_SOURCES[key].label+'…');
+    RS[key].loading = true;
+    setStatus('⏳ Cargando COG: '+RASTER_SOURCES[key].label+'…');
     try{
-      const parseFn=resolveParseGeoraster();
-      if(!parseFn) throw new Error('Librería georaster no disponible. Globals detectados: '+Object.keys(window).filter(k=>k.toLowerCase().includes('geo')||k.toLowerCase().includes('raster')).join(', '));
-      const res=await fetch(RASTER_SOURCES[key].url);
-      if(!res.ok) throw new Error('HTTP '+res.status+' — '+RASTER_SOURCES[key].url);
-      const buf=await res.arrayBuffer();
-      const gr=await parseFn(buf);
-      RS[key].gr=gr; RS[key].loading=false;
-      setStatus('✓ Raster: '+RASTER_SOURCES[key].label+' ('+gr.width+'×'+gr.height+')');
+      const res = await fetch(RASTER_SOURCES[key].url);
+      if(!res.ok) throw new Error('HTTP '+res.status+' → '+RASTER_SOURCES[key].url);
+      const buf = await res.arrayBuffer();
+      const gr = await parseGeoraster(buf);
+      RS[key].tiff = gr;
+      RS[key].loading = false;
+      setStatus('✓ COG listo: '+RASTER_SOURCES[key].label+' ('+gr.width+'×'+gr.height+')');
       return gr;
-    }catch(e){ RS[key].loading=false; setStatus('✗ Error raster ['+key+']: '+e.message); return null; }
+    }catch(e){
+      RS[key].loading = false;
+      setStatus('✗ Error ['+key+']: '+e.message);
+      return null;
+    }
   }
 
-  async function toggleLayer(key,on){
-    const ck=key.charAt(0).toUpperCase()+key.slice(1);
-    $('lbl'+ck).textContent=on?'ON':'OFF';
-    const card=key==='feno'?$('cardFeno'):$('cardBiomasa');
-    on?card.classList.add('on'):card.classList.remove('on');
-    if(!on){ if(RS[key].layer){map.removeLayer(RS[key].layer);RS[key].layer=null;} RS[key].visible=false; return; }
-    RS[key].visible=true;
-    if(!RS[key].gr) await loadRaster(key);
-    const gr=RS[key].gr; if(!gr) return;
-    if(RS[key].layer){map.removeLayer(RS[key].layer);RS[key].layer=null;}
-    const pal=key==='feno'?FENO_PAL:BIO_PAL, op=RS[key].opacity;
-    const GRLayer=resolveGRLayer();
-    if(!GRLayer){ setStatus('✗ GeoRasterLayer no disponible'); return; }
-    RS[key].layer=new GRLayer({
-      georaster:gr, opacity:op,
-      pixelValuesToColorFn:vals=>{
-        const v=Math.round(vals[0]);
-        if(!v||v===0||v===gr.noDataValue||!pal[v]) return null;
-        const [r,g,b]=pal[v]; return `rgba(${r},${g},${b},${op})`;
+  async function toggleLayer(key, on){
+    const ck = key.charAt(0).toUpperCase()+key.slice(1);
+    $('lbl'+ck).textContent = on ? 'ON' : 'OFF';
+    const card = key==='feno' ? $('cardFeno') : $('cardBiomasa');
+    on ? card.classList.add('on') : card.classList.remove('on');
+    if(!on){
+      if(RS[key].layer){ map.removeLayer(RS[key].layer); RS[key].layer=null; }
+      RS[key].visible = false;
+      return;
+    }
+    RS[key].visible = true;
+    if(!RS[key].tiff) await loadRaster(key);
+    const gr = RS[key].tiff;
+    if(!gr) return;
+    if(RS[key].layer){ map.removeLayer(RS[key].layer); RS[key].layer=null; }
+    const pal = key==='feno' ? FENO_PAL : BIO_PAL;
+    const op  = RS[key].opacity;
+    RS[key].layer = new GeoRasterLayer({
+      georaster: gr,
+      opacity: op,
+      pixelValuesToColorFn: vals => {
+        const v = Math.round(vals[0]);
+        if(!v || v === gr.noDataValue || !pal[v]) return null;
+        const [r,g,b] = pal[v];
+        return `rgba(${r},${g},${b},1)`;
       },
-      resolution:128, debugLevel:0,
-    }).addTo(map);
+      resolution: 256
+    });
+    RS[key].layer.addTo(map);
     setStatus('✓ Capa activa: '+RASTER_SOURCES[key].label);
   }
-  window.toggleLayer=toggleLayer;
+  window.toggleLayer = toggleLayer;
 
-  function setLayerOpacity(key,val){
-    const op=Number(val)/100; RS[key].opacity=op;
-    const ck=key.charAt(0).toUpperCase()+key.slice(1);
-    $('op'+ck+'Val').textContent=val+'%';
+  function setLayerOpacity(key, val){
+    const op = Number(val)/100;
+    RS[key].opacity = op;
+    const ck = key.charAt(0).toUpperCase()+key.slice(1);
+    $('op'+ck+'Val').textContent = val+'%';
     if(RS[key].layer) RS[key].layer.setOpacity(op);
   }
-  window.setLayerOpacity=setLayerOpacity;
+  window.setLayerOpacity = setLayerOpacity;
 
   /* ─── POLÍGONOS ─── */
   const PS = {
@@ -571,21 +561,27 @@ window.addEventListener('load', function(){
     const stats={hasFeno:false,feno:null,hasBiomasa:false,biomasa:null};
     const bbox=turf.bbox(feature);
     async function sample(key,pal){
-      const gr=RS[key].gr; if(!gr) return null;
-      const counts={}, factor=2;
+      const gr = RS[key].tiff;
+      if(!gr) return null;
+      const counts={}, noData=gr.noDataValue;
       let total=0;
-      const dx=gr.pixelWidth*factor, dy=gr.pixelHeight*factor;
-      for(let lon=bbox[0];lon<bbox[2];lon+=dx){
-        for(let lat=bbox[1];lat<bbox[3];lat+=dy){
-          if(!turf.booleanPointInPolygon(turf.point([lon,lat]),feature)) continue;
-          const col=Math.floor((lon-gr.xmin)/gr.pixelWidth);
-          const row=Math.floor((gr.ymax-lat)/gr.pixelHeight);
-          if(col<0||row<0||col>=gr.width||row>=gr.height) continue;
-          let v=0; try{v=Math.round(gr.values[0][row][col]||0);}catch(e){continue;}
-          if(!v||v===gr.noDataValue||!pal[v]) continue;
-          counts[v]=(counts[v]||0)+1; total++;
+      try{
+        // parseGeoraster expone gr.values[band][row][col], xmin,ymax,pixelWidth,pixelHeight
+        const w=gr.width, h=gr.height;
+        const stepX = Math.max(1, Math.floor(w/200));
+        const stepY = Math.max(1, Math.floor(h/200));
+        for(let row=0; row<h; row+=stepY){
+          for(let col=0; col<w; col+=stepX){
+            const lon = gr.xmin + (col+0.5)*gr.pixelWidth;
+            const lat = gr.ymax - (row+0.5)*gr.pixelHeight;
+            if(lon<bbox[0]||lon>bbox[2]||lat<bbox[1]||lat>bbox[3]) continue;
+            if(!turf.booleanPointInPolygon(turf.point([lon,lat]),feature)) continue;
+            const v = Math.round(gr.values[0][row][col]||0);
+            if(!v || v===noData || !pal[v]) continue;
+            counts[v]=(counts[v]||0)+1; total++;
+          }
         }
-      }
+      }catch(e){ console.warn('sample error',key,e); return null; }
       return{counts,total};
     }
     if(RS.feno.visible){
@@ -856,8 +852,9 @@ window.addEventListener('load', function(){
     // Diagnóstico de librerías al arrancar
     const diagLines=[];
     diagLines.push('Leaflet: '+(window.L?'✓ v'+L.version:'✗ NO CARGÓ'));
-    diagLines.push('parseGeoraster: '+(resolveParseGeoraster()?'✓':'✗ NO — verificar CDN'));
-    diagLines.push('GeoRasterLayer: '+(resolveGRLayer()?'✓':'✗ NO — verificar CDN'));
+    diagLines.push('parseGeoraster: '+(typeof parseGeoraster!=='undefined'?'✓':'✗ NO cargó'));
+    diagLines.push('GeoRasterLayer: '+(typeof GeoRasterLayer!=='undefined'?'✓':'✗ NO cargó'));
+
     diagLines.push('Turf: '+(window.turf?'✓':'✗'));
     diagLines.push('Chart.js: '+(window.Chart?'✓':'✗'));
     diagLines.push('XLSX: '+(window.XLSX?'✓':'✗'));
