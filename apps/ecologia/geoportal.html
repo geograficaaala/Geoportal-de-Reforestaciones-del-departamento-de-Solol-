@@ -375,7 +375,7 @@
       color: var(--muted);
       line-height: 1.35;
     }
-    .footerLogos{
+    .logos{
       display:flex;
       flex-wrap: wrap;
       gap: 14px;
@@ -383,7 +383,7 @@
       align-items:center;
       padding-top: 6px;
     }
-    .footerLogos img{
+    .logos img{
       height: 34px;
       width:auto;
       filter: drop-shadow(0 6px 14px rgba(0,0,0,.10));
@@ -423,9 +423,9 @@
       background: linear-gradient(180deg, var(--teal), var(--green));
     }
   
-    /* ===== Encabezado (igual que Reforestación) ===== */
+    /* Header (mismo estilo que Reforestación) */
     header{
-      position:sticky;top:0;z-index:1000;
+      position:sticky;top:0;z-index:10;
       background:
         linear-gradient(100deg, rgba(38,132,103,.92) 0%, rgba(72,179,194,.86) 55%, rgba(154,226,213,.88) 100%);
       border-bottom:1px solid rgba(26,92,101,.20);
@@ -442,51 +442,45 @@
       border:1px solid rgba(20,91,100,.16);
       box-shadow:0 8px 22px rgba(15,62,72,.10);
       padding:7px;
+      filter:none;
     }
     .titleWrap{display:flex;flex-direction:column;gap:2px}
     .ttl{font-weight:900;letter-spacing:.2px}
     .sub{font-size:12px;color:rgba(18,50,61,.84)}
-    .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .btn{
+    .hbtns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .hbtn{
       border:1px solid rgba(24,96,108,.16);
       background:linear-gradient(180deg, rgba(255,255,255,.90), rgba(241,252,250,.88));
-      color:rgba(18,50,61,.96);
-      box-shadow:0 6px 14px rgba(15,62,72,.06);
-      padding:8px 10px;
-      border-radius:14px;
-      font-size:13px;
-      cursor:pointer;
+      color:#12323d;
+      padding:10px 12px;border-radius:14px;
       text-decoration:none;
+      box-shadow:0 10px 24px rgba(15,62,72,.08);
+      font-weight:800;font-size:13px;
       display:inline-flex;align-items:center;gap:8px;
-      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
     }
-    .btn:hover{
-      border-color:rgba(47,174,120,.45);
-      box-shadow:0 10px 20px rgba(15,62,72,.10);
-      transform:translateY(-1px);
-    }
+    .hbtn:hover{transform:translateY(-1px)}
 
   </style>
 </head>
 
 <body>
   <header>
-  <div class="brand">
-    <div class="logos">
-      <img src="../../assets/img/BOSQUE.png" alt="BOSQUE" />
-      <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" />
+    <div class="brand">
+      <div class="logos">
+        <img src="../../BOSQUE.png" alt="Eje de Bosques">
+        <img src="../../CODEMA%20%282%29.png" alt="CODEMA">
+      </div>
+      <div class="titleWrap">
+        <div class="ttl">Geoportal · Ecología del paisaje forestal · Sololá</div>
+        <div class="sub">Fenología y Biomasa · Estadísticas por municipio y microcuenca</div>
+      </div>
     </div>
-    <div class="titleWrap">
-      <div class="ttl">Geoportal · Ecología del paisaje forestal</div>
-      <div class="sub">Fenología y Biomasa · Departamento de Sololá, Guatemala</div>
-    </div>
-  </div>
 
-  <div class="btns">
-    <a class="btn" href="../../index.html">Inicio</a>
-    <a class="btn" href="#informes">Informes</a>
-  </div>
-</header>
+    <div class="hbtns">
+      <a class="hbtn" href="../../index.html" title="Regresar al inicio">Inicio</a>
+      <a class="hbtn" href="../reforestacion/geoportal.html" title="Ir a Reforestación">Reforestación</a>
+    </div>
+  </header>
 
   <div class="wrap">
     <aside class="panel">
@@ -624,7 +618,7 @@
   <footer class="footer">
     <div class="t">Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
     <div class="p"><strong>Instituciones y organizaciones</strong><br>El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
-        <div class="footerLogos">
+    <div class="logos">
       <img src="../../marn.png" alt="MARN">
       <img src="../../maga.png" alt="MAGA">
       <img src="../../inab.png" alt="INAB">
@@ -633,6 +627,8 @@
       <img src="../../conred.png" alt="CONRED">
       <img src="../../cea.png" alt="CEA">
       <img src="../../aala_logo.png" alt="AALA">
+      <img src="../../aires.png" alt="AIRES">
+      <img src="../../vivamos_mejor.png" alt="Vivamos Mejor">
     </div>
   </footer>
 
@@ -1129,7 +1125,7 @@
       }
     }
 
-    function renderCharts    function renderCharts(stats) {
+    function renderCharts(stats) {
       const barCtx = $("chartBar");
       const donutCtx = $("chartDonut");
       const rankCtx = $("chartRank");
@@ -1244,7 +1240,7 @@
       }
     }
 
-    function dominantQuadrant(q) {
+    function function dominantQuadrant(q) {
       const idx = q.indexOf(Math.max(...q));
       if (idx === 0) return "noroeste";
       if (idx === 1) return "noreste";
