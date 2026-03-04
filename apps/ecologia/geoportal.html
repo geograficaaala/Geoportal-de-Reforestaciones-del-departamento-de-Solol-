@@ -327,22 +327,25 @@
 
 <!-- Leaflet JS al final del body — garantiza que L esté definido antes del script -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<!-- georaster: versión estable con export global parseGeoraster -->
+<!-- georaster: expone window.parseGeoraster -->
 <script src="https://cdn.jsdelivr.net/npm/georaster@1.5.6/dist/georaster.browser.bundle.js"></script>
-<!-- georaster-layer-for-leaflet: versión compatible -->
-<script src="https://cdn.jsdelivr.net/npm/georaster-layer-for-leaflet@2.3.1/dist/georaster-layer-for-leaflet.min.js"></script>
+<!-- georaster-layer-for-leaflet v0.6.x: la única versión que expone GeoRasterLayer como UMD global -->
+<script src="https://unpkg.com/georaster-layer-for-leaflet@0.6.8/dist/georaster-layer-for-leaflet.bundle.min.js"></script>
 
 <script>
 window.addEventListener('load', function(){
 
   /* ─── CONFIG ─── */
+  const GITHUB_GEOJSON = 'https://raw.githubusercontent.com/geograficaaala/Geoportal-de-Reforestaciones-del-departamento-de-Solol-/main/apps/incendios/data';
   const LAYER_SOURCES = {
-    muni:  {url:'../incendios/data/municipios_solola.geojson',    label:'Municipios (Sololá)'},
-    micro: {url:'../incendios/data/microcuencas_atitlan.geojson', label:'Microcuencas (Atitlán)'},
+    muni:  {url: GITHUB_GEOJSON+'/municipios_solola.geojson',    label:'Municipios (Solorá)'},
+    micro: {url: GITHUB_GEOJSON+'/microcuencas_atitlan.geojson', label:'Microcuencas (Atitlán)'},
   };
+  // RUTAS: ajusta GITHUB_BASE a tu usuario/repo/branch si cambian
+  const GITHUB_BASE = 'https://raw.githubusercontent.com/geograficaaala/Geoportal-de-Reforestaciones-del-departamento-de-Solol-/main/apps/ecologia/data';
   const RASTER_SOURCES = {
-    feno:    {url:'./data/fenologia_forestal_solola_v2_phenoClass_cog.tif',  label:'Fenología Forestal'},
-    biomasa: {url:'./data/biomasa_clasificada_solola_30m_cog.tif',            label:'Biomasa forestal aérea (Mg/ha)'},
+    feno:    {url: GITHUB_BASE+'/fenologia_forestal_solola_v2_phenoClass_cog.tif',  label:'Fenología Forestal'},
+    biomasa: {url: GITHUB_BASE+'/biomasa_clasificada_solola_30m_cog.tif',            label:'Biomasa forestal aérea (Mg/ha)'},
   };
   // Paletas — valor 0 y noData → null (transparente)
   const FENO_PAL = {1:[132,180,131],2:[45,106,79],3:[149,213,178],4:[181,23,158]};
@@ -376,8 +379,13 @@ window.addEventListener('load', function(){
     return null;
   }
   function resolveGRLayer(){
-    if(typeof GeoRasterLayer!=='undefined') return GeoRasterLayer;
+    // v0.6.x expone el global como GeoRasterLayer directamente en window
+    if(typeof GeoRasterLayer !== 'undefined' && GeoRasterLayer) return GeoRasterLayer;
     if(window.GeoRasterLayer) return window.GeoRasterLayer;
+    // otros nombres posibles segun version
+    if(window.georasterLayerForLeaflet) return window.georasterLayerForLeaflet;
+    if(window.GeoRasterLayerForLeaflet) return window.GeoRasterLayerForLeaflet;
+    if(window.L && window.L.GridLayer && window.L.GridLayer.GeoRasterLayer) return window.L.GridLayer.GeoRasterLayer;
     return null;
   }
 
