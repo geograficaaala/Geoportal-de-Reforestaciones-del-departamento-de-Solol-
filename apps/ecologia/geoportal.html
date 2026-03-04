@@ -327,8 +327,10 @@
 
 <!-- Leaflet JS al final del body — garantiza que L esté definido antes del script -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="https://unpkg.com/georaster@1.6.0/georaster.browser.bundle.min.js"></script>
-<script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
+<!-- georaster: versión estable con export global parseGeoraster -->
+<script src="https://cdn.jsdelivr.net/npm/georaster@1.5.6/dist/georaster.browser.bundle.js"></script>
+<!-- georaster-layer-for-leaflet: versión compatible -->
+<script src="https://cdn.jsdelivr.net/npm/georaster-layer-for-leaflet@2.3.1/dist/georaster-layer-for-leaflet.min.js"></script>
 
 <script>
 window.addEventListener('load', function(){
@@ -366,21 +368,35 @@ window.addEventListener('load', function(){
     biomasa: {layer:null,opacity:.85,visible:false,gr:null,loading:false},
   };
 
+  function resolveParseGeoraster(){
+    if(typeof parseGeoraster==='function') return parseGeoraster;
+    if(window.parseGeoraster && typeof window.parseGeoraster==='function') return window.parseGeoraster;
+    if(window.GeoRaster && typeof window.GeoRaster==='function') return window.GeoRaster;
+    if(window.georaster && typeof window.georaster==='function') return window.georaster;
+    return null;
+  }
+  function resolveGRLayer(){
+    if(typeof GeoRasterLayer!=='undefined') return GeoRasterLayer;
+    if(window.GeoRasterLayer) return window.GeoRasterLayer;
+    return null;
+  }
+
   async function loadRaster(key){
     if(RS[key].gr) return RS[key].gr;
     if(RS[key].loading) return null;
     RS[key].loading=true;
-    setStatus('⏳ Cargando: '+RASTER_SOURCES[key].label+'…');
+    setStatus('⏳ Cargando raster: '+RASTER_SOURCES[key].label+'…');
     try{
+      const parseFn=resolveParseGeoraster();
+      if(!parseFn) throw new Error('Librería georaster no disponible. Globals detectados: '+Object.keys(window).filter(k=>k.toLowerCase().includes('geo')||k.toLowerCase().includes('raster')).join(', '));
       const res=await fetch(RASTER_SOURCES[key].url);
-      if(!res.ok) throw new Error('HTTP '+res.status);
+      if(!res.ok) throw new Error('HTTP '+res.status+' — '+RASTER_SOURCES[key].url);
       const buf=await res.arrayBuffer();
-      if(typeof parseGeoraster==='undefined') throw new Error('parseGeoraster no disponible');
-      const gr=await parseGeoraster(buf);
+      const gr=await parseFn(buf);
       RS[key].gr=gr; RS[key].loading=false;
-      setStatus('✓ Raster listo: '+RASTER_SOURCES[key].label);
+      setStatus('✓ Raster: '+RASTER_SOURCES[key].label+' ('+gr.width+'×'+gr.height+')');
       return gr;
-    }catch(e){ RS[key].loading=false; setStatus('✗ Error raster '+key+': '+e.message); return null; }
+    }catch(e){ RS[key].loading=false; setStatus('✗ Error raster ['+key+']: '+e.message); return null; }
   }
 
   async function toggleLayer(key,on){
@@ -394,7 +410,9 @@ window.addEventListener('load', function(){
     const gr=RS[key].gr; if(!gr) return;
     if(RS[key].layer){map.removeLayer(RS[key].layer);RS[key].layer=null;}
     const pal=key==='feno'?FENO_PAL:BIO_PAL, op=RS[key].opacity;
-    RS[key].layer=new GeoRasterLayer({
+    const GRLayer=resolveGRLayer();
+    if(!GRLayer){ setStatus('✗ GeoRasterLayer no disponible'); return; }
+    RS[key].layer=new GRLayer({
       georaster:gr, opacity:op,
       pixelValuesToColorFn:vals=>{
         const v=Math.round(vals[0]);
@@ -434,9 +452,11 @@ window.addEventListener('load', function(){
 
   async function ensurePoly(mode){
     const st=PS[mode]; if(st.loaded) return;
-    setStatus('⏳ Cargando: '+LAYER_SOURCES[mode].label+'…');
+    const url=LAYER_SOURCES[mode].url;
+    setStatus('⏳ Cargando: '+LAYER_SOURCES[mode].label+'\n→ '+url);
     try{
-      const r=await fetch(LAYER_SOURCES[mode].url,{cache:'no-store'}); if(!r.ok) throw new Error('HTTP '+r.status);
+      const r=await fetch(url,{cache:'no-store'});
+      if(!r.ok) throw new Error('HTTP '+r.status+' — URL: '+url+'\n\nAsegúrate de que el archivo exista en esa ruta relativa al HTML.');
       const gj=await r.json(); st.gj=gj; st.nf=pickNF(gj);
       const items=[];
       for(let i=0;i<(gj.features||[]).length;i++){
@@ -825,6 +845,22 @@ window.addEventListener('load', function(){
 
   /* ─── INIT ─── */
   (async function(){
+    // Diagnóstico de librerías al arrancar
+    const diagLines=[];
+    diagLines.push('Leaflet: '+(window.L?'✓ v'+L.version:'✗ NO CARGÓ'));
+    diagLines.push('parseGeoraster: '+(resolveParseGeoraster()?'✓':'✗ NO — verificar CDN'));
+    diagLines.push('GeoRasterLayer: '+(resolveGRLayer()?'✓':'✗ NO — verificar CDN'));
+    diagLines.push('Turf: '+(window.turf?'✓':'✗'));
+    diagLines.push('Chart.js: '+(window.Chart?'✓':'✗'));
+    diagLines.push('XLSX: '+(window.XLSX?'✓':'✗'));
+    diagLines.push('───');
+    diagLines.push('Rutas GeoJSON:');
+    diagLines.push('  muni  → '+LAYER_SOURCES.muni.url);
+    diagLines.push('  micro → '+LAYER_SOURCES.micro.url);
+    diagLines.push('Rutas Raster:');
+    diagLines.push('  feno    → '+RASTER_SOURCES.feno.url);
+    diagLines.push('  biomasa → '+RASTER_SOURCES.biomasa.url);
+    setStatus(diagLines.join('\n'));
     await updateClipUI();
     setTimeout(renderMath,900);
   })();
