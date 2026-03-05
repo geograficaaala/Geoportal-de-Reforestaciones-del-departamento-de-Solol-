@@ -7,6 +7,14 @@
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- proj4 requerido por georaster -->
+  <script src="https://unpkg.com/proj4@2.9.2/dist/proj4.js"></script>
+  <!-- georaster: expone parseGeoraster global -->
+  <script src="https://unpkg.com/georaster@1.6.1/dist/georaster.browser.min.js"></script>
+  <!-- georaster-layer-for-leaflet: expone GeoRasterLayer global -->
+  <script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
 
   <!-- Turf -->
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
@@ -325,13 +333,10 @@
   </div>
 </footer>
 
-<!-- Leaflet JS al final del body — garantiza que L esté definido antes del script -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-<script src="https://unpkg.com/georaster@1.6.1/dist/georaster.browser.min.js"></script>
-<script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
+
 
 <script>
-window.addEventListener('load', function(){
+document.addEventListener('DOMContentLoaded', function(){
 
   /* ─── CONFIG ─── */
   const LAYER_SOURCES = {
