@@ -3,405 +3,259 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Geoportal · Reforestación</title>
+  <title>Geoportal · Reforestación · Sololá</title>
 
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
       --bg:#eaf7f6;
-      --panel:rgba(255,255,255,.80);
-      --card:rgba(255,255,255,.88);
+      --panel:rgba(255,255,255,.82);
+      --card:rgba(255,255,255,.90);
       --line:rgba(25,88,108,.14);
-      --ink:#12323d;
-      --muted:#5a7682;
+      --ink:#0e3040;
+      --muted:#4a7a88;
       --accent:#2fae78;
       --accent2:#67c8d6;
       --accent3:#8fe3c1;
       --danger:#d95b5b;
-      --shadow:0 14px 36px rgba(15,62,72,.10);
+      --shadow:0 14px 36px rgba(15,62,72,.12);
+      --shadow-sm:0 8px 22px rgba(15,62,72,.08);
       --r:16px;
     }
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      margin:0;
-      font-family:system-ui,Segoe UI,Roboto,Arial;
+      font-family:'DM Sans',system-ui,sans-serif;
       background:
-        radial-gradient(1200px 600px at 15% -10%, rgba(103,200,214,.30), transparent 60%),
-        radial-gradient(900px 500px at 100% 0%, rgba(143,227,193,.36), transparent 55%),
+        radial-gradient(1100px 550px at 8% -8%, rgba(103,200,214,.30), transparent 58%),
+        radial-gradient(900px 500px at 100% 0%, rgba(143,227,193,.34), transparent 55%),
         linear-gradient(180deg, #f3fcfb 0%, #e8f4fb 45%, #edf8f5 100%);
       color:var(--ink);
     }
-    a{color:inherit}
-    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}
+    a{color:inherit;text-decoration:none}
 
+    /* ── HEADER ── */
     header{
       position:sticky;top:0;z-index:10;
-      background:
-        linear-gradient(100deg, rgba(38,132,103,.92) 0%, rgba(72,179,194,.86) 55%, rgba(154,226,213,.88) 100%);
+      background:linear-gradient(100deg, rgba(38,132,103,.93) 0%, rgba(72,179,194,.87) 55%, rgba(154,226,213,.88) 100%);
       border-bottom:1px solid rgba(26,92,101,.20);
-      box-shadow:0 8px 28px rgba(14,63,74,.14);
+      box-shadow:0 8px 28px rgba(14,63,74,.16);
       backdrop-filter:blur(8px);
-      padding:10px 12px;
+      padding:10px 14px;
       display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
     }
-    .brand{display:flex;align-items:center;gap:10px;min-width:280px}
-    .logos{display:flex;gap:8px;align-items:center}
-    .logos img{
-      height:56px;width:auto;border-radius:14px;
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-logos{display:flex;gap:8px;align-items:center}
+    .brand-logos a{display:flex}
+    .brand-logos img{
+      height:52px;width:auto;border-radius:13px;
       background:rgba(255,255,255,.92);
-      border:1px solid rgba(20,91,100,.16);
-      box-shadow:0 8px 22px rgba(15,62,72,.10);
-      padding:7px;
+      border:1px solid rgba(255,255,255,.22);
+      box-shadow:0 6px 18px rgba(15,62,72,.12);
+      padding:6px;
+      transition:transform .15s;
     }
-    .titleWrap{display:flex;flex-direction:column;gap:2px}
-    .ttl{font-weight:900;letter-spacing:.2px}
-    .sub{font-size:12px;color:rgba(18,50,61,.84)}
-    .metaTop{font-size:12px;color:rgba(18,50,61,.78)}
+    .brand-logos img:hover{transform:scale(1.05)}
+    .title-wrap{display:flex;flex-direction:column;gap:2px}
+    .ttl{
+      font-family:'Playfair Display',serif;
+      font-size:17px;font-weight:900;
+      color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.18);
+    }
+    .sub{font-size:11.5px;color:rgba(255,255,255,.78)}
+    .metaTop{font-size:11px;color:rgba(255,255,255,.70)}
+
+    /* ── BUTTONS ── */
     .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     .btn{
+      border:1px solid rgba(255,255,255,.22);
+      background:rgba(255,255,255,.14);
+      color:#fff;
+      box-shadow:0 4px 12px rgba(15,62,72,.08);
+      padding:8px 12px;border-radius:12px;
+      font-family:'DM Sans',sans-serif;
+      font-size:12.5px;font-weight:600;
+      cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;gap:7px;
+      transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+      white-space:nowrap;
+    }
+    .btn:hover{
+      background:rgba(255,255,255,.26);
+      box-shadow:0 10px 22px rgba(15,62,72,.14);
+      transform:translateY(-2px);
+    }
+    .btn.primary{
+      background:linear-gradient(135deg, rgba(143,227,193,.32), rgba(103,200,214,.28));
+      border-color:rgba(143,227,193,.40);
+      font-weight:700;
+    }
+    /* Sidebar buttons (dark bg) */
+    .btn-dark{
       border:1px solid rgba(24,96,108,.16);
       background:linear-gradient(180deg, rgba(255,255,255,.90), rgba(241,252,250,.88));
       color:var(--ink);
-      box-shadow:0 6px 14px rgba(15,62,72,.06);
-      padding:8px 10px;
-      border-radius:14px;
-      font-size:13px;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;align-items:center;gap:8px;
+      box-shadow:0 4px 10px rgba(15,62,72,.06);
+      padding:8px 10px;border-radius:12px;
+      font-family:'DM Sans',sans-serif;
+      font-size:12.5px;font-weight:600;
+      cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;gap:7px;
       transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
     }
-    .btn:hover{
-      border-color:rgba(47,174,120,.45);
-      box-shadow:0 10px 20px rgba(15,62,72,.10);
-      transform:translateY(-1px);
+    .btn-dark:hover{
+      border-color:rgba(47,174,120,.40);
+      box-shadow:0 8px 18px rgba(15,62,72,.10);
+      transform:translateY(-2px);
     }
-    .btn.primary{
-      background:linear-gradient(135deg, rgba(47,174,120,.18), rgba(103,200,214,.18));
-      border-color:rgba(47,174,120,.30);
-      font-weight:700;
-    }
-    .pill{
-      font-size:12px;color:var(--muted);
-      padding:6px 10px;border:1px solid rgba(24,96,108,.15);
-      border-radius:999px;background:rgba(255,255,255,.72);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.7);
-    }
+    .pill{font-size:11px;color:var(--muted);padding:4px 9px;border:1px solid rgba(24,96,108,.15);border-radius:999px;background:rgba(255,255,255,.72)}
 
-    .wrap{height:calc(100vh - 66px);display:grid;grid-template-columns:360px 1fr}
+    /* ── LAYOUT ── */
+    .wrap{height:calc(100vh - 68px);display:grid;grid-template-columns:360px 1fr}
     aside{
-      background:var(--panel);
-      border-right:1px solid var(--line);
-      box-shadow: inset -1px 0 0 rgba(255,255,255,.55);
-      backdrop-filter: blur(10px);
-      padding:12px;
-      overflow:auto;
+      background:var(--panel);border-right:1px solid var(--line);
+      backdrop-filter:blur(10px);padding:12px;overflow:auto;
     }
-
     #mapFrame{position:relative;width:100%;height:100%}
     #map{position:absolute;inset:0}
 
     details{
-      background:var(--card);
-      border:1px solid var(--line);
-      box-shadow: var(--shadow);
-      border-radius:var(--r);
-      padding:10px;
-      margin-bottom:10px;
+      background:var(--card);border:1px solid var(--line);
+      box-shadow:var(--shadow-sm);border-radius:var(--r);
+      padding:10px 12px;margin-bottom:10px;
     }
     summary{
-      list-style:none; cursor:pointer; user-select:none;
-      display:flex; align-items:center; justify-content:space-between; gap:10px;
-      font-weight:800; font-size:13px;
+      list-style:none;cursor:pointer;user-select:none;
+      display:flex;align-items:center;justify-content:space-between;gap:8px;
+      font-weight:700;font-size:13px;color:var(--ink);
     }
     summary::-webkit-details-marker{display:none}
-    .small{font-size:12px;color:var(--muted);line-height:1.35}
+    summary::after{content:'▸';font-size:11px;color:var(--muted);transition:transform .2s}
+    details[open] summary::after{transform:rotate(90deg)}
+
+    .small{font-size:12px;color:var(--muted);line-height:1.4}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
     input,select{
       background:rgba(255,255,255,.92);color:var(--ink);
-      border:1px solid rgba(24,96,108,.15);
-      border-radius:12px;
-      padding:8px 10px;
-      font-size:13px;
-      width:100%;
+      border:1px solid rgba(24,96,108,.15);border-radius:11px;
+      padding:8px 10px;font-size:12.5px;width:100%;
+      font-family:'DM Sans',sans-serif;
     }
     .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
     .layerItem{
-      padding:10px;
-      border:1px solid rgba(24,96,108,.12);
-      border-radius:14px;
+      padding:10px;border:1px solid rgba(24,96,108,.12);border-radius:13px;
       background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(244,252,250,.92));
       margin-top:8px;
     }
-    .layerName{font-size:13px;font-weight:800}
-    .layerGroup{font-size:12px;color:var(--muted);margin-top:2px}
+    .layerName{font-size:13px;font-weight:700;color:var(--ink)}
+    .layerGroup{font-size:11.5px;color:var(--muted);margin-top:2px}
     .layerActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
     .tag{
       font-size:11px;padding:4px 8px;border-radius:999px;
-      border:1px solid rgba(24,96,108,.14);
-      color:var(--muted);
+      border:1px solid rgba(24,96,108,.14);color:var(--muted);
       background:rgba(255,255,255,.65);
     }
     .legendRow{display:flex;align-items:center;gap:10px;margin-top:8px}
-    .swatch{width:14px;height:14px;border-radius:5px;border:1px solid rgba(255,255,255,.16)}
+    .swatch{width:13px;height:13px;border-radius:4px;border:1px solid rgba(255,255,255,.16)}
     .dot{border-radius:50%}
     .status{
       font-size:12px;color:var(--muted);
       padding:8px 10px;border:1px dashed rgba(24,96,108,.18);
-      border-radius:14px;background:rgba(255,255,255,.62);
-      margin-top:8px;
+      border-radius:13px;background:rgba(255,255,255,.62);margin-top:8px;
     }
 
+    /* Charts in sidebar */
+    .chartWrap{margin-top:10px}
+    .chartTitle{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px}
 
-    #mapFrame{
-      background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,.35));
-    }
-    #map{
-      border-left:1px solid rgba(255,255,255,.35);
-    }
-
-    .ttl{color:#0e3e49;text-shadow:0 1px 0 rgba(255,255,255,.45)}
-    .small{color:var(--muted)}
-
-    .maplibregl-ctrl-group{
-      border:1px solid rgba(24,96,108,.14) !important;
-      box-shadow:0 10px 22px rgba(15,62,72,.10) !important;
-      overflow:hidden;
-    }
-    .maplibregl-ctrl button{
-      background:#fff !important;
-    }
-
+    /* MapLibre popups */
+    .maplibregl-ctrl-group{border:1px solid rgba(24,96,108,.14)!important;box-shadow:0 8px 22px rgba(15,62,72,.10)!important;overflow:hidden}
+    .maplibregl-ctrl button{background:#fff!important}
     .maplibregl-popup-content{
-      background:linear-gradient(180deg,#f9fffd,#eefaf7) !important;
-      color:#163742 !important;
-      border:1px solid rgba(24,96,108,.16);
-      border-radius:14px !important;
-      box-shadow:0 14px 32px rgba(15,62,72,.16);
-      padding:0 !important;
-      min-width:280px;
+      background:linear-gradient(180deg,#f9fffd,#eefaf7)!important;
+      color:#163742!important;
+      border:1px solid rgba(24,96,108,.16);border-radius:14px!important;
+      box-shadow:0 14px 32px rgba(15,62,72,.16);padding:0!important;min-width:280px;
     }
-    .maplibregl-popup-close-button{
-      color:#3a6670 !important;
-      font-size:20px;
-      right:8px; top:4px;
-    }
-    .maplibregl-popup-tip{border-top-color:#eefaf7 !important;border-bottom-color:#eefaf7 !important;}
-    .popupCard{padding:12px 14px 12px}
-    .popupTitle{
-      font-weight:900;font-size:14px;line-height:1.2;
-      color:#0f3b46;
-      padding-right:20px;
-      margin-bottom:8px;
-    }
-    .popupGrid{display:grid;grid-template-columns:1fr;gap:6px}
-    .popupRow{
-      font-size:12px;line-height:1.35;
-      background:rgba(255,255,255,.65);
-      border:1px solid rgba(24,96,108,.08);
-      border-radius:10px;
-      padding:6px 8px;
-    }
+    .maplibregl-popup-close-button{color:#3a6670!important;font-size:20px;right:8px;top:4px}
+    .maplibregl-popup-tip{border-top-color:#eefaf7!important;border-bottom-color:#eefaf7!important}
+    .popupCard{padding:12px 14px}
+    .popupTitle{font-weight:800;font-size:13.5px;color:#0f3b46;padding-right:20px;margin-bottom:8px}
+    .popupGrid{display:grid;grid-template-columns:1fr;gap:5px}
+    .popupRow{font-size:12px;line-height:1.35;background:rgba(255,255,255,.65);border:1px solid rgba(24,96,108,.08);border-radius:9px;padding:5px 8px}
     .popupRow b{color:#0e5967}
-    .popupObs{
-      margin-top:8px;
-      padding:8px 9px;
-      border-radius:10px;
-      border:1px solid rgba(24,96,108,.10);
-      background:rgba(103,200,214,.08);
-      font-size:12px;
-      line-height:1.35;
-    }
+    .popupObs{margin-top:8px;padding:8px 9px;border-radius:10px;border:1px solid rgba(24,96,108,.10);background:rgba(103,200,214,.08);font-size:12px;line-height:1.35}
     .popupLinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .popupLink{
-      display:inline-flex;align-items:center;gap:6px;
-      padding:7px 10px;border-radius:999px;
-      border:1px solid rgba(24,96,108,.14);
-      background:#fff;
-      color:#105a66 !important;
-      text-decoration:none;
-      font-size:12px;font-weight:700;
-    }
+    .popupLink{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(24,96,108,.14);background:#fff;color:#105a66!important;text-decoration:none;font-size:12px;font-weight:700}
     .popupLink:hover{border-color:rgba(47,174,120,.38)}
 
-    /* Responsive */
-    @media (max-width: 980px){
-      .wrap{grid-template-columns:1fr}
-      aside{display:none}
-    }
-
-    /* =========================
-       Impresión (A4 horizontal)
-       ========================= */
-    body.print-mode header,
-    body.print-mode aside{display:none !important}
-
-    body.print-mode{
-      background:#fff !important;
-      color:#000 !important;
-      -webkit-print-color-adjust:exact;
-      print-color-adjust:exact;
-    }
-
-    body.print-mode::before{
-      content:"";
-      position:fixed;
-      inset:6mm;
-      border:1.5px solid #000;
-      pointer-events:none;
-      z-index:1;
-    }
-
-    body.print-mode .wrap{
-      display:block;
-      height:auto;
-      background:#fff;
-      position:relative;
-      z-index:2;
-    }
-
-    /* ocultar controles MapLibre */
-    body.print-mode .maplibregl-control-container{display:none !important}
-
-    body.print-mode #mapFrame{
-      width:285mm;
-      height:144mm;
-      margin:12mm auto 0;
-      border:2px solid #000;
-      background:#fff;
-      box-shadow:none;
-      position:relative;
-    }
-
-    body.print-mode #map{
-      inset:0;
-      border:none;
-    }
-
-    #printNorth, #printScaleBox, #printCajetin, #printHeaderLine{display:none}
-
-    body.print-mode #printNorth,
-    body.print-mode #printScaleBox,
-    body.print-mode #printCajetin,
-    body.print-mode #printHeaderLine{display:block}
-
-    body.print-mode #printNorth,
-    body.print-mode #printScaleBox{
-      position:absolute; z-index:20;
-      background:rgba(255,255,255,.98);
-      border:1px solid #000;
-      padding:6px 8px;
-      border-radius:4px;
-      color:#000;
-      box-shadow:none;
-    }
-
-    body.print-mode #printNorth{
-      top:6mm; right:6mm;
-      width:34mm;
-      text-align:center;
-    }
-
-    body.print-mode #printScaleBox{
-      left:6mm; bottom:6mm;
-      min-width:74mm;
-    }
-
-    body.print-mode #printHeaderLine{
-      width:285mm;
-      margin:4mm auto 0;
-      display:grid;
-      grid-template-columns:1fr auto 1fr;
-      align-items:center;
-      gap:4mm;
-      font-size:9.5px;
-      color:#000;
-    }
-    body.print-mode #printHeaderLine > div:nth-child(2){
-      font-weight:900;
-      text-align:center;
-      letter-spacing:.2px;
-    }
-    body.print-mode #printHeaderLine > div:last-child{text-align:right}
-
-    body.print-mode #printCajetin{
-      width:285mm;
-      margin:4mm auto 0;
-      border:2px solid #000;
-      padding:0;
-      display:grid;
-      grid-template-columns:66mm 1fr 82mm;
-      gap:0;
-      align-items:stretch;
-      background:#fff;
-    }
-
-    body.print-mode #printCajetin > div{
-      padding:4mm;
-      min-height:41mm;
-    }
-
-    body.print-mode #printCajetin .pLogos{
-      display:flex; gap:4mm; align-items:center; justify-content:center;
-      border-right:1.5px solid #000;
-      background:linear-gradient(180deg,#f6fffb,#eef8ff);
-    }
-    body.print-mode #printCajetin .pLogos img{
-      height:24mm; width:auto;
-      border:1px solid #000;border-radius:2mm;padding:2mm;background:#fff;
-    }
-
-    body.print-mode .pTitle{
-      background:#fff;
-      border-right:1.5px solid #000;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-    body.print-mode .pTitle .h1{font-size:15px;font-weight:900;margin:0}
-    body.print-mode .pTitle .h2{font-size:11px;margin:1.5mm 0 0;color:#111}
-    body.print-mode .pTitle .note{font-size:9px;color:#111;margin-top:2.2mm}
-    body.print-mode .pTitle b{font-weight:900}
-
-    body.print-mode .pMeta{
-      font-size:9px;
-      display:flex;flex-direction:column;justify-content:space-between;
-      background:#fbfffd;
-    }
-    body.print-mode .pMeta .r{
-      display:flex;justify-content:space-between;gap:4mm;
-      border-bottom:1px dotted #000;padding:.7mm 0;
-    }
+    /* ── PRINT ── */
+    body.print-mode header,body.print-mode aside{display:none!important}
+    body.print-mode{background:#fff!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body.print-mode .wrap{display:block;height:auto}
+    body.print-mode .maplibregl-control-container{display:none!important}
+    body.print-mode #mapFrame{width:285mm;height:150mm;margin:12mm auto 0;border:2px solid #000}
+    #printNorth,#printScaleBox,#printCajetin,#printHeaderLine{display:none}
+    body.print-mode #printNorth,body.print-mode #printScaleBox,body.print-mode #printCajetin,body.print-mode #printHeaderLine{display:block}
+    body.print-mode #printNorth,body.print-mode #printScaleBox{position:absolute;z-index:20;background:rgba(255,255,255,.98);border:1px solid #000;padding:6px 8px;border-radius:4px}
+    body.print-mode #printNorth{top:6mm;right:6mm;width:34mm;text-align:center}
+    body.print-mode #printScaleBox{left:6mm;bottom:6mm;min-width:74mm}
+    body.print-mode #printHeaderLine{width:285mm;margin:4mm auto 0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4mm;font-size:9.5px}
+    body.print-mode #printHeaderLine>div:nth-child(2){font-weight:900;text-align:center}
+    body.print-mode #printHeaderLine>div:last-child{text-align:right}
+    body.print-mode #printCajetin{width:285mm;margin:4mm auto 0;border:2px solid #000;padding:0;display:grid;grid-template-columns:66mm 1fr 82mm;background:#fff}
+    body.print-mode #printCajetin>div{padding:4mm;min-height:40mm}
+    body.print-mode .pLogos{display:flex;gap:4mm;align-items:center;justify-content:center;border-right:1.5px solid #000}
+    body.print-mode .pLogos img{height:24mm;width:auto;border:1px solid #000;border-radius:2mm;padding:2mm;background:#fff}
+    body.print-mode .pTitle{border-right:1.5px solid #000;display:flex;flex-direction:column;justify-content:center}
+    body.print-mode .pTitle .h1{font-size:14px;font-weight:900}
+    body.print-mode .pTitle .h2{font-size:10px;margin-top:1.5mm}
+    body.print-mode .pMeta{font-size:9px;display:flex;flex-direction:column;justify-content:space-between}
+    body.print-mode .pMeta .r{display:flex;justify-content:space-between;gap:4mm;border-bottom:1px dotted #000;padding:.6mm 0}
     body.print-mode .pMeta .r:last-child{border-bottom:none}
-    body.print-mode .pMeta b{font-weight:900}
-
     @page{size:A4 landscape;margin:0}
+
+    /* ── FOOTER ── */
+    footer{padding:20px 16px 28px;background:rgba(255,255,255,.55);border-top:1px solid var(--line)}
+    .footer-inner{max-width:1100px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:16px 20px}
+    .footer-text{font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:10px}
+    .footer-text strong{color:var(--ink)}
+    .footer-sub{font-size:12px;color:var(--ink);text-align:center;font-weight:700;margin-bottom:12px}
+    .footer-logos{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+    .footer-logos a{display:flex;align-items:center}
+    .footer-logos img{max-height:50px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08));transition:transform .15s,filter .15s}
+    .footer-logos img:hover{transform:scale(1.06);filter:drop-shadow(0 4px 10px rgba(47,174,120,.18))}
+    .footer-src{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
+
+    @media(max-width:980px){.wrap{grid-template-columns:1fr}aside{display:none}}
   </style>
 </head>
-
 <body>
+
 <header>
   <div class="brand">
-    <div class="logos">
-      <img src="../../assets/img/BOSQUE.png" alt="BOSQUE" />
-      <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" />
+    <div class="brand-logos">
+      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener">
+        <img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques" />
+      </a>
+      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener">
+        <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Sololá" />
+      </a>
     </div>
-    <div class="titleWrap">
+    <div class="title-wrap">
       <div class="ttl">Geoportal · Reforestación</div>
       <div class="sub">Departamento de Sololá, Guatemala</div>
       <div class="metaTop" id="topMeta">Actualización: — · Registros: —</div>
     </div>
   </div>
-
   <div class="btns">
-    <a class="btn" href="../../index.html">Inicio</a>
-    <a class="btn" href="./index.html">Módulo</a>
-    <a class="btn" href="./dashboard.html">Dashboard</a>
-    <a class="btn" href="./informes.html">Informes</a>
-    <a class="btn" href="../../data/puntos.geojson" download>Descargar puntos</a>
-    <button class="btn primary" id="printBtn">Imprimir PDF</button>
+    <a class="btn" href="../../index.html">🏠 Volver a Inicio</a>
+    <a class="btn" href="./index.html">◀ Regresar a Módulo</a>
+    <a class="btn" href="../../data/puntos.geojson" download>⬇ Descargar puntos</a>
+    <button class="btn primary" id="printBtn">🖨 Imprimir PDF</button>
   </div>
 </header>
 
@@ -410,54 +264,46 @@
     <details open>
       <summary>Base cartográfica <span class="pill" id="baseName">Satélite</span></summary>
       <div style="margin-top:10px" class="grid2">
-        <button class="btn" id="bmSat">Satélite</button>
-        <button class="btn" id="bmOsm">Calles</button>
+        <button class="btn-dark" id="bmSat">🛰 Satélite</button>
+        <button class="btn-dark" id="bmOsm">🗺 Calles</button>
       </div>
       <div style="margin-top:8px">
-        <button class="btn" id="bmDark">Oscuro</button>
+        <button class="btn-dark" id="bmDark" style="width:100%">🌙 Oscuro</button>
       </div>
     </details>
 
     <details open>
       <summary>Registros KoBo <span class="pill"><span id="koboShown">—</span>/<span id="koboTotal">—</span></span></summary>
       <div class="status" id="statusBox">Cargando…</div>
+      <div class="chartWrap">
+        <div class="chartTitle">Registros por mes</div>
+        <canvas id="chartMeses" height="110"></canvas>
+      </div>
     </details>
 
     <details>
       <summary>Filtros</summary>
       <div style="margin-top:10px" class="grid2">
-        <div>
-          <div class="small">Municipio</div>
-          <select id="fMunicipio"><option value="">Todos</option></select>
-        </div>
-        <div>
-          <div class="small">Institución</div>
-          <select id="fInstitucion"><option value="">Todas</option></select>
-        </div>
+        <div><div class="small">Municipio</div><select id="fMunicipio"><option value="">Todos</option></select></div>
+        <div><div class="small">Institución</div><select id="fInstitucion"><option value="">Todas</option></select></div>
       </div>
       <div style="margin-top:10px" class="grid2">
-        <div>
-          <div class="small">Desde</div>
-          <input id="fDesde" type="date" />
-        </div>
-        <div>
-          <div class="small">Hasta</div>
-          <input id="fHasta" type="date" />
-        </div>
+        <div><div class="small">Desde</div><input id="fDesde" type="date" /></div>
+        <div><div class="small">Hasta</div><input id="fHasta" type="date" /></div>
       </div>
       <div style="margin-top:10px" class="grid2">
-        <button class="btn" id="applyFilters">Aplicar</button>
-        <button class="btn" id="clearFilters">Limpiar</button>
+        <button class="btn-dark" id="applyFilters">Aplicar</button>
+        <button class="btn-dark" id="clearFilters">Limpiar</button>
       </div>
       <div class="small" style="margin-top:8px" id="filterSummary"></div>
     </details>
 
     <details>
-      <summary>Búsqueda</summary>
-      <div class="small" style="margin-top:8px">Buscar por ID de boleta.</div>
+      <summary>Búsqueda por ID</summary>
+      <div class="small" style="margin-top:8px">Buscar por ID de boleta KoBo.</div>
       <div style="margin-top:10px" class="grid2">
         <input id="searchId" placeholder="ID" />
-        <button class="btn" id="goSearch">Ir</button>
+        <button class="btn-dark" id="goSearch">Ir</button>
       </div>
       <div class="small" id="searchMsg" style="margin-top:8px"></div>
     </details>
@@ -473,53 +319,51 @@
       <summary>Leyenda</summary>
       <div id="legendUI"></div>
     </details>
+
+    <!-- Análisis gráfico rápido -->
+    <details open>
+      <summary>Análisis rápido</summary>
+      <div class="chartWrap">
+        <div class="chartTitle">Top municipios</div>
+        <canvas id="chartMunis" height="120"></canvas>
+      </div>
+      <div class="chartWrap" style="margin-top:12px">
+        <div class="chartTitle">Distribución institucional</div>
+        <canvas id="chartInst" height="120"></canvas>
+      </div>
+    </details>
   </aside>
 
   <div id="mapFrame">
     <div id="map"></div>
-
-    <!-- Norte (impresión) -->
     <div id="printNorth">
-      <div style="font-weight:900;margin-bottom:2mm;letter-spacing:.8px">NORTE</div>
-      <svg id="northSvg" viewBox="0 0 100 140" width="100%" height="70">
+      <div style="font-weight:900;margin-bottom:2mm;letter-spacing:.8px;font-size:10px">NORTE</div>
+      <svg id="northSvg" viewBox="0 0 100 140" width="100%" height="60">
         <polygon points="50,5 80,80 50,70 20,80" fill="#000"></polygon>
         <polygon points="50,70 80,80 50,135 20,80" fill="#fff" stroke="#000" stroke-width="2"></polygon>
       </svg>
     </div>
-
-    <!-- Escala (impresión) -->
     <div id="printScaleBox">
       <div style="font-size:10px;font-weight:900;margin-bottom:2mm">Escala</div>
-      <div id="scaleBar" style="height:8mm;display:flex;border:1px solid #000"></div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:2mm">
-        <span>0</span>
-        <span id="scaleLabel">—</span>
-      </div>
+      <div id="scaleBar" style="height:7mm;display:flex;border:1px solid #000"></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-top:2mm"><span>0</span><span id="scaleLabel">—</span></div>
       <div style="font-size:9px;margin-top:1mm" id="scaleRatio">1:—</div>
     </div>
-
-    <!-- Header y cajetín (impresión) -->
     <div id="printHeaderLine">
       <div id="printDate">—</div>
       <div style="font-weight:900">Geoportal · Reforestación</div>
       <div>WGS84 / Web Mercator</div>
     </div>
-
     <div id="printCajetin">
       <div class="pLogos">
         <img src="../../assets/img/BOSQUE.png" alt="BOSQUE" />
         <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" />
       </div>
-
       <div class="pTitle">
         <p class="h1">Geoportal · Reforestación</p>
         <p class="h2">Departamento de Sololá, Guatemala</p>
-        <p class="note">Fuente: KoBoToolbox · Publicación: GitHub Pages</p>
-        <div style="font-size:10px;margin-top:3mm">
-          <b>Elaboró:</b> Laboratorio SIG del eje de bosques de CODEMA-Sololá
-        </div>
+        <div style="font-size:9px;margin-top:3mm"><b>Elaboró:</b> Laboratorio SIG · Eje de Bosques · CODEMA-Sololá 2026</div>
       </div>
-
       <div class="pMeta">
         <div>
           <div class="r"><span><b>Fecha</b></span><span id="metaFecha">—</span></div>
@@ -528,788 +372,382 @@
           <div class="r"><span><b>Zoom</b></span><span id="metaZoom">—</span></div>
           <div class="r"><span><b>Base</b></span><span id="metaBase">—</span></div>
         </div>
-        <div style="font-size:9px;color:#111;margin-top:2mm">
-          Escala aproximada según el centro del mapa.
-        </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- ── FOOTER INSTITUCIONAL ── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-text">
+      Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
+    </div>
+    <div class="footer-sub">Instituciones y organizaciones</div>
+    <div class="footer-text">
+      El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
+    </div>
+    <div class="footer-logos">
+      <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
+      <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
+      <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
+      <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
+      <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
+      <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
+      <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA - UVG"></a>
+      <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán"></a>
+      <a href="https://www.vivamosmejor.org" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor Guatemala"></a>
+      <a href="https://aires.gt" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIRES"></a>
+    </div>
+    <div class="footer-src">Fuentes: KoBoToolbox · MapLibre GL · Chart.js · GitHub Pages</div>
+  </div>
+</footer>
 
 <script>
   const CONFIG_URL  = "../../config/layers.reforestacion.json";
   const KOBO_URL    = "../../data/puntos.geojson";
   const RESUMEN_URL = "../../data/resumen.json";
 
-  // Basemaps raster (sin reset)
   const styleBase = {
-    "version": 8,
-    "sources": {
-      "sat": {
-        "type": "raster",
-        "tiles": ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
-        "tileSize": 256,
-        "attribution": "Esri"
-      },
-      "osm": {
-        "type": "raster",
-        "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-        "tileSize": 256,
-        "attribution": "© OpenStreetMap"
-      },
-      "dark": {
-        "type": "raster",
-        "tiles": [
-          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png",
-          "https://d.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"
-        ],
-        "tileSize": 256,
-        "attribution": "© CARTO"
-      }
+    version:8,
+    sources:{
+      sat:{type:"raster",tiles:["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],tileSize:256,attribution:"Esri"},
+      osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap"},
+      dark:{type:"raster",tiles:["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png","https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],tileSize:256,attribution:"© CARTO"}
     },
-    "layers": [
-      { "id": "bm-sat",  "type": "raster", "source": "sat",  "layout": { "visibility": "visible" } },
-      { "id": "bm-osm",  "type": "raster", "source": "osm",  "layout": { "visibility": "none" } },
-      { "id": "bm-dark", "type": "raster", "source": "dark", "layout": { "visibility": "none" } }
+    layers:[
+      {id:"bm-sat",type:"raster",source:"sat",layout:{visibility:"visible"}},
+      {id:"bm-osm",type:"raster",source:"osm",layout:{visibility:"none"}},
+      {id:"bm-dark",type:"raster",source:"dark",layout:{visibility:"none"}}
     ]
   };
 
-  const map = new maplibregl.Map({
-    container: "map",
-    style: styleBase,
-    center: [-91.18, 14.77],
-    zoom: 10
-  });
-  map.addControl(new maplibregl.NavigationControl(), "top-right");
-  map.addControl(new maplibregl.ScaleControl({ maxWidth: 130, unit: "metric" }));
+  const map = new maplibregl.Map({container:"map",style:styleBase,center:[-91.18,14.77],zoom:10});
+  map.addControl(new maplibregl.NavigationControl(),"top-right");
+  map.addControl(new maplibregl.ScaleControl({maxWidth:130,unit:"metric"}));
 
   const statusBox = document.getElementById("statusBox");
   const configStatus = document.getElementById("configStatus");
   const layersUI = document.getElementById("layersUI");
   const legendUI = document.getElementById("legendUI");
   const topMeta = document.getElementById("topMeta");
-
   const baseName = document.getElementById("baseName");
   const filterSummary = document.getElementById("filterSummary");
 
   let activeBasemap = "sat";
   function showBasemap(which){
-    ["bm-sat","bm-osm","bm-dark"].forEach(id => map.setLayoutProperty(id, "visibility", "none"));
-    if(which === "sat")  map.setLayoutProperty("bm-sat", "visibility", "visible");
-    if(which === "osm")  map.setLayoutProperty("bm-osm", "visibility", "visible");
-    if(which === "dark") map.setLayoutProperty("bm-dark", "visibility", "visible");
+    ["bm-sat","bm-osm","bm-dark"].forEach(id=>map.setLayoutProperty(id,"visibility","none"));
+    map.setLayoutProperty("bm-"+which,"visibility","visible");
     activeBasemap = which;
-    baseName.textContent = (which==="sat") ? "Satélite" : (which==="osm") ? "Calles" : "Oscuro";
-    document.getElementById("metaBase").textContent = baseName.textContent;
+    baseName.textContent = which==="sat"?"Satélite":which==="osm"?"Calles":"Oscuro";
   }
-  document.getElementById("bmSat").onclick  = () => showBasemap("sat");
-  document.getElementById("bmOsm").onclick  = () => showBasemap("osm");
-  document.getElementById("bmDark").onclick = () => showBasemap("dark");
+  document.getElementById("bmSat").onclick  = ()=>showBasemap("sat");
+  document.getElementById("bmOsm").onclick  = ()=>showBasemap("osm");
+  document.getElementById("bmDark").onclick = ()=>showBasemap("dark");
 
-  // ====== KoBo (cluster + filtros + búsqueda) ======
   let koboAll = null;
 
-  
-  function safe(v){
-    if(v === null || v === undefined) return "";
-    if(Array.isArray(v)) return v.join(", ");
-    return String(v);
+  // ── Chart instances ──
+  let chartMesesInst=null, chartMunisInst=null, chartInstInst=null;
+
+  function buildCharts(features){
+    // Registros por mes
+    const meses = {};
+    (features||[]).forEach(ft=>{
+      const f = String((ft.properties||{}).fecha_actividad||(ft.properties||{}).fecha||"");
+      const mes = f.slice(0,7);
+      if(mes) meses[mes] = (meses[mes]||0)+1;
+    });
+    const mLabels = Object.keys(meses).sort();
+    const mData   = mLabels.map(k=>meses[k]);
+
+    const palette = ["rgba(47,174,120,.82)","rgba(103,200,214,.82)","rgba(143,227,193,.82)","rgba(38,132,103,.82)","rgba(72,179,194,.82)","rgba(154,226,213,.82)"];
+
+    const ctxM = document.getElementById("chartMeses").getContext("2d");
+    if(chartMesesInst) chartMesesInst.destroy();
+    chartMesesInst = new Chart(ctxM,{
+      type:"bar",
+      data:{labels:mLabels.map(l=>l.replace("-","/")),datasets:[{
+        label:"Registros",data:mData,
+        backgroundColor:mLabels.map((_,i)=>palette[i%palette.length]),
+        borderRadius:6,borderWidth:0
+      }]},
+      options:{responsive:true,plugins:{legend:{display:false}},scales:{
+        y:{beginAtZero:true,grid:{color:"rgba(24,96,108,.07)"},ticks:{font:{size:10}}},
+        x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45}}
+      }}
+    });
+
+    // Top municipios
+    const munis = {};
+    (features||[]).forEach(ft=>{
+      const p = ft.properties||{};
+      const v = humanizeText(p.municipios||p.municipio||"Desconocido");
+      v.split(/[;,|\/]/).forEach(m=>{const t=m.trim(); if(t) munis[t]=(munis[t]||0)+1;});
+    });
+    const mSorted = Object.entries(munis).sort((a,b)=>b[1]-a[1]).slice(0,6);
+    const ctxMu = document.getElementById("chartMunis").getContext("2d");
+    if(chartMunisInst) chartMunisInst.destroy();
+    chartMunisInst = new Chart(ctxMu,{
+      type:"bar",
+      data:{
+        labels:mSorted.map(([k])=>k.length>14?k.slice(0,14)+"…":k),
+        datasets:[{data:mSorted.map(([,v])=>v),backgroundColor:"rgba(47,174,120,.78)",borderRadius:6,borderWidth:0}]
+      },
+      options:{indexAxis:"y",responsive:true,plugins:{legend:{display:false}},scales:{
+        x:{beginAtZero:true,grid:{color:"rgba(24,96,108,.07)"},ticks:{font:{size:10}}},
+        y:{grid:{display:false},ticks:{font:{size:10}}}
+      }}
+    });
+
+    // Instituciones
+    const insts = {};
+    (features||[]).forEach(ft=>{
+      const p=ft.properties||{};
+      const v=humanizeText(p.instituciones||p.institucion||"Sin especificar");
+      v.split(/[;,|\/]/).forEach(i=>{const t=i.trim();if(t) insts[t]=(insts[t]||0)+1;});
+    });
+    const iSorted = Object.entries(insts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const ctxI = document.getElementById("chartInst").getContext("2d");
+    if(chartInstInst) chartInstInst.destroy();
+    chartInstInst = new Chart(ctxI,{
+      type:"doughnut",
+      data:{
+        labels:iSorted.map(([k])=>k.length>18?k.slice(0,18)+"…":k),
+        datasets:[{data:iSorted.map(([,v])=>v),
+          backgroundColor:["rgba(47,174,120,.80)","rgba(103,200,214,.80)","rgba(143,227,193,.80)","rgba(38,132,103,.80)","rgba(72,179,194,.80)"],
+          borderWidth:2,borderColor:"#fff"
+        }]
+      },
+      options:{responsive:true,cutout:"55%",plugins:{legend:{position:"bottom",labels:{font:{size:10},padding:6}}}}
+    });
   }
 
-  function escapeHtml(v){
-    return String(v)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  function fixMojibake(text){
-    if(text == null) return "";
-    let s = String(text);
-    const replacements = [
-      ["Ã¡","á"],["Ã©","é"],["Ã­","í"],["Ã³","ó"],["Ãº","ú"],
-      ["Ã","Á"],["Ã‰","É"],["Ã","Í"],["Ã“","Ó"],["Ãš","Ú"],
-      ["Ã±","ñ"],["Ã‘","Ñ"],["Â¿","¿"],["Â¡","¡"],["Â°","°"],
-      ["â€“","–"],["â€”","—"],["â€˜","‘"],["â€™","’"],["â€œ","“"],["â€","”"],
-      ["Ã¼","ü"],["Ãœ","Ü"]
-    ];
-    for(const [a,b] of replacements) s = s.split(a).join(b);
-    return s;
-  }
-
-  function humanizeText(v){
-    if(v === null || v === undefined) return "";
-    if(Array.isArray(v)) return v.map(humanizeText).filter(Boolean).join(", ");
-    let s = fixMojibake(String(v)).trim();
-    if(!s) return "";
-    const looksLikeUrl = /^https?:\/\//i.test(s);
-    if(!looksLikeUrl){
-      s = s.replace(/[_]+/g, " ");
-      s = s.replace(/[|;]+/g, ", ");
-      s = s.replace(/\s+/g, " ").trim();
-    }
-    return s;
-  }
-
-  function humanizeKey(k){
-    const base = humanizeText(k).replace(/\burl\b/i, "URL");
-    return base
-      .replace(/\b\w/g, c => c.toUpperCase())
-      .replace(/\bId\b/g, "ID");
-  }
+  // ── Helpers text ──
+  function safe(v){if(v===null||v===undefined)return "";if(Array.isArray(v))return v.join(", ");return String(v)}
+  function escapeHtml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+  function fixMojibake(t){if(t==null)return "";let s=String(t);[["Ã¡","á"],["Ã©","é"],["Ã­","í"],["Ã³","ó"],["Ãº","ú"],["Ã±","ñ"]].forEach(([a,b])=>s=s.split(a).join(b));return s}
+  function humanizeText(v){if(v===null||v===undefined)return "";if(Array.isArray(v))return v.map(humanizeText).filter(Boolean).join(", ");let s=fixMojibake(String(v)).trim();if(!s)return "";if(!/^https?:\/\//i.test(s)){s=s.replace(/[_]+/g," ").replace(/[|;]+/g,", ").replace(/\s+/g," ").trim()}return s}
+  function humanizeKey(k){return humanizeText(k).replace(/\burl\b/i,"URL").replace(/\b\w/g,c=>c.toUpperCase()).replace(/\bId\b/g,"ID")}
 
   function buildPopupHTML(p){
-    const addRow = (label, val) => {
-      const text = humanizeText(val);
-      if(!text) return "";
-      return `<div class="popupRow"><b>${escapeHtml(label)}:</b> ${escapeHtml(text)}</div>`;
-    };
-
-    const rows = [];
-    const titleId = humanizeText(p.id) || humanizeText(p._id) || "Registro";
-
-    rows.push(addRow("Fecha", p.fecha_actividad || p.fecha || p._submission_time));
-    rows.push(addRow("Municipio(s)", p.municipios || p.municipio));
-    rows.push(addRow("Comunidad", p.comunidad));
-    rows.push(addRow("Sitio", p.sitio_nombre || p.sitio || p.nombre_sitio));
-    rows.push(addRow("Institución(es)", p.instituciones || p.institucion));
-    rows.push(addRow("Plantas", p.total_plantas || p.cantidad_plantas));
-    rows.push(addRow("Participantes", p.total_participantes || p.participantes));
-
-    const alreadyShown = new Set([
-      "id","_id","fecha_actividad","fecha","_submission_time","municipios","municipio",
-      "comunidad","sitio_nombre","sitio","nombre_sitio","instituciones","institucion",
-      "total_plantas","cantidad_plantas","total_participantes","participantes",
-      "observaciones","foto_sitio_url","foto_actividad_url","_geolocation","_xform_id_string",
-      "_submission_uuid","__version__","meta","start","end","today","deviceid","subscriberid",
-      "simserial","phonenumber","username","instanceID","formhub/uuid"
-    ]);
-
-    let extraCount = 0;
-    Object.keys(p || {}).forEach(k => {
-      if(extraCount >= 6) return;
-      if(alreadyShown.has(k)) return;
-      if(/(^_|_url$|latitude|longitude|altitude|precision)/i.test(k)) return;
-      const val = p[k];
-      const text = humanizeText(val);
-      if(!text) return;
-      rows.push(addRow(humanizeKey(k), val));
-      extraCount += 1;
-    });
-
-    const links = [];
-    if(p.foto_sitio_url) links.push(`<a class="popupLink" target="_blank" rel="noopener" href="${escapeHtml(p.foto_sitio_url)}">📷 Ver foto del sitio</a>`);
-    if(p.foto_actividad_url) links.push(`<a class="popupLink" target="_blank" rel="noopener" href="${escapeHtml(p.foto_actividad_url)}">🖼️ Ver foto de la actividad</a>`);
-
-    const obsText = humanizeText(p.observaciones);
-    const obsHtml = obsText ? `<div class="popupObs"><b>Observaciones:</b> ${escapeHtml(obsText)}</div>` : "";
-
-    return `
-      <div class="popupCard">
-        <div class="popupTitle">Punto de reforestación · Boleta ${escapeHtml(titleId)}</div>
-        <div class="popupGrid">
-          ${rows.filter(Boolean).join("")}
-        </div>
-        ${obsHtml}
-        ${links.length ? `<div class="popupLinks">${links.join("")}</div>` : ""}
-      </div>
-    `;
+    const addRow=(l,v)=>{const t=humanizeText(v);if(!t)return "";return `<div class="popupRow"><b>${escapeHtml(l)}:</b> ${escapeHtml(t)}</div>`};
+    const rows=[];
+    const titleId=humanizeText(p.id)||humanizeText(p._id)||"Registro";
+    rows.push(addRow("Fecha",p.fecha_actividad||p.fecha||p._submission_time));
+    rows.push(addRow("Municipio(s)",p.municipios||p.municipio));
+    rows.push(addRow("Comunidad",p.comunidad));
+    rows.push(addRow("Sitio",p.sitio_nombre||p.sitio||p.nombre_sitio));
+    rows.push(addRow("Institución(es)",p.instituciones||p.institucion));
+    rows.push(addRow("Plantas",p.total_plantas||p.cantidad_plantas));
+    rows.push(addRow("Participantes",p.total_participantes||p.participantes));
+    const shown=new Set(["id","_id","fecha_actividad","fecha","_submission_time","municipios","municipio","comunidad","sitio_nombre","sitio","nombre_sitio","instituciones","institucion","total_plantas","cantidad_plantas","total_participantes","participantes","observaciones","foto_sitio_url","foto_actividad_url","_geolocation","_xform_id_string"]);
+    let extra=0;
+    Object.keys(p||{}).forEach(k=>{if(extra>=4||shown.has(k)||/(^_|_url$|latitude|longitude|altitude|precision)/i.test(k))return;const t=humanizeText(p[k]);if(!t)return;rows.push(addRow(humanizeKey(k),p[k]));extra++;});
+    const links=[];
+    if(p.foto_sitio_url) links.push(`<a class="popupLink" target="_blank" rel="noopener" href="${escapeHtml(p.foto_sitio_url)}">📷 Foto sitio</a>`);
+    if(p.foto_actividad_url) links.push(`<a class="popupLink" target="_blank" rel="noopener" href="${escapeHtml(p.foto_actividad_url)}">🖼 Foto actividad</a>`);
+    const obs=humanizeText(p.observaciones);
+    return `<div class="popupCard"><div class="popupTitle">Punto reforestación · Boleta ${escapeHtml(titleId)}</div><div class="popupGrid">${rows.filter(Boolean).join("")}</div>${obs?`<div class="popupObs"><b>Observaciones:</b> ${escapeHtml(obs)}</div>`:""}${links.length?`<div class="popupLinks">${links.join("")}</div>`:""}</div>`;
   }
 
-  function updateCounters(shown, total){
-    document.getElementById("koboShown").textContent = shown;
-    document.getElementById("koboTotal").textContent = total;
-  }
+  function updateCounters(s,t){document.getElementById("koboShown").textContent=s;document.getElementById("koboTotal").textContent=t}
 
-  
-  function tokenizeMultiValue(v){
-    if(v === null || v === undefined) return [];
-    if(Array.isArray(v)) return v.map(humanizeText).map(s=>s.trim()).filter(Boolean);
-    const s = humanizeText(v);
-    if(!s) return [];
-    return s.split(/\s*[;,|\/]\s*/).map(t=>t.trim()).filter(Boolean);
-  }
+  function tokenize(v){if(v===null||v===undefined)return [];if(Array.isArray(v))return v.map(humanizeText).filter(Boolean);return humanizeText(v).split(/\s*[;,|\/]\s*/).map(t=>t.trim()).filter(Boolean)}
+  function normLoose(s){return humanizeText(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim()}
+  function valMatch(sel,vals){if(!sel)return true;const t=normLoose(sel);return (vals||[]).some(v=>normLoose(v)===t)}
 
-  function normalizeLoose(s){
-    return humanizeText(s)
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/\s+/g, " ")
-      .trim();
-  }
-
-  function valueMatches(selected, values){
-    if(!selected) return true;
-    const target = normalizeLoose(selected);
-    return (values || []).some(v => normalizeLoose(v) === target);
-  }
-
-  function populateFilterOptions(geojson){
-    const muni = new Set();
-    const inst = new Set();
-
-    for(const ft of (geojson.features || [])){
-      const p = ft.properties || {};
-      tokenizeMultiValue(p.municipios || p.municipio).forEach(v => v && muni.add(v));
-      tokenizeMultiValue(p.instituciones || p.institucion).forEach(v => v && inst.add(v));
-    }
-
-    const muniSel = document.getElementById("fMunicipio");
-    const instSel = document.getElementById("fInstitucion");
-
-    [...muni].sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})).forEach(v=>{
-      const o=document.createElement("option"); o.value=v; o.textContent=v; muniSel.appendChild(o);
-    });
-    [...inst].sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})).forEach(v=>{
-      const o=document.createElement("option"); o.value=v; o.textContent=v; instSel.appendChild(o);
-    });
+  function populateFilterOptions(gj){
+    const muni=new Set(),inst=new Set();
+    for(const ft of (gj.features||[])){const p=ft.properties||{};tokenize(p.municipios||p.municipio).forEach(v=>muni.add(v));tokenize(p.instituciones||p.institucion).forEach(v=>inst.add(v))}
+    const ms=document.getElementById("fMunicipio"),is=document.getElementById("fInstitucion");
+    [...muni].sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;ms.appendChild(o)});
+    [...inst].sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;is.appendChild(o)});
   }
 
   function applyKoboFilters(){
-    if(!koboAll) return;
-
-    const muni = document.getElementById("fMunicipio").value.trim();
-    const inst = document.getElementById("fInstitucion").value.trim();
-    const desde = document.getElementById("fDesde").value;
-    const hasta = document.getElementById("fHasta").value;
-
-    const filtered = {
-      type: "FeatureCollection",
-      features: (koboAll.features || []).filter(ft=>{
-        const p = ft.properties || {};
-        const muniVals = tokenizeMultiValue(p.municipios || p.municipio);
-        const instVals = tokenizeMultiValue(p.instituciones || p.institucion);
-        const fecha = String(p.fecha_actividad || p.fecha || "").slice(0,10);
-
-        if(!valueMatches(muni, muniVals)) return false;
-        if(!valueMatches(inst, instVals)) return false;
-
-        if(desde && fecha && fecha < desde) return false;
-        if(hasta && fecha && fecha > hasta) return false;
-
-        return true;
-      })
-    };
-
-    const src = map.getSource("kobo");
-    if(src) src.setData(filtered);
-
-    updateCounters(filtered.features.length, (koboAll.features || []).length);
-
-    const parts = [];
-    if(muni) parts.push("Municipio: " + humanizeText(muni));
-    if(inst) parts.push("Institución: " + humanizeText(inst));
-    if(desde) parts.push("Desde: " + desde);
-    if(hasta) parts.push("Hasta: " + hasta);
-    filterSummary.textContent = parts.length ? ("Filtros activos · " + parts.join(" · ")) : "";
+    if(!koboAll)return;
+    const muni=document.getElementById("fMunicipio").value.trim();
+    const inst=document.getElementById("fInstitucion").value.trim();
+    const desde=document.getElementById("fDesde").value;
+    const hasta=document.getElementById("fHasta").value;
+    const filtered={type:"FeatureCollection",features:(koboAll.features||[]).filter(ft=>{
+      const p=ft.properties||{};
+      const fecha=String(p.fecha_actividad||p.fecha||"").slice(0,10);
+      if(!valMatch(muni,tokenize(p.municipios||p.municipio)))return false;
+      if(!valMatch(inst,tokenize(p.instituciones||p.institucion)))return false;
+      if(desde&&fecha&&fecha<desde)return false;
+      if(hasta&&fecha&&fecha>hasta)return false;
+      return true;
+    })};
+    const src=map.getSource("kobo");
+    if(src)src.setData(filtered);
+    updateCounters(filtered.features.length,(koboAll.features||[]).length);
+    const parts=[];
+    if(muni)parts.push("Municipio: "+humanizeText(muni));
+    if(inst)parts.push("Institución: "+humanizeText(inst));
+    if(desde)parts.push("Desde: "+desde);
+    if(hasta)parts.push("Hasta: "+hasta);
+    filterSummary.textContent=parts.length?"Filtros activos · "+parts.join(" · "):"";
   }
 
   function clearKoboFilters(){
-    document.getElementById("fMunicipio").value = "";
-    document.getElementById("fInstitucion").value = "";
-    document.getElementById("fDesde").value = "";
-    document.getElementById("fHasta").value = "";
-    filterSummary.textContent = "";
-    if(map.getSource("kobo") && koboAll) map.getSource("kobo").setData(koboAll);
-    if(koboAll) updateCounters((koboAll.features || []).length, (koboAll.features || []).length);
+    document.getElementById("fMunicipio").value="";
+    document.getElementById("fInstitucion").value="";
+    document.getElementById("fDesde").value="";
+    document.getElementById("fHasta").value="";
+    filterSummary.textContent="";
+    if(map.getSource("kobo")&&koboAll)map.getSource("kobo").setData(koboAll);
+    if(koboAll)updateCounters((koboAll.features||[]).length,(koboAll.features||[]).length);
   }
+  document.getElementById("applyFilters").onclick=applyKoboFilters;
+  document.getElementById("clearFilters").onclick=clearKoboFilters;
 
-  document.getElementById("applyFilters").onclick = applyKoboFilters;
-  document.getElementById("clearFilters").onclick = clearKoboFilters;
-
-  function fitToGeojson(geojson){
-    const feats = geojson.features || [];
-    if(!feats.length) return;
-    const b = new maplibregl.LngLatBounds();
-    for(const ft of feats){
-      const g = ft.geometry;
-      if(g && g.type === "Point"){
-        b.extend(g.coordinates);
-      }
-    }
-    if(!b.isEmpty()) map.fitBounds(b, { padding: 40, maxZoom: 14 });
+  function fitToGeojson(gj){
+    const feats=gj.features||[];if(!feats.length)return;
+    const b=new maplibregl.LngLatBounds();
+    for(const ft of feats){const g=ft.geometry;if(g&&g.type==="Point")b.extend(g.coordinates)}
+    if(!b.isEmpty())map.fitBounds(b,{padding:40,maxZoom:14});
   }
 
   function treePinSvgDataUrl(){
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
-        <defs>
-          <filter id="s" x="-20%" y="-20%" width="140%" height="160%">
-            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0b3340" flood-opacity="0.30"/>
-          </filter>
-          <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#9ef1d0"/>
-            <stop offset="100%" stop-color="#34b882"/>
-          </linearGradient>
-        </defs>
-        <g filter="url(#s)">
-          <path d="M48 7c-15.7 0-28.5 12.5-28.5 27.9 0 20.7 23.8 44.1 27 47.1.9.9 2.4.9 3.4 0 3.2-3 27-26.4 27-47.1C76.9 19.5 63.7 7 48 7z" fill="url(#g)" stroke="#12765e" stroke-width="3"/>
-          <circle cx="48" cy="35" r="18" fill="#ecfff7" stroke="#169377" stroke-width="2.5"/>
-          <path d="M48 22l6.2 9.2h-4.8l7 9.4h-5.2v7.2h-6.4v-7.2h-5.2l7-9.4h-4.8L48 22z" fill="#1d9c6f"/>
-          <rect x="45.5" y="47.5" width="5" height="5.5" rx="1" fill="#8a5a35"/>
-          <circle cx="48" cy="35" r="3.1" fill="#0f6c57" opacity=".22"/>
-        </g>
-      </svg>
-    `;
-    return "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><defs><filter id="s"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0b3340" flood-opacity=".30"/></filter><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9ef1d0"/><stop offset="100%" stop-color="#34b882"/></linearGradient></defs><g filter="url(#s)"><path d="M48 7c-15.7 0-28.5 12.5-28.5 27.9 0 20.7 23.8 44.1 27 47.1.9.9 2.4.9 3.4 0 3.2-3 27-26.4 27-47.1C76.9 19.5 63.7 7 48 7z" fill="url(#g)" stroke="#12765e" stroke-width="3"/><circle cx="48" cy="35" r="18" fill="#ecfff7" stroke="#169377" stroke-width="2.5"/><path d="M48 22l6.2 9.2h-4.8l7 9.4h-5.2v7.2h-6.4v-7.2h-5.2l7-9.4h-4.8L48 22z" fill="#1d9c6f"/><rect x="45.5" y="47.5" width="5" height="5.5" rx="1" fill="#8a5a35"/></g></svg>`;
+    return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
   }
+  function ensureTreePinIcon(){return new Promise((resolve,reject)=>{if(map.hasImage("tree-pin"))return resolve();const img=new Image();img.onload=()=>{try{map.addImage("tree-pin",img,{pixelRatio:2});resolve()}catch(err){reject(err)}};img.onerror=()=>reject(new Error("icon failed"));img.src=treePinSvgDataUrl()})}
 
-  function ensureTreePinIcon(){
-    return new Promise((resolve, reject)=>{
-      if(map.hasImage("tree-pin")) return resolve();
-      const img = new Image();
-      img.onload = ()=>{
-        try{
-          map.addImage("tree-pin", img, { pixelRatio: 2 });
-          resolve();
-        }catch(err){ reject(err); }
-      };
-      img.onerror = ()=> reject(new Error("No se pudo crear el icono SVG."));
-      img.src = treePinSvgDataUrl();
-    });
-  }
-
-  // ====== Capas (desde config) ======
-  const addedLayerIds = new Map(); // defId => [mapLayerIds...]
-  const sourceIds = new Map();     // defId => sourceId
-
+  const addedLayerIds=new Map(),sourceIds=new Map();
   async function addGeojsonLayer(def){
-    const res = await fetch(def.url, {cache:"no-store"});
-    if(!res.ok) throw new Error("No se pudo cargar la capa.");
-    const gj = await res.json();
-
-    const sourceId = `src_${def.id}`;
-    if(map.getSource(sourceId)) return;
-    map.addSource(sourceId, { type:"geojson", data: gj });
-
-    sourceIds.set(def.id, sourceId);
-
-    const style = def.style || {};
-    const kind = (style.kind || "fill").toLowerCase();
-    const mapLayerIds = [];
-
-    if(kind === "fill"){
-      const fillId = `${def.id}_fill`;
-      const outId  = `${def.id}_outline`;
-      map.addLayer({
-        id: fillId, type:"fill", source: sourceId,
-        paint: {
-          "fill-color": style.color || "#46d18f",
-          "fill-opacity": typeof style.opacity === "number" ? style.opacity : 0.22
-        },
-        layout:{visibility:"none"}
-      });
-      map.addLayer({
-        id: outId, type:"line", source: sourceId,
-        paint: {
-          "line-color": style.outline || style.color || "#46d18f",
-          "line-width": style.width || 1.2,
-          "line-opacity": typeof style.opacity === "number" ? Math.min(1, style.opacity + 0.35) : 0.75
-        },
-        layout:{visibility:"none"}
-      });
-      mapLayerIds.push(fillId, outId);
-    } else if(kind === "line"){
-      const lineId = `${def.id}_line`;
-      map.addLayer({
-        id: lineId, type:"line", source: sourceId,
-        paint: {
-          "line-color": style.color || "#46d18f",
-          "line-width": style.width || 2,
-          "line-opacity": typeof style.opacity === "number" ? style.opacity : 0.85
-        },
-        layout:{visibility:"none"}
-      });
-      mapLayerIds.push(lineId);
+    const res=await fetch(def.url,{cache:"no-store"});
+    if(!res.ok)throw new Error("No se pudo cargar la capa.");
+    const gj=await res.json();
+    const srcId=`src_${def.id}`;
+    if(map.getSource(srcId))return;
+    map.addSource(srcId,{type:"geojson",data:gj});
+    sourceIds.set(def.id,srcId);
+    const st=def.style||{},kind=(st.kind||"fill").toLowerCase(),ids=[];
+    if(kind==="fill"){
+      map.addLayer({id:`${def.id}_fill`,type:"fill",source:srcId,paint:{"fill-color":st.color||"#46d18f","fill-opacity":st.opacity||0.22},layout:{visibility:"none"}});
+      map.addLayer({id:`${def.id}_outline`,type:"line",source:srcId,paint:{"line-color":st.outline||st.color||"#46d18f","line-width":st.width||1.2,"line-opacity":0.75},layout:{visibility:"none"}});
+      ids.push(`${def.id}_fill`,`${def.id}_outline`);
+    } else if(kind==="line"){
+      map.addLayer({id:`${def.id}_line`,type:"line",source:srcId,paint:{"line-color":st.color||"#46d18f","line-width":st.width||2},layout:{visibility:"none"}});
+      ids.push(`${def.id}_line`);
     } else {
-      const ptId = `${def.id}_pt`;
-      map.addLayer({
-        id: ptId, type:"circle", source: sourceId,
-        paint: {
-          "circle-color": style.color || "#46d18f",
-          "circle-radius": style.radius || 5,
-          "circle-opacity": typeof style.opacity === "number" ? style.opacity : 0.85,
-          "circle-stroke-color": "rgba(0,0,0,0.35)",
-          "circle-stroke-width": 1
-        },
-        layout:{visibility:"none"}
-      });
-      mapLayerIds.push(ptId);
+      map.addLayer({id:`${def.id}_pt`,type:"circle",source:srcId,paint:{"circle-color":st.color||"#46d18f","circle-radius":st.radius||5,"circle-stroke-color":"rgba(0,0,0,.35)","circle-stroke-width":1},layout:{visibility:"none"}});
+      ids.push(`${def.id}_pt`);
     }
-
-    addedLayerIds.set(def.id, mapLayerIds);
+    addedLayerIds.set(def.id,ids);
   }
-
-  function setLayerVisibility(defId, visible){
-    const ids = addedLayerIds.get(defId) || [];
-    ids.forEach(id => {
-      if(map.getLayer(id)) map.setLayoutProperty(id, "visibility", visible ? "visible" : "none");
-    });
-  }
-
-  function zoomToLayer(defId){
-    const srcId = sourceIds.get(defId);
-    if(!srcId) return;
-    const src = map.getSource(srcId);
-    if(!src || !src._data) return;
-    const gj = src._data;
-    const feats = gj.features || [];
-    const b = new maplibregl.LngLatBounds();
-    for(const ft of feats){
-      const g = ft.geometry;
-      if(!g) continue;
-      if(g.type === "Point") b.extend(g.coordinates);
-      if(g.type === "LineString") g.coordinates.forEach(c => b.extend(c));
-      if(g.type === "Polygon") g.coordinates.flat().forEach(c => b.extend(c));
-      if(g.type === "MultiPolygon") g.coordinates.flat(2).forEach(c => b.extend(c));
-    }
-    if(!b.isEmpty()) map.fitBounds(b, {padding: 40, maxZoom: 14});
-  }
+  function setLayerVis(id,v){(addedLayerIds.get(id)||[]).forEach(lid=>{if(map.getLayer(lid))map.setLayoutProperty(lid,"visibility",v?"visible":"none")})}
+  function zoomToLayer(id){const s=sourceIds.get(id);if(!s)return;const src=map.getSource(s);if(!src||!src._data)return;const b=new maplibregl.LngLatBounds();for(const ft of (src._data.features||[])){const g=ft.geometry;if(!g)continue;if(g.type==="Point")b.extend(g.coordinates);if(g.type==="LineString")g.coordinates.forEach(c=>b.extend(c));if(g.type==="Polygon")g.coordinates.flat().forEach(c=>b.extend(c));}if(!b.isEmpty())map.fitBounds(b,{padding:40,maxZoom:14})}
 
   function rebuildLegend(config){
-    legendUI.innerHTML = "";
-    const r1 = document.createElement("div");
-    r1.className = "legendRow";
-    r1.innerHTML = `<span class="swatch dot" style="background:var(--accent)"></span><div class="small">Registros KoBo</div>`;
-    legendUI.appendChild(r1);
-
-    (config.groups || []).forEach(g=>{
-      (g.layers || []).forEach(l=>{
-        const st = l.style || {};
-        const kind = (st.kind || "fill").toLowerCase();
-        const color = st.color || "#46d18f";
-        const row = document.createElement("div");
-        row.className = "legendRow";
-        row.innerHTML = `
-          <span class="swatch ${kind==="circle"?"dot":""}" style="background:${kind==="line"?"transparent":color}"></span>
-          <div class="small">${l.title}</div>
-        `;
-        legendUI.appendChild(row);
-      });
-    });
+    legendUI.innerHTML="";
+    const r=document.createElement("div");r.className="legendRow";r.innerHTML=`<span class="swatch dot" style="background:var(--accent)"></span><div class="small">Registros KoBo</div>`;legendUI.appendChild(r);
+    (config.groups||[]).forEach(g=>{(g.layers||[]).forEach(l=>{const st=l.style||{},kind=(st.kind||"fill").toLowerCase(),color=st.color||"#46d18f";const row=document.createElement("div");row.className="legendRow";row.innerHTML=`<span class="swatch ${kind==="circle"?"dot":""}" style="background:${kind==="line"?"transparent":color}"></span><div class="small">${l.title}</div>`;legendUI.appendChild(row)})});
   }
 
-  function makeLayerUI(groupName, layerDef){
-    const div = document.createElement("div");
-    div.className = "layerItem";
-
-    div.innerHTML = `
-      <div class="layerName">${layerDef.title}</div>
-      <div class="layerGroup">${groupName}</div>
-      <div class="layerActions">
-        <label class="btn" style="padding:6px 10px;font-size:12px;gap:8px">
-          <input type="checkbox" id="chk_${layerDef.id}" style="width:auto;margin:0"> Mostrar
-        </label>
-        <button class="btn" style="padding:6px 10px;font-size:12px" id="z_${layerDef.id}">Zoom</button>
-        <a class="btn" style="padding:6px 10px;font-size:12px" href="${layerDef.url}" download>Descargar</a>
-        <span class="tag" id="tag_${layerDef.id}">${layerDef.type || "capa"}</span>
-      </div>
-    `;
-
-    const chk = div.querySelector(`#chk_${layerDef.id}`);
-    const tag = div.querySelector(`#tag_${layerDef.id}`);
-    div.querySelector(`#z_${layerDef.id}`).onclick = ()=> zoomToLayer(layerDef.id);
-
-    chk.addEventListener("change", async (e)=>{
-      const on = e.target.checked;
-      try{
-        if(on && !addedLayerIds.has(layerDef.id)){
-          await addGeojsonLayer(layerDef);
-          setLayerVisibility(layerDef.id, true);
-          tag.textContent = "Activa";
-          tag.style.borderColor = "rgba(70,209,143,.35)";
-          tag.style.color = "#bdf3d6";
-        } else {
-          setLayerVisibility(layerDef.id, on);
-          tag.textContent = on ? "Activa" : (layerDef.type || "capa");
-          tag.style.borderColor = "rgba(255,255,255,.14)";
-          tag.style.color = "var(--muted)";
-        }
-      } catch(err){
-        console.error(err);
-        tag.textContent = "Error";
-        tag.style.borderColor = "rgba(255,107,107,.35)";
-        tag.style.color = "#ffd0d0";
-        e.target.checked = false;
-        configStatus.textContent = "Una capa no se pudo cargar. Revisa que el archivo exista.";
-      }
-    });
-
+  function makeLayerUI(groupName,layerDef){
+    const div=document.createElement("div");div.className="layerItem";
+    div.innerHTML=`<div class="layerName">${layerDef.title}</div><div class="layerGroup">${groupName}</div><div class="layerActions"><label class="btn-dark" style="padding:6px 10px;font-size:12px;gap:8px"><input type="checkbox" id="chk_${layerDef.id}" style="width:auto;margin:0"> Mostrar</label><button class="btn-dark" style="padding:6px 10px;font-size:12px" id="z_${layerDef.id}">Zoom</button><a class="btn-dark" style="padding:6px 10px;font-size:12px" href="${layerDef.url}" download>↓</a><span class="tag" id="tag_${layerDef.id}">${layerDef.type||"capa"}</span></div>`;
+    const chk=div.querySelector(`#chk_${layerDef.id}`),tag=div.querySelector(`#tag_${layerDef.id}`);
+    div.querySelector(`#z_${layerDef.id}`).onclick=()=>zoomToLayer(layerDef.id);
+    chk.addEventListener("change",async e=>{const on=e.target.checked;try{if(on&&!addedLayerIds.has(layerDef.id)){await addGeojsonLayer(layerDef);setLayerVis(layerDef.id,true);tag.textContent="Activa"}else{setLayerVis(layerDef.id,on);tag.textContent=on?"Activa":(layerDef.type||"capa")}}catch(err){console.error(err);tag.textContent="Error";e.target.checked=false}});
     return div;
   }
 
   async function loadConfig(){
-    try{
-      const r = await fetch(CONFIG_URL, {cache:"no-store"});
-      if(!r.ok) throw new Error("no config");
-      const config = await r.json();
-      configStatus.textContent = "Capas cargadas.";
-      return config;
-    } catch(e){
-      configStatus.textContent = "No hay capas configuradas.";
-      return { groups: [] };
-    }
-  }
-
-  // ====== Impresión ======
-  function metersPerPixel(lat, zoom){
-    return 156543.03392 * Math.cos(lat * Math.PI/180) / Math.pow(2, zoom);
-  }
-  function niceLengthMeters(raw){
-    const candidates = [10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];
-    let best = candidates[0];
-    for(const c of candidates){ if(c <= raw) best = c; }
-    return best;
-  }
-  function formatMeters(m){
-    if(m >= 1000) return (m/1000).toFixed((m%1000===0)?0:1) + " km";
-    return m + " m";
-  }
-  function updatePrintLayout(){
-    const now = new Date();
-    const pad = n => String(n).padStart(2,"0");
-    const fecha = `${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
-    const hora  = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-
-    document.getElementById("printDate").textContent = `${fecha} ${hora}`;
-    document.getElementById("metaFecha").textContent = fecha;
-    document.getElementById("metaHora").textContent = hora;
-
-    const bearing = map.getBearing() || 0;
-    document.getElementById("northSvg").style.transform = `rotate(${-bearing}deg)`;
-    document.getElementById("northSvg").style.transformOrigin = "50% 50%";
-
-    const center = map.getCenter();
-    const zoom = map.getZoom();
-    const mpp = metersPerPixel(center.lat, zoom);
-
-    const frame = document.getElementById("mapFrame");
-    const rect = frame.getBoundingClientRect();
-    const inches = (277/25.4);
-    const pxPerInch = rect.width / inches;
-
-    const scaleDen = Math.round(mpp * pxPerInch / 0.0254);
-    document.getElementById("scaleRatio").textContent = `1:${scaleDen.toLocaleString("es-GT")}`;
-    document.getElementById("metaEscala").textContent = `1:${scaleDen.toLocaleString("es-GT")}`;
-    document.getElementById("metaZoom").textContent = zoom.toFixed(2);
-    document.getElementById("metaBase").textContent = baseName.textContent;
-
-    const pxPerMm = rect.width / 277;
-    const maxBarPx = pxPerMm * 70;
-
-    const rawLen = mpp * maxBarPx;
-    const niceLen = niceLengthMeters(rawLen);
-    const barPx = Math.min(maxBarPx, niceLen / mpp);
-
-    const bar = document.getElementById("scaleBar");
-    bar.innerHTML = "";
-    const seg = 4;
-    for(let i=0;i<seg;i++){
-      const d = document.createElement("div");
-      d.style.width = (barPx/seg) + "px";
-      d.style.height = "100%";
-      d.style.background = (i%2===0) ? "#000" : "#fff";
-      bar.appendChild(d);
-    }
-    document.getElementById("scaleLabel").textContent = formatMeters(niceLen);
-  }
-
-  function printPDF(){
-    document.body.classList.add("print-mode");
-    map.resize();
-    setTimeout(()=>{
-      updatePrintLayout();
-      window.print();
-    }, 250);
-  }
-  window.addEventListener("afterprint", ()=>{
-    document.body.classList.remove("print-mode");
-    map.resize();
-  });
-  document.getElementById("printBtn").onclick = printPDF;
-
-  // ====== Init ======
-  async function loadResumen(){
-    try{
-      const r = await fetch(RESUMEN_URL, {cache:"no-store"});
-      if(!r.ok) return null;
-      return await r.json();
-    } catch { return null; }
+    try{const r=await fetch(CONFIG_URL,{cache:"no-store"});if(!r.ok)throw new Error();const c=await r.json();configStatus.textContent="Capas cargadas.";return c}
+    catch{configStatus.textContent="No hay capas configuradas.";return{groups:[]}}
   }
 
   async function loadKobo(){
-    statusBox.textContent = "Cargando…";
-    const r = await fetch(KOBO_URL, {cache:"no-store"});
-    if(!r.ok) throw new Error("No pude cargar puntos.");
-    koboAll = await r.json();
-    const n = (koboAll.features||[]).length;
-    updateCounters(n, n);
-
+    statusBox.textContent="Cargando…";
+    const r=await fetch(KOBO_URL,{cache:"no-store"});
+    if(!r.ok)throw new Error("No pude cargar puntos.");
+    koboAll=await r.json();
+    const n=(koboAll.features||[]).length;
+    updateCounters(n,n);
     populateFilterOptions(koboAll);
+    buildCharts(koboAll.features||[]);
 
     if(!map.getSource("kobo")){
-      map.addSource("kobo", {
-        type: "geojson",
-        data: koboAll,
-        cluster: true,
-        clusterRadius: 56,
-        clusterMaxZoom: 14
-      });
-
-      try{ await ensureTreePinIcon(); } catch(err){ console.warn(err); }
-
-      map.addLayer({
-        id: "kobo-clusters",
-        type: "circle",
-        source: "kobo",
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": [
-            "step", ["get", "point_count"],
-            "rgba(103,200,214,0.78)", 20, "rgba(76,195,164,0.80)", 50, "rgba(47,174,120,0.84)", 150, "rgba(35,145,99,0.86)"
-          ],
-          "circle-radius": ["step", ["get", "point_count"], 18, 20, 24, 50, 30, 200, 38],
-          "circle-stroke-color": "rgba(8,53,63,0.35)",
-          "circle-stroke-width": 2
-        }
-      });
-
-      map.addLayer({
-        id: "kobo-cluster-count",
-        type: "symbol",
-        source: "kobo",
-        filter: ["has", "point_count"],
-        layout: { "text-field": "{point_count_abbreviated}", "text-size": 12, "text-font": ["Open Sans Bold","Arial Unicode MS Bold"] },
-        paint: { "text-color": "#083640" }
-      });
-
-      map.addLayer({
-        id: "kobo-points-hit",
-        type: "circle",
-        source: "kobo",
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-color": "rgba(16,88,99,0.16)",
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 10, 11, 13, 14, 17, 17, 21],
-          "circle-stroke-color": "rgba(255,255,255,0.55)",
-          "circle-stroke-width": 1
-        }
-      });
-
+      map.addSource("kobo",{type:"geojson",data:koboAll,cluster:true,clusterRadius:56,clusterMaxZoom:14});
+      try{await ensureTreePinIcon()}catch(e){console.warn(e)}
+      map.addLayer({id:"kobo-clusters",type:"circle",source:"kobo",filter:["has","point_count"],paint:{"circle-color":["step",["get","point_count"],"rgba(103,200,214,0.78)",20,"rgba(76,195,164,0.80)",50,"rgba(47,174,120,0.84)",150,"rgba(35,145,99,0.86)"],"circle-radius":["step",["get","point_count"],18,20,24,50,30,200,38],"circle-stroke-color":"rgba(8,53,63,0.35)","circle-stroke-width":2}});
+      map.addLayer({id:"kobo-cluster-count",type:"symbol",source:"kobo",filter:["has","point_count"],layout:{"text-field":"{point_count_abbreviated}","text-size":12,"text-font":["Open Sans Bold","Arial Unicode MS Bold"]},paint:{"text-color":"#083640"}});
       if(map.hasImage("tree-pin")){
-        map.addLayer({
-          id: "kobo-points",
-          type: "symbol",
-          source: "kobo",
-          filter: ["!", ["has", "point_count"]],
-          layout: {
-            "icon-image": "tree-pin",
-            "icon-size": ["interpolate", ["linear"], ["zoom"], 8, 0.42, 10, 0.52, 12, 0.65, 14, 0.82, 16, 0.95],
-            "icon-allow-overlap": true,
-            "icon-ignore-placement": true
-          }
-        });
+        map.addLayer({id:"kobo-points",type:"symbol",source:"kobo",filter:["!",["has","point_count"]],layout:{"icon-image":"tree-pin","icon-size":["interpolate",["linear"],["zoom"],8,.42,10,.52,12,.65,14,.82,16,.95],"icon-allow-overlap":true,"icon-ignore-placement":true}});
       } else {
-        map.addLayer({
-          id: "kobo-points",
-          type: "circle",
-          source: "kobo",
-          filter: ["!", ["has", "point_count"]],
-          paint: {
-            "circle-color": "rgba(47,174,120,0.92)",
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 8, 6, 11, 8, 14, 11, 17, 14],
-            "circle-stroke-color": "rgba(8,53,63,0.40)",
-            "circle-stroke-width": 2
-          }
-        });
+        map.addLayer({id:"kobo-points",type:"circle",source:"kobo",filter:["!",["has","point_count"]],paint:{"circle-color":"rgba(47,174,120,0.92)","circle-radius":["interpolate",["linear"],["zoom"],8,6,11,8,14,11,17,14],"circle-stroke-color":"rgba(8,53,63,0.40)","circle-stroke-width":2}});
       }
-
-      map.on("click", "kobo-clusters", (e)=>{
-        const features = map.queryRenderedFeatures(e.point, { layers: ["kobo-clusters"] });
-        const clusterId = features[0].properties.cluster_id;
-        map.getSource("kobo").getClusterExpansionZoom(clusterId, (err, zoom) => {
-          if (err) return;
-          map.easeTo({ center: features[0].geometry.coordinates, zoom: zoom });
-        });
-      });
-
-      map.on("click", "kobo-points", (e)=>{
-        const f = e.features && e.features[0];
-        if(!f) return;
-        new maplibregl.Popup({
-          maxWidth:"420px",
-          closeButton:true,
-          closeOnClick:true,
-          offset: 14
-        })
-          .setLngLat(e.lngLat)
-          .setHTML(buildPopupHTML(f.properties || {}))
-          .addTo(map);
-      });
-
-      map.on("mouseenter", "kobo-points", ()=> map.getCanvas().style.cursor = "pointer");
-      map.on("mouseleave", "kobo-points", ()=> map.getCanvas().style.cursor = "");
-      map.on("mouseenter", "kobo-clusters", ()=> map.getCanvas().style.cursor = "pointer");
-      map.on("mouseleave", "kobo-clusters", ()=> map.getCanvas().style.cursor = "");
-
+      map.on("click","kobo-clusters",e=>{const f=map.queryRenderedFeatures(e.point,{layers:["kobo-clusters"]});map.getSource("kobo").getClusterExpansionZoom(f[0].properties.cluster_id,(err,z)=>{if(!err)map.easeTo({center:f[0].geometry.coordinates,zoom:z})})});
+      map.on("click","kobo-points",e=>{const f=e.features&&e.features[0];if(!f)return;new maplibregl.Popup({maxWidth:"420px",closeButton:true,offset:14}).setLngLat(e.lngLat).setHTML(buildPopupHTML(f.properties||{})).addTo(map)});
+      map.on("mouseenter","kobo-points",()=>map.getCanvas().style.cursor="pointer");
+      map.on("mouseleave","kobo-points",()=>map.getCanvas().style.cursor="");
+      map.on("mouseenter","kobo-clusters",()=>map.getCanvas().style.cursor="pointer");
+      map.on("mouseleave","kobo-clusters",()=>map.getCanvas().style.cursor="");
       fitToGeojson(koboAll);
     } else {
       map.getSource("kobo").setData(koboAll);
     }
-
-    statusBox.textContent = "Listo.";
+    statusBox.textContent="Listo.";
   }
 
-  function initSearch(){
-    document.getElementById("goSearch").onclick = ()=>{
-      const v = document.getElementById("searchId").value.trim();
-      const msg = document.getElementById("searchMsg");
-      msg.textContent = "";
-      if(!v){ msg.textContent = "Ingresa un ID."; return; }
-      const feats = (koboAll && koboAll.features) ? koboAll.features : [];
-      const hit = feats.find(ft => String((ft.properties||{}).id||"") === v);
-      if(!hit){ msg.textContent = "No se encontró."; return; }
-      const c = hit.geometry && hit.geometry.coordinates;
-      if(c && c.length>=2){
-        map.flyTo({center:c, zoom: 16});
-        msg.textContent = "Ubicado.";
-      }
-    };
-  }
+  document.getElementById("goSearch").onclick=()=>{
+    const v=document.getElementById("searchId").value.trim();
+    const msg=document.getElementById("searchMsg");
+    msg.textContent="";
+    if(!v){msg.textContent="Ingresa un ID.";return}
+    const feats=(koboAll&&koboAll.features)?koboAll.features:[];
+    const hit=feats.find(ft=>String((ft.properties||{}).id||"")==v);
+    if(!hit){msg.textContent="No se encontró.";return}
+    const c=hit.geometry&&hit.geometry.coordinates;
+    if(c&&c.length>=2){map.flyTo({center:c,zoom:16});msg.textContent="Ubicado."}
+  };
 
-  map.on("load", async ()=>{
+  // Print
+  function metersPerPixel(lat,zoom){return 156543.03392*Math.cos(lat*Math.PI/180)/Math.pow(2,zoom)}
+  function niceLengthMeters(raw){const c=[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];let b=c[0];for(const x of c)if(x<=raw)b=x;return b}
+  function formatMeters(m){return m>=1000?(m/1000).toFixed(m%1000===0?0:1)+" km":m+" m"}
+  function updatePrintLayout(){
+    const now=new Date(),pad=n=>String(n).padStart(2,"0");
+    const fecha=`${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+    const hora=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    document.getElementById("printDate").textContent=`${fecha} ${hora}`;
+    document.getElementById("metaFecha").textContent=fecha;
+    document.getElementById("metaHora").textContent=hora;
+    document.getElementById("northSvg").style.transform=`rotate(${-(map.getBearing()||0)}deg)`;
+    document.getElementById("northSvg").style.transformOrigin="50% 50%";
+    const center=map.getCenter(),zoom=map.getZoom(),mpp=metersPerPixel(center.lat,zoom);
+    const rect=document.getElementById("mapFrame").getBoundingClientRect();
+    const scaleDen=Math.round(mpp*(rect.width/(277/25.4))/0.0254);
+    document.getElementById("scaleRatio").textContent=`1:${scaleDen.toLocaleString("es-GT")}`;
+    document.getElementById("metaEscala").textContent=`1:${scaleDen.toLocaleString("es-GT")}`;
+    document.getElementById("metaZoom").textContent=zoom.toFixed(2);
+    document.getElementById("metaBase").textContent=baseName.textContent;
+    const pxPerMm=rect.width/277,maxBarPx=pxPerMm*70,rawLen=mpp*maxBarPx,niceLen=niceLengthMeters(rawLen),barPx=Math.min(maxBarPx,niceLen/mpp);
+    const bar=document.getElementById("scaleBar");bar.innerHTML="";
+    for(let i=0;i<4;i++){const d=document.createElement("div");d.style.cssText=`width:${barPx/4}px;height:100%;background:${i%2===0?"#000":"#fff"}`;bar.appendChild(d)}
+    document.getElementById("scaleLabel").textContent=formatMeters(niceLen);
+  }
+  function printPDF(){document.body.classList.add("print-mode");map.resize();setTimeout(()=>{updatePrintLayout();window.print()},280)}
+  window.addEventListener("afterprint",()=>{document.body.classList.remove("print-mode");map.resize()});
+  document.getElementById("printBtn").onclick=printPDF;
+
+  async function loadResumen(){try{const r=await fetch(RESUMEN_URL,{cache:"no-store"});if(!r.ok)return null;return await r.json()}catch{return null}}
+
+  map.on("load",async()=>{
     showBasemap("sat");
-    initSearch();
-
-    const [config, resumen] = await Promise.all([loadConfig(), loadResumen()]);
-
+    const [config,resumen]=await Promise.all([loadConfig(),loadResumen()]);
     rebuildLegend(config);
-
-    layersUI.innerHTML = "";
-    (config.groups || []).forEach(g=>{
-      (g.layers || []).forEach(l=>{
-        if((l.type || "").toLowerCase() === "geojson"){
-          layersUI.appendChild(makeLayerUI(g.name || "Capas", l));
-        }
-      });
-    });
-
-    try{
-      await loadKobo();
-    }catch(e){
-      console.error(e);
-      statusBox.textContent = "No se pudieron cargar los puntos.";
-    }
-
-    // top meta (actualización / registros)
-    const n = (koboAll && koboAll.features) ? koboAll.features.length : 0;
-    const upd = resumen && resumen.ultima_actualizacion ? resumen.ultima_actualizacion : "—";
-    topMeta.textContent = `Actualización: ${upd} · Registros: ${n}`;
+    layersUI.innerHTML="";
+    (config.groups||[]).forEach(g=>{(g.layers||[]).forEach(l=>{if((l.type||"").toLowerCase()==="geojson")layersUI.appendChild(makeLayerUI(g.name||"Capas",l))})});
+    try{await loadKobo()}catch(e){console.error(e);statusBox.textContent="No se pudieron cargar los puntos."}
+    const n=(koboAll&&koboAll.features)?koboAll.features.length:0;
+    const upd=resumen&&resumen.ultima_actualizacion?resumen.ultima_actualizacion:"—";
+    topMeta.textContent=`Actualización: ${upd} · Registros: ${n}`;
   });
 </script>
 </body>
