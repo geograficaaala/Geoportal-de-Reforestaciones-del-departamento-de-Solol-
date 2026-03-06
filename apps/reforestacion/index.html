@@ -6,703 +6,1067 @@
   <title>Módulo de Reforestaciones · Plataforma digital del Eje de Bosques</title>
   <meta name="description" content="Módulo de Reforestaciones: visor SIG, análisis territorial y geoestadística aplicada para planificar intervenciones en Sololá." />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/flatly/bootstrap.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
   <style>
-    :root{
-      --bg-a:#eaf7f2;
-      --bg-b:#e8f2ff;
-      --bg-c:#ffffff;
-      --glass:rgba(255,255,255,.86);
-      --glass-2:rgba(255,255,255,.94);
-      --stroke:rgba(14, 78, 70, .12);
-      --shadow:0 18px 48px rgba(0,0,0,.10);
-      --shadow-sm:0 10px 22px rgba(0,0,0,.08);
+    :root {
+      --green-deep:   #0d4f3c;
+      --green-mid:    #1a7a58;
+      --green-light:  #2ca58d;
+      --green-pale:   #e6f5f0;
+      --surface:      #f8faf9;
+      --white:        #ffffff;
+      --text-dark:    #0d1f1a;
+      --text-mid:     #3a5248;
+      --text-soft:    #6b8278;
+      --border:       rgba(13, 79, 60, .10);
+      --shadow-sm:    0 2px 12px rgba(0,0,0,.07);
+      --shadow-md:    0 8px 32px rgba(0,0,0,.10);
+      --radius-lg:    1.5rem;
+      --radius-md:    1rem;
+      --radius-sm:    .625rem;
     }
 
-    body{
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--surface);
+      color: var(--text-dark);
       min-height: 100vh;
-      background:
-        radial-gradient(900px 560px at 0% 0%, rgba(44, 165, 141, .16), transparent 60%),
-        radial-gradient(900px 560px at 100% 0%, rgba(42, 127, 202, .14), transparent 60%),
-        linear-gradient(135deg,var(--bg-a),var(--bg-b) 55%, var(--bg-c));
-      padding-top: 76px;
+      padding-top: 72px;
     }
 
-    .glass{
-      background: linear-gradient(180deg, var(--glass-2), var(--glass));
-      border: 1px solid rgba(255,255,255,.85);
-      box-shadow: var(--shadow-sm);
-      backdrop-filter: blur(10px);
+    /* ── NAVBAR ── */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(13, 79, 60, .97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding: .9rem 0;
+      box-shadow: 0 2px 20px rgba(0,0,0,.18);
     }
-
-    .hero{
-      border: 1px solid rgba(255,255,255,.80);
-      box-shadow: var(--shadow);
-      border-radius: 1.25rem;
-      overflow: hidden;
-      position: relative;
+    .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
     }
-
-    .hero::before{
-      content:"";
-      position:absolute;
-      inset:auto -140px -140px auto;
-      width: 360px;
-      height: 360px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(44, 165, 141, .22), transparent 65%);
-      filter: blur(2px);
-      pointer-events:none;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      inset:-140px auto auto -140px;
-      width: 380px;
-      height: 380px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(42, 127, 202, .18), transparent 65%);
-      filter: blur(2px);
-      pointer-events:none;
-    }
-
-    .brand-logos{
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
       min-width: 0;
     }
-
-    .brand-logos img{
-      height: 44px;
+    .brand-logos {
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      flex-shrink: 0;
+    }
+    .brand-logos img {
+      height: 40px;
       width: auto;
       object-fit: contain;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
-      background: rgba(255,255,255,.94);
-      border-radius: 10px;
-      padding: 4px 6px;
+      background: #ffffff;
+      border-radius: .5rem;
+      padding: 5px 8px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.15);
+    }
+    .brand-title {
+      color: rgba(255,255,255,.88);
+      font-size: .9rem;
+      font-weight: 500;
+      letter-spacing: -.01em;
+      line-height: 1.3;
+      display: none;
+    }
+    @media (min-width: 640px) { .brand-title { display: block; } }
+
+    .module-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .28rem .65rem;
+      background: rgba(44,165,141,.25);
+      border: 1px solid rgba(44,165,141,.4);
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      color: #7fe8cc;
+      white-space: nowrap;
+      display: none;
+    }
+    @media (min-width: 800px) { .module-badge { display: inline-flex; } }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .42rem .9rem;
+      background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.20);
+      border-radius: .5rem;
+      color: rgba(255,255,255,.85);
+      font-size: .82rem;
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: background .15s, border-color .15s;
+      flex-shrink: 0;
+    }
+    .btn-back:hover {
+      background: rgba(255,255,255,.18);
+      border-color: rgba(255,255,255,.35);
+      color: #fff;
     }
 
-    @media (max-width: 420px){
-      .brand-logos img{ height: 36px; }
+    /* ── HERO ── */
+    .hero-wrap {
+      background: linear-gradient(155deg, var(--green-deep) 0%, #133d2e 55%, #0e3526 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 5rem 0 4rem;
+    }
+    .hero-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 60% at 80% -10%, rgba(44,165,141,.22), transparent),
+        radial-gradient(ellipse 50% 40% at -10% 80%, rgba(29,111,164,.16), transparent);
+      pointer-events: none;
+    }
+    .hero-wrap::after {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      border: 80px solid rgba(44,165,141,.07);
+      pointer-events: none;
     }
 
-    .muted{ color: rgba(0,0,0,.65); }
-
-    p, li, .text-body-secondary, .muted{
-      text-align: justify;
-      text-justify: inter-word;
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    @media (min-width: 900px) {
+      .hero-inner { grid-template-columns: 1.2fr 1fr; }
     }
 
-    .section-title{ letter-spacing: -.01em; }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .3rem .7rem;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 500;
+      letter-spacing: .03em;
+    }
+    .badge-green  { background: rgba(44,165,141,.20); color: #7fe8cc; border: 1px solid rgba(44,165,141,.30); }
+    .badge-status { background: rgba(255,255,255,.08); color: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.14); }
+    .led {
+      width: .5rem; height: .5rem;
+      border-radius: 50%;
+      background: #2fd08f;
+      box-shadow: 0 0 0 3px rgba(47,208,143,.20);
+      display: inline-block;
+    }
 
-    .icon-badge{
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
+    .hero-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: #7fe8cc;
+    }
+
+    .hero-body {
+      color: rgba(255,255,255,.70);
+      font-size: .97rem;
+      line-height: 1.75;
+      margin-bottom: 1.75rem;
+    }
+
+    .callout-hero {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-left: 3px solid #2ca58d;
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .callout-hero-title {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: #7fe8cc;
+      margin-bottom: .6rem;
+    }
+    .callout-hero ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .callout-hero ul li {
+      font-size: .86rem;
+      color: rgba(255,255,255,.65);
+      padding: .22rem 0 .22rem 1.1rem;
+      position: relative;
+    }
+    .callout-hero ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: #2ca58d;
+      font-weight: 700;
+    }
+
+    /* right panel */
+    .hero-panel {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      backdrop-filter: blur(8px);
+    }
+    .panel-label {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: #7fe8cc;
+      margin-bottom: .4rem;
+    }
+    .panel-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--white);
+      margin-bottom: .25rem;
+    }
+    .panel-sub {
+      font-size: .82rem;
+      color: rgba(255,255,255,.50);
+      margin-bottom: 1.25rem;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,.10);
+      margin: 1.25rem 0;
+    }
+    .panel-block {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius-sm);
+      padding: .9rem 1rem;
+      margin-bottom: .75rem;
+    }
+    .panel-block-label {
+      font-size: .72rem;
+      color: rgba(255,255,255,.45);
+      margin-bottom: .25rem;
+    }
+    .panel-block-value {
+      font-size: .9rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.88);
+      margin-bottom: .25rem;
+    }
+    .panel-block-note {
+      font-size: .78rem;
+      color: rgba(255,255,255,.45);
+    }
+    .btn-boleta {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      margin-top: .6rem;
+      padding: .38rem .85rem;
+      font-size: .8rem;
+      font-weight: 500;
+      border-radius: .5rem;
+      border: 1px solid rgba(44,165,141,.45);
+      background: rgba(44,165,141,.15);
+      color: #7fe8cc;
+      text-decoration: none;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-boleta:hover {
+      background: rgba(44,165,141,.28);
+      border-color: rgba(44,165,141,.7);
+    }
+    .gif-frame {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.15);
+      margin-top: 1.25rem;
+      background: #ffffff;
+      padding: 1rem;
+    }
+    .gif-frame img { width: 100%; display: block; border-radius: .5rem; }
+
+    /* ── SHARED SECTION STYLES ── */
+    .section-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+    .section-wrap + .section-wrap {
+      padding-top: 0;
+    }
+
+    .section-eyebrow {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: var(--green-light);
+      margin-bottom: .45rem;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+      color: var(--text-dark);
+      line-height: 1.2;
+      margin-bottom: .4rem;
+    }
+    .section-sub {
+      color: var(--text-soft);
+      font-size: .93rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── PRODUCT CARDS ── */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .prod-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s ease, box-shadow .2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .prod-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .prod-card-accent {
+      height: 4px;
+      background: linear-gradient(90deg, var(--green-mid), var(--green-light));
+    }
+    .prod-card-body {
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .prod-icon {
+      width: 46px; height: 46px;
+      border-radius: var(--radius-sm);
+      background: var(--green-pale);
+      color: var(--green-mid);
       display: grid;
       place-items: center;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.90);
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .prod-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: .45rem;
+    }
+    .prod-desc {
+      font-size: .86rem;
+      color: var(--text-soft);
+      line-height: 1.65;
+      flex: 1;
+      margin-bottom: 1.25rem;
+    }
+    .btn-prod {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .44rem .95rem;
+      border-radius: .5rem;
+      font-size: .82rem;
+      font-weight: 500;
+      text-decoration: none;
+      background: var(--green-mid);
+      color: #fff;
+      border: none;
+      transition: background .15s;
+      align-self: flex-start;
+    }
+    .btn-prod:hover { background: var(--green-deep); }
+
+    /* ── CONTENT PANELS ── */
+    .content-panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
+    }
+    .content-panel + .content-panel { margin-top: 1.25rem; }
+
+    .panel-section-title {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--green-light);
+      margin-bottom: .75rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
     }
 
-    .navcard{
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-      border: 1px solid rgba(255,255,255,.82);
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+      .two-col { grid-template-columns: 1fr 1fr; }
+      .two-col-7-5 { grid-template-columns: 1.4fr 1fr; }
     }
 
-    .navcard:hover{
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-      border-color: rgba(44, 165, 141, .25);
+    /* Steps */
+    .step {
+      display: flex;
+      gap: .9rem;
+      align-items: flex-start;
+      margin-bottom: 1.1rem;
     }
-
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:.5rem;
-      padding:.35rem .6rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.65);
-      background: rgba(255,255,255,.18);
-    }
-
-    .led{
-      width: .55rem;
-      height: .55rem;
-      border-radius: 999px;
-      background: #2fd08f;
-      box-shadow: 0 0 0 .25rem rgba(47,208,143,.18);
-    }
-
-    .hero-media{
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 12px 26px rgba(0,0,0,.08);
-    }
-
-    .hero-media img{
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .callout{
-      border-left: 4px solid rgba(44, 165, 141, .55);
-      background: rgba(255,255,255,.55);
-      border-radius: 14px;
-      padding: 12px 14px;
-    }
-
-    .step{
-      display:flex;
-      gap: 12px;
-      align-items:flex-start;
-    }
-
-    .step .num{
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      display:grid;
-      place-items:center;
-      background: rgba(44, 165, 141, .10);
-      border: 1px solid rgba(44, 165, 141, .18);
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: .625rem;
+      background: var(--green-pale);
+      border: 1px solid rgba(44,165,141,.2);
+      color: var(--green-mid);
+      font-size: .8rem;
       font-weight: 700;
-      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: .2rem;
+    }
+    .step-desc {
+      font-size: .84rem;
+      color: var(--text-soft);
+      line-height: 1.6;
     }
 
-    .footer-logos{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 18px;
-      justify-content:center;
-      align-items:center;
-      margin-top: 14px;
+    /* Callout */
+    .callout {
+      background: var(--green-pale);
+      border: 1px solid rgba(44,165,141,.18);
+      border-left: 3px solid var(--green-light);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem;
+    }
+    .callout-title {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--green-mid);
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .callout ul {
+      list-style: none;
+      padding: 0; margin: 0;
+    }
+    .callout ul li {
+      font-size: .85rem;
+      color: var(--text-mid);
+      padding: .22rem 0 .22rem 1.1rem;
+      position: relative;
+      line-height: 1.55;
+    }
+    .callout ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--green-light);
+      font-weight: 700;
     }
 
-    .footer-logos a{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding: 6px 4px;
-      text-decoration:none;
+    /* Questions list */
+    .question-list {
+      list-style: none;
+      padding: 0; margin: 0 0 1.25rem;
+    }
+    .question-list li {
+      font-size: .86rem;
+      color: var(--text-mid);
+      padding: .55rem .75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: .5rem;
+      line-height: 1.5;
+    }
+    .question-list li:last-child { border-bottom: none; }
+    .question-list li::before {
+      content: '?';
+      color: var(--green-light);
+      font-weight: 700;
+      font-size: .8rem;
+      flex-shrink: 0;
+      margin-top: .05rem;
     }
 
-    .footer-logos img{
-      max-height: 62px;
-      width:auto;
-      max-width: 240px;
-      object-fit:contain;
-      display:block;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
-      transition: transform .12s ease, filter .12s ease;
+    /* Layer list */
+    .layer-list {
+      list-style: none;
+      padding: 0; margin: 0;
+    }
+    .layer-list li {
+      font-size: .86rem;
+      color: var(--text-mid);
+      padding: .5rem 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      line-height: 1.5;
+    }
+    .layer-list li:last-child { border-bottom: none; }
+    .layer-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green-light);
+      flex-shrink: 0;
     }
 
-    .footer-logos a:hover img{
-      transform: translateY(-1px);
-      filter: drop-shadow(0 8px 16px rgba(0,0,0,.10));
+    /* ── FOOTER ── */
+    footer {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 2rem;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .footer-info {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .footer-info-title {
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: .35rem;
+    }
+    .footer-info-sub {
+      font-size: .82rem;
+      color: var(--text-soft);
+    }
+    .partners-title {
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: .6rem;
+    }
+    .partners-sub {
+      text-align: center;
+      font-size: .82rem;
+      color: var(--text-soft);
+      margin-bottom: 1.5rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .footer-logos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .footer-logos a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 6px;
+      text-decoration: none;
+    }
+    .footer-logos img {
+      max-height: 52px;
+      width: auto;
+      max-width: 200px;
+      object-fit: contain;
+      filter: grayscale(20%);
+      transition: filter .15s, transform .15s;
+    }
+    .footer-logos a:hover img {
+      filter: grayscale(0%);
+      transform: translateY(-2px);
+    }
+    .footer-divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0 1.5rem; }
+    .footer-copy {
+      text-align: center;
+      font-size: .78rem;
+      color: var(--text-soft);
     }
 
-    .to-top{
+    /* ── SCROLL TO TOP ── */
+    .to-top {
       position: fixed;
-      right: 16px;
-      bottom: 16px;
+      right: 1.25rem; bottom: 1.25rem;
       z-index: 1080;
-      display:none;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--green-mid);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: var(--shadow-md);
+      transition: background .15s;
     }
+    .to-top.show { display: flex; }
+    .to-top:hover { background: var(--green-deep); }
 
-    .to-top.show{ display:inline-flex; }
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp .55s ease both; }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .22s; }
+    .delay-3 { animation-delay: .34s; }
   </style>
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#inicio" style="min-width:0;">
-        <span class="brand-logos" aria-label="Logos institucionales">
-          <img src="../../corrected.gif" alt="Logo del Eje de Bosques" loading="eager">
-          <img src="../../CODEMA%20%282%29.png" alt="Logo de la Comisión Departamental de Medio Ambiente de Sololá" loading="eager">
-        </span>
-        <span class="d-none d-md-inline text-truncate">Plataforma digital del Eje de Bosques · Sololá</span>
-        <span class="badge text-bg-success d-none d-lg-inline ms-2"><i class="bi bi-tree-fill me-1"></i>Reforestaciones</span>
-      </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menú">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navMain">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="../../index.html"><i class="bi bi-house-door me-1"></i>Inicio</a>
-          </li>
-
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle active" href="#" id="ddModulos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Módulos
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="ddModulos">
-              <li><h6 class="dropdown-header">Reforestaciones (activo)</h6></li>
-              <li><a class="dropdown-item" href="./index.html"><i class="bi bi-tree me-2"></i>Inicio del módulo</a></li>
-              <li><a class="dropdown-item" href="./geoportal.html"><i class="bi bi-map me-2"></i>Geoportal</a></li>
-              <li><a class="dropdown-item" href="./dashboard.html"><i class="bi bi-bar-chart me-2"></i>Cuadro de mando</a></li>
-              <li><a class="dropdown-item" href="./informes.html"><i class="bi bi-file-earmark-text me-2"></i>Informes</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><h6 class="dropdown-header">Próximamente</h6></li>
-              <li><span class="dropdown-item-text"><i class="bi bi-fire me-2"></i>Incendios forestales</span></li>
-              <li><span class="dropdown-item-text"><i class="bi bi-diagram-3 me-2"></i>Ecología del paisaje forestal</span></li>
-            </ul>
-          </li>
-
-          <li class="nav-item"><a class="nav-link" href="#productos">Productos</a></li>
-          <li class="nav-item"><a class="nav-link" href="#metodologia">Metodología</a></li>
-          <li class="nav-item"><a class="nav-link" href="#analisis">Análisis territorial</a></li>
-          <li class="nav-item"><a class="nav-link" href="#geoestadistica">Geoestadística</a></li>
-        </ul>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-left">
+        <div class="brand-logos">
+          <img src="../../BOSQUE.png" alt="Logo Eje de Bosques">
+          <img src="../../CODEMA%20%282%29.png" alt="Logo CODEMA Sololá">
+        </div>
+        <span class="brand-title">Plataforma digital del Eje de Bosques · Sololá</span>
+        <span class="module-badge"><i class="bi bi-tree-fill"></i>Reforestaciones</span>
       </div>
+      <a class="btn-back" href="../../index.html">
+        <i class="bi bi-arrow-left"></i>Volver a inicio
+      </a>
     </div>
   </nav>
 
-  <main class="container my-4">
-    <section id="inicio" class="hero glass p-4 p-lg-5">
-      <div class="row g-4 align-items-start position-relative" style="z-index:1">
-        <div class="col-lg-7">
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge text-bg-success"><i class="bi bi-tree-fill me-1"></i>Módulo activo</span>
-            <span class="badge text-bg-secondary pill">
-              <span class="led" aria-hidden="true"></span>
-              <span>En operación</span>
-            </span>
+  <!-- HERO -->
+  <div class="hero-wrap">
+    <div class="hero-inner">
+      <!-- Left -->
+      <div class="fade-up">
+        <div class="hero-badges">
+          <span class="badge badge-green"><i class="bi bi-tree-fill"></i>Módulo activo</span>
+          <span class="badge badge-status"><span class="led"></span>En operación</span>
+        </div>
+        <h1 class="hero-title">
+          Módulo de<br>
+          <em>Reforestaciones</em>
+        </h1>
+        <p class="hero-body">
+          El Eje de Bosques levanta, valida y transforma cada reporte de campo en información territorial precisa. Aquí encontrarás los datos que el equipo genera jornada a jornada: desde la boleta hasta el mapa, todo procesado con criterios técnicos para que tu institución pueda planificar, coordinar y dar seguimiento a los esfuerzos de restauración forestal en Sololá.
+        </p>
+
+        <div class="callout-hero fade-up delay-1">
+          <div class="callout-hero-title"><i class="bi bi-compass"></i> Lo que el Eje de Bosques construye para ti</div>
+          <ul>
+            <li>Registros estandarizados de cada jornada de reforestación en el departamento.</li>
+            <li>Capas SIG actualizadas con puntos georreferenciados y atributos verificados.</li>
+            <li>Análisis territorial por cuenca y municipio para orientar decisiones.</li>
+            <li>Productos de seguimiento y coordinación interinstitucional listos para usar.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="fade-up delay-2">
+        <div class="hero-panel">
+          <div class="panel-label">Fuentes y trazabilidad</div>
+          <div class="panel-heading">De la boleta a productos SIG</div>
+          <div class="panel-sub">Cada dato que ves aquí fue generado por el Eje de Bosques</div>
+          <hr class="divider">
+
+          <div class="panel-block">
+            <div class="panel-block-label">Fuente principal</div>
+            <div class="panel-block-value">Boleta homologada de reporte de reforestaciones</div>
+            <div class="panel-block-note">El Eje captura información en campo y la consolida para análisis territorial y visualización.</div>
+            <a class="btn-boleta" href="https://ee.kobotoolbox.org/x/JuJxSZxP" target="_blank" rel="noopener">
+              <i class="bi bi-box-arrow-up-right"></i>Abrir boleta
+            </a>
           </div>
 
-          <h1 class="display-6 fw-bold mb-2" style="text-align:left;">Módulo de Reforestaciones</h1>
+          <div class="panel-block">
+            <div class="panel-block-label">Salida SIG generada por el Eje</div>
+            <div class="panel-block-value">Puntos geográficos y capas de contexto</div>
+            <div class="panel-block-note">Validación de coordenadas y cruces con cuencas, cobertura y criterios técnicos.</div>
+          </div>
 
-          <p class="lead muted mb-3" style="max-width: 68ch;">
-            Este módulo organiza los reportes de jornadas de reforestación y los transforma en información territorial útil para planificar
-            intervenciones: localización, priorización y seguimiento. El enfoque integra criterios técnicos y coordinación interinstitucional,
-            con productos SIG consultables y replicables.
+          <div class="gif-frame">
+            <img src="../../corrected.gif" alt="Identidad visual del Eje de Bosques" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <section>
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-grid-3x3-gap"></i> Productos</div>
+        <h2 class="section-title">Herramientas que el Eje pone a tu disposición</h2>
+        <p class="section-sub">Explora, reporta y coordina — todo construido con datos propios del Eje de Bosques.</p>
+      </div>
+
+      <div class="products-grid">
+        <div class="prod-card fade-up delay-1">
+          <div class="prod-card-accent"></div>
+          <div class="prod-card-body">
+            <div class="prod-icon"><i class="bi bi-map-fill"></i></div>
+            <div class="prod-title">Geoportal</div>
+            <p class="prod-desc">Visor SIG donde puedes ubicar cada intervención registrada por el Eje, consultar atributos de campo y cruzar capas territoriales estratégicas.</p>
+            <a class="btn-prod" href="./geoportal.html"><i class="bi bi-box-arrow-in-right"></i>Abrir Geoportal</a>
+          </div>
+        </div>
+
+        <div class="prod-card fade-up delay-2">
+          <div class="prod-card-accent"></div>
+          <div class="prod-card-body">
+            <div class="prod-icon"><i class="bi bi-bar-chart-fill"></i></div>
+            <div class="prod-title">Cuadro de mando</div>
+            <p class="prod-desc">Lectura estadística por periodo de los datos que el Eje recopila. Útil para seguimiento institucional, reportes y coordinación entre actores.</p>
+            <a class="btn-prod" href="./dashboard.html"><i class="bi bi-box-arrow-in-right"></i>Abrir Dashboard</a>
+          </div>
+        </div>
+
+        <div class="prod-card fade-up delay-3">
+          <div class="prod-card-accent"></div>
+          <div class="prod-card-body">
+            <div class="prod-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <div class="prod-title">Informes</div>
+            <p class="prod-desc">Reportes y productos documentales generados por el Eje para compartir resultados, facilitar acuerdos y apoyar la coordinación interinstitucional.</p>
+            <a class="btn-prod" href="./informes.html"><i class="bi bi-box-arrow-in-right"></i>Ver Informes</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METODOLOGÍA -->
+  <section style="background: var(--white); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-journal-text"></i> Metodología</div>
+        <h2 class="section-title">Cómo el Eje convierte reportes en información SIG confiable</h2>
+        <p class="section-sub">Cada dato que llega del campo pasa por un proceso riguroso antes de estar disponible para ti.</p>
+      </div>
+
+      <div class="two-col two-col-7-5 fade-up delay-1">
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-funnel"></i> Preparación de datos</div>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-title">Estandarización</div>
+              <div class="step-desc">El equipo del Eje revisa campos clave, verifica consistencia de registros y controla valores atípicos para garantizar calidad desde la fuente.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-title">Validación geográfica</div>
+              <div class="step-desc">Se controlan coordenadas y se realiza verificación espacial para asegurar que cada punto esté correctamente ubicado dentro del área de trabajo del departamento.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-title">Publicación SIG</div>
+              <div class="step-desc">El Eje actualiza capas y productos para que estén disponibles en esta plataforma, listos para consulta y coordinación interinstitucional.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-layers"></i> Capas de contexto que el Eje integra</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65; margin-bottom:1rem;">Para que los puntos de reforestación tengan significado real, el Eje los cruza con estas capas territoriales:</p>
+          <ul class="layer-list">
+            <li><span class="layer-dot"></span>Cuencas y microcuencas / zonas de recarga hídrica</li>
+            <li><span class="layer-dot"></span>Cobertura forestal y cambios recientes</li>
+            <li><span class="layer-dot"></span>Áreas protegidas y zonas de amortiguamiento</li>
+            <li><span class="layer-dot"></span>Pendiente y erosión potencial</li>
+            <li><span class="layer-dot"></span>Límites municipales y articulación local (UGAM)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANÁLISIS TERRITORIAL -->
+  <section>
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-diagram-2"></i> Análisis territorial</div>
+        <h2 class="section-title">De ubicaciones registradas a decisiones de intervención</h2>
+        <p class="section-sub">El Eje no solo registra — analiza el territorio para que cada jornada de reforestación tenga el mayor impacto posible.</p>
+      </div>
+
+      <div class="two-col two-col-7-5 fade-up delay-1">
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-map"></i> Cómo el Eje lee el territorio</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65; margin-bottom:1.25rem;">
+            El análisis territorial identifica zonas donde la reforestación aporta mayor beneficio ambiental —agua, suelo, conectividad— y donde la coordinación institucional puede sostener resultados. El Eje trabaja con criterios técnicos y salidas verificables para que tú puedas tomar decisiones con respaldo.
           </p>
 
-          <div class="callout muted">
-            <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-compass me-1"></i>Propósito del módulo</div>
-            <ul class="mb-0" style="padding-left: 1.1rem;">
-              <li>Concentrar reportes en una base estándar para trazabilidad.</li>
-              <li>Convertir registros en capas SIG para consulta territorial.</li>
-              <li>Apoyar planificación de jornadas con criterios comparables por cuenca y municipio.</li>
-              <li>Facilitar seguimiento y reportes para coordinación entre instituciones.</li>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-title">Lectura del territorio</div>
+              <div class="step-desc">Relación de intervenciones con cuencas, pendientes, cobertura y áreas estratégicas del departamento de Sololá.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-title">Criterios de priorización</div>
+              <div class="step-desc">Recarga hídrica, riesgo de erosión, conectividad forestal y capacidad de coordinación local con las UGAM municipales.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-title">Salida para tu decisión</div>
+              <div class="step-desc">Mapas y listados de zonas sugeridas para planificar jornadas, refuerzos y seguimiento de compromisos interinstitucionales.</div>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:1.25rem;">
+            <div class="callout-title"><i class="bi bi-check2-circle"></i>Buenas prácticas que el Eje aplica</div>
+            <ul>
+              <li>Priorizar protección de fuentes de agua y suelos frágiles.</li>
+              <li>Evitar duplicidad mediante cruces con planes municipales y UGAM.</li>
+              <li>Complementar con verificación en campo para validar condiciones del sitio.</li>
             </ul>
           </div>
-
-          <div class="mt-4 d-flex flex-wrap gap-2">
-            <a class="btn btn-success" href="#productos"><i class="bi bi-grid-3x3-gap-fill me-1"></i>Ver productos del módulo</a>
-          </div>
         </div>
 
-        <div class="col-lg-5">
-          <div class="glass rounded-4 p-3 p-lg-4">
-            <div class="d-flex align-items-start justify-content-between gap-3">
-              <div>
-                <h2 class="h5 mb-1 section-title" style="text-align:left;">Fuentes y trazabilidad</h2>
-                <div class="text-body-secondary small">De la boleta a productos SIG</div>
-              </div>
-              <span class="badge text-bg-light border">
-                <i class="bi bi-clipboard-check me-1"></i>Homologada
-              </span>
-            </div>
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-question-circle"></i> Preguntas que puedes responder con los datos del Eje</div>
+          <ul class="question-list">
+            <li>¿En qué municipios y cuencas se concentra el esfuerzo de reforestación?</li>
+            <li>¿Dónde conviene reforzar por erosión o pérdida de cobertura forestal?</li>
+            <li>¿Qué zonas requieren continuidad por recarga hídrica crítica?</li>
+            <li>¿Qué áreas muestran brechas de cobertura territorial?</li>
+          </ul>
 
-            <hr class="my-3">
-
-            <div class="row g-2">
-              <div class="col-12">
-                <div class="p-3 bg-body rounded-4 border">
-                  <div class="small text-body-secondary">Fuente principal</div>
-                  <div class="fw-semibold" style="text-align:left;">Boleta homologada de reporte de reforestaciones</div>
-                  <div class="small text-body-secondary mt-1">
-                    La información se captura en campo y se consolida para análisis territorial y visualización.
-                  </div>
-                  <a class="btn btn-sm btn-outline-primary mt-2" href="https://ee.kobotoolbox.org/x/JuJxSZxP" target="_blank" rel="noopener">
-                    <i class="bi bi-box-arrow-up-right me-1"></i>Abrir boleta
-                  </a>
-                </div>
-              </div>
-
-              <div class="col-12">
-                <div class="p-3 bg-body rounded-4 border">
-                  <div class="small text-body-secondary">Salida SIG</div>
-                  <div class="fw-semibold" style="text-align:left;">Puntos geográficos y capas de contexto</div>
-                  <div class="small text-body-secondary mt-1">
-                    Validación de coordenadas y cruces con cuencas, cobertura y criterios técnicos.
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-4">
-              <div class="hero-media">
-                <img src="../../corrected.gif" alt="Identidad visual del Eje de Bosques" loading="lazy">
-              </div>
-            </div>
-
-            <div class="mt-3 d-flex flex-wrap gap-2">
-              <a class="btn btn-sm btn-outline-secondary" href="#metodologia"><i class="bi bi-journal-text me-1"></i>Metodología</a>
-              <a class="btn btn-sm btn-outline-secondary" href="#analisis"><i class="bi bi-diagram-2 me-1"></i>Análisis</a>
-            </div>
-          </div>
+          <div class="panel-section-title" style="margin-top:1.25rem;"><i class="bi bi-clipboard2-data"></i> Resultado que obtienes</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65;">
+            Productos SIG elaborados por el Eje que apoyan la planificación, facilitan acuerdos interinstitucionales y documentan el seguimiento de acciones en el departamento de Sololá.
+          </p>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="productos" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Productos del módulo</h2>
-          <div class="text-body-secondary">Herramientas para explorar, reportar y coordinar</div>
-        </div>
+  <!-- GEOESTADÍSTICA -->
+  <section style="background: var(--white); border-top: 1px solid var(--border);">
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-graph-up"></i> Geoestadística</div>
+        <h2 class="section-title">Patrones espaciales para priorizar y evaluar intervenciones</h2>
+        <p class="section-sub">El Eje aplica técnicas de lectura espacial para que la información tenga profundidad analítica, no solo puntos en un mapa.</p>
       </div>
 
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <a class="btn btn-success btn-sm" href="./geoportal.html"><i class="bi bi-map me-1"></i>Geoportal</a>
-        <a class="btn btn-outline-primary btn-sm" href="./dashboard.html"><i class="bi bi-bar-chart-line me-1"></i>Cuadro de mando</a>
-        <a class="btn btn-outline-primary btn-sm" href="./informes.html"><i class="bi bi-file-earmark-text me-1"></i>Informes</a>
-      </div>
+      <div class="two-col two-col-7-5 fade-up delay-1">
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-bullseye"></i> Para qué aplica el Eje la geoestadística</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65; margin-bottom:1.25rem;">
+            La geoestadística permite al Eje identificar concentración, clústeres y brechas territoriales, y facilita comparaciones entre municipios y cuencas con criterios consistentes. Se usa como apoyo para priorización, logística y evaluación temporal de los esfuerzos de reforestación.
+          </p>
+          <div class="callout">
+            <div class="callout-title"><i class="bi bi-bullseye"></i>Aplicaciones que el Eje desarrolla</div>
+            <ul>
+              <li>Mapas de densidad para ubicar zonas de alta y baja cobertura de intervención.</li>
+              <li>Identificación de hotspots para focalizar acciones y optimizar la logística del equipo.</li>
+              <li>Análisis de proximidad a ríos, nacimientos, áreas protegidas e infraestructura.</li>
+              <li>Comparación por periodos para evaluar continuidad y distribución espacial del esfuerzo.</li>
+            </ul>
+          </div>
+          <p style="font-size:.8rem; color:var(--text-soft); margin-top:1rem;">
+            Estos análisis se integran con criterios técnicos del Eje y validación local en campo.
+          </p>
+        </div>
 
-      <div class="row g-3">
-        <div class="col-md-6 col-lg-4">
-          <div class="card glass navcard h-100">
-            <div class="card-body">
-              <div class="d-flex gap-3">
-                <div class="icon-badge"><i class="bi bi-map"></i></div>
-                <div>
-                  <h3 class="h5 mb-1" style="text-align:left;">Geoportal</h3>
-                  <p class="mb-2 muted">Visor SIG para ubicar intervenciones, consultar atributos y cruzar capas territoriales.</p>
-                  <a class="link-primary" href="./geoportal.html">Abrir Geoportal <i class="bi bi-arrow-right ms-1"></i></a>
-                </div>
-              </div>
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-tools"></i> Técnicas de lectura espacial</div>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-title">Densidad</div>
+              <div class="step-desc">Lectura de intensidad territorial para balancear intervenciones y detectar zonas desatendidas.</div>
             </div>
           </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-          <div class="card glass navcard h-100">
-            <div class="card-body">
-              <div class="d-flex gap-3">
-                <div class="icon-badge"><i class="bi bi-bar-chart"></i></div>
-                <div>
-                  <h3 class="h5 mb-1" style="text-align:left;">Cuadro de mando</h3>
-                  <p class="mb-2 muted">Lectura por periodo y apoyo a reportes, útil para seguimiento y coordinación.</p>
-                  <a class="link-primary" href="./dashboard.html">Abrir Cuadro de mando <i class="bi bi-arrow-right ms-1"></i></a>
-                </div>
-              </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-title">Hotspots y clústeres</div>
+              <div class="step-desc">Detección de agrupamientos significativos para priorización y optimización del esfuerzo institucional.</div>
             </div>
           </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-          <div class="card glass navcard h-100">
-            <div class="card-body">
-              <div class="d-flex gap-3">
-                <div class="icon-badge"><i class="bi bi-file-earmark-text"></i></div>
-                <div>
-                  <h3 class="h5 mb-1" style="text-align:left;">Informes</h3>
-                  <p class="mb-2 muted">Salida de reportes y productos del módulo para compartir resultados y apoyar la coordinación.</p>
-                  <a class="link-primary" href="./informes.html">Abrir Informes <i class="bi bi-arrow-right ms-1"></i></a>
-                </div>
-              </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-title">Buffers y proximidad</div>
+              <div class="step-desc">Criterios de cercanía a elementos estratégicos del territorio: fuentes de agua, áreas protegidas y centros poblados.</div>
             </div>
           </div>
-        </div>
-
-      </div>
-    </section>
-
-    <section id="metodologia" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Metodología de trabajo</h2>
-          <div class="text-body-secondary">Cómo se convierten reportes en información SIG confiable</div>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-lg-6">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-funnel me-1"></i>Preparación de datos</h3>
-
-              <div class="step mb-3">
-                <div class="num">1</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Estandarización</div>
-                  <div class="muted">Revisión de campos clave, consistencia de registros y control de valores atípicos.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">2</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Validación geográfica</div>
-                  <div class="muted">Control de coordenadas y verificación espacial para evitar ubicaciones fuera del área de trabajo.</div>
-                </div>
-              </div>
-
-              <div class="step">
-                <div class="num">3</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Publicación SIG</div>
-                  <div class="muted">Actualización de capas y productos para consulta y coordinación interinstitucional.</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-6">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-layers me-1"></i>Capas de contexto</h3>
-              <p class="muted mb-3">
-                Para planificar intervenciones, los puntos se interpretan junto con capas territoriales que ayudan a definir prioridad y enfoque.
-              </p>
-
-              <ul class="muted mb-0" style="padding-left: 1.1rem;">
-                <li>Cuencas y microcuencas / zonas de recarga hídrica</li>
-                <li>Cobertura forestal y cambios recientes</li>
-                <li>Áreas protegidas y zonas de amortiguamiento</li>
-                <li>Pendiente y erosión potencial</li>
-                <li>Límites municipales y articulación local (UGAM)</li>
-              </ul>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div>
+              <div class="step-title">Cruces por unidad territorial</div>
+              <div class="step-desc">Resultados comparables por cuenca y municipio para facilitar la coordinación y el reporte interinstitucional.</div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="analisis" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Análisis territorial para la planificación</h2>
-          <div class="text-body-secondary">De ubicaciones registradas a decisiones de intervención</div>
-        </div>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-info">
+        <div class="footer-info-title">Plataforma digital del Eje de Bosques · Módulo de Reforestaciones</div>
+        <div class="footer-info-sub">Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
       </div>
 
-      <div class="row g-3">
-        <div class="col-lg-7">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <p class="muted mb-3">
-                El análisis territorial identifica zonas donde la reforestación aporta mayor beneficio ambiental (agua, suelo, conectividad)
-                y donde la coordinación institucional puede sostener resultados. Se trabaja con criterios técnicos y salidas verificables.
-              </p>
+      <div class="partners-title">Instituciones y organizaciones</div>
+      <div class="partners-sub">El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
 
-              <div class="step mb-3">
-                <div class="num">1</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Lectura del territorio</div>
-                  <div class="muted">Relación de intervenciones con cuencas, pendientes, cobertura y áreas estratégicas.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">2</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Criterios de priorización</div>
-                  <div class="muted">Recarga hídrica, riesgo de erosión, conectividad y coordinación local.</div>
-                </div>
-              </div>
-
-              <div class="step">
-                <div class="num">3</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Salida para decisión</div>
-                  <div class="muted">Mapas y listados de zonas sugeridas para planificar jornadas, refuerzos y seguimiento.</div>
-                </div>
-              </div>
-
-              <hr class="my-3">
-
-              <div class="callout muted">
-                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-check2-circle me-1"></i>Buenas prácticas</div>
-                <ul class="mb-0" style="padding-left: 1.1rem;">
-                  <li>Priorizar protección de fuentes de agua y suelos frágiles.</li>
-                  <li>Evitar duplicidad mediante cruces con planes municipales y UGAM.</li>
-                  <li>Complementar con verificación en campo para validar condiciones del sitio.</li>
-                </ul>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-5">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-2" style="text-align:left;"><i class="bi bi-question-circle me-1"></i>Preguntas clave</h3>
-              <ul class="muted mb-3" style="padding-left: 1.1rem;">
-                <li>¿En qué municipios y cuencas se concentra el esfuerzo?</li>
-                <li>¿Dónde conviene reforzar por erosión o pérdida de cobertura?</li>
-                <li>¿Qué zonas requieren continuidad por recarga hídrica?</li>
-                <li>¿Qué áreas muestran brechas de cobertura territorial?</li>
-              </ul>
-
-              <h3 class="h6 section-title mb-2" style="text-align:left;"><i class="bi bi-clipboard2-data me-1"></i>Resultado esperado</h3>
-              <p class="muted mb-0">
-                Productos SIG para apoyar la planificación, facilitar acuerdos y documentar seguimiento de acciones interinstitucionales.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="geoestadistica" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Geoestadística aplicada</h2>
-          <div class="text-body-secondary">Patrones espaciales para priorizar y evaluar intervenciones</div>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-lg-7">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <p class="muted mb-3">
-                La geoestadística permite identificar concentración, clústeres y brechas territoriales, y facilita comparaciones entre
-                municipios y cuencas con criterios consistentes. Se usa como apoyo para priorización, logística y evaluación temporal.
-              </p>
-
-              <div class="callout muted">
-                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-bullseye me-1"></i>Aplicaciones típicas</div>
-                <ul class="mb-0" style="padding-left: 1.1rem;">
-                  <li>Mapas de densidad para ubicar zonas de alta y baja cobertura de intervención.</li>
-                  <li>Identificación de hotspots para focalizar acciones y optimizar logística.</li>
-                  <li>Análisis de proximidad a ríos, nacimientos, áreas protegidas e infraestructura.</li>
-                  <li>Comparación por periodos para evaluar continuidad y distribución espacial del esfuerzo.</li>
-                </ul>
-              </div>
-
-              <div class="mt-3 small text-body-secondary">
-                Estos análisis se integran con criterios técnicos y validación local.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-5">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-tools me-1"></i>Técnicas de lectura espacial</h3>
-
-              <div class="step mb-3">
-                <div class="num">1</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Densidad</div>
-                  <div class="muted">Lectura de intensidad territorial para balancear intervenciones.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">2</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Hotspots y clústeres</div>
-                  <div class="muted">Detección de agrupamientos significativos para priorización.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">3</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Buffers y proximidad</div>
-                  <div class="muted">Criterios de cercanía a elementos estratégicos del territorio.</div>
-                </div>
-              </div>
-
-              <div class="step">
-                <div class="num">4</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Cruces por unidad territorial</div>
-                  <div class="muted">Resultados comparables por cuenca y municipio.</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <footer class="mt-5 pb-4">
-      <div class="text-center mb-3" style="font-size:.98rem; text-align:center;">
-        <strong>Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
-      </div>
-
-      <div class="text-center mb-2" style="text-align:center;">
-        <div class="fw-semibold">Instituciones y organizaciones</div>
-        <div class="text-body-secondary" style="text-align:center;">
-          El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
-        </div>
-      </div>
-
-      <div class="footer-logos" aria-label="Logos institucionales">
-        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Ambiente y Recursos Naturales">
+      <div class="footer-logos">
+        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" aria-label="MARN">
           <img src="../../marn.png" alt="MARN">
         </a>
-        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Agricultura, Ganadería y Alimentación">
+        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" aria-label="MAGA">
           <img src="../../maga.png" alt="MAGA">
         </a>
-        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" aria-label="Instituto Nacional de Bosques">
+        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" aria-label="INAB">
           <img src="../../inab.png" alt="INAB">
         </a>
-        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="Consejo Nacional de Áreas Protegidas">
+        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="CONAP">
           <img src="../../conap.png" alt="CONAP">
         </a>
-        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" aria-label="Autoridad para el Manejo Sustentable de la Cuenca del Lago de Atitlán y su Entorno">
+        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" aria-label="AMSCLAE">
           <img src="../../amsclae.png" alt="AMSCLAE">
         </a>
-        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="Coordinadora Nacional para la Reducción de Desastres">
+        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="CONRED">
           <img src="../../conred.png" alt="CONRED">
         </a>
-        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" aria-label="Centro de Estudios Atitlán - Universidad del Valle de Guatemala">
+        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" aria-label="CEA - UVG">
           <img src="../../cea.png" alt="CEA - UVG">
         </a>
-        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" aria-label="Asociación Amigos del Lago de Atitlán">
+        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" aria-label="Amigos del Lago de Atitlán">
           <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
         </a>
         <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener" aria-label="Vivamos Mejor Guatemala">
-          <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
+          <img src="../../vivamos.png" alt="Vivamos Mejor">
         </a>
-        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" aria-label="Alliance for International Reforestation">
+        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" aria-label="AIR Guatemala">
           <img src="../../aires.png" alt="AIR">
         </a>
       </div>
-    </footer>
-  </main>
 
-  <button class="btn btn-primary to-top" id="toTop" type="button" aria-label="Volver arriba">
+      <hr class="footer-divider">
+      <div class="footer-copy">© 2026 · Laboratorio SIG · Eje de Bosques · CODEMA Sololá</div>
+    </div>
+  </footer>
+
+  <button class="to-top" id="toTop" aria-label="Volver arriba">
     <i class="bi bi-arrow-up"></i>
   </button>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     (function(){
       const btn = document.getElementById('toTop');
       const toggleTop = () => {
         if (!btn) return;
-        if (window.scrollY > 700) btn.classList.add('show');
+        if (window.scrollY > 500) btn.classList.add('show');
         else btn.classList.remove('show');
       };
       window.addEventListener('scroll', toggleTop, { passive: true });
       toggleTop();
-      if (btn){
-        btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-      }
+      if (btn) btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // Intersection Observer for fade-up
+      const fadeEls = document.querySelectorAll('.fade-up');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.style.opacity = '1'; io.unobserve(e.target); }
+        });
+      }, { threshold: 0.08 });
+      fadeEls.forEach(el => { el.style.opacity = '0'; io.observe(el); });
     })();
   </script>
 </body>
