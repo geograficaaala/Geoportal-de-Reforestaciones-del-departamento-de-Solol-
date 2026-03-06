@@ -1791,38 +1791,40 @@
       return {
         responsive:true,
         maintainAspectRatio:false,
-        animation:false,
+        animation:{duration:500, easing:'easeOutQuart'},
         plugins:{
           legend:{
             labels:{
-              color:'#355865',
+              color:'#2e4f43',
               boxWidth:10, boxHeight:10,
               usePointStyle:true,
               pointStyle:'circle',
+              padding:14,
               font:{family:'Inter', size:11, weight:'600'}
             }
           },
           tooltip:{
-            backgroundColor:'rgba(14,44,56,.94)',
-            titleColor:'#e7fbff',
-            bodyColor:'#e7fbff',
-            borderColor:'rgba(103,200,214,.35)',
+            backgroundColor:'rgba(13,31,26,.96)',
+            titleColor:'#e6f5f0',
+            bodyColor:'rgba(230,245,240,.85)',
+            borderColor:'rgba(44,165,141,.30)',
             borderWidth:1,
-            padding:10,
-            titleFont:{family:'Inter', weight:'700'},
-            bodyFont:{family:'Inter'}
+            padding:11,
+            cornerRadius:8,
+            titleFont:{family:'Inter', weight:'700', size:12},
+            bodyFont:{family:'Inter', size:11}
           }
         },
         scales:{
           x:{
-            ticks:{color:'#557582', font:{family:'Inter', size:11}},
-            grid:{color:'rgba(18,79,97,.08)'},
-            border:{color:'rgba(18,79,97,.10)'}
+            ticks:{color:'#6b8278', font:{family:'Inter', size:11}},
+            grid:{color:'rgba(13,79,60,.05)'},
+            border:{color:'rgba(13,79,60,.08)'}
           },
           y:{
-            ticks:{color:'#557582', font:{family:'Inter', size:11}},
-            grid:{color:'rgba(18,79,97,.08)'},
-            border:{color:'rgba(18,79,97,.10)'}
+            ticks:{color:'#6b8278', font:{family:'Inter', size:11}},
+            grid:{color:'rgba(13,79,60,.05)'},
+            border:{color:'rgba(13,79,60,.08)'}
           }
         }
       };
@@ -1891,34 +1893,47 @@
             {
               label:'Registros',
               data:registros,
-              borderColor:'#2fad7a',
-              backgroundColor:'rgba(47,173,122,.16)',
+              borderColor:'#1a7a58',
+              backgroundColor:'rgba(26,122,88,.13)',
               fill:true,
-              tension:.28,
-              pointRadius:3,
-              pointHoverRadius:4,
+              tension:.35,
+              borderWidth:2.5,
+              pointRadius:4,
+              pointHoverRadius:6,
+              pointBackgroundColor:'#1a7a58',
+              pointBorderColor:'#fff',
+              pointBorderWidth:2,
               yAxisID:'y'
             },
             {
               label:'Plantas',
               data:plantas,
-              borderColor:'#3fa2e0',
-              backgroundColor:'rgba(63,162,224,.12)',
+              borderColor:'#2ca58d',
+              backgroundColor:'rgba(44,165,141,.08)',
               fill:false,
-              tension:.28,
-              pointRadius:3,
-              pointHoverRadius:4,
+              tension:.35,
+              borderWidth:2.5,
+              borderDash:[6,3],
+              pointRadius:4,
+              pointHoverRadius:6,
+              pointBackgroundColor:'#2ca58d',
+              pointBorderColor:'#fff',
+              pointBorderWidth:2,
               yAxisID:'y1'
             },
             {
               label:'Participantes',
               data:participantes,
-              borderColor:'#66cad8',
-              backgroundColor:'rgba(102,202,216,.12)',
+              borderColor:'#3fa2e0',
+              backgroundColor:'rgba(63,162,224,.08)',
               fill:false,
-              tension:.28,
-              pointRadius:3,
-              pointHoverRadius:4,
+              tension:.35,
+              borderWidth:2,
+              pointRadius:4,
+              pointHoverRadius:6,
+              pointBackgroundColor:'#3fa2e0',
+              pointBorderColor:'#fff',
+              pointBorderWidth:2,
               yAxisID:'y'
             }
           ]
@@ -1968,6 +1983,10 @@
       opts.scales.x.beginAtZero = true;
       opts.plugins.legend.display = false;
 
+      opts.plugins.tooltip.callbacks = {
+        label(ctx){ return ` ${fmtNum(ctx.raw)} plantas`; }
+      };
+      opts.scales.x.ticks.callback = v => fmtNum(v);
       createOrUpdateChart('municipios','chartMunicipios', {
         type:'bar',
         data:{
@@ -1975,8 +1994,11 @@
           datasets:[{
             label:'Plantas',
             data:vals,
-            borderRadius:8,
-            backgroundColor:['#2fad7a','#66cad8','#7eddbf','#3fa2e0','#9ce6ee','#54c59e','#8bd5f0','#b9f1ea']
+            borderRadius:{topRight:7, bottomRight:7},
+            borderSkipped:false,
+            backgroundColor:['#0d4f3c','#1a7a58','#2ca58d','#3fa2e0','#54c59e','#66cad8','#7eddbf','#9ce6ee'],
+            borderColor:['#0a3d2f','#156248','#229070','#3290ce','#3fa887','#4eb5c5','#63c8aa','#7ed6da'],
+            borderWidth:1
           }]
         },
         options: opts
@@ -1999,20 +2021,25 @@
       const opts = chartDefaultOptions();
       opts.plugins.legend.position = 'bottom';
       opts.scales = {};
+      opts.plugins.tooltip.callbacks = {
+        label(ctx){ const total=vals.reduce((a,b)=>a+b,0); return ` ${ctx.label}: ${fmtNum(ctx.raw)} (${(ctx.raw/total*100).toFixed(1)}%)`; }
+      };
       createOrUpdateChart('tenencia','chartTenencia', {
         type:'doughnut',
         data:{
           labels,
           datasets:[{
             data:vals,
-            borderColor:'rgba(255,255,255,.9)',
-            borderWidth:2,
-            backgroundColor:['#2fad7a','#66cad8','#7eddbf','#3fa2e0','#9ce6ee','#badcf6']
+            borderColor:'#fff',
+            borderWidth:3,
+            hoverOffset:8,
+            backgroundColor:['#1a7a58','#2ca58d','#3fa2e0','#7eddbf','#66cad8','#0d4f3c','#54c59e','#9ce6ee']
           }]
         },
         options:{
           ...opts,
-          cutout:'58%'
+          cutout:'62%',
+          plugins:{...opts.plugins, legend:{...opts.plugins.legend, position:'bottom'}}
         }
       });
     }
@@ -2033,6 +2060,9 @@
       const opts = chartDefaultOptions();
       opts.plugins.legend.display = false;
       opts.scales.y.beginAtZero = true;
+      opts.plugins.tooltip.callbacks = {
+        label(ctx){ return ` ${fmtNum(ctx.raw)} participantes`; }
+      };
       createOrUpdateChart('instituciones','chartInstituciones', {
         type:'bar',
         data:{
@@ -2040,16 +2070,17 @@
           datasets:[{
             label:'Participantes',
             data:vals,
-            borderRadius:8,
-            backgroundColor:'rgba(102,202,216,.75)',
-            borderColor:'#4fa6b6',
+            borderRadius:{topLeft:7, topRight:7},
+            borderSkipped:false,
+            backgroundColor:'rgba(26,122,88,.75)',
+            borderColor:'#0d4f3c',
             borderWidth:1.2
           }]
         },
         options:{
           ...opts,
           scales:{
-            x:{...opts.scales.x, ticks:{...opts.scales.x.ticks, maxRotation:0, minRotation:0}},
+            x:{...opts.scales.x, ticks:{...opts.scales.x.ticks, maxRotation:30, font:{family:'Inter',size:10}}},
             y:{...opts.scales.y, beginAtZero:true}
           }
         }
@@ -2097,18 +2128,21 @@
               data: pts.map(p => ({x:p.x, y:p.y, meta:`${p.municipio}${p.sitio ? ' · ' + p.sitio : ''}` })),
               pointRadius:5,
               pointHoverRadius:6,
-              pointBackgroundColor:'rgba(47,173,122,.80)',
-              pointBorderColor:'#1e7f5a',
-              pointBorderWidth:1.2
+              pointRadius:6,
+              pointHoverRadius:8,
+              pointBackgroundColor:'rgba(26,122,88,.78)',
+              pointBorderColor:'#fff',
+              pointBorderWidth:1.5
             },
             ...(reg ? [{
-              label:`Tendencia (${fmtDec(reg.m,3)}x ${reg.b>=0?'+':'-'} ${fmtDec(Math.abs(reg.b),2)} · R²=${fmtDec(reg.r2,3)})`,
+              label:`Tendencia R²=${fmtDec(reg.r2,3)}`,
               data: reg.line,
               showLine:true,
               pointRadius:0,
-              borderWidth:2,
+              borderWidth:2.5,
+              borderDash:[5,3],
               borderColor:'#3fa2e0',
-              backgroundColor:'rgba(63,162,224,.15)',
+              backgroundColor:'transparent',
               tension:0
             }] : [])
           ]
@@ -2158,18 +2192,21 @@
               data: pts.map(p => ({x:p.x, y:p.y, meta:`${p.municipio}${p.sitio ? ' · ' + p.sitio : ''}` })),
               pointRadius:5,
               pointHoverRadius:6,
-              pointBackgroundColor:'rgba(102,202,216,.85)',
-              pointBorderColor:'#3f97a5',
-              pointBorderWidth:1.2
+              pointRadius:6,
+              pointHoverRadius:8,
+              pointBackgroundColor:'rgba(44,165,141,.78)',
+              pointBorderColor:'#fff',
+              pointBorderWidth:1.5
             },
             ...(reg ? [{
-              label:`Tendencia (${fmtDec(reg.m,3)}x ${reg.b>=0?'+':'-'} ${fmtDec(Math.abs(reg.b),2)} · R²=${fmtDec(reg.r2,3)})`,
+              label:`Tendencia R²=${fmtDec(reg.r2,3)}`,
               data: reg.line,
               showLine:true,
               pointRadius:0,
-              borderWidth:2,
-              borderColor:'#2fad7a',
-              backgroundColor:'rgba(47,173,122,.15)',
+              borderWidth:2.5,
+              borderDash:[5,3],
+              borderColor:'#2ca58d',
+              backgroundColor:'transparent',
               tension:0
             }] : [])
           ]
@@ -2194,6 +2231,16 @@
       opts.scales.x.ticks.maxRotation = 0;
       opts.scales.x.ticks.autoSkip = true;
 
+      const histColors = h.counts.map((_,i)=>{
+        const t = i / Math.max(h.counts.length-1,1);
+        const r = Math.round(13 + t*(44-13));
+        const g = Math.round(79 + t*(165-79));
+        const b = Math.round(60 + t*(141-60));
+        return `rgba(${r},${g},${b},.78)`;
+      });
+      opts.plugins.tooltip.callbacks = {
+        label(ctx){ return ` ${fmtNum(ctx.raw)} registros`; }
+      };
       createOrUpdateChart('histPlantas','chartHistPlantas', {
         type:'bar',
         data:{
@@ -2201,9 +2248,10 @@
           datasets:[{
             label:'Frecuencia',
             data:h.counts,
-            borderRadius:6,
-            backgroundColor:'rgba(47,173,122,.68)',
-            borderColor:'#278b62',
+            borderRadius:{topLeft:6,topRight:6},
+            borderSkipped:false,
+            backgroundColor:histColors,
+            borderColor:'rgba(13,79,60,.20)',
             borderWidth:1
           }]
         },
@@ -2646,28 +2694,6 @@
       state, loadData, applyFilters, resetFilters
     };
   </script>
-
-  <!-- FOOTER CON LOGOS -->
-  <footer style="max-width:1600px;margin:0 auto;padding:0 14px 24px;">
-    <div style="background:#fff;border:1px solid rgba(13,79,60,.10);border-radius:1.5rem;padding:2rem 1.5rem;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06);">
-      <div style="font-family:'DM Serif Display',serif;font-size:1rem;color:#0d4f3c;margin-bottom:.25rem;">Plataforma digital del Eje de Bosques · Dashboard de Reforestación</div>
-      <div style="font-size:.75rem;color:#6b8278;margin-bottom:1.5rem;">Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
-      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b8278;margin-bottom:.5rem;">Instituciones y organizaciones aliadas</div>
-      <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center;align-items:center;">
-        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../marn.png" alt="MARN" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../maga.png" alt="MAGA" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../inab.png" alt="INAB" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../conap.png" alt="CONAP" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../amsclae.png" alt="AMSCLAE" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../conred.png" alt="CONRED" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../cea.png" alt="CEA - UVG" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../aala_logo.png" alt="Amigos del Lago" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../vivamos.png" alt="Vivamos Mejor" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../aires.png" alt="AIR" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
-      </div>
-      <div style="font-size:.7rem;color:#6b8278;margin-top:1.25rem;">© 2026 · Laboratorio SIG · Eje de Bosques · CODEMA Sololá</div>
-    </div>
-  </footer>
 
 </body>
 </html>
