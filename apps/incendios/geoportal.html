@@ -3,493 +3,301 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Centro de detección de anomalías térmicas (FIRMS NRT)</title>
+  <title>Centro de detección de anomalías térmicas (FIRMS NRT) · Sololá</title>
 
-  <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-
-  <!-- MarkerCluster -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
-
-  <!-- Turf -->
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-
-  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-  <!-- SheetJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-
-  <!-- KaTeX -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      /* Verde / amarillo */
-      --bg0:#f6fff7;
-      --bg1:#fffdf1;
-      --card:rgba(255,255,255,.92);
-      --card2:rgba(255,255,255,.98);
+      --fire1: #dc2626;
+      --fire2: #ea580c;
+      --fire3: #fbbf24;
+      --fire4: #f97316;
+      --forest:#065f46;
+      --lime:  #a3e635;
+      --green: #16a34a;
+      --amber: #fbbf24;
+      --gold:  #f59e0b;
 
-      --ink:#1a2a1e;
-      --muted:#4b6354;
-      --stroke:rgba(18,42,28,.12);
+      --bg0:   #fff7ed;
+      --bg1:   #fef9f0;
+      --card:  rgba(255,255,255,.92);
+      --card2: rgba(255,255,255,.98);
+      --ink:   #1c1008;
+      --muted: #6b4c2a;
+      --stroke:rgba(180,80,20,.12);
 
-      --green:#1f9d55;
-      --lime:#a3e635;
-      --amber:#fbbf24;
-      --gold:#f59e0b;
+      --hi:    #dc2626;
+      --nom:   #f59e0b;
+      --low:   #94a3b8;
 
-      --hi:#16a34a;
-      --nom:#f59e0b;
-      --low:#94a3b8;
-
-      --shadow: 0 14px 40px rgba(20,60,30,.12);
-      --shadow-sm: 0 10px 22px rgba(20,60,30,.10);
+      --shadow:    0 16px 44px rgba(180,60,10,.13);
+      --shadow-sm: 0 8px 22px rgba(180,60,10,.09);
       --radius: 18px;
     }
 
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial;
+      font-family:'DM Sans',system-ui,sans-serif;
       color:var(--ink);
       background:
-        radial-gradient(900px 560px at 0% 0%, rgba(31,157,85,.16), transparent 62%),
-        radial-gradient(900px 560px at 100% 0%, rgba(245,158,11,.14), transparent 62%),
+        radial-gradient(900px 560px at 0% 0%,   rgba(220,38,38,.10), transparent 60%),
+        radial-gradient(700px 400px at 100% 0%,  rgba(251,191,36,.12), transparent 60%),
+        radial-gradient(600px 400px at 50% 100%, rgba(249,115,22,.08), transparent 55%),
         linear-gradient(180deg, var(--bg0), var(--bg1));
       min-height:100vh;
     }
 
+    /* ── HEADER ── */
     header{
-      position: sticky;
-      top: 0;
-      z-index: 60;
-      backdrop-filter: blur(10px);
-      background: rgba(255,255,255,.78);
-      border-bottom: 1px solid var(--stroke);
+      position:sticky;top:0;z-index:60;
+      backdrop-filter:blur(10px);
+      background:linear-gradient(100deg,
+        rgba(185,28,28,.94) 0%,
+        rgba(154,52,18,.90) 45%,
+        rgba(217,119,6,.88) 100%);
+      border-bottom:1px solid rgba(255,255,255,.15);
+      box-shadow:0 8px 32px rgba(120,20,10,.22);
     }
     .header-wrap{
-      padding: 10px 14px;
-      display:flex;
-      gap:12px;
-      align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
+      padding:10px 14px;
+      display:flex;gap:12px;align-items:center;
+      justify-content:space-between;flex-wrap:wrap;
     }
-    .title{ display:flex; flex-direction:column; gap:2px; min-width: 260px; flex:1; align-items:center; text-align:center; }
-    .title h1{ margin:0; font-size: 16px; letter-spacing:.2px; font-weight: 950;
-      background: linear-gradient(135deg, var(--green), var(--gold));
-      -webkit-background-clip: text; background-clip:text; color: transparent;
-      text-align:center;
-    }
-    .title .sub{ font-size:12px; color:var(--muted); }
-
-    .brand-logos{
-      display:flex;
-      flex:0 0 auto;
-      gap:10px;
-      align-items:center;
-    }
+    .brand-logos{display:flex;flex:0 0 auto;gap:10px;align-items:center}
+    .brand-logos a{display:flex;align-items:center}
     .brand-logos img{
-      height: 34px;
-      width: auto;
-      object-fit: contain;
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: 10px;
-      padding: 3px 6px;
-      box-shadow: var(--shadow-sm);
+      height:52px;width:auto;object-fit:contain;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:12px;padding:6px;
+      box-shadow:0 6px 16px rgba(120,20,10,.18);
+      transition:transform .15s;
     }
+    .brand-logos img:hover{transform:scale(1.04)}
 
-    .chips{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; flex:0 0 auto; }
-    .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px;
-      background: var(--card2);
-      border:1px solid var(--stroke);
-      border-radius: 999px;
-      box-shadow: var(--shadow-sm);
-      font-size:12px;
-      color: var(--muted);
-      white-space:nowrap;
+    .title{display:flex;flex-direction:column;gap:2px;min-width:260px;flex:1;align-items:center;text-align:center}
+    .title h1{
+      margin:0;font-size:15px;letter-spacing:.2px;font-weight:900;
+      font-family:'Playfair Display',serif;
+      background:linear-gradient(135deg,#fde68a,#fed7aa);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
     }
-    .dot{
-      width:10px; height:10px; border-radius:50%;
-      background: #2fd08f;
-      box-shadow: 0 0 0 4px rgba(47,208,143,.18);
-    }
+    .title .sub{font-size:11.5px;color:rgba(255,255,255,.75)}
 
-    /* Navegación superior (botones) — inspirado en tu módulo de referencia */
-    .navbtns{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:center; flex:0 0 auto; }
+    /* ── BUTTONS (unified style) ── */
+    .navbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;flex:0 0 auto}
     .navbtn{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:8px 10px;
-      background: var(--card2);
-      border:1px solid var(--stroke);
-      border-radius: 14px;
-      box-shadow: var(--shadow-sm);
-      font-size:12px;
-      font-weight:850;
-      color:#153220;
-      text-decoration:none;
+      display:inline-flex;align-items:center;gap:7px;
+      padding:8px 12px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.22);
+      border-radius:12px;
+      font-family:'DM Sans',sans-serif;
+      font-size:12.5px;font-weight:600;
+      color:#fff;text-decoration:none;
       white-space:nowrap;
-      transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+      transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
     }
     .navbtn:hover{
-      transform: translateY(-1px);
-      border-color: rgba(31,157,85,.35);
-      box-shadow: 0 12px 26px rgba(20,60,30,.12);
-      background: rgba(255,255,255,.98);
+      transform:translateY(-2px);
+      background:rgba(255,255,255,.26);
+      box-shadow:0 10px 22px rgba(120,20,10,.18);
     }
     .navbtn-primary{
-      background: linear-gradient(135deg, rgba(31,157,85,.16), rgba(245,158,11,.16));
-      border-color: rgba(31,157,85,.28);
+      background:linear-gradient(135deg,rgba(253,230,138,.30),rgba(254,215,170,.26));
+      border-color:rgba(253,230,138,.40);
+      font-weight:700;
     }
-    .navbtn[aria-current="page"]{
-      outline: 2px solid rgba(31,157,85,.22);
-      outline-offset: 2px;
+    .navbtn[aria-current="page"]{outline:2px solid rgba(253,230,138,.28);outline-offset:2px}
+
+    .chips{display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex:0 0 auto}
+    .chip{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:8px 10px;
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      font-family:'DM Sans',sans-serif;
+      font-size:12px;color:rgba(255,255,255,.88);
+      white-space:nowrap;
     }
+    .dot{width:10px;height:10px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 4px rgba(47,208,143,.18)}
 
-
-
+    /* ── LAYOUT ── */
     main{
-      display:grid;
-      grid-template-columns: 400px 1fr;
-      gap:14px;
-      padding: 14px 14px 18px;
-      align-items:stretch;
+      display:grid;grid-template-columns:400px 1fr;
+      gap:14px;padding:14px 14px 18px;align-items:stretch;
     }
-
     .panel{
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-      min-width:0;
+      background:var(--card);border:1px solid var(--stroke);
+      border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;min-width:0;
     }
     .panel h2{
-      margin:0;
-      padding:12px 14px;
-      font-size:13px;
-      color:#183522;
-      border-bottom: 1px solid rgba(0,0,0,.06);
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.82));
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:10px;
+      margin:0;padding:12px 14px;font-size:13px;color:#3a1008;
+      border-bottom:1px solid rgba(0,0,0,.06);
+      background:linear-gradient(180deg,rgba(255,255,255,.94),rgba(255,255,255,.82));
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
     }
-    .panel h2 small{ font-weight:600; color: var(--muted); }
-    .panel .content{ padding: 12px 14px 14px; }
+    .panel h2 small{font-weight:600;color:var(--muted)}
+    .panel .content{padding:12px 14px 14px}
 
-    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-    label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
-    select, input[type="text"], input[type="number"]{
-      width:100%;
-      padding:10px 10px;
-      border-radius: 12px;
-      border: 1px solid rgba(0,0,0,.14);
-      background: #fff;
-      outline:none;
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    select,input[type="text"],input[type="number"]{
+      width:100%;padding:10px;border-radius:12px;
+      border:1px solid rgba(0,0,0,.14);background:#fff;outline:none;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;
     }
-    input[type="checkbox"]{ transform: translateY(1px); }
+    input[type="checkbox"]{transform:translateY(1px)}
 
-    .checks{
-      display:grid; gap:8px;
-      padding:10px;
-      background:#fff;
-      border:1px solid rgba(0,0,0,.14);
-      border-radius:12px;
-    }
-    .checks .row{ display:flex; gap:8px; align-items:flex-start; font-size:12.5px; color:#183522; }
-    .checks small{ display:block; color:var(--muted); margin-top:2px; }
+    .checks{display:grid;gap:8px;padding:10px;background:#fff;border:1px solid rgba(0,0,0,.14);border-radius:12px}
+    .checks .row{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:#3a1008}
+    .checks small{display:block;color:var(--muted);margin-top:2px}
 
-    .btns{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-    button{
-      border:none; cursor:pointer;
-      padding:10px 12px;
-      border-radius: 12px;
-      font-weight:850; font-size:12.5px;
-    }
-    .btn-primary{ background: linear-gradient(135deg, var(--green), var(--amber)); color:#fff; }
-    .btn-ghost{ background:#fff; border:1px solid rgba(0,0,0,.14); color:#153220; }
+    .btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    button{border:none;cursor:pointer;padding:10px 12px;border-radius:12px;font-weight:700;font-size:12.5px;font-family:'DM Sans',sans-serif;transition:transform .12s,box-shadow .12s}
+    button:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.12)}
+    .btn-primary{background:linear-gradient(135deg,var(--fire2),var(--fire3));color:#fff}
+    .btn-ghost{background:#fff;border:1px solid rgba(0,0,0,.14);color:#3a1008}
 
     .status{
-      margin-top:10px;
-      padding:10px;
-      border-radius:12px;
-      background:#fff;
-      border:1px dashed rgba(31,157,85,.35);
-      color: var(--muted);
-      font-size:12px;
-      line-height:1.35;
-      white-space:pre-wrap;
+      margin-top:10px;padding:10px;border-radius:12px;background:#fff;
+      border:1px dashed rgba(220,38,38,.25);color:var(--muted);font-size:12px;
+      line-height:1.35;white-space:pre-wrap;
     }
 
-    .notes{
-      margin-top:10px;
-      padding:10px;
-      border-radius:12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.86));
-      border:1px solid rgba(0,0,0,.10);
-      color: var(--muted);
-      font-size:12px;
-      line-height:1.45;
-    }
-    .notes ul{ margin:8px 0 0; padding-left: 18px; }
-    .notes li{ margin:6px 0; }
+    .notes{margin-top:10px;padding:10px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,255,255,.86));border:1px solid rgba(0,0,0,.10);color:var(--muted);font-size:12px;line-height:1.45}
+    .notes ul{margin:8px 0 0;padding-left:18px}
+    .notes li{margin:6px 0}
 
-    .right{
-      display:grid;
-      grid-template-rows: auto auto auto auto auto;
-      gap:14px;
-      min-width:0;
-    }
+    /* ── RIGHT COLUMN ── */
+    .right{display:grid;grid-template-rows:auto auto auto auto auto;gap:14px;min-width:0}
+    .mapWrap{padding:12px 14px 14px;position:relative}
+    #map{height:460px;min-height:460px;border-radius:var(--radius);background:#fef3e2;outline:1px solid rgba(0,0,0,.06)}
+    .mapError{display:none;position:absolute;inset:16px 18px auto 18px;background:rgba(255,255,255,.96);border:1px solid rgba(0,0,0,.14);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow-sm);color:#7b3b1f;font-size:12px;line-height:1.35}
+    .mapError code{background:#f3f3f3;padding:2px 6px;border-radius:8px}
+    .legend{display:flex;gap:10px;flex-wrap:wrap;padding:0 14px 14px;font-size:12px;color:var(--muted)}
+    .lg{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#fff;border:1px solid rgba(0,0,0,.10);border-radius:999px}
+    .sw{width:10px;height:10px;border-radius:50%}
 
-    .mapWrap{ padding:12px 14px 14px; position:relative; }
-    #map{
-      height: 460px;
-      min-height: 460px;
-      border-radius: var(--radius);
-      background: #f2fbf4;
-      outline: 1px solid rgba(0,0,0,.06);
-    }
-    .mapError{
-      display:none;
-      position:absolute;
-      inset: 16px 18px auto 18px;
-      background: rgba(255,255,255,.96);
-      border: 1px solid rgba(0,0,0,.14);
-      border-radius: 14px;
-      padding: 10px 12px;
-      box-shadow: var(--shadow-sm);
-      color: #7b3b1f;
-      font-size: 12px;
-      line-height: 1.35;
-    }
-    .mapError code{ background:#f3f3f3; padding:2px 6px; border-radius:8px; }
-
-    .legend{
-      display:flex; gap:10px; flex-wrap:wrap;
-      padding: 0 14px 14px;
-      font-size:12px; color:var(--muted);
-    }
-    .lg{
-      display:flex; align-items:center; gap:6px;
-      padding:6px 8px;
-      background:#fff;
-      border:1px solid rgba(0,0,0,.10);
-      border-radius:999px;
-    }
-    .sw{ width:10px; height:10px; border-radius:50%; }
-
-    .kpis{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:10px;
-      padding: 12px 14px 14px;
-    }
+    /* ── KPI cards — mejoradas ── */
+    .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px 14px}
     .kpi{
-      border:1px solid rgba(0,0,0,.10);
-      border-radius: 14px;
-      padding:10px;
-      background:#fff;
-      min-width:0;
+      border:1px solid rgba(0,0,0,.09);border-radius:16px;padding:12px 10px;
+      background:linear-gradient(160deg,#fff 0%,#fff9f4 100%);
+      min-width:0;position:relative;overflow:hidden;
     }
-    .kpi .k{ font-size:11px; color:var(--muted); }
-    .kpi .v{ font-size:16px; font-weight:950; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .kpi::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:3px;
+      background:linear-gradient(90deg,var(--fire2),var(--fire3));
+      border-radius:16px 16px 0 0;
+    }
+    .kpi .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+    .kpi .v{font-size:18px;font-weight:900;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fire2)}
+    .kpi .eq{font-size:10px;color:var(--muted);margin-top:3px;font-style:italic}
 
-    .chartsGrid{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap:12px;
-    }
+    /* ── Charts ── */
+    .chartsGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .chartCard{
-      background:#fff;
-      border:1px solid rgba(0,0,0,.10);
-      border-radius:14px;
-      padding:10px;
-      min-width:0;
+      background:#fff;border:1px solid rgba(0,0,0,.09);
+      border-radius:14px;padding:12px;min-width:0;
+      position:relative;
     }
-    .chartTitle{
-      font-size:12px;
-      font-weight:850;
-      color:#183522;
-      margin-bottom:6px;
-      display:flex;
-      justify-content:space-between;
-      gap:10px;
-      flex-wrap:wrap;
+    .chartCard::after{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,rgba(220,38,38,.60),rgba(251,191,36,.60));
+      border-radius:14px 14px 0 0;
     }
-    .chartEq{
-      margin-top:6px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.35;
-      overflow:auto;
-    }
+    .chartTitle{font-size:12px;font-weight:700;color:#3a1008;margin-bottom:6px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .chartEq{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.35;overflow:auto}
 
-    .geoKpiGrid{
-      display:grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap:10px;
-      padding: 12px 14px 14px;
-    }
+    /* ── GeoKPIs ── */
+    .geoKpiGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px 14px}
     .geoKpi{
-      background:#fff;
-      border:1px solid rgba(0,0,0,.10);
-      border-radius:14px;
-      padding:10px;
-      min-width:0;
+      background:linear-gradient(160deg,#fff,#fff8f0);
+      border:1px solid rgba(0,0,0,.09);border-radius:14px;padding:10px;min-width:0;
     }
-    .geoKpi .k{ font-size:11px; color:var(--muted); }
-    .geoKpi .v{ font-size:15px; font-weight:950; margin-top:4px; }
-    .geoKpi .s{ font-size:11px; color:var(--muted); margin-top:4px; line-height:1.25; }
+    .geoKpi .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+    .geoKpi .v{font-size:15px;font-weight:900;margin-top:4px;color:var(--fire2)}
+    .geoKpi .s{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.25}
 
     .geoInterpret{
-      text-align: justify;
-      text-justify: inter-word;
-
-      margin: 0 14px 14px;
-      padding: 12px 12px;
-      border-radius: 14px;
-      background: rgba(255,255,255,.88);
-      border: 1px dashed rgba(0,0,0,.12);
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
+      text-align:justify;text-justify:inter-word;
+      margin:0 14px 14px;padding:12px;border-radius:14px;
+      background:rgba(255,255,255,.88);border:1px dashed rgba(0,0,0,.12);
+      color:var(--muted);font-size:12px;line-height:1.5;
     }
 
-    .eq{
-      padding: 10px 14px 14px;
-      border-top: 1px dashed rgba(0,0,0,.10);
-      background: rgba(255,255,255,.7);
-    }
-    .eq .eq-title{ font-size:12px; color:var(--muted); font-weight:850; margin-bottom:8px; }
-    .eq .eq-box{
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: 14px;
-      padding: 10px 12px;
-      background:#fff;
-      overflow:auto;
-    }
+    .eq{padding:10px 14px 14px;border-top:1px dashed rgba(0,0,0,.10);background:rgba(255,255,255,.7)}
+    .eq .eq-title{font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px}
+    .eq .eq-box{border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:10px 12px;background:#fff;overflow:auto}
 
-    .filtersRow{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .filtersRow input{ flex:1; min-width: 220px; }
+    .filtersRow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .filtersRow input{flex:1;min-width:220px}
+    .tableWrap{overflow:auto;max-height:420px;border-radius:14px;border:1px solid rgba(0,0,0,.10);background:#fff;margin-top:10px}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    thead th{position:sticky;top:0;z-index:1;background:#fff5ee;border-bottom:1px solid rgba(0,0,0,.10);text-align:left;padding:10px 8px;color:#3a1008;white-space:nowrap}
+    tbody td{border-bottom:1px solid rgba(0,0,0,.06);padding:8px;color:#3a1008;vertical-align:top;white-space:nowrap}
+    tbody tr:hover{background:#fff8f0;cursor:pointer}
+    .hint{font-size:12px;color:var(--muted);line-height:1.35;margin-top:8px}
+    .hotspot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(0,0,0,.18)}
 
-    .tableWrap{
-      overflow:auto;
-      max-height: 420px;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.10);
-      background:#fff;
-      margin-top:10px;
-    }
-    table{ width:100%; border-collapse: collapse; font-size:12px; }
-    thead th{
-      position:sticky; top:0; z-index:1;
-      background:#f0fff2;
-      border-bottom:1px solid rgba(0,0,0,.10);
-      text-align:left;
-      padding:10px 8px;
-      color:#183522;
-      white-space:nowrap;
-    }
-    tbody td{
-      border-bottom:1px solid rgba(0,0,0,.06);
-      padding:8px 8px;
-      color:#153220;
-      vertical-align:top;
-      white-space:nowrap;
-    }
-    tbody tr:hover{ background:#f6fff7; cursor:pointer; }
+    /* ── FOOTER ── */
+    footer{padding:20px 16px 28px}
+    .footer-box{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
+    .footer-text{font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:10px}
+    .footer-text strong{color:var(--ink)}
+    .footer-sub{font-size:12px;color:var(--ink);text-align:center;font-weight:700;margin-bottom:12px}
+    .footer-logos{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+    .footer-logos a{display:flex;align-items:center}
+    .footer-logos img{max-height:50px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.07));transition:transform .15s,filter .15s}
+    .footer-logos img:hover{transform:scale(1.06);filter:drop-shadow(0 4px 10px rgba(220,38,38,.18))}
+    .footer-src{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
 
-    .hint{ font-size:12px; color:var(--muted); line-height:1.35; margin-top:8px; }
-
-    .hotspot{
-      width:14px; height:14px;
-      border-radius:50%;
-      border:2px solid rgba(255,255,255,.92);
-      box-shadow: 0 6px 18px rgba(0,0,0,.18);
-    }
-
-    footer{
-      padding: 10px 14px 24px;
-      color: var(--muted);
-      font-size: 12px;
-    }
-    .footer-box{
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 12px 14px;
-    }
-    .footer-logos{
-      display:flex;
-      flex-wrap:wrap;
-      gap:14px;
-      align-items:center;
-      justify-content:center;
-      margin-top:10px;
-    }
-    .footer-logos img{
-      max-height: 52px;
-      width: auto;
-      object-fit: contain;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
-      background: transparent;
-      border-radius: 0;
-      padding: 0;
-    }
-
-    @media (max-width: 1120px){
-      main{ grid-template-columns: 1fr; }
-      .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .geoKpiGrid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-      .chartsGrid{ grid-template-columns: 1fr; }
-      #map{ height: 420px; min-height: 420px; }
+    @media(max-width:1120px){
+      main{grid-template-columns:1fr}
+      .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .geoKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .chartsGrid{grid-template-columns:1fr}
+      #map{height:420px;min-height:420px}
     }
   </style>
 </head>
-
 <body>
   <header>
     <div class="header-wrap">
       <div class="brand-logos" aria-label="Logos institucionales">
-        <img src="../../BOSQUE.png" alt="Eje de Bosques">
-        <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
+        <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques"></a>
+        <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Sololá"></a>
       </div>
       <div class="title">
         <h1>Centro de detección de anomalías térmicas (FIRMS NRT)</h1>
         <div class="sub">Recorte por capas SIG (Municipios / Microcuencas / Áreas protegidas) · UTC</div>
       </div>
 
-
       <div class="navbtns" aria-label="Navegación del geoportal">
-        <a class="navbtn" href="../../index.html">Inicio</a>
-        <a class="navbtn" href="./index.html">Módulo</a>
-        <a class="navbtn navbtn-primary" href="./geoportal.html" aria-current="page">Geoportal</a>
-        <a class="navbtn" href="./dashboard.html">Dashboard</a>
-        <a class="navbtn" href="./informes.html">Informes</a>
+        <a class="navbtn" href="../../index.html">🏠 Volver a Inicio</a>
+        <a class="navbtn" href="./index.html">◀ Regresar a Módulo</a>
+        <a class="navbtn navbtn-primary" href="./geoportal.html" aria-current="page">🗺 Geoportal</a>
+        <a class="navbtn" href="./dashboard.html">📊 Dashboard</a>
+        <a class="navbtn" href="./informes.html">📋 Resumen</a>
       </div>
 
       <div class="chips">
-        <div class="chip" title="Estado del proxy">
-          <span class="dot" id="dot"></span>
-          <span id="pillText">Proxy: sin verificar</span>
-        </div>
-        <div class="chip" title="Auto actualización">
-          <input id="auto" type="checkbox" checked />
-          <label for="auto" style="margin:0; cursor:pointer;">Auto (10 min)</label>
-        </div>
+        <div class="chip" title="Estado del proxy"><span class="dot" id="dot"></span><span id="pillText">Proxy: sin verificar</span></div>
+        <div class="chip" title="Auto actualización"><input id="auto" type="checkbox" checked /><label for="auto" style="margin:0;cursor:pointer;color:inherit">Auto (10 min)</label></div>
         <div class="chip" id="lastRun">Última actualización: —</div>
       </div>
     </div>
@@ -521,39 +329,21 @@
             </select>
           </div>
         </div>
-
         <div style="height:10px"></div>
-
         <div>
           <label id="polyLabel">Elemento de recorte</label>
           <select id="polySelect"></select>
           <div class="hint" id="polyHint"></div>
         </div>
-
         <div style="height:10px"></div>
-
         <label>Sensores (Near Real-Time)</label>
         <div class="checks">
-          <div class="row">
-            <input type="checkbox" id="s_snpp" checked>
-            <div><b>VIIRS Suomi-NPP</b><small>VIIRS_SNPP_NRT</small></div>
-          </div>
-          <div class="row">
-            <input type="checkbox" id="s_n20" checked>
-            <div><b>VIIRS NOAA-20 (JPSS-1)</b><small>VIIRS_NOAA20_NRT</small></div>
-          </div>
-          <div class="row">
-            <input type="checkbox" id="s_n21" checked>
-            <div><b>VIIRS NOAA-21 (JPSS-2)</b><small>VIIRS_NOAA21_NRT</small></div>
-          </div>
-          <div class="row">
-            <input type="checkbox" id="s_modis" checked>
-            <div><b>MODIS (Terra/Aqua) NRT</b><small>MODIS_NRT</small></div>
-          </div>
+          <div class="row"><input type="checkbox" id="s_snpp" checked><div><b>VIIRS Suomi-NPP</b><small>VIIRS_SNPP_NRT</small></div></div>
+          <div class="row"><input type="checkbox" id="s_n20" checked><div><b>VIIRS NOAA-20 (JPSS-1)</b><small>VIIRS_NOAA20_NRT</small></div></div>
+          <div class="row"><input type="checkbox" id="s_n21" checked><div><b>VIIRS NOAA-21 (JPSS-2)</b><small>VIIRS_NOAA21_NRT</small></div></div>
+          <div class="row"><input type="checkbox" id="s_modis" checked><div><b>MODIS (Terra/Aqua) NRT</b><small>MODIS_NRT</small></div></div>
         </div>
-
         <div style="height:10px"></div>
-
         <div class="grid2">
           <div>
             <label for="conf">Confianza del algoritmo</label>
@@ -574,14 +364,11 @@
             </select>
           </div>
         </div>
-
         <div class="btns">
-          <button class="btn-primary" id="btnRun">Actualizar</button>
-          <button class="btn-ghost" id="btnFit">Ajustar mapa</button>
+          <button class="btn-primary" id="btnRun">🔄 Actualizar</button>
+          <button class="btn-ghost" id="btnFit">⛶ Ajustar mapa</button>
         </div>
-
         <div class="status" id="status">Listo.</div>
-
         <div class="notes">
           <b>Notas técnicas</b>
           <ul>
@@ -603,7 +390,7 @@
           <div class="mapError" id="mapError"></div>
         </div>
         <div class="legend">
-          <div class="lg"><span class="sw" style="background:var(--hi)"></span> Alta</div>
+          <div class="lg"><span class="sw" style="background:var(--hi)"></span> Alta confianza</div>
           <div class="lg"><span class="sw" style="background:var(--nom)"></span> Nominal/Media</div>
           <div class="lg"><span class="sw" style="background:var(--low)"></span> Baja</div>
         </div>
@@ -613,10 +400,26 @@
       <section class="panel">
         <h2>KPIs operativos <small>(recorte actual)</small></h2>
         <div class="kpis">
-          <div class="kpi"><div class="k">Detecciones</div><div class="v" id="k_total">—</div></div>
-          <div class="kpi"><div class="k">Alta confianza</div><div class="v" id="k_high">—</div></div>
-          <div class="kpi"><div class="k">FRP total (MW)</div><div class="v" id="k_frp">—</div></div>
-          <div class="kpi"><div class="k">Última detección (UTC)</div><div class="v" id="k_last">—</div></div>
+          <div class="kpi">
+            <div class="k">🔥 Detecciones</div>
+            <div class="v" id="k_total">—</div>
+            <div class="eq">\(n = \sum_{i} \mathbf{1}[\text{hotspot}]\)</div>
+          </div>
+          <div class="kpi">
+            <div class="k">⚠️ Alta confianza</div>
+            <div class="v" id="k_high">—</div>
+            <div class="eq">\(n_{hi} / n\) conf≥80%</div>
+          </div>
+          <div class="kpi">
+            <div class="k">⚡ FRP total (MW)</div>
+            <div class="v" id="k_frp">—</div>
+            <div class="eq">\(\Sigma\,\text{FRP}_i\) (MW)</div>
+          </div>
+          <div class="kpi">
+            <div class="k">🕐 Última detección (UTC)</div>
+            <div class="v" id="k_last" style="font-size:13px">—</div>
+            <div class="eq">tiempo más reciente</div>
+          </div>
         </div>
       </section>
 
@@ -626,37 +429,31 @@
         <div class="content">
           <div class="chartsGrid">
             <div class="chartCard">
-              <div class="chartTitle">Serie temporal & tendencia (OLS)</div>
+              <div class="chartTitle">📈 Serie temporal &amp; tendencia (OLS)</div>
               <canvas id="chartDaily" height="150"></canvas>
               <div class="chartEq" id="eqDaily"></div>
             </div>
-
             <div class="chartCard">
-              <div class="chartTitle">Detecciones por sensor</div>
+              <div class="chartTitle">📡 Detecciones por sensor</div>
               <canvas id="chartSensors" height="150"></canvas>
             </div>
-
-            
-
             <div class="chartCard">
-              <div class="chartTitle" id="zoneChartTitle">Detecciones por zona</div>
+              <div class="chartTitle" id="zoneChartTitle">🗺 Detecciones por zona</div>
               <canvas id="chartZonesPie" height="150"></canvas>
               <div class="chartEq" id="zoneChartNote"></div>
             </div>
-<div class="chartCard">
-              <div class="chartTitle">Ripley \(L(r)\) + envelope CSR</div>
+            <div class="chartCard">
+              <div class="chartTitle">📐 Ripley \(L(r)\) + envelope CSR</div>
               <canvas id="chartRipley" height="150"></canvas>
               <div class="chartEq" id="eqRipley"></div>
             </div>
-
             <div class="chartCard">
-              <div class="chartTitle">Variograma experimental \(\gamma(h)\) (FRP)</div>
+              <div class="chartTitle">〰 Variograma experimental \(\gamma(h)\) (FRP)</div>
               <canvas id="chartVariogram" height="150"></canvas>
               <div class="chartEq" id="eqVario"></div>
             </div>
-
             <div class="chartCard">
-              <div class="chartTitle">Histograma vecino más cercano</div>
+              <div class="chartTitle">📊 Histograma vecino más cercano</div>
               <canvas id="chartNN" height="150"></canvas>
             </div>
           </div>
@@ -671,25 +468,15 @@
           <div class="geoKpi"><div class="k">Muestra \(n\) / Total</div><div class="v" id="g_n">—</div><div class="s" id="g_n_s">—</div></div>
           <div class="geoKpi"><div class="k">Intensidad \(\lambda\)</div><div class="v" id="g_lambda">—</div><div class="s">\(\lambda=n/A\)</div></div>
           <div class="geoKpi"><div class="k">NNI</div><div class="v" id="g_nni">—</div><div class="s" id="g_nni_s">—</div></div>
-
           <div class="geoKpi"><div class="k">z / p</div><div class="v" id="g_z">—</div><div class="s" id="g_p">p: —</div></div>
           <div class="geoKpi"><div class="k">Pico \(L(r)\)</div><div class="v" id="g_lmax">—</div><div class="s" id="g_lr">—</div></div>
           <div class="geoKpi"><div class="k">CSR (Monte Carlo)</div><div class="v" id="g_mc">—</div><div class="s" id="g_mc_s">—</div></div>
           <div class="geoKpi"><div class="k">SDE / Elipse</div><div class="v" id="g_sd">—</div><div class="s" id="g_sde">—</div></div>
         </div>
-
-        <div class="geoInterpret" id="geoInterpret">
-          — 
-        </div>
-
-        
+        <div class="geoInterpret" id="geoInterpret">—</div>
         <div class="eq">
           <div class="eq-title">Modelo matemático dependiente del filtro</div>
-          <div class="eq-box" id="modelBox">
-            <div style="color:var(--muted); font-size:12px; line-height:1.5;">
-              Ejecuta una consulta para estimar parámetros del modelo.
-            </div>
-          </div>
+          <div class="eq-box" id="modelBox"><div style="color:var(--muted);font-size:12px;line-height:1.5">Ejecuta una consulta para estimar parámetros del modelo.</div></div>
         </div>
       </section>
 
@@ -701,58 +488,50 @@
             <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite…)" />
             <button class="btn-ghost" id="btnClear">Limpiar</button>
           </div>
-
           <div class="btns" style="margin-top:10px">
-            <button class="btn-ghost" id="btnExcel">Excel (tabla)</button>
-            <button class="btn-ghost" id="btnCSV">CSV (tabla)</button>
-            <button class="btn-ghost" id="btnGeoJSON">GeoJSON (puntos)</button>
+            <button class="btn-ghost" id="btnExcel">📊 Excel</button>
+            <button class="btn-ghost" id="btnCSV">📄 CSV</button>
+            <button class="btn-ghost" id="btnGeoJSON">🗺 GeoJSON</button>
           </div>
-
           <div class="tableWrap">
             <table id="tbl">
               <thead>
-                <tr>
-                  <th>UTC</th>
-                  <th>Zona</th>
-                  <th>Sensor</th>
-                  <th>Conf.</th>
-                  <th>Lat</th>
-                  <th>Lon</th>
-                  <th>FRP</th>
-                </tr>
+                <tr><th>UTC</th><th>Zona</th><th>Sensor</th><th>Conf.</th><th>Lat</th><th>Lon</th><th>FRP</th></tr>
               </thead>
               <tbody></tbody>
             </table>
           </div>
-
           <div class="hint" id="tableNote"></div>
         </div>
       </section>
     </section>
   </main>
 
-  
+  <!-- ── FOOTER INSTITUCIONAL ── -->
   <footer>
-    <div style="text-align:center; font-weight:850; margin-bottom:10px; color: var(--muted);">
-      Instituciones participantes
-    </div>
-    <div class="footer-logos" aria-label="Logos institucionales">
-      <img src="../../marn.png" alt="MARN">
-      <img src="../../maga.png" alt="MAGA">
-      <img src="../../inab.png" alt="INAB">
-      <img src="../../conap.png" alt="CONAP">
-      <img src="../../amsclae.png" alt="AMSCLAE">
-      <img src="../../conred.png" alt="CONRED">
-      <img src="../../cea.png" alt="CEA - UVG">
-      <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
-      <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
-      <img src="../../aires.png" alt="AIR">
-    </div>
-    <div style="text-align:center; margin-top:10px; color: var(--muted); font-size:12px;">
-      Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Turf.js · Leaflet · Chart.js · KaTeX
+    <div class="footer-box">
+      <div class="footer-text">
+        Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
+      </div>
+      <div class="footer-sub">Instituciones y organizaciones</div>
+      <div class="footer-text">
+        El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
+      </div>
+      <div class="footer-logos">
+        <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
+        <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
+        <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
+        <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
+        <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
+        <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
+        <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA - UVG"></a>
+        <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán"></a>
+        <a href="https://www.vivamosmejor.org" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor Guatemala"></a>
+        <a href="https://aires.gt" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIRES"></a>
+      </div>
+      <div class="footer-src">Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Turf.js · Leaflet · Chart.js · KaTeX</div>
     </div>
   </footer>
-
 
 <script>
 (() => {
@@ -2117,4 +1896,3 @@
 })();
 </script>
 </body>
-</html>
