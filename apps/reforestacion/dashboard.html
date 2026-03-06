@@ -8,35 +8,41 @@
   <!-- Librerías (estáticas y gratuitas, compatibles con GitHub Pages) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
           integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
 
   <style>
     :root{
-      --bg:#e9f7f6;
-      --bg2:#edf8ff;
-      --panel:rgba(255,255,255,.82);
-      --card:rgba(255,255,255,.90);
-      --line:rgba(18,79,97,.14);
-      --line2:rgba(34,153,141,.18);
-      --ink:#13313d;
-      --muted:#5f7b87;
-      --muted2:#6f8b96;
-      --green:#2fad7a;
+      --green-deep:#0d4f3c;
+      --green-mid:#1a7a58;
+      --green-light:#2ca58d;
+      --green-pale:#e6f5f0;
+      --bg:#f4f9f7;
+      --bg2:#edf6f2;
+      --panel:rgba(255,255,255,.86);
+      --card:rgba(255,255,255,.92);
+      --line:rgba(13,79,60,.10);
+      --line2:rgba(44,165,141,.18);
+      --ink:#0d1f1a;
+      --muted:#6b8278;
+      --muted2:#7a9088;
+      --green:#1a7a58;
       --green2:#7eddbf;
-      --cyan:#66cad8;
+      --cyan:#2ca58d;
       --cyan2:#9ce6ee;
       --blue:#3fa2e0;
       --warn:#d78a34;
       --danger:#d95b5b;
-      --shadow:0 16px 34px rgba(15,62,72,.10);
-      --shadow-sm:0 8px 18px rgba(15,62,72,.08);
-      --radius:18px;
-      --radius-sm:14px;
+      --shadow:0 8px 28px rgba(0,0,0,.09);
+      --shadow-sm:0 2px 10px rgba(0,0,0,.06);
+      --radius:1.5rem;
+      --radius-sm:.75rem;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -45,8 +51,8 @@
       font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
       color:var(--ink);
       background:
-        radial-gradient(900px 500px at -5% -10%, rgba(143,227,193,.45), transparent 70%),
-        radial-gradient(900px 600px at 105% -5%, rgba(103,200,214,.28), transparent 70%),
+        radial-gradient(800px 500px at 0% 0%, rgba(44,165,141,.10), transparent 65%),
+        radial-gradient(600px 400px at 100% 10%, rgba(29,111,164,.07), transparent 65%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
     a{color:inherit}
@@ -54,7 +60,7 @@
     .shell{
       max-width: 1600px;
       margin: 0 auto;
-      padding: 14px;
+      padding: 14px 14px 0;
       display:flex;
       flex-direction:column;
       gap:14px;
@@ -65,59 +71,55 @@
       grid-template-columns: 1fr auto;
       gap:12px;
       align-items:center;
-      padding:12px 14px;
-      border-radius:22px;
-      border:1px solid var(--line);
-      background:linear-gradient(180deg, rgba(255,255,255,.86), rgba(255,255,255,.76));
-      box-shadow:var(--shadow);
+      padding:12px 18px;
       position:sticky;
-      top:10px;
-      z-index:40;
-      backdrop-filter: blur(8px);
+      top:0;
+      z-index:100;
+      background:rgba(13,79,60,.97);
+      backdrop-filter:blur(12px);
+      box-shadow:0 2px 20px rgba(0,0,0,.20);
+      border-bottom:1px solid rgba(255,255,255,.07);
     }
     .brand{
       display:flex;align-items:center;gap:14px;min-width:0;
     }
     .brand-logos{
       display:flex;align-items:center;gap:8px;flex-shrink:0;
-      padding:6px;border-radius:14px;
-      background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.82));
-      border:1px solid rgba(18,79,97,.10);
-      box-shadow:0 6px 14px rgba(15,62,72,.06);
     }
     .brand-logos img{
-      width:52px;height:52px;object-fit:contain;border-radius:10px;
-      background:rgba(255,255,255,.9);
-      border:1px solid rgba(18,79,97,.08);
-      padding:4px;
+      height:38px;width:auto;object-fit:contain;border-radius:.45rem;
+      background:#fff;padding:4px 6px;
+      box-shadow:0 1px 5px rgba(0,0,0,.14);
     }
     .brand-title{
       min-width:0;
       display:flex;flex-direction:column;gap:3px;
     }
     .brand-title h1{
-      margin:0;font-size:18px;font-weight:800;letter-spacing:.2px;
+      margin:0;font-size:17px;font-weight:700;letter-spacing:.2px;
+      font-family:'DM Serif Display',serif;
+      color:#fff;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
     .brand-title .sub{
-      color:var(--muted);
+      color:rgba(255,255,255,.65);
       font-size:12px;
       display:flex;flex-wrap:wrap;gap:8px;
     }
     .pill{
       display:inline-flex;align-items:center;gap:6px;
       border-radius:999px;
-      border:1px solid rgba(18,79,97,.12);
-      background:rgba(255,255,255,.75);
-      padding:4px 8px;
+      border:1px solid rgba(255,255,255,.15);
+      background:rgba(255,255,255,.10);
+      padding:4px 9px;
       font-size:11px;
-      color:var(--muted);
+      color:rgba(255,255,255,.70);
       font-weight:600;
     }
     .dot{
-      width:8px;height:8px;border-radius:50%;
-      background:linear-gradient(180deg,var(--green),var(--cyan));
-      box-shadow:0 0 0 3px rgba(47,173,122,.15);
+      width:7px;height:7px;border-radius:50%;
+      background:#2fd08f;
+      box-shadow:0 0 0 2px rgba(47,208,143,.25);
       flex-shrink:0;
     }
 
@@ -125,25 +127,22 @@
       display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;
     }
     .btn{
-      appearance:none;border:1px solid rgba(18,79,97,.14);
-      background:rgba(255,255,255,.78);color:var(--ink);
-      padding:9px 12px;border-radius:14px;font-size:13px;font-weight:600;
-      cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
-      box-shadow:0 6px 14px rgba(15,62,72,.05);
-      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      appearance:none;border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.10);color:rgba(255,255,255,.85);
+      padding:8px 13px;border-radius:.5rem;font-size:.8rem;font-weight:600;
+      cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+      transition:background .14s, border-color .14s;white-space:nowrap;
     }
-    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 18px rgba(15,62,72,.08);border-color:rgba(47,173,122,.35)}
+    .btn:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.28);color:#fff;}
     .btn.primary{
-      background:linear-gradient(180deg, rgba(47,173,122,.12), rgba(103,200,214,.14));
-      border-color:rgba(47,173,122,.28);
+      background:rgba(44,165,141,.28);
+      border-color:rgba(44,165,141,.50);
+      color:#a0f0d8;
     }
-    .btn.small{padding:7px 10px;border-radius:12px;font-size:12px}
-    .btn.ghost{background:rgba(255,255,255,.58)}
-    .btn.active{
-      background:linear-gradient(180deg, rgba(47,173,122,.16), rgba(103,200,214,.18));
-      border-color:rgba(47,173,122,.35);
-      color:#0f5f46;
-    }
+    .btn.primary:hover{background:rgba(44,165,141,.40);}
+    .btn.small{padding:7px 10px;border-radius:.45rem;font-size:.75rem;}
+    .btn.ghost{background:rgba(255,255,255,.08);}
+    .btn.active{background:rgba(44,165,141,.22);border-color:rgba(44,165,141,.40);color:#a0f0d8;}
 
     .layout{
       display:grid;
@@ -178,14 +177,14 @@
     }
     .section summary{
       list-style:none;
-      padding:12px 12px;
+      padding:10px 12px;
       cursor:pointer;
       font-weight:700;
-      font-size:13px;
+      font-size:.78rem;
       display:flex;align-items:center;justify-content:space-between;gap:8px;
-      color:#123845;
-      background:linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.55));
-      border-bottom:1px solid rgba(18,79,97,.06);
+      color:var(--green-deep);
+      background:linear-gradient(180deg, rgba(255,255,255,.90), rgba(230,245,240,.40));
+      border-bottom:1px solid var(--line);
     }
     .section summary::-webkit-details-marker{display:none}
     .section .content{
@@ -276,9 +275,9 @@
     .kpi:before{
       content:"";
       position:absolute;inset:auto auto 0 0;
-      width:100%;height:4px;
-      background:linear-gradient(90deg,var(--green),var(--cyan),var(--green2));
-      opacity:.8;
+      width:100%;height:3px;
+      background:linear-gradient(90deg,var(--green-deep),var(--green-light));
+      opacity:.9;
     }
     .kpi .label{
       font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.15px;
@@ -286,8 +285,9 @@
     }
     .kpi .value{
       margin-top:6px;
-      font-size:26px;font-weight:800;line-height:1.05;
-      color:#0f3641;
+      font-size:1.7rem;font-weight:800;line-height:1.05;
+      font-family:'DM Serif Display',serif;
+      color:var(--green-deep);
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     }
     .kpi .note{
@@ -310,12 +310,14 @@
     .card-head{
       display:flex;align-items:flex-start;justify-content:space-between;gap:10px;
       padding:12px 14px;
-      border-bottom:1px solid rgba(18,79,97,.08);
-      background:linear-gradient(180deg, rgba(255,255,255,.74), rgba(255,255,255,.58));
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(230,245,240,.35));
     }
     .card-title{
       margin:0;
-      font-size:14px;font-weight:800;letter-spacing:.1px;color:#123845;
+      font-size:.95rem;font-weight:700;letter-spacing:.05px;
+      font-family:'DM Serif Display',serif;
+      color:var(--green-deep);
     }
     .card-sub{
       margin-top:3px;font-size:12px;color:var(--muted);
@@ -377,13 +379,14 @@
     }
     .insight{
       border-radius:14px;
-      border:1px solid rgba(18,79,97,.10);
+      border:1px solid var(--line);
+      border-left:3px solid var(--green-light);
       background:rgba(255,255,255,.70);
       padding:11px 12px;
     }
     .insight h4{
       margin:0 0 6px 0;
-      font-size:12px; font-weight:800; color:#123845;
+      font-size:.68rem; font-weight:800; color:var(--green-mid);
       text-transform:uppercase; letter-spacing:.2px;
     }
     .insight p{
@@ -433,17 +436,20 @@
     }
     thead th{
       position:sticky; top:0; z-index:2;
-      background:linear-gradient(180deg, #f8fcfd, #eff8fb);
-      color:#214854;
-      font-weight:800;
+      background:linear-gradient(180deg, var(--bg2), #e4f0ea);
+      color:var(--green-deep);
+      font-weight:700;
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.04em;
       text-align:left;
-      padding:10px 10px;
-      border-bottom:1px solid rgba(18,79,97,.10);
+      padding:9px 10px;
+      border-bottom:1px solid var(--line);
       white-space:nowrap;
       cursor:pointer;
       user-select:none;
     }
-    thead th:hover{background:linear-gradient(180deg,#f9feff,#eaf7fb)}
+    thead th:hover{background:var(--green-pale);}
     tbody td{
       padding:9px 10px;
       border-bottom:1px solid rgba(18,79,97,.07);
@@ -494,15 +500,15 @@
     .statusbar{
       display:flex; align-items:center; justify-content:space-between; gap:10px;
       flex-wrap:wrap;
-      padding:10px 12px;
-      border-radius:16px;
-      border:1px solid rgba(18,79,97,.11);
-      background:rgba(255,255,255,.70);
+      padding:10px 14px;
+      border-radius:var(--radius-sm);
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.90);
       box-shadow:var(--shadow-sm);
-      font-size:12px;
-      color:#355865;
+      font-size:.78rem;
+      color:var(--muted);
     }
-    .statusbar b{color:#113b47}
+    .statusbar b{color:var(--ink);}
     .mono{
       font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
       font-size:11px;
@@ -529,9 +535,109 @@
       header.topbar{grid-template-columns:1fr}
     }
 
+    /* ── TOPBAR dark green override (igual que los index del módulo) ── */
+    header.topbar {
+      background: rgba(13,79,60,.97) !important;
+      border-bottom: 1px solid rgba(255,255,255,.07) !important;
+      box-shadow: 0 2px 20px rgba(0,0,0,.22) !important;
+    }
+    header.topbar .brand-logos {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+    }
+    header.topbar .brand-logos img {
+      background: #fff !important;
+      border-radius: .45rem !important;
+      padding: 4px 7px !important;
+      box-shadow: 0 1px 5px rgba(0,0,0,.15) !important;
+      width: auto !important; height: 38px !important;
+    }
+    header.topbar .brand-title h1 {
+      color: #fff !important;
+      font-family: 'DM Serif Display', serif !important;
+      font-size: 1.05rem !important;
+    }
+    header.topbar .pill {
+      background: rgba(255,255,255,.10) !important;
+      border-color: rgba(255,255,255,.16) !important;
+      color: rgba(255,255,255,.78) !important;
+    }
+    header.topbar .dot {
+      background: #2fd08f !important;
+      box-shadow: 0 0 0 2px rgba(47,208,143,.25) !important;
+    }
+    header.topbar .btn {
+      background: rgba(255,255,255,.10) !important;
+      border-color: rgba(255,255,255,.16) !important;
+      color: rgba(255,255,255,.85) !important;
+    }
+    header.topbar .btn:hover {
+      background: rgba(255,255,255,.18) !important;
+      color: #fff !important;
+    }
+    header.topbar .btn.primary {
+      background: rgba(44,165,141,.28) !important;
+      border-color: rgba(44,165,141,.50) !important;
+      color: #a0f0d8 !important;
+    }
+    /* Iconos Bootstrap en botones nav */
+    header.topbar .nav .btn i { font-size: .85em; }
+
+    /* ── FOOTER ── */
+    .dash-footer {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 2rem 1.5rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+      text-align: center;
+    }
+    .dash-footer-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: var(--green-deep);
+      margin-bottom: .2rem;
+    }
+    .dash-footer-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-bottom: 1.25rem;
+    }
+    .partners-label {
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+    .footer-logos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .875rem;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+    .footer-logos a { display: inline-flex; align-items: center; text-decoration: none; }
+    .footer-logos img {
+      max-height: 46px;
+      width: auto;
+      max-width: 160px;
+      object-fit: contain;
+      filter: grayscale(15%);
+      transition: filter .15s, transform .15s;
+    }
+    .footer-logos a:hover img { filter: grayscale(0%); transform: translateY(-2px); }
+    .dash-footer-copy {
+      font-size: .72rem;
+      color: var(--muted2);
+    }
+
     @media print{
       body{background:#fff}
-      header.topbar, aside.sidebar, .table-toolbar .btn, #refreshBtn, #printBtn, #exportCsvBtn, #exportJsonBtn {display:none!important}
+      header.topbar, aside.sidebar, .table-toolbar .btn, #refreshBtn, #exportCsvBtn, #exportJsonBtn {display:none!important}
       .shell{max-width:none;padding:0}
       .layout{grid-template-columns:1fr}
       main.dashboard{gap:8px}
@@ -548,26 +654,24 @@
     <header class="topbar">
       <div class="brand">
         <div class="brand-logos">
-          <img src="../../assets/img/BOSQUE.png" alt="Logo bosque">
-          <img src="../../assets/img/CODEMA%20(2).png" alt="Logo CODEMA">
+          <img src="../../BOSQUE.png" alt="Logo Eje de Bosques">
+          <img src="../../CODEMA%20%282%29.png" alt="Logo CODEMA Sololá">
         </div>
         <div class="brand-title">
-          <h1>Dashboard de Reforestación · Sololá</h1>
+          <h1><i class="bi bi-graph-up-arrow" style="font-size:.85em;opacity:.8;margin-right:.4rem;"></i>Dashboard de Reforestación · Sololá</h1>
           <div class="sub">
-            <span class="pill"><span class="dot"></span> Tablero analítico de registros KoBo</span>
+            <span class="pill"><span class="dot"></span> Módulo de Reforestaciones · KoBo</span>
             <span class="pill" id="dataTimestampPill">Cargando datos…</span>
             <span class="pill" id="recordCountPill">0 registros</span>
           </div>
         </div>
       </div>
       <nav class="nav">
-        <a class="btn" href="../../index.html">Inicio</a>
-        <a class="btn" href="./index.html">Módulo</a>
-        <a class="btn" href="./geoportal.html">Geoportal</a>
-        <a class="btn active" href="./dashboard.html">Dashboard</a>
-        <a class="btn" href="./informes.html">Informes</a>
-        <button class="btn primary" id="refreshBtn" type="button">Actualizar</button>
-        <button class="btn" id="printBtn" type="button">Imprimir</button>
+        <a class="btn" href="./index.html"><i class="bi bi-arrow-left"></i> Regresar a módulo</a>
+        <a class="btn" href="../../index.html"><i class="bi bi-house-door"></i> Regresar a inicio</a>
+        <a class="btn" href="./geoportal.html"><i class="bi bi-map"></i> Geoportal</a>
+        <a class="btn" href="./informes.html"><i class="bi bi-journal-text"></i> Informes</a>
+        <button class="btn primary" id="refreshBtn" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
       </nav>
     </header>
 
@@ -901,6 +1005,27 @@
         </section>
       </main>
     </div>
+
+    <!-- FOOTER CON LOGOS -->
+    <footer class="dash-footer">
+      <div class="dash-footer-title">Plataforma digital del Eje de Bosques · Dashboard de Reforestación</div>
+      <div class="dash-footer-sub">Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
+      <div class="partners-label">Instituciones y organizaciones que integran el Eje de Bosques</div>
+      <div class="footer-logos">
+        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
+        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
+        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
+        <a href="https://conap.gob.gt/" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
+        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
+        <a href="https://conred.gob.gt/" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
+        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA - UVG"></a>
+        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán"></a>
+        <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor"></a>
+        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIR Guatemala"></a>
+      </div>
+      <div class="dash-footer-copy">© 2026 · Laboratorio SIG · Eje de Bosques · CODEMA Sololá</div>
+    </footer>
+
   </div>
 
   <script>
@@ -2428,7 +2553,6 @@
       document.getElementById('applyFiltersBtn').addEventListener('click', () => applyFilters());
       document.getElementById('resetFiltersBtn').addEventListener('click', resetFilters);
       document.getElementById('refreshBtn').addEventListener('click', loadData);
-      document.getElementById('printBtn').addEventListener('click', () => window.print());
       document.getElementById('exportCsvBtn').addEventListener('click', exportFilteredCSV);
       document.getElementById('exportJsonBtn').addEventListener('click', exportFilteredJSON);
       document.getElementById('toggleTop10Btn').addEventListener('click', () => { state.tableMode = 'top10'; renderTable(state.filtered); });
@@ -2522,5 +2646,28 @@
       state, loadData, applyFilters, resetFilters
     };
   </script>
+
+  <!-- FOOTER CON LOGOS -->
+  <footer style="max-width:1600px;margin:0 auto;padding:0 14px 24px;">
+    <div style="background:#fff;border:1px solid rgba(13,79,60,.10);border-radius:1.5rem;padding:2rem 1.5rem;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06);">
+      <div style="font-family:'DM Serif Display',serif;font-size:1rem;color:#0d4f3c;margin-bottom:.25rem;">Plataforma digital del Eje de Bosques · Dashboard de Reforestación</div>
+      <div style="font-size:.75rem;color:#6b8278;margin-bottom:1.5rem;">Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
+      <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6b8278;margin-bottom:.5rem;">Instituciones y organizaciones aliadas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center;align-items:center;">
+        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../marn.png" alt="MARN" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../maga.png" alt="MAGA" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../inab.png" alt="INAB" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../conap.png" alt="CONAP" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../amsclae.png" alt="AMSCLAE" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../conred.png" alt="CONRED" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../cea.png" alt="CEA - UVG" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../aala_logo.png" alt="Amigos del Lago" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../vivamos.png" alt="Vivamos Mejor" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" style="display:inline-flex;"><img src="../../aires.png" alt="AIR" style="max-height:46px;width:auto;max-width:160px;object-fit:contain;filter:grayscale(15%);transition:filter .15s,transform .15s;" onmouseover="this.style.filter='grayscale(0%)';this.style.transform='translateY(-2px)'" onmouseout="this.style.filter='grayscale(15%)';this.style.transform='translateY(0)'"></a>
+      </div>
+      <div style="font-size:.7rem;color:#6b8278;margin-top:1.25rem;">© 2026 · Laboratorio SIG · Eje de Bosques · CODEMA Sololá</div>
+    </div>
+  </footer>
+
 </body>
 </html>
