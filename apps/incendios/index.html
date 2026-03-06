@@ -3,777 +3,1232 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Módulo de Incendios forestales Plataforma digital del Eje de Bosques</title>
-  <meta name="description" content="Módulo de Incendios forestales: visor SIG cuasi en tiempo real (NASA FIRMS NRT), análisis territorial y geoestadística aplicada para apoyo a monitoreo en Sololá." />
+  <title>Módulo de Incendios Forestales · Plataforma digital del Eje de Bosques</title>
+  <meta name="description" content="Módulo de Incendios Forestales: visor SIG cuasi en tiempo real (NASA FIRMS NRT), análisis territorial y geoestadística aplicada para apoyo a monitoreo en Sololá." />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootswatch/5.3.8/flatly/bootstrap.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
 
   <style>
-    :root{
-      --bg-a:#f4fff7;
-      --bg-b:#fff6e8;
-      --bg-c:#ffffff;
-      --glass:rgba(255,255,255,.86);
-      --glass-2:rgba(255,255,255,.94);
-      --stroke:rgba(17, 89, 45, .12);
-      --shadow:0 18px 48px rgba(0,0,0,.10);
-      --shadow-sm:0 10px 22px rgba(0,0,0,.08);
+    :root {
+      --fire-deep:    #1a0a00;
+      --fire-dark:    #2c1206;
+      --fire-char:    #3d1a08;
+      --amber:        #e8973a;
+      --amber-light:  #f5b85a;
+      --amber-pale:   #fef4e7;
+      --red-hot:      #d94f1e;
+      --ember:        #ff6b2b;
+      --surface:      #faf8f5;
+      --white:        #ffffff;
+      --text-dark:    #1a0c00;
+      --text-mid:     #5a3a1a;
+      --text-soft:    #8a6040;
+      --border:       rgba(90, 58, 26, .12);
+      --shadow-sm:    0 2px 12px rgba(0,0,0,.07);
+      --shadow-md:    0 8px 32px rgba(0,0,0,.12);
+      --radius-lg:    1.5rem;
+      --radius-md:    1rem;
+      --radius-sm:    .625rem;
     }
 
-    body{
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--surface);
+      color: var(--text-dark);
       min-height: 100vh;
-      background:
-        radial-gradient(900px 560px at 0% 0%, rgba(31, 157, 85, .14), transparent 60%),
-        radial-gradient(900px 560px at 100% 0%, rgba(245, 158, 11, .14), transparent 60%),
-        linear-gradient(135deg,var(--bg-a),var(--bg-b) 55%, var(--bg-c));
-      padding-top: 76px;
+      padding-top: 72px;
     }
 
-    .glass{
-      background: linear-gradient(180deg, var(--glass-2), var(--glass));
-      border: 1px solid rgba(255,255,255,.85);
-      box-shadow: var(--shadow-sm);
-      backdrop-filter: blur(10px);
+    /* ── NAVBAR ── */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: rgba(26, 10, 0, .97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(232,151,58,.12);
+      padding: .9rem 0;
+      box-shadow: 0 2px 24px rgba(0,0,0,.35);
     }
-
-    .hero{
-      border: 1px solid rgba(255,255,255,.80);
-      box-shadow: var(--shadow);
-      border-radius: 1.25rem;
-      overflow: hidden;
-      position: relative;
+    .navbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
     }
-
-    .hero::before{
-      content:"";
-      position:absolute;
-      inset:auto -140px -140px auto;
-      width: 360px;
-      height: 360px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(245, 158, 11, .22), transparent 65%);
-      filter: blur(2px);
-      pointer-events:none;
-    }
-
-    .hero::after{
-      content:"";
-      position:absolute;
-      inset:-140px auto auto -140px;
-      width: 380px;
-      height: 380px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 35% 35%, rgba(31, 157, 85, .18), transparent 65%);
-      filter: blur(2px);
-      pointer-events:none;
-    }
-
-    .brand-logos{
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .navbar-left {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
       min-width: 0;
     }
-
-    .brand-logos img{
-      height: 44px;
+    .brand-logos {
+      display: flex;
+      align-items: center;
+      gap: .625rem;
+      flex-shrink: 0;
+    }
+    .brand-logos img {
+      height: 40px;
       width: auto;
       object-fit: contain;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.08));
-      background: rgba(255,255,255,.94);
-      border-radius: 10px;
-      padding: 4px 6px;
+      background: #ffffff;
+      border-radius: .5rem;
+      padding: 5px 8px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.15);
+    }
+    .brand-title {
+      color: rgba(255,255,255,.85);
+      font-size: .9rem;
+      font-weight: 500;
+      letter-spacing: -.01em;
+      line-height: 1.3;
+      display: none;
+    }
+    @media (min-width: 640px) { .brand-title { display: block; } }
+
+    .module-badge {
+      display: none;
+      align-items: center;
+      gap: .35rem;
+      padding: .28rem .65rem;
+      background: rgba(232,151,58,.18);
+      border: 1px solid rgba(232,151,58,.35);
+      border-radius: 999px;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .04em;
+      color: var(--amber-light);
+      white-space: nowrap;
+    }
+    @media (min-width: 800px) { .module-badge { display: inline-flex; } }
+
+    .btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .42rem .9rem;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: .5rem;
+      color: rgba(255,255,255,.82);
+      font-size: .82rem;
+      font-weight: 500;
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-back:hover {
+      background: rgba(255,255,255,.15);
+      border-color: rgba(255,255,255,.30);
+      color: #fff;
     }
 
-    @media (max-width: 420px){
-      .brand-logos img{ height: 36px; }
+    /* ── HERO ── */
+    .hero-wrap {
+      background: linear-gradient(155deg, var(--fire-deep) 0%, #1f0b02 45%, var(--fire-char) 100%);
+      position: relative;
+      overflow: hidden;
+      padding: 5rem 0 4rem;
+    }
+    /* fire glow effects */
+    .hero-wrap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 55% 70% at 85% 100%, rgba(217,79,30,.30), transparent 60%),
+        radial-gradient(ellipse 40% 50% at 15% 80%, rgba(232,151,58,.18), transparent 55%),
+        radial-gradient(ellipse 35% 35% at 60% -5%, rgba(255,107,43,.12), transparent 50%);
+      pointer-events: none;
+    }
+    /* ember circle decoration */
+    .hero-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: -120px; right: -120px;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      border: 90px solid rgba(217,79,30,.06);
+      pointer-events: none;
     }
 
-    .muted{ color: rgba(0,0,0,.65); }
-
-    p, li, .text-body-secondary, .muted{
-      text-align: justify;
-      text-justify: inter-word;
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 3rem;
+      align-items: start;
+    }
+    @media (min-width: 900px) {
+      .hero-inner { grid-template-columns: 1.2fr 1fr; }
     }
 
-    .section-title{ letter-spacing: -.01em; }
+    .hero-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .3rem .7rem;
+      border-radius: 999px;
+      font-size: .75rem;
+      font-weight: 500;
+      letter-spacing: .03em;
+    }
+    .badge-fire   { background: rgba(217,79,30,.22); color: #ffaa70; border: 1px solid rgba(217,79,30,.35); }
+    .badge-status { background: rgba(255,255,255,.08); color: rgba(255,255,255,.72); border: 1px solid rgba(255,255,255,.14); }
+    .led {
+      width: .5rem; height: .5rem;
+      border-radius: 50%;
+      background: #f5b85a;
+      box-shadow: 0 0 0 3px rgba(245,184,90,.22);
+      display: inline-block;
+    }
 
-    .icon-badge{
-      width: 44px;
-      height: 44px;
-      border-radius: 14px;
+    .hero-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      color: var(--white);
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+    .hero-title em {
+      font-style: italic;
+      color: var(--amber-light);
+    }
+
+    .hero-body {
+      color: rgba(255,255,255,.68);
+      font-size: .97rem;
+      line-height: 1.75;
+      margin-bottom: 1.75rem;
+    }
+
+    .callout-hero {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(232,151,58,.18);
+      border-left: 3px solid var(--amber);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem;
+      margin-bottom: 2rem;
+    }
+    .callout-hero-title {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      color: var(--amber-light);
+      margin-bottom: .6rem;
+    }
+    .callout-hero ul {
+      list-style: none;
+      padding: 0; margin: 0;
+    }
+    .callout-hero ul li {
+      font-size: .86rem;
+      color: rgba(255,255,255,.62);
+      padding: .22rem 0 .22rem 1.1rem;
+      position: relative;
+    }
+    .callout-hero ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--amber);
+      font-weight: 700;
+    }
+
+    .alert-note {
+      background: rgba(217,79,30,.10);
+      border: 1px solid rgba(217,79,30,.25);
+      border-radius: var(--radius-sm);
+      padding: .75rem 1rem;
+      font-size: .8rem;
+      color: rgba(255,200,150,.80);
+      display: flex;
+      align-items: flex-start;
+      gap: .5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    /* right panel */
+    .hero-panel {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(232,151,58,.15);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      backdrop-filter: blur(8px);
+    }
+    .panel-label {
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--amber-light);
+      margin-bottom: .4rem;
+    }
+    .panel-heading {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: var(--white);
+      margin-bottom: .25rem;
+    }
+    .panel-sub {
+      font-size: .82rem;
+      color: rgba(255,255,255,.48);
+      margin-bottom: 1.25rem;
+    }
+    .divider {
+      border: none;
+      border-top: 1px solid rgba(232,151,58,.14);
+      margin: 1.25rem 0;
+    }
+    .panel-block {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(232,151,58,.12);
+      border-radius: var(--radius-sm);
+      padding: .9rem 1rem;
+      margin-bottom: .75rem;
+    }
+    .panel-block-label {
+      font-size: .72rem;
+      color: rgba(255,255,255,.42);
+      margin-bottom: .25rem;
+    }
+    .panel-block-value {
+      font-size: .9rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.88);
+      margin-bottom: .2rem;
+    }
+    .panel-block-note {
+      font-size: .78rem;
+      color: rgba(255,255,255,.42);
+    }
+    .gif-frame {
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid rgba(232,151,58,.15);
+      margin-top: 1.25rem;
+      background: #ffffff;
+      padding: 1rem;
+    }
+    .gif-frame img { width: 100%; display: block; border-radius: .5rem; }
+
+    /* ── GUIDE TABS ── */
+    .guide-panel {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(232,151,58,.15);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+      margin-top: 1.5rem;
+    }
+    .guide-panel-title {
+      font-size: .82rem;
+      font-weight: 600;
+      color: rgba(255,255,255,.75);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+    }
+    .tabs {
+      display: flex;
+      gap: .5rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: .32rem .85rem;
+      border-radius: .45rem;
+      font-size: .78rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid rgba(232,151,58,.25);
+      background: transparent;
+      color: rgba(255,255,255,.55);
+      transition: all .15s;
+    }
+    .tab-btn.active {
+      background: rgba(232,151,58,.20);
+      border-color: rgba(232,151,58,.45);
+      color: var(--amber-light);
+    }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .guide-img {
+      border-radius: .625rem;
+      overflow: hidden;
+      border: 1px solid rgba(232,151,58,.15);
+      background: var(--white);
+    }
+    .guide-img img { width: 100%; display: block; }
+    .guide-caption {
+      font-size: .76rem;
+      color: rgba(255,255,255,.40);
+      margin-top: .6rem;
+    }
+
+    /* ── SHARED SECTION STYLES ── */
+    .section-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 1.5rem;
+    }
+
+    .section-eyebrow {
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .10em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: .45rem;
+    }
+    .section-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+      color: var(--text-dark);
+      line-height: 1.2;
+      margin-bottom: .4rem;
+    }
+    .section-sub {
+      color: var(--text-soft);
+      font-size: .93rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ── PRODUCT CARDS ── */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+    .prod-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform .2s ease, box-shadow .2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+    .prod-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+    .prod-card-accent {
+      height: 4px;
+      background: linear-gradient(90deg, var(--red-hot), var(--amber));
+    }
+    .prod-card-accent-muted {
+      height: 4px;
+      background: linear-gradient(90deg, #c8a070, #d4b88a);
+    }
+    .prod-card-body {
+      padding: 1.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .prod-icon {
+      width: 46px; height: 46px;
+      border-radius: var(--radius-sm);
+      background: var(--amber-pale);
+      color: var(--red-hot);
       display: grid;
       place-items: center;
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.90);
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .prod-icon-muted {
+      background: #f5f0ea;
+      color: #a07040;
+    }
+    .prod-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.1rem;
+      color: var(--text-dark);
+      margin-bottom: .45rem;
+    }
+    .prod-desc {
+      font-size: .86rem;
+      color: var(--text-soft);
+      line-height: 1.65;
+      flex: 1;
+      margin-bottom: 1.25rem;
+    }
+    .btn-prod {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .44rem .95rem;
+      border-radius: .5rem;
+      font-size: .82rem;
+      font-weight: 500;
+      text-decoration: none;
+      background: var(--red-hot);
+      color: #fff;
+      border: none;
+      transition: background .15s;
+      align-self: flex-start;
+    }
+    .btn-prod:hover { background: #b8391a; }
+    .coming-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      font-size: .76rem;
+      color: var(--text-soft);
+      padding: .35rem .7rem;
+      border: 1px dashed #d4b88a;
+      border-radius: .45rem;
+      background: #f5f0ea;
+      align-self: flex-start;
     }
 
-    .navcard{
-      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
-      border: 1px solid rgba(255,255,255,.82);
+    /* ── CONTENT PANELS ── */
+    .content-panel {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-sm);
     }
 
-    .navcard:hover{
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-      border-color: rgba(245, 158, 11, .25);
+    .panel-section-title {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: .75rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
     }
 
-    .pill{
-      display:inline-flex;
-      align-items:center;
-      gap:.5rem;
-      padding:.35rem .6rem;
-      border-radius: 999px;
-      border: 1px solid rgba(255,255,255,.65);
-      background: rgba(255,255,255,.18);
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    @media (min-width: 768px) {
+      .two-col { grid-template-columns: 1fr 1fr; }
+      .two-col-7-5 { grid-template-columns: 1.4fr 1fr; }
     }
 
-    .led{
-      width: .55rem;
-      height: .55rem;
-      border-radius: 999px;
-      background: #2fd08f;
-      box-shadow: 0 0 0 .25rem rgba(47,208,143,.18);
+    /* Steps */
+    .step {
+      display: flex;
+      gap: .9rem;
+      align-items: flex-start;
+      margin-bottom: 1.1rem;
     }
-
-    .hero-media{
-      background: rgba(255,255,255,.92);
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: 18px;
-      overflow: hidden;
-      box-shadow: 0 12px 26px rgba(0,0,0,.08);
-    }
-
-    .hero-media img{
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-
-    .callout{
-      border-left: 4px solid rgba(245, 158, 11, .60);
-      background: rgba(255,255,255,.55);
-      border-radius: 14px;
-      padding: 12px 14px;
-    }
-
-    .step{
-      display:flex;
-      gap: 12px;
-      align-items:flex-start;
-    }
-
-    .step .num{
-      width: 34px;
-      height: 34px;
-      border-radius: 12px;
-      display:grid;
-      place-items:center;
-      background: rgba(245, 158, 11, .10);
-      border: 1px solid rgba(245, 158, 11, .18);
+    .step:last-child { margin-bottom: 0; }
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: .625rem;
+      background: var(--amber-pale);
+      border: 1px solid rgba(232,151,58,.25);
+      color: var(--red-hot);
+      font-size: .8rem;
       font-weight: 700;
-      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .step-title {
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: .2rem;
+    }
+    .step-desc {
+      font-size: .84rem;
+      color: var(--text-soft);
+      line-height: 1.6;
     }
 
-    .footer-logos{
-      display:flex;
-      flex-wrap:wrap;
-      gap: 18px;
-      justify-content:center;
-      align-items:center;
-      margin-top: 14px;
+    /* Callout */
+    .callout {
+      background: var(--amber-pale);
+      border: 1px solid rgba(232,151,58,.20);
+      border-left: 3px solid var(--amber);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem;
+    }
+    .callout-title {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--red-hot);
+      margin-bottom: .5rem;
+      display: flex;
+      align-items: center;
+      gap: .4rem;
+    }
+    .callout ul {
+      list-style: none;
+      padding: 0; margin: 0;
+    }
+    .callout ul li {
+      font-size: .85rem;
+      color: var(--text-mid);
+      padding: .22rem 0 .22rem 1.1rem;
+      position: relative;
+      line-height: 1.55;
+    }
+    .callout ul li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--amber);
+      font-weight: 700;
     }
 
-    .footer-logos a{
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      padding: 6px 4px;
-      text-decoration:none;
+    /* Warning callout */
+    .callout-warn {
+      background: #fff5f2;
+      border: 1px solid rgba(217,79,30,.18);
+      border-left: 3px solid var(--red-hot);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem;
+    }
+    .callout-warn .callout-title { color: var(--red-hot); }
+    .callout-warn ul li { color: var(--text-mid); }
+    .callout-warn ul li::before { color: var(--red-hot); }
+
+    /* Question list */
+    .question-list {
+      list-style: none;
+      padding: 0; margin: 0 0 1.25rem;
+    }
+    .question-list li {
+      font-size: .86rem;
+      color: var(--text-mid);
+      padding: .55rem .75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: flex-start;
+      gap: .5rem;
+      line-height: 1.5;
+    }
+    .question-list li:last-child { border-bottom: none; }
+    .question-list li::before {
+      content: '?';
+      color: var(--amber);
+      font-weight: 700;
+      font-size: .8rem;
+      flex-shrink: 0;
+      margin-top: .05rem;
     }
 
-    .footer-logos img{
-      max-height: 62px;
-      width:auto;
-      max-width: 240px;
-      object-fit:contain;
-      display:block;
-      filter: drop-shadow(0 2px 6px rgba(0,0,0,.06));
-      transition: transform .12s ease, filter .12s ease;
+    /* Layer list */
+    .layer-list {
+      list-style: none;
+      padding: 0; margin: 0;
+    }
+    .layer-list li {
+      font-size: .86rem;
+      color: var(--text-mid);
+      padding: .5rem 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+      line-height: 1.5;
+    }
+    .layer-list li:last-child { border-bottom: none; }
+    .layer-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      flex-shrink: 0;
     }
 
-    .footer-logos a:hover img{
-      transform: translateY(-1px);
-      filter: drop-shadow(0 8px 16px rgba(0,0,0,.10));
+    /* Sensor tag */
+    .sensor-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: .3rem;
+      padding: .25rem .55rem;
+      border-radius: .375rem;
+      font-size: .72rem;
+      font-weight: 600;
+      background: var(--amber-pale);
+      color: var(--red-hot);
+      border: 1px solid rgba(232,151,58,.25);
+      margin-right: .35rem;
+      margin-bottom: .35rem;
     }
 
-    .to-top{
+    /* Alt section bg */
+    .section-alt {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 3rem 0 2rem;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    .footer-info {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .footer-info-title {
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: .35rem;
+    }
+    .footer-info-sub {
+      font-size: .82rem;
+      color: var(--text-soft);
+    }
+    .partners-title {
+      text-align: center;
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: .6rem;
+    }
+    .partners-sub {
+      text-align: center;
+      font-size: .82rem;
+      color: var(--text-soft);
+      margin-bottom: 1.5rem;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .footer-logos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+      justify-content: center;
+      align-items: center;
+    }
+    .footer-logos a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 6px;
+      text-decoration: none;
+    }
+    .footer-logos img {
+      max-height: 52px;
+      width: auto;
+      max-width: 200px;
+      object-fit: contain;
+      filter: grayscale(20%);
+      transition: filter .15s, transform .15s;
+    }
+    .footer-logos a:hover img {
+      filter: grayscale(0%);
+      transform: translateY(-2px);
+    }
+    .footer-divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0 1.5rem; }
+    .footer-copy {
+      text-align: center;
+      font-size: .78rem;
+      color: var(--text-soft);
+    }
+
+    /* ── SCROLL TO TOP ── */
+    .to-top {
       position: fixed;
-      right: 16px;
-      bottom: 16px;
+      right: 1.25rem; bottom: 1.25rem;
       z-index: 1080;
-      display:none;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      background: var(--red-hot);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: var(--shadow-md);
+      transition: background .15s;
     }
+    .to-top.show { display: flex; }
+    .to-top:hover { background: #a8301a; }
 
-    .to-top.show{ display:inline-flex; }
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp .55s ease both; }
+    .delay-1 { animation-delay: .1s; }
+    .delay-2 { animation-delay: .22s; }
+    .delay-3 { animation-delay: .34s; }
   </style>
 </head>
 
 <body>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top shadow-sm">
-    <div class="container">
-      <a class="navbar-brand d-flex align-items-center gap-2 fw-semibold" href="#inicio" style="min-width:0;">
-        <span class="brand-logos" aria-label="Logos institucionales">
-          <img src="../../corrected.gif" alt="Logo del Eje de Bosques" loading="eager">
-          <img src="../../CODEMA%20%282%29.png" alt="Logo de la Comisión Departamental de Medio Ambiente de Sololá" loading="eager">
-        </span>
-        <span class="d-none d-md-inline text-truncate">Plataforma digital del Eje de Bosques · Sololá</span>
-        <span class="badge text-bg-warning d-none d-lg-inline ms-2"><i class="bi bi-fire me-1"></i>Incendios</span>
-      </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMain" aria-controls="navMain" aria-expanded="false" aria-label="Abrir menú">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse" id="navMain">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="../../index.html"><i class="bi bi-house-door me-1"></i>Inicio</a>
-          </li>
-
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle active" href="#" id="ddModulos" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Módulos
-            </a>
-            <ul class="dropdown-menu" aria-labelledby="ddModulos">
-              <li><h6 class="dropdown-header">Incendios (activo)</h6></li>
-              <li><a class="dropdown-item" href="./index.html"><i class="bi bi-fire me-2"></i>Inicio del módulo</a></li>
-              <li><a class="dropdown-item" href="./geoportal.html"><i class="bi bi-map me-2"></i>Geoportal</a></li>
-              <li><span class="dropdown-item-text"><i class="bi bi-file-earmark-text me-2"></i>Resumen (próximamente)</span></li>
-              <li><span class="dropdown-item-text"><i class="bi bi-journal-text me-2"></i>Informes (próximamente)</span></li>
-              <li><hr class="dropdown-divider"></li>
-
-              <li><h6 class="dropdown-header">Otros módulos</h6></li>
-              <li><a class="dropdown-item" href="../reforestacion/index.html"><i class="bi bi-tree me-2"></i>Reforestaciones</a></li>
-              <li><span class="dropdown-item-text"><i class="bi bi-diagram-3 me-2"></i>Ecología del paisaje forestal (próximamente)</span></li>
-            </ul>
-          </li>
-
-          <li class="nav-item"><a class="nav-link" href="#productos">Productos</a></li>
-          <li class="nav-item"><a class="nav-link" href="#metodologia">Metodología</a></li>
-          <li class="nav-item"><a class="nav-link" href="#analisis">Análisis territorial</a></li>
-          <li class="nav-item"><a class="nav-link" href="#geoestadistica">Geoestadística</a></li>
-        </ul>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-left">
+        <div class="brand-logos">
+          <img src="../../BOSQUE.png" alt="Logo Eje de Bosques">
+          <img src="../../CODEMA%20%282%29.png" alt="Logo CODEMA Sololá">
+        </div>
+        <span class="brand-title">Plataforma digital del Eje de Bosques · Sololá</span>
+        <span class="module-badge"><i class="bi bi-fire"></i>Incendios Forestales</span>
       </div>
+      <a class="btn-back" href="../../index.html">
+        <i class="bi bi-arrow-left"></i>Volver a inicio
+      </a>
     </div>
   </nav>
 
-  <main class="container my-4">
-    <section id="inicio" class="hero glass p-4 p-lg-5">
-      <div class="row g-4 align-items-start position-relative" style="z-index:1">
-        <div class="col-lg-7">
-          <div class="d-flex flex-wrap gap-2 mb-3">
-            <span class="badge text-bg-warning"><i class="bi bi-fire me-1"></i>Módulo activo</span>
-            <span class="badge text-bg-secondary pill">
-              <span class="led" aria-hidden="true"></span>
-              <span>En operación</span>
-            </span>
+  <!-- HERO -->
+  <div class="hero-wrap">
+    <div class="hero-inner">
+
+      <!-- Left -->
+      <div class="fade-up">
+        <div class="hero-badges">
+          <span class="badge badge-fire"><i class="bi bi-fire"></i>Módulo activo</span>
+          <span class="badge badge-status"><span class="led"></span>En operación</span>
+        </div>
+        <h1 class="hero-title">
+          Módulo de<br>
+          <em>Incendios Forestales</em>
+        </h1>
+        <p class="hero-body">
+          El Eje de Bosques integra detecciones satelitales de fuego activo en tiempo casi real y las transforma en información territorial útil para que tu institución pueda actuar. Cada foco de calor que ves en esta plataforma fue procesado, recortado y analizado por el equipo del Eje para apoyar la coordinación, priorización y respuesta ante incendios en Sololá.
+        </p>
+
+        <div class="callout-hero fade-up delay-1">
+          <div class="callout-hero-title"><i class="bi bi-compass"></i> Lo que el Eje de Bosques hace con los datos de fuego</div>
+          <ul>
+            <li>Consulta automática a NASA FIRMS (NRT) con sensores VIIRS y MODIS, filtrada para el departamento.</li>
+            <li>Recorte territorial por municipio, microcuenca y área protegida para reportes comparables.</li>
+            <li>Análisis de patrones espaciales: clústeres, dispersión e intensidad radiativa (FRP).</li>
+            <li>Documentación de insumos para coordinación interinstitucional con CONRED y las UGAM.</li>
+          </ul>
+        </div>
+
+        <div class="alert-note fade-up delay-2">
+          <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0; margin-top:.05rem;"></i>
+          <span>FIRMS reporta "fuego activo" (hotspots) y potencia radiativa (FRP); no es perímetro ni área quemada. Los datos requieren validación operativa local antes de su uso en campo.</span>
+        </div>
+      </div>
+
+      <!-- Right panel -->
+      <div class="fade-up delay-2">
+        <div class="hero-panel">
+          <div class="panel-label">Fuentes y trazabilidad</div>
+          <div class="panel-heading">De FIRMS (NRT) a visor SIG</div>
+          <div class="panel-sub">El Eje procesa y publica los datos para que lleguen a ti en tiempo útil</div>
+          <hr class="divider">
+
+          <div class="panel-block">
+            <div class="panel-block-label">Fuente principal</div>
+            <div class="panel-block-value">NASA FIRMS / LANCE — Active Fire (NRT)</div>
+            <div class="panel-block-note">
+              <span class="sensor-tag"><i class="bi bi-broadcast"></i>VIIRS</span>
+              <span class="sensor-tag"><i class="bi bi-broadcast"></i>MODIS</span>
+              <br>Suomi-NPP, NOAA-20, NOAA-21, Terra/Aqua en modo Near Real-Time.
+            </div>
           </div>
 
-          <h1 class="display-6 fw-bold mb-2" style="text-align:left;">Módulo de Incendios forestales</h1>
+          <div class="panel-block">
+            <div class="panel-block-label">Arquitectura de publicación</div>
+            <div class="panel-block-value">GitHub Pages + Cloudflare Worker</div>
+            <div class="panel-block-note">El Worker protege la MAP_KEY y entrega JSON con caché corto. Sin histórico almacenado en el repositorio.</div>
+          </div>
 
-          <p class="lead muted mb-3" style="max-width: 72ch;">
-            Este módulo integra detecciones de <b>fuego activo/anomalías térmicas</b> (NASA FIRMS — Near Real-Time) y las organiza como
-            información territorial consultable para apoyar monitoreo y coordinación. Incluye recorte por unidades de gestión (municipios,
-            microcuencas y áreas protegidas), KPIs y lectura geoestadística.
+          <div class="gif-frame">
+            <img src="./parpadeo.gif" alt="Animación de focos de calor — Eje de Bosques" loading="lazy">
+          </div>
+        </div>
+
+        <!-- Guide tabs -->
+        <div class="guide-panel fade-up delay-3">
+          <div class="guide-panel-title"><i class="bi bi-card-checklist"></i>Guías rápidas del módulo</div>
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('rec', this)"><i class="bi bi-lightbulb"></i> Recomendaciones</button>
+            <button class="tab-btn" onclick="switchTab('rep', this)"><i class="bi bi-clipboard2-check"></i> Cómo reportar</button>
+          </div>
+          <div class="tab-pane active" id="pane-rec">
+            <a href="./recomendaciones.jpeg" target="_blank" rel="noopener" class="guide-img d-block">
+              <img src="./recomendaciones.jpeg" alt="Recomendaciones operativas para interpretar hotspots FIRMS">
+            </a>
+            <div class="guide-caption">Recomendaciones operativas para interpretar hotspots (FIRMS NRT) y priorizar verificación.</div>
+          </div>
+          <div class="tab-pane" id="pane-rep">
+            <a href="./reporta.jpeg" target="_blank" rel="noopener" class="guide-img d-block">
+              <img src="./reporta.jpeg" alt="Guía visual para reportar incendios forestales">
+            </a>
+            <div class="guide-caption">Guía visual del Eje para registrar y reportar información en coordinación institucional.</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PRODUCTOS -->
+  <section>
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-grid-3x3-gap"></i> Productos</div>
+        <h2 class="section-title">Herramientas que el Eje pone a tu disposición</h2>
+        <p class="section-sub">Visualiza, analiza y coordina — todo a partir de datos procesados por el Eje de Bosques.</p>
+      </div>
+
+      <div class="products-grid">
+        <div class="prod-card fade-up delay-1">
+          <div class="prod-card-accent"></div>
+          <div class="prod-card-body">
+            <div class="prod-icon"><i class="bi bi-map-fill"></i></div>
+            <div class="prod-title">Geoportal</div>
+            <p class="prod-desc">Visor SIG cuasi en tiempo real con filtros por periodo (24h / 72h / 7d / 30–90d) y sensor. Recorte por municipios, microcuencas y áreas protegidas. Incluye KPIs, gráficas y descarga de tabla.</p>
+            <a class="btn-prod" href="./geoportal.html"><i class="bi bi-box-arrow-in-right"></i>Abrir Geoportal</a>
+          </div>
+        </div>
+
+        <div class="prod-card fade-up delay-2">
+          <div class="prod-card-accent-muted"></div>
+          <div class="prod-card-body">
+            <div class="prod-icon prod-icon-muted"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
+            <div class="prod-title">Resumen de temporada</div>
+            <p class="prod-desc">Síntesis del periodo con indicadores clave y notas técnicas elaboradas por el Eje para lectura rápida y comunicación institucional. En desarrollo.</p>
+            <span class="coming-tag"><i class="bi bi-hourglass-split"></i>Próximamente</span>
+          </div>
+        </div>
+
+        <div class="prod-card fade-up delay-3">
+          <div class="prod-card-accent-muted"></div>
+          <div class="prod-card-body">
+            <div class="prod-icon prod-icon-muted"><i class="bi bi-journal-text"></i></div>
+            <div class="prod-title">Informes territoriales</div>
+            <p class="prod-desc">Reportes del Eje por municipio, microcuenca y área protegida, con tablas exportables y mapas para apoyar la coordinación interinstitucional. En desarrollo.</p>
+            <span class="coming-tag"><i class="bi bi-hourglass-split"></i>Próximamente</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- METODOLOGÍA -->
+  <section class="section-alt">
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-shuffle"></i> Metodología</div>
+        <h2 class="section-title">Cómo el Eje consulta FIRMS y lo convierte en información útil</h2>
+        <p class="section-sub">Detrás de cada punto en el mapa hay un flujo técnico que el Eje mantiene para que los datos lleguen a tiempo y con calidad.</p>
+      </div>
+
+      <div class="two-col two-col-7-5 fade-up delay-1">
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-shuffle"></i> Flujo técnico del Eje</div>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-title">Consulta NRT</div>
+              <div class="step-desc">El geoportal solicita al proxy (Cloudflare Worker) los datos recientes de focos de calor por periodo y sensor, acotados al área de trabajo del departamento de Sololá.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-title">Proxy seguro</div>
+              <div class="step-desc">La MAP_KEY de NASA FIRMS se guarda como secreto en Cloudflare. Se aplica caché corto y CORS para entrega segura desde GitHub Pages, sin exponer credenciales.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-title">Normalización y entrega</div>
+              <div class="step-desc">El Eje une ventanas temporales, deduplica registros y entrega un JSON uniforme con resumen de KPIs y filas listas para visualización y análisis territorial.</div>
+            </div>
+          </div>
+
+          <div class="callout-warn" style="margin-top:1.25rem;">
+            <div class="callout-title"><i class="bi bi-exclamation-triangle"></i>Limitaciones técnicas que debes conocer</div>
+            <ul>
+              <li>La detección depende de la nubosidad y humo, y del paso orbital del satélite — no es monitoreo continuo.</li>
+              <li>VIIRS (~375 m) y MODIS (~1 km) son resoluciones de píxel: la ubicación es aproximada.</li>
+              <li>FRP (MW) indica potencia radiativa relativa; no equivale a área quemada ni perímetro.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-layers"></i> Capas territoriales que el Eje integra</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65; margin-bottom:1rem;">
+            Para que los focos de calor tengan contexto de gestión, el Eje los interpreta junto con estas unidades territoriales:
+          </p>
+          <ul class="layer-list">
+            <li><span class="layer-dot"></span>Municipios del departamento de Sololá</li>
+            <li><span class="layer-dot"></span>Microcuencas de la cuenca del lago de Atitlán</li>
+            <li><span class="layer-dot"></span>Áreas protegidas (CONAP y polígonos de referencia)</li>
+          </ul>
+          <p style="font-size:.8rem; color:var(--text-soft); line-height:1.6; margin-top:1rem;">
+            Las capas se publican como GeoJSON y se usan para recorte espacial y estadísticas por zona, permitiendo reportes comparables entre periodos.
           </p>
 
-          <div class="callout muted">
-            <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-compass me-1"></i>Propósito del módulo</div>
-            <ul class="mb-0" style="padding-left: 1.1rem;">
-              <li>Explorar focos de calor por periodo (24h / 72h / 7d / 30–90d) y sensor (VIIRS/MODIS NRT).</li>
-              <li>Priorizar atención territorial por unidad administrativa o ambiental.</li>
-              <li>Interpretar patrones espaciales (clústeres, escala, dispersión) para apoyo operativo.</li>
-              <li>Documentar insumos para coordinación interinstitucional (sin almacenar histórico en el repositorio).</li>
+          <div class="panel-section-title" style="margin-top:1.5rem;"><i class="bi bi-broadcast"></i> Sensores disponibles</div>
+          <div>
+            <span class="sensor-tag"><i class="bi bi-broadcast"></i>VIIRS · Suomi-NPP</span>
+            <span class="sensor-tag"><i class="bi bi-broadcast"></i>VIIRS · NOAA-20</span>
+            <span class="sensor-tag"><i class="bi bi-broadcast"></i>VIIRS · NOAA-21</span>
+            <span class="sensor-tag"><i class="bi bi-broadcast"></i>MODIS · Terra</span>
+            <span class="sensor-tag"><i class="bi bi-broadcast"></i>MODIS · Aqua</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ANÁLISIS TERRITORIAL -->
+  <section>
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-diagram-2"></i> Análisis territorial</div>
+        <h2 class="section-title">De detecciones a lectura espacial operativa</h2>
+        <p class="section-sub">El Eje no solo muestra puntos — analiza dónde se concentran, con qué frecuencia y qué unidades territoriales requieren atención prioritaria.</p>
+      </div>
+
+      <div class="two-col two-col-7-5 fade-up delay-1">
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-map"></i> Cómo el Eje lee el territorio de fuego</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65; margin-bottom:1.25rem;">
+            El módulo permite ubicar concentraciones de focos de calor por periodo y evaluar consistencia por sensor. La lectura territorial que genera el Eje prioriza zonas recurrentes y facilita la coordinación entre instituciones para verificación y respuesta.
+          </p>
+
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-title">Filtrado por periodo y sensor</div>
+              <div class="step-desc">Comparación VIIRS/MODIS NRT, series diarias y FRP para evaluar intensidad relativa y confirmar detecciones con más de un sensor.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-title">Cruce por unidad territorial</div>
+              <div class="step-desc">Conteos por municipio, microcuenca y área protegida para reportes rápidos, priorización y asignación de responsabilidad institucional.</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-title">Salida para tu coordinación</div>
+              <div class="step-desc">Tabla exportable (Excel/CSV) y GeoJSON para integrarse a otros flujos SIG de las instituciones participantes del Eje.</div>
+            </div>
+          </div>
+
+          <div class="callout" style="margin-top:1.25rem;">
+            <div class="callout-title"><i class="bi bi-check2-circle"></i>Uso recomendado por el Eje</div>
+            <ul>
+              <li>Verificar con reportes locales (CONRED / UGAM / brigadas) y condiciones meteorológicas del momento.</li>
+              <li>Usar "Alta confianza" para priorización rápida y revisar "Nominal" como contexto adicional.</li>
+              <li>Interpretar clústeres como señal de persistencia o repetición, no como perímetro de quema.</li>
             </ul>
           </div>
+        </div>
 
-          <div class="mt-4 d-flex flex-wrap gap-2">
-            <a class="btn btn-warning" href="./geoportal.html"><i class="bi bi-map me-1"></i>Abrir Geoportal</a>
-            <a class="btn btn-outline-primary" href="#productos"><i class="bi bi-grid-3x3-gap-fill me-1"></i>Ver productos</a>
-          </div>
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-question-circle"></i> Preguntas que puedes responder con los datos del Eje</div>
+          <ul class="question-list">
+            <li>¿Qué unidades territoriales concentran más detecciones recientes?</li>
+            <li>¿Hay recurrencia por varios días (persistencia) o son eventos puntuales?</li>
+            <li>¿Qué sensores confirman el patrón: VIIRS vs MODIS?</li>
+            <li>¿Cuál es la escala espacial dominante del agrupamiento detectado?</li>
+          </ul>
 
-          <div class="mt-3 small text-body-secondary">
-            Nota: FIRMS reporta “fuego activo” (hotspots) y FRP; no es perímetro ni área quemada. Requiere validación operativa local.
-          
-          <div class="mt-4 glass rounded-4 p-3 p-lg-4">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-              <div>
-                <div class="fw-semibold" style="text-align:left;"><i class="bi bi-card-checklist me-1"></i>Guías rápidas del módulo</div>
-                <div class="small text-body-secondary">Material de apoyo (visual) para recomendaciones y reporte</div>
-              </div>
-              <div class="d-flex gap-2">
-                <a class="btn btn-sm btn-outline-secondary" href="./recomendaciones.jpeg" target="_blank" rel="noopener">
-                  <i class="bi bi-box-arrow-up-right me-1"></i>Abrir
-                </a>
-              </div>
-            </div>
+          <div class="panel-section-title" style="margin-top:1.25rem;"><i class="bi bi-clipboard2-data"></i> Resultado que obtienes</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65;">
+            Lectura espacial rápida preparada por el Eje para apoyar la coordinación institucional: <em style="color:var(--text-mid);">"dónde, cuánto, cuándo y con qué confianza"</em>, con evidencia estadística básica lista para reportar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-            <ul class="nav nav-pills gap-2" id="tabsGuias" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab-rec" data-bs-toggle="pill" data-bs-target="#pane-rec" type="button" role="tab" aria-controls="pane-rec" aria-selected="true">
-                  <i class="bi bi-lightbulb me-1"></i>Recomendaciones
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-rep" data-bs-toggle="pill" data-bs-target="#pane-rep" type="button" role="tab" aria-controls="pane-rep" aria-selected="false">
-                  <i class="bi bi-clipboard2-check me-1"></i>Cómo reportar
-                </button>
-              </li>
+  <!-- GEOESTADÍSTICA -->
+  <section class="section-alt">
+    <div class="section-wrap">
+      <div class="fade-up">
+        <div class="section-eyebrow"><i class="bi bi-graph-up"></i> Geoestadística</div>
+        <h2 class="section-title">Patrones espaciales para interpretar la distribución del fuego</h2>
+        <p class="section-sub">El Eje aplica análisis geoestadístico para que los datos de detección vayan más allá de la visualización y apoyen decisiones con fundamento técnico.</p>
+      </div>
+
+      <div class="two-col two-col-7-5 fade-up delay-1">
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-bullseye"></i> Para qué aplica el Eje la geoestadística</div>
+          <p style="font-size:.86rem; color:var(--text-soft); line-height:1.65; margin-bottom:1.25rem;">
+            La geoestadística permite al Eje responder si las detecciones se comportan como un patrón aleatorio (CSR) o si existe agrupamiento significativo a ciertas escalas. También resume dispersión (SDE) y continuidad de FRP (variograma) para apoyar la interpretación operativa.
+          </p>
+          <div class="callout">
+            <div class="callout-title"><i class="bi bi-bullseye"></i>Lecturas típicas que genera el Eje</div>
+            <ul>
+              <li><strong>NNI y z/p:</strong> evidencia de agrupamiento vs CSR a escala de vecino más cercano.</li>
+              <li><strong>Ripley L(r):</strong> evaluación multiescala; identifica la distancia r* con mayor señal de clustering.</li>
+              <li><strong>SDE:</strong> dispersión y orientación (anisotropía) de la nube de detecciones en el territorio.</li>
+              <li><strong>Variograma de FRP:</strong> indicios de autocorrelación espacial de intensidad radiativa.</li>
             </ul>
-
-            <div class="tab-content mt-3" id="tabsGuiasContent">
-              <div class="tab-pane fade show active" id="pane-rec" role="tabpanel" aria-labelledby="tab-rec" tabindex="0">
-                <a href="./recomendaciones.jpeg" target="_blank" rel="noopener" class="hero-media d-block">
-                  <img src="./recomendaciones.jpeg" alt="Recomendaciones del módulo de incendios" class="img-fluid">
-                </a>
-                <div class="small text-body-secondary mt-2">
-                  Recomendaciones operativas para interpretar hotspots (FIRMS NRT) y priorizar verificación.
-                </div>
-              </div>
-
-              <div class="tab-pane fade" id="pane-rep" role="tabpanel" aria-labelledby="tab-rep" tabindex="0">
-                <a href="./reporta.jpeg" target="_blank" rel="noopener" class="hero-media d-block">
-                  <img src="./reporta.jpeg" alt="Guía para reportar incendios" class="img-fluid">
-                </a>
-                <div class="small text-body-secondary mt-2">
-                  Guía visual para reportar/registrar información en coordinación institucional.
-                </div>
-              </div>
-            </div>
           </div>
-
-</div>
+          <p style="font-size:.8rem; color:var(--text-soft); margin-top:1rem;">
+            Estos resultados apoyan la interpretación del Eje, pero no sustituyen verificación en campo ni análisis de combustibles y cobertura forestal.
+          </p>
         </div>
 
-        <div class="col-lg-5">
-          <div class="glass rounded-4 p-3 p-lg-4">
-            <div class="d-flex align-items-start justify-content-between gap-3">
-              <div>
-                <h2 class="h5 mb-1 section-title" style="text-align:left;">Fuentes y trazabilidad</h2>
-                <div class="text-body-secondary small">De FIRMS (NRT) a visor SIG</div>
-              </div>
-              <span class="badge text-bg-light border">
-                <i class="bi bi-shield-lock me-1"></i>Proxy seguro
-              </span>
+        <div class="content-panel">
+          <div class="panel-section-title"><i class="bi bi-tools"></i> Buenas prácticas que el Eje aplica</div>
+          <div class="step">
+            <div class="step-num">1</div>
+            <div>
+              <div class="step-title">Control de periodo</div>
+              <div class="step-desc">El Eje compara ventanas de 24–72h vs 7–30d para separar eventos puntuales de zonas con recurrencia real.</div>
             </div>
-
-            <hr class="my-3">
-
-            <div class="row g-2">
-              <div class="col-12">
-                <div class="p-3 bg-body rounded-4 border">
-                  <div class="small text-body-secondary">Fuente principal</div>
-                  <div class="fw-semibold" style="text-align:left;">NASA FIRMS / LANCE — Active Fire (NRT)</div>
-                  <div class="small text-body-secondary mt-1">
-                    Sensores: VIIRS (Suomi‑NPP, NOAA‑20, NOAA‑21) y MODIS (Terra/Aqua) en modo NRT.
-                  </div>
-                </div>
-              </div>
-
-              <div class="col-12">
-                <div class="p-3 bg-body rounded-4 border">
-                  <div class="small text-body-secondary">Publicación</div>
-                  <div class="fw-semibold" style="text-align:left;">GitHub Pages + Cloudflare Worker</div>
-                  <div class="small text-body-secondary mt-1">
-                    El Worker protege la MAP_KEY y entrega JSON con cache corto (sin guardar histórico en el repo).
-                  </div>
-                </div>
-              </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div>
+              <div class="step-title">Control de sensor</div>
+              <div class="step-desc">Se cruzan VIIRS y MODIS para reducir falsos positivos y entender diferencias de resolución entre plataformas satelitales.</div>
             </div>
-
-            <div class="mt-4">
-              <div class="hero-media">
-                <img src="./parpadeo.gif" alt="Identidad visual del Eje de Bosques" loading="lazy">
-              </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div>
+              <div class="step-title">Control territorial</div>
+              <div class="step-desc">Los resultados se interpretan por municipio, microcuenca y área protegida para asignación de responsabilidad y coordinación institucional.</div>
             </div>
-
-            <div class="mt-3 d-flex flex-wrap gap-2">
-              <a class="btn btn-sm btn-outline-secondary" href="#metodologia"><i class="bi bi-journal-text me-1"></i>Metodología</a>
-              <a class="btn btn-sm btn-outline-secondary" href="#geoestadistica"><i class="bi bi-graph-up-arrow me-1"></i>Geoestadística</a>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div>
+              <div class="step-title">Validación integrada</div>
+              <div class="step-desc">El Eje integra reportes locales, meteorología y condiciones de combustible y cobertura forestal para contextualizar los patrones detectados.</div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section id="productos" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-2">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Productos del módulo</h2>
-          <div class="text-body-secondary">Herramientas para explorar, interpretar y coordinar</div>
-        </div>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-info">
+        <div class="footer-info-title">Plataforma digital del Eje de Bosques · Módulo de Incendios Forestales</div>
+        <div class="footer-info-sub">Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
       </div>
 
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <a class="btn btn-warning btn-sm" href="./geoportal.html"><i class="bi bi-map me-1"></i>Geoportal</a>
-        <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-file-earmark-text me-1"></i>Resumen (próximamente)</button>
-        <button class="btn btn-outline-secondary btn-sm" type="button" disabled><i class="bi bi-journal-text me-1"></i>Informes (próximamente)</button>
-      </div>
+      <div class="partners-title">Instituciones y organizaciones</div>
+      <div class="partners-sub">El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
 
-      <div class="row g-3">
-        <div class="col-md-6 col-lg-4">
-          <div class="card glass navcard h-100">
-            <div class="card-body">
-              <div class="d-flex gap-3">
-                <div class="icon-badge"><i class="bi bi-map"></i></div>
-                <div>
-                  <h3 class="h5 mb-1" style="text-align:left;">Geoportal</h3>
-                  <p class="mb-2 muted">
-                    Visor SIG cuasi en tiempo real: filtros por periodo y sensor, recorte por municipios/microcuencas/áreas protegidas,
-                    KPIs y gráficas (incluye descarga de tabla).
-                  </p>
-                  <a class="link-primary" href="./geoportal.html">Abrir Geoportal <i class="bi bi-arrow-right ms-1"></i></a>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-          <div class="card glass navcard h-100">
-            <div class="card-body">
-              <div class="d-flex gap-3">
-                <div class="icon-badge"><i class="bi bi-file-earmark-text"></i></div>
-                <div>
-                  <h3 class="h5 mb-1" style="text-align:left;">Resumen</h3>
-                  <p class="mb-2 muted">
-                    Síntesis del periodo con indicadores y notas técnicas para lectura rápida y comunicación interna.
-                  </p>
-                  <span class="text-body-secondary small"><i class="bi bi-clock me-1"></i>Próximamente</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-          <div class="card glass navcard h-100">
-            <div class="card-body">
-              <div class="d-flex gap-3">
-                <div class="icon-badge"><i class="bi bi-journal-text"></i></div>
-                <div>
-                  <h3 class="h5 mb-1" style="text-align:left;">Informes</h3>
-                  <p class="mb-2 muted">
-                    Plantillas y salidas para coordinación (por municipio/microcuenca/área protegida) con tablas exportables y mapas.
-                  </p>
-                  <span class="text-body-secondary small"><i class="bi bi-clock me-1"></i>Próximamente</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <section id="metodologia" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Metodología de trabajo</h2>
-          <div class="text-body-secondary">Cómo se consulta FIRMS sin exponer la MAP_KEY y se entrega al geoportal</div>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-lg-6">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-shuffle me-1"></i>Flujo técnico</h3>
-
-              <div class="step mb-3">
-                <div class="num">1</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Consulta NRT</div>
-                  <div class="muted">El geoportal solicita al proxy (Cloudflare Worker) datos recientes por periodo y sensor.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">2</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Proxy seguro</div>
-                  <div class="muted">La MAP_KEY se guarda como Secret en Cloudflare; se aplica cache corto y CORS para GitHub Pages.</div>
-                </div>
-              </div>
-
-              <div class="step">
-                <div class="num">3</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Normalización</div>
-                  <div class="muted">Se unen ventanas temporales, se deduplica y se entrega JSON uniforme con resumen y filas.</div>
-                </div>
-              </div>
-
-              <hr class="my-3">
-
-              <div class="callout muted">
-                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-exclamation-triangle me-1"></i>Limitaciones técnicas</div>
-                <ul class="mb-0" style="padding-left: 1.1rem;">
-                  <li>La detección depende de nubosidad/humo y del paso orbital (no es monitoreo continuo).</li>
-                  <li>VIIRS (~375 m) y MODIS (~1 km) son resoluciones de píxel: ubicación aproximada.</li>
-                  <li>FRP (MW) indica potencia radiativa; no equivale a área quemada.</li>
-                </ul>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-6">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-layers me-1"></i>Recorte por unidades territoriales</h3>
-              <p class="muted mb-3">
-                El geoportal interpreta los puntos en relación con capas de referencia. Esto permite lecturas comparables y reportes por unidad de gestión.
-              </p>
-
-              <ul class="muted mb-0" style="padding-left: 1.1rem;">
-                <li>Municipios (Sololá)</li>
-                <li>Microcuencas (cuenca Atitlán)</li>
-                <li>Áreas protegidas (CONAP y polígonos de referencia)</li>
-              </ul>
-
-              <div class="mt-3 small text-body-secondary">
-                Las capas se publican como GeoJSON y se usan para recorte espacial y estadísticas por zona.
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="analisis" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Análisis territorial para apoyo a monitoreo</h2>
-          <div class="text-body-secondary">De detecciones a lectura espacial operativa</div>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-lg-7">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <p class="muted mb-3">
-                El módulo permite ubicar concentraciones de focos de calor por periodo y evaluar consistencia por sensor. La lectura
-                territorial prioriza zonas recurrentes y facilita coordinación entre instituciones para verificación.
-              </p>
-
-              <div class="step mb-3">
-                <div class="num">1</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Filtrado por periodo y sensor</div>
-                  <div class="muted">Comparación VIIRS/MODIS NRT, series diarias y FRP para evaluar intensidad relativa.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">2</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Cruce por unidad territorial</div>
-                  <div class="muted">Conteos por municipio/microcuenca/área protegida para reportes rápidos y priorización.</div>
-                </div>
-              </div>
-
-              <div class="step">
-                <div class="num">3</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Salida para coordinación</div>
-                  <div class="muted">Tabla exportable (Excel/CSV) y GeoJSON para integrarse a otros flujos SIG.</div>
-                </div>
-              </div>
-
-              <hr class="my-3">
-
-              <div class="callout muted">
-                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-check2-circle me-1"></i>Uso recomendado</div>
-                <ul class="mb-0" style="padding-left: 1.1rem;">
-                  <li>Verificar con reportes locales (CONRED/UGAM/brigadas) y condiciones meteorológicas.</li>
-                  <li>Usar “Alta confianza” para priorización rápida y revisar “Nominal” para contexto.</li>
-                  <li>Interpretar clusters como señal de persistencia/repetición, no como perímetro.</li>
-                </ul>
-              </div>
-
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-5">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-2" style="text-align:left;"><i class="bi bi-question-circle me-1"></i>Preguntas clave</h3>
-              <ul class="muted mb-3" style="padding-left: 1.1rem;">
-                <li>¿Qué unidades territoriales concentran más detecciones recientes?</li>
-                <li>¿Hay recurrencia por varios días (persistencia) o eventos puntuales?</li>
-                <li>¿Qué sensores confirman el patrón (VIIRS vs MODIS)?</li>
-                <li>¿Cuál es la escala espacial dominante del agrupamiento?</li>
-              </ul>
-
-              <h3 class="h6 section-title mb-2" style="text-align:left;"><i class="bi bi-clipboard2-data me-1"></i>Resultado esperado</h3>
-              <p class="muted mb-0">
-                Lectura espacial rápida para apoyo a coordinación: “dónde, cuánto, cuándo y con qué confianza”, con evidencia estadística básica.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="geoestadistica" class="mt-5">
-      <div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-3">
-        <div>
-          <h2 class="h4 mb-1 section-title" style="text-align:left;">Geoestadística aplicada</h2>
-          <div class="text-body-secondary">Patrones espaciales (CSR/NNI/Ripley/variograma) para interpretar distribución</div>
-        </div>
-      </div>
-
-      <div class="row g-3">
-        <div class="col-lg-7">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <p class="muted mb-3">
-                La geoestadística ayuda a responder si las detecciones se comportan como un patrón aleatorio (CSR) o si existe
-                <b>agrupamiento</b> (clusters) significativo a ciertas escalas. También resume dispersión (SDE) y continuidad de FRP (variograma).
-              </p>
-
-              <div class="callout muted">
-                <div class="fw-semibold mb-1" style="text-align:left;"><i class="bi bi-bullseye me-1"></i>Lecturas típicas</div>
-                <ul class="mb-0" style="padding-left: 1.1rem;">
-                  <li><b>NNI</b> y z/p: evidencia de agrupamiento vs CSR a escala de vecino más cercano.</li>
-                  <li><b>Ripley L(r)</b>: evaluación multiescala; identifica una distancia r* con mayor señal.</li>
-                  <li><b>SDE</b>: dispersión y orientación (anisotropía) de la nube de detecciones.</li>
-                  <li><b>Variograma</b> de FRP: indicios de autocorrelación espacial de intensidad radiativa.</li>
-                </ul>
-              </div>
-
-              <div class="mt-3 small text-body-secondary">
-                Estos resultados apoyan interpretación, pero no sustituyen verificación en campo ni análisis de combustibles/cobertura.
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="col-lg-5">
-          <div class="card glass h-100">
-            <div class="card-body">
-              <h3 class="h6 section-title mb-3" style="text-align:left;"><i class="bi bi-tools me-1"></i>Buenas prácticas</h3>
-
-              <div class="step mb-3">
-                <div class="num">1</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Control de periodo</div>
-                  <div class="muted">Comparar 24–72h vs 7–30d para separar eventos puntuales de recurrencia.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">2</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Control de sensor</div>
-                  <div class="muted">Cruzar VIIRS y MODIS para reducir falsos positivos y entender diferencias de resolución.</div>
-                </div>
-              </div>
-
-              <div class="step mb-3">
-                <div class="num">3</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Control territorial</div>
-                  <div class="muted">Interpretar por municipio/microcuenca/área protegida para asignación de responsabilidad y coordinación.</div>
-                </div>
-              </div>
-
-              <div class="step">
-                <div class="num">4</div>
-                <div>
-                  <div class="fw-semibold" style="text-align:left;">Validación</div>
-                  <div class="muted">Integrar reportes locales, meteorología y condiciones de combustible/cobertura forestal.</div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <footer class="mt-5 pb-4">
-      <div class="text-center mb-3" style="font-size:.98rem; text-align:center;">
-        <strong>Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
-      </div>
-
-      <div class="text-center mb-2" style="text-align:center;">
-        <div class="fw-semibold">Instituciones y organizaciones</div>
-        <div class="text-body-secondary" style="text-align:center;">
-          El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
-        </div>
-      </div>
-
-      <div class="footer-logos" aria-label="Logos institucionales">
-        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Ambiente y Recursos Naturales">
+      <div class="footer-logos">
+        <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener" aria-label="MARN">
           <img src="../../marn.png" alt="MARN">
         </a>
-        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" aria-label="Ministerio de Agricultura, Ganadería y Alimentación">
+        <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener" aria-label="MAGA">
           <img src="../../maga.png" alt="MAGA">
         </a>
-        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" aria-label="Instituto Nacional de Bosques">
+        <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener" aria-label="INAB">
           <img src="../../inab.png" alt="INAB">
         </a>
-        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="Consejo Nacional de Áreas Protegidas">
+        <a href="https://conap.gob.gt/" target="_blank" rel="noopener" aria-label="CONAP">
           <img src="../../conap.png" alt="CONAP">
         </a>
-        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" aria-label="Autoridad para el Manejo Sustentable de la Cuenca del Lago de Atitlán y su Entorno">
+        <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener" aria-label="AMSCLAE">
           <img src="../../amsclae.png" alt="AMSCLAE">
         </a>
-        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="Coordinadora Nacional para la Reducción de Desastres">
+        <a href="https://conred.gob.gt/" target="_blank" rel="noopener" aria-label="CONRED">
           <img src="../../conred.png" alt="CONRED">
         </a>
-        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" aria-label="Centro de Estudios Atitlán - Universidad del Valle de Guatemala">
+        <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener" aria-label="CEA - UVG">
           <img src="../../cea.png" alt="CEA - UVG">
         </a>
-        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" aria-label="Asociación Amigos del Lago de Atitlán">
+        <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener" aria-label="Amigos del Lago de Atitlán">
           <img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán">
         </a>
         <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener" aria-label="Vivamos Mejor Guatemala">
-          <img src="../../vivamos.png" alt="Vivamos Mejor Guatemala">
+          <img src="../../vivamos.png" alt="Vivamos Mejor">
         </a>
-        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" aria-label="Alliance for International Reforestation">
+        <a href="https://www.airguatemala.org/" target="_blank" rel="noopener" aria-label="AIR Guatemala">
           <img src="../../aires.png" alt="AIR">
         </a>
       </div>
-    </footer>
-  </main>
 
-  <button class="btn btn-primary to-top" id="toTop" type="button" aria-label="Volver arriba">
+      <hr class="footer-divider">
+      <div class="footer-copy">© 2026 · Laboratorio SIG · Eje de Bosques · CODEMA Sololá</div>
+    </div>
+  </footer>
+
+  <button class="to-top" id="toTop" aria-label="Volver arriba">
     <i class="bi bi-arrow-up"></i>
   </button>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Tab switcher for guide panel
+    function switchTab(id, btn) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('pane-' + id).classList.add('active');
+      btn.classList.add('active');
+    }
+
     (function(){
       const btn = document.getElementById('toTop');
       const toggleTop = () => {
         if (!btn) return;
-        if (window.scrollY > 700) btn.classList.add('show');
+        if (window.scrollY > 500) btn.classList.add('show');
         else btn.classList.remove('show');
       };
       window.addEventListener('scroll', toggleTop, { passive: true });
       toggleTop();
-      if (btn){
-        btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-      }
+      if (btn) btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+      // Intersection Observer for fade-up
+      const fadeEls = document.querySelectorAll('.fade-up');
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) { e.target.style.opacity = '1'; io.unobserve(e.target); }
+        });
+      }, { threshold: 0.08 });
+      fadeEls.forEach(el => { el.style.opacity = '0'; io.observe(el); });
     })();
   </script>
 </body>
