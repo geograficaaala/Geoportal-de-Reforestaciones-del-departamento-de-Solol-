@@ -20,280 +20,407 @@
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bgA:#f0fdf6; --bgB:#ecfeff;
-      --card:rgba(255,255,255,.94); --card2:rgba(255,255,255,.99);
-      --ink:#0b1f14; --muted:#376049;
-      --stroke:rgba(15,42,26,.11); --stroke2:rgba(15,42,26,.07);
-      --green:#1a9b60; --green2:#0e7248; --teal:#14b8be; --sky:#38bdf8;
-      --lime:#86efac; --amber:#f59e0b;
-      --shadow:0 20px 52px rgba(8,44,20,.11); --shadowSm:0 8px 24px rgba(8,44,20,.08);
-      --radius:20px; --radiusSm:14px;
+      --bgA:#effff6;
+      --bgB:#eefbff;
+      --card: rgba(255,255,255,.92);
+      --card2: rgba(255,255,255,.98);
+      --ink:#0f2a1a;
+      --muted:#3c5b4a;
+      --stroke: rgba(15,42,26,.12);
+      --stroke2: rgba(15,42,26,.08);
+      --green:#2bb673;
+      --teal:#22c1c3;
+      --sky:#38bdf8;
+      --shadow: 0 14px 40px rgba(10,50,20,.10);
+      --shadowSm: 0 10px 22px rgba(10,50,20,.08);
+      --radius: 18px;
+      --radiusSm: 14px;
     }
-    *{box-sizing:border-box;margin:0;padding:0}
+    *{box-sizing:border-box}
     body{
+      margin:0;
       color:var(--ink);
-      font-family:"Inter",system-ui,-apple-system,sans-serif;
-      background:
-        radial-gradient(1100px 420px at 10% 0%,rgba(26,155,96,.17),transparent 58%),
-        radial-gradient(900px 460px at 82% 4%,rgba(20,184,190,.13),transparent 56%),
-        radial-gradient(700px 380px at 48% 20%,rgba(134,239,172,.15),transparent 60%),
-        linear-gradient(180deg,var(--bgB),var(--bgA));
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif;
+      background: radial-gradient(1200px 420px at 18% 0%, rgba(43,182,115,.22), transparent 60%),
+                  radial-gradient(980px 520px at 74% 6%, rgba(34,193,195,.16), transparent 60%),
+                  radial-gradient(760px 520px at 56% 18%, rgba(180,240,210,.20), transparent 65%),
+                  linear-gradient(180deg, var(--bgB), var(--bgA));
       min-height:100vh;
     }
     .topbar{
-      height:68px;display:grid;grid-template-columns:1fr minmax(260px,500px) 1fr;
-      align-items:center;gap:12px;padding:0 18px;
-      border-bottom:1px solid var(--stroke2);
-      background:rgba(255,255,255,.84);backdrop-filter:blur(14px);
-      position:sticky;top:0;z-index:1000;
-      box-shadow:0 1px 0 var(--stroke2),0 4px 20px rgba(8,44,20,.06);
+      height:72px;
+      display:grid;
+      grid-template-columns: 1fr minmax(280px, 520px) 1fr;
+      align-items:center;
+      gap:12px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.78);
+      backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
-    .topbar .slot{display:flex;align-items:center;gap:10px}
-    .topbar .slot.right{justify-content:flex-end}
-    .brandTitle{text-align:center;line-height:1.1}
-    .brandTitle .h{font-family:"DM Serif Display",serif;font-size:15.5px;font-weight:400;margin:0;letter-spacing:.1px}
-    .brandTitle .s{margin:3px 0 0;font-size:11.5px;color:var(--muted);font-weight:500}
+    .topbar .slot{display:flex; align-items:center; gap:12px;}
+    .topbar .slot.right{justify-content:flex-end;}
+    .brandTitle{
+      text-align:center;
+      line-height:1.1;
+    }
+    .brandTitle .h{
+      font-weight:900;
+      letter-spacing:.2px;
+      font-size: 16px;
+      margin:0;
+    }
+    .brandTitle .s{
+      margin:4px 0 0 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
     .logo{
-      height:40px;width:auto;border-radius:10px;
-      background:rgba(255,255,255,.9);border:1px solid var(--stroke2);padding:4px;
-      filter:drop-shadow(0 4px 10px rgba(0,0,0,.10));transition:transform .14s;
+      height: 42px;
+      width:auto;
+      border-radius: 10px;
+      background: transparent;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.12));
     }
-    .logo:hover{transform:scale(1.04)}
-    .wrap{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px}
-    @media(max-width:980px){.wrap{grid-template-columns:1fr}}
-    .panel{display:flex;flex-direction:column;gap:12px;min-width:0}
+    .wrap{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap: 14px;
+      padding: 14px;
+    }
+    @media (max-width: 980px){
+      .wrap{grid-template-columns: 1fr; }
+    }
+    .panel{
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+      min-width: 0;
+    }
     .card{
-      background:var(--card);border:1px solid var(--stroke);
-      border-radius:var(--radius);box-shadow:var(--shadowSm);padding:14px;
+      background: var(--card);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadowSm);
+      padding: 12px;
     }
     .card h3{
-      margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:.4px;
-      text-transform:uppercase;color:var(--green2);display:flex;align-items:center;gap:9px;
+      margin:0 0 10px 0;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .2px;
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
     .badgeDot{
-      width:9px;height:9px;border-radius:999px;flex-shrink:0;
-      background:linear-gradient(135deg,var(--green),var(--teal));
-      box-shadow:0 0 8px rgba(26,155,96,.40);
+      width: 10px; height: 10px; border-radius: 999px;
+      background: linear-gradient(180deg, var(--green), var(--teal));
+      box-shadow: 0 6px 14px rgba(34,193,195,.25);
     }
     .row{
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      padding:10px 12px;border-radius:var(--radiusSm);
-      border:1px solid var(--stroke2);
-      background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(240,253,248,.88));
-      transition:box-shadow .14s;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: 10px;
+      padding: 10px 10px;
+      border-radius: var(--radiusSm);
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.75);
     }
-    .row:hover{box-shadow:var(--shadowSm)}
-    .row .name{font-size:13px;font-weight:700;line-height:1.2}
-    .row .desc{font-size:11.5px;color:var(--muted);margin-top:3px}
+    .row .name{
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.15;
+    }
+    .row .desc{
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
     .toggle{
-      width:50px;height:28px;border-radius:999px;position:relative;
-      background:rgba(15,42,26,.10);border:1px solid rgba(15,42,26,.14);
-      cursor:pointer;flex:0 0 auto;transition:background .18s,border-color .18s;
+      width: 54px;
+      height: 30px;
+      border-radius: 999px;
+      position: relative;
+      background: rgba(15,42,26,.10);
+      border: 1px solid rgba(15,42,26,.15);
+      cursor: pointer;
+      flex: 0 0 auto;
     }
     .toggle::after{
-      content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;
-      border-radius:999px;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.14);
-      transition:transform .18s ease;
+      content:"";
+      position:absolute;
+      top: 3px;
+      left: 3px;
+      width: 24px;
+      height: 24px;
+      border-radius: 999px;
+      background: #fff;
+      box-shadow: 0 10px 18px rgba(0,0,0,.10);
+      transition: transform .18s ease;
     }
-    .toggle.on{background:rgba(26,155,96,.28);border-color:rgba(26,155,96,.48)}
-    .toggle.on::after{transform:translateX(22px)}
-    .select,.btn{
-      width:100%;padding:10px 12px;border-radius:var(--radiusSm);
-      border:1px solid rgba(15,42,26,.14);
-      background:rgba(255,255,255,.93);color:var(--ink);
-      outline:none;font-weight:700;font-size:13px;font-family:inherit;
+    .toggle.on{
+      background: rgba(56,189,248,.28);
+      border-color: rgba(56,189,248,.45);
+    }
+    .toggle.on::after{ transform: translateX(24px); }
+    .select, .btn{
+      width:100%;
+      padding: 10px 10px;
+      border-radius: var(--radiusSm);
+      border: 1px solid rgba(15,42,26,.14);
+      background: rgba(255,255,255,.92);
+      color: var(--ink);
+      outline: none;
+      font-weight: 700;
+      font-size: 13px;
     }
     .btn{
       cursor:pointer;
-      background:linear-gradient(135deg,rgba(26,155,96,.14),rgba(20,184,190,.10));
-      transition:filter .12s,transform .12s,box-shadow .12s;
+      background: linear-gradient(180deg, rgba(56,189,248,.18), rgba(43,182,115,.12));
     }
-    .btn:hover{filter:brightness(.97);transform:translateY(-1px);box-shadow:var(--shadowSm)}
-    .btn:active{transform:translateY(0)}
-    .btnRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .muted{color:var(--muted);font-size:12px;line-height:1.5}
-    .mb-2{margin-bottom:8px}.mt-2{margin-top:10px}
+    .btn:hover{ filter: brightness(0.98); }
+    .btnRow{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .muted{ color: var(--muted); font-size: 12px; }
     .status{
-      font-size:12px;font-weight:700;padding:8px 12px;
-      border-radius:var(--radiusSm);border:1px solid var(--stroke2);
-      background:rgba(255,255,255,.82);color:var(--muted);
+      font-size:12px;
+      font-weight: 800;
+      padding: 8px 10px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke2);
+      background: rgba(255,255,255,.78);
     }
-    .status.ok{color:#0c6e3f;background:rgba(26,155,96,.07);border-color:rgba(26,155,96,.22)}
-    .status.warn{color:#7c4b00;background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.26)}
-    .status.err{color:#8c122a;background:rgba(220,38,38,.06);border-color:rgba(220,38,38,.22)}
-    .mapcol{min-width:0;display:flex;flex-direction:column;gap:12px}
+    .status.ok{ color:#0a7b4d; }
+    .status.warn{ color:#9a6b00; }
+    .status.err{ color:#a3162b; }
+    .mapcol{
+      min-width: 0;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
     #map{
-      height:560px;border-radius:var(--radius);overflow:hidden;
-      border:1px solid var(--stroke);box-shadow:var(--shadow);background:#e8f5ec;
+      height: 560px;
+      border-radius: var(--radius);
+      overflow:hidden;
+      border: 1px solid var(--stroke);
+      box-shadow: var(--shadow);
+      background: #fff;
     }
-    @media(max-width:980px){#map{height:460px}}
-    .leaflet-control-layers,.leaflet-bar a{
-      background:rgba(255,255,255,.96)!important;
-      border-color:rgba(15,42,26,.13)!important;
+    @media (max-width: 980px){
+      #map{ height: 520px; }
     }
     .below{
-      background:var(--card2);border:1px solid var(--stroke);
-      border-radius:var(--radius);box-shadow:var(--shadowSm);padding:18px;
+      background: var(--card2);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: var(--shadowSm);
+      padding: 12px;
     }
-    .below > h2{
-      margin:0 0 16px;font-size:16px;font-weight:400;
-      font-family:"DM Serif Display",serif;letter-spacing:.1px;
-      display:flex;align-items:center;gap:10px;color:var(--green2);
+    .below h2{
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      font-weight: 900;
+      display:flex;
+      align-items:center;
+      gap:10px;
     }
-    .kpis{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;gap:10px;margin-top:8px}
-    @media(max-width:980px){.kpis{grid-template-columns:1fr 1fr}}
+    .kpis{
+      display:grid;
+      grid-template-columns: 1.1fr 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    @media (max-width: 980px){
+      .kpis{ grid-template-columns: 1fr 1fr; }
+    }
     .kpi{
-      border:1px solid var(--stroke2);border-radius:var(--radiusSm);
-      background:linear-gradient(160deg,rgba(255,255,255,.97),rgba(240,253,248,.85));
-      padding:12px 14px;position:relative;overflow:hidden;
-      transition:transform .13s,box-shadow .13s;
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radiusSm);
+      background: rgba(255,255,255,.82);
+      padding: 10px;
     }
-    .kpi:hover{transform:translateY(-2px);box-shadow:var(--shadowSm)}
-    .kpi::before{
-      content:"";position:absolute;top:0;left:0;right:0;height:3px;
-      border-radius:var(--radiusSm) var(--radiusSm) 0 0;
-      background:linear-gradient(90deg,var(--green),var(--teal));
+    .kpi .lab{ font-size: 12px; color: var(--muted); font-weight: 700; }
+    .kpi .val{ font-size: 18px; font-weight: 1000; margin-top: 2px; }
+    .grid2{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 12px;
     }
-    .kpi .lab{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
-    .kpi .val{font-size:22px;font-weight:900;margin-top:5px;font-variant-numeric:tabular-nums;color:var(--green2)}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
-    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+    @media (max-width: 980px){ .grid2{ grid-template-columns: 1fr; } }
     .chartCard{
-      border:1px solid var(--stroke2);border-radius:var(--radius);
-      background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(240,253,248,.82));
-      padding:14px;overflow:hidden;
-      box-shadow:0 4px 14px rgba(8,44,20,.06);
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.82);
+      padding: 10px;
+      overflow:hidden;
     }
     .chartTitle{
-      font-size:11.5px;font-weight:800;margin:0 0 12px;color:var(--green2);
-      display:flex;align-items:center;justify-content:space-between;gap:10px;
-      text-transform:uppercase;letter-spacing:.4px;
+      font-size: 12px;
+      font-weight: 900;
+      margin: 2px 0 10px 0;
+      color: var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
     }
-    canvas{max-width:100%}
+    canvas{ max-width: 100%; }
     .interp{
-      margin-top:14px;border:1px solid var(--stroke2);border-radius:var(--radius);
-      background:linear-gradient(135deg,rgba(240,253,248,.92),rgba(236,254,255,.86));
-      padding:15px 17px;
+      margin-top: 12px;
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.84);
+      padding: 12px;
     }
     .interp h4{
-      margin:0 0 9px;font-size:11.5px;font-weight:800;
-      text-transform:uppercase;letter-spacing:.5px;color:var(--green2);
-      display:flex;align-items:center;gap:7px;
+      margin: 0 0 6px 0;
+      font-size: 12px;
+      font-weight: 1000;
+      color: var(--muted);
     }
-    .interp h4::before{content:"◆";font-size:8px;color:var(--teal)}
-    .interp p{margin:8px 0 0;font-size:13px;line-height:1.65}
+    .interp p{
+      margin: 8px 0 0 0;
+      font-size: 13px;
+      line-height: 1.35;
+    }
     .eqBlock{
-      margin-top:14px;border:1px solid var(--stroke2);border-radius:var(--radius);
-      background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(240,253,248,.88));
-      padding:16px 18px;
+      margin-top: 12px;
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.84);
+      padding: 12px;
     }
     .eqBlock h4{
-      margin:0 0 12px;font-size:11.5px;font-weight:800;
-      text-transform:uppercase;letter-spacing:.5px;color:var(--green2);
-      display:flex;align-items:center;gap:8px;
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      font-weight: 1000;
+      color: var(--muted);
     }
-    .eqBlock h4::before{content:"∫";font-size:15px;color:var(--teal);font-style:italic}
     .eq{
-      display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;
-      padding:12px 14px;border-radius:var(--radiusSm);
-      border:1px solid rgba(15,42,26,.09);background:rgba(236,254,255,.60);
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items:center;
+      justify-content:flex-start;
+      padding: 10px 10px;
+      border-radius: var(--radiusSm);
+      border: 1px solid rgba(15,42,26,.10);
+      background: rgba(238,255,246,.72);
     }
-    .eq .lbl{font-size:11.5px;color:var(--muted);font-weight:800;min-width:82px}
-    .eqDivider{
-      margin:14px 0 12px;display:flex;align-items:center;gap:10px;
+    .eq .lbl{
+      font-size:12px;
+      color: var(--muted);
+      font-weight: 900;
     }
-    .eqDivider::before,.eqDivider::after{content:"";flex:1;height:1px;background:var(--stroke2)}
-    .eqDivider span{
-      font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
-      color:var(--muted);padding:4px 10px;border:1px solid var(--stroke2);
-      border-radius:999px;background:rgba(255,255,255,.80);white-space:nowrap;
-    }
-    .eqGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    @media(max-width:700px){.eqGrid{grid-template-columns:1fr}}
-    .eqCard{
-      border:1px solid rgba(15,42,26,.09);border-radius:var(--radiusSm);
-      background:rgba(240,253,248,.70);padding:12px 14px;
-    }
-    .eqCard .eqLabel{
-      font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
-      color:var(--green2);margin-bottom:9px;display:flex;align-items:center;gap:6px;
-      flex-wrap:wrap;
-    }
-    .eqCard .eqLabel .tag{
-      display:inline-block;padding:2px 8px;border-radius:6px;
-      background:rgba(26,155,96,.14);color:var(--green2);font-size:9.5px;
-    }
-    .eqCard .eqRef{font-size:10.5px;color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45}
     .tblWrap{
-      margin-top:14px;border:1px solid var(--stroke2);border-radius:var(--radius);
-      background:rgba(255,255,255,.92);overflow:hidden;
-      box-shadow:0 4px 14px rgba(8,44,20,.06);
+      margin-top: 12px;
+      border: 1px solid var(--stroke2);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.86);
+      overflow:hidden;
     }
-    .tblHeader{
-      display:flex;gap:10px;justify-content:space-between;align-items:center;
-      padding:11px 14px;border-bottom:1px solid var(--stroke2);
-      background:linear-gradient(135deg,rgba(240,253,248,.96),rgba(236,254,255,.90));
+    table{
+      width:100%;
+      border-collapse: collapse;
+      font-size: 13px;
     }
-    .tblLabel{font-weight:800;font-size:11.5px;color:var(--green2);text-transform:uppercase;letter-spacing:.4px}
-    .tblBtns{display:flex;gap:8px}
-    .tblBtns .btn{width:auto;padding:7px 12px;font-size:12px}
-    table{width:100%;border-collapse:collapse;font-size:13px}
     thead th{
-      text-align:left;font-size:11px;color:var(--muted);font-weight:800;
-      padding:9px 12px;border-bottom:1px solid rgba(15,42,26,.09);
-      background:rgba(236,254,255,.70);text-transform:uppercase;letter-spacing:.3px;
+      text-align:left;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 900;
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(15,42,26,.10);
+      background: rgba(238,251,255,.70);
     }
-    tbody td{padding:9px 12px;border-bottom:1px solid rgba(15,42,26,.07);font-size:13px}
-    tbody tr:last-child td{border-bottom:none}
-    tbody tr:hover{background:rgba(26,155,96,.05)}
-    .right{text-align:right}
+    tbody td{
+      padding: 9px 10px;
+      border-bottom: 1px solid rgba(15,42,26,.08);
+    }
+    tbody tr:hover{ background: rgba(56,189,248,.06); }
+    .right{ text-align:right; }
     .sw{
-      display:inline-block;width:11px;height:11px;border-radius:3px;
-      border:1px solid rgba(0,0,0,.12);margin-right:8px;vertical-align:-2px;
+      display:inline-block;
+      width: 12px; height: 12px;
+      border-radius: 4px;
+      border: 1px solid rgba(0,0,0,.12);
+      margin-right: 8px;
+      vertical-align: -2px;
     }
-    .infoBlock{
-      margin-top:14px;padding:20px;border-radius:var(--radius);
-      border:1px dashed rgba(26,155,96,.28);
-      background:linear-gradient(135deg,rgba(240,253,248,.70),rgba(236,254,255,.55));
+    .footer{
+      margin: 16px 14px 20px 14px;
+      padding: 18px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--stroke);
+      background: rgba(255,255,255,.82);
+      box-shadow: var(--shadowSm);
       text-align:center;
     }
-    .infoBlock h4{font-size:12.5px;font-weight:800;color:var(--green2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
-    .infoBlock p{font-size:12.5px;color:var(--muted);line-height:1.6}
-    .footer{
-      margin:16px 14px 24px;padding:20px 18px;border-radius:var(--radius);
-      border:1px solid var(--stroke);background:rgba(255,255,255,.86);
-      box-shadow:var(--shadowSm);text-align:center;
+    .footer .t{
+      font-weight: 900;
+      font-size: 13px;
+      margin: 0 0 10px 0;
     }
-    .footer .t{font-weight:800;font-size:13px;margin:0 0 8px;color:var(--green2)}
-    .footer .p{margin:0 0 14px;font-size:12.5px;color:var(--muted);line-height:1.5}
-    .logos{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center}
+    .footer .p{
+      margin: 0 0 12px 0;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+    .logos{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+      align-items:center;
+      padding-top: 6px;
+    }
     .logos img{
-      height:36px;width:auto;border-radius:8px;
-      filter:drop-shadow(0 4px 10px rgba(0,0,0,.09));
-      transition:transform .14s,filter .14s;
+      height: 34px;
+      width:auto;
+      filter: drop-shadow(0 6px 14px rgba(0,0,0,.10));
+      border-radius: 8px;
     }
-    .logos img:hover{transform:scale(1.06);filter:drop-shadow(0 6px 16px rgba(26,155,96,.22))}
-    .navBtns{display:flex;gap:8px;align-items:center}
+    .leaflet-control-layers, .leaflet-bar a{
+      background: rgba(255,255,255,.94) !important;
+      border-color: rgba(15,42,26,.14) !important;
+    }
+
+    .navBtns{display:flex; gap:10px; align-items:center;}
     .navBtn{
-      display:inline-flex;align-items:center;gap:7px;
-      padding:8px 14px;border-radius:999px;
-      border:1px solid rgba(15,42,26,.14);
-      background:linear-gradient(135deg,rgba(26,155,96,.18),rgba(255,255,255,.72));
-      box-shadow:0 6px 16px rgba(10,50,20,.08);
-      color:var(--ink);text-decoration:none;
-      font-weight:700;font-size:12px;letter-spacing:.2px;
-      cursor:pointer;user-select:none;
-      transition:transform .12s,box-shadow .12s;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(15,42,26,.14);
+      background: linear-gradient(180deg, rgba(43,182,115,.22), rgba(255,255,255,.70));
+      box-shadow: 0 10px 18px rgba(10,50,20,.08);
+      color: var(--ink);
+      text-decoration:none;
+      font-weight: 900;
+      font-size: 12px;
+      letter-spacing:.2px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .12s ease, filter .12s ease;
     }
-    .navBtn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(10,50,20,.12)}
-    .navBtn.secondary{background:linear-gradient(135deg,rgba(20,184,190,.15),rgba(255,255,255,.76))}
+    .navBtn:hover{ filter: brightness(0.98); transform: translateY(-1px); }
+    .navBtn:active{ transform: translateY(0px); }
+    .navBtn.secondary{
+      background: linear-gradient(180deg, rgba(34,193,195,.16), rgba(255,255,255,.74));
+    }
     .navBtn .dot{
-      width:7px;height:7px;border-radius:999px;flex-shrink:0;
-      background:linear-gradient(135deg,var(--teal),var(--green));
+      width: 8px; height: 8px; border-radius: 999px;
+      background: linear-gradient(180deg, var(--teal), var(--green));
     }
   </style>
 </head>
@@ -386,72 +513,40 @@
           <p id="interpText">Selecciona un municipio o microcuenca para generar interpretación.</p>
         </div>
 
-                <div class="eqBlock">
-          <h4>Métricas ecológicas calculadas</h4>
+        <div class="eqBlock">
+          <h4>Ecuaciones (métricas ecológicas)</h4>
           <div class="eq">
             <div class="lbl">Proporción</div><div id="eqP"></div>
-            <div class="lbl">Shannon H&#x2032;</div><div id="eqH"></div>
-            <div class="lbl">Evenness J</div><div id="eqJ"></div>
+            <div class="lbl">Shannon</div><div id="eqH"></div>
+            <div class="lbl">Evenness</div><div id="eqJ"></div>
           </div>
-          <div class="muted" style="margin-top:10px;">Calculadas sobre hectáreas por clase dentro del recorte (excluyendo 0/nulos). Selecciona un polígono en el mapa para ver resultados.</div>
-
-          <div class="eqDivider"><span>Análisis forestal avanzado</span></div>
-          <div class="eqGrid">
-
-            <div class="eqCard">
-              <div class="eqLabel">Biomasa aérea (AGB) <span class="tag">Chave et al. 2014</span></div>
-              <div id="eqAGB"></div>
-              <div class="eqRef">&rho;<sub>w</sub>&nbsp;= densidad de madera (g/cm&sup3;); D&nbsp;= DAP (cm); H&nbsp;= altura (m). Modelo pantropical calibrado para bosques montanos mesoamericanos &gt; 1 400 msnm.</div>
-            </div>
-
-            <div class="eqCard">
-              <div class="eqLabel">Stock de carbono <span class="tag">IPCC Tier 1 &middot; 2019</span></div>
-              <div id="eqCarbon"></div>
-              <div class="eqRef">Fracción de carbono en biomasa seca = 0.47. C<sub>BGB</sub>&nbsp;&#x2248; 0.26&times;AGB. C<sub>total</sub>&nbsp;&#x2248; 5.8&times;C<sub>AGB</sub> incluyendo suelo mineral y necromasa.</div>
-            </div>
-
-            <div class="eqCard">
-              <div class="eqLabel">NDVI &amp; LAI <span class="tag">Rouse 1974 &middot; Fang 2019</span></div>
-              <div id="eqNDVI"></div>
-              <div class="eqRef">Landsat-8/9 OLI: NIR = B5, RED = B4. LAI = 0.57·NDVI<sup>1.84</sup> (bosques tropicales montanos). Valores NDVI &gt; 0.60 indican dosel cerrado en el altiplano de Sololá.</div>
-            </div>
-
-            <div class="eqCard">
-              <div class="eqLabel">Fenología doble-logística <span class="tag">TIMESAT &middot; Eklundh 2015</span></div>
-              <div id="eqFeno"></div>
-              <div class="eqRef">c<sub>1</sub>&nbsp;= base; c<sub>2</sub>&nbsp;= amplitud; t<sub>1</sub>, t<sub>2</sub>&nbsp;= DOY inicio/fin de la estación verde; k<sub>1</sub>, k<sub>2</sub>&nbsp;= tasas de crecimiento/senescencia.</div>
-            </div>
-
-            <div class="eqCard">
-              <div class="eqLabel">Riesgo FWI <span class="tag">Van Wagner 1987</span></div>
-              <div id="eqFWI"></div>
-              <div class="eqRef">ISI = velocidad de propagación; BUI = disponibilidad de combustible; F = FFMC, D = DMC. FWI &gt; 5 implica riesgo moderado-alto en el altiplano guatemalteco (CONRED 2023).</div>
-            </div>
-
-            <div class="eqCard">
-              <div class="eqLabel">Variograma esférico <span class="tag">Journel &amp; Huijbregts 1978</span></div>
-              <div id="eqVario"></div>
-              <div class="eqRef">C<sub>0</sub>&nbsp;= nugget; C&nbsp;= sill; a&nbsp;= alcance (km). Autocorrelación espacial de la biomasa forestal. Base para kriging ordinario y diseño de muestreo forestal.</div>
-            </div>
-
-            <div class="eqCard">
-              <div class="eqLabel">Balance hídrico (Budyko) <span class="tag">Budyko 1974</span></div>
-              <div id="eqHydro"></div>
-              <div class="eqRef">E<sub>a</sub> = evapotranspiración real; P = precipitación; E<sub>0</sub> = ET potencial. Cuencas con alta cobertura boscosa: &phi;&nbsp;&#x2248; 0.62–0.74 en la cuenca del Lago Atitlán.</div>
-            </div>
-
-            <div class="eqCard">
-              <div class="eqLabel">MESH &amp; Fragmentación <span class="tag">McGarigal &amp; Marks 1995</span></div>
-              <div id="eqMESH"></div>
-              <div class="eqRef">Effective Mesh Size: mide la probabilidad de que dos puntos aleatorios en el paisaje estén en el mismo parche forestal. MESH &lt; 100 ha indica alta fragmentación.</div>
-            </div>
-
-          </div>
+          <div class="muted" style="margin-top:10px;">Las métricas se calculan a partir de hectáreas por clase dentro del recorte seleccionado (sin 0/nulos).</div>
         </div>
 
-        <div class="infoBlock" id="informes">
-          <h4>Informes y series temporales</h4>
-          <p>Esta sección integrará reportes descargables (PDF/Excel), series de tiempo Landsat 2015–2024, comparativas inter-municipales y mapas temáticos de cambio de cobertura. Módulo en desarrollo — Laboratorio SIG · Eje de Bosques · CODEMA-Sololá 2026.</p>
+        <div class="tblWrap">
+          <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; padding: 10px 10px; border-bottom: 1px solid rgba(15,42,26,.08); background: rgba(238,251,255,.55);">
+            <div style="font-weight:900; font-size:12px; color: var(--muted);">Resumen por categoría</div>
+            <div style="display:flex; gap:10px;">
+              <button id="btnCSV" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar CSV</button>
+              <button id="btnXLSX" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar Excel</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th class="right">Ha</th>
+                <th class="right">%</th>
+              </tr>
+            </thead>
+            <tbody id="tblBody">
+              <tr><td class="muted" colspan="3">Selecciona un recorte en el mapa.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="eqBlock" id="informes" style="margin-top:12px;">
+          <h4>Informes</h4>
+          <div class="muted">Esta sección se configurará después (reportes descargables, series temporales, comparaciones y mapas temáticos).</div>
         </div>
 
 
@@ -469,10 +564,8 @@
       <img src="../../conap.png" alt="CONAP">
       <img src="../../amsclae.png" alt="AMSCLAE">
       <img src="../../conred.png" alt="CONRED">
-      <img src="../../cea.png" alt="CEA-UVG">
+      <img src="../../cea.png" alt="CEA">
       <img src="../../aala_logo.png" alt="AALA">
-      <img src="../../vivamos.png" alt="Vivamos Mejor">
-      <img src="../../aires.png" alt="AIRES">
     </div>
   </footer>
 
@@ -511,9 +604,13 @@
     const map = L.map("map", { zoomControl: true });
     const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap" });
     const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "&copy; OpenTopoMap" });
+    const sat = L.tileLayer(
+      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      { maxZoom: 20, attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community" }
+    );
     osm.addTo(map);
     map.setView([14.65, -91.2], 10);
-    L.control.layers({ "OSM": osm, "Topo": topo }, null, { collapsed: true }).addTo(map);
+    L.control.layers({ "OSM": osm, "Topo": topo, "Satélite": sat }, null, { collapsed: true }).addTo(map);
 
     let layersCfg = [];
     let rasterState = new Map();
@@ -545,9 +642,10 @@
     }
 
     function friendlyLayerName(layer) {
+      const id = (layer.id || "").toLowerCase();
+      if (id.includes("biomasa")) return "Biomasa forestal (y su dimensional)";
       const n = (layer.nombre || "").trim();
       if (n) return n;
-      const id = (layer.id || "").toLowerCase();
       if (id.includes("fenologia")) return "Clasificación fenológica forestal";
       return layer.id || "Capa";
     }
@@ -569,7 +667,7 @@
       name.textContent = friendlyLayerName(layer);
       const desc = document.createElement("div");
       desc.className = "desc";
-      desc.textContent = "Raster categórico (COG) · valores sin 0/nulos";
+      desc.textContent = "COG · análisis por recorte (sin 0/nulos)";
       left.appendChild(name);
       left.appendChild(desc);
 
@@ -836,41 +934,9 @@
       elP.innerHTML = "";
       elH.innerHTML = "";
       elJ.innerHTML = "";
-      katex.render("p_i = \\frac{A_i}{\\sum_{j} A_j}", elP, { throwOnError:false });
+      katex.render("p_i = \\frac{A_i}{\\sum A_i}", elP, { throwOnError:false });
       katex.render("H' = -\\sum_{i=1}^{S} p_i\\,\\ln(p_i)", elH, { throwOnError:false });
       katex.render("J = \\frac{H'}{\\ln(S)}", elJ, { throwOnError:false });
-
-      // ── Advanced forestry equations ──
-      function rk(id, latex, display) {
-        const el = $(id); if(!el) return;
-        el.innerHTML = "";
-        try { katex.render(latex, el, { throwOnError:false, displayMode: !!display }); }
-        catch(e) { el.innerHTML = "<span style='font-size:11px;color:#888'>" + latex + "</span>"; }
-      }
-      rk("eqAGB",
-        "\\text{AGB} = 0.0673 \\cdot (\\rho_w \\cdot D^2 \\cdot H)^{0.976}\\;[\\text{kg arbol}^{-1}]",
-        true);
-      rk("eqCarbon",
-        "C_{\\text{AGB}} = 0.47 \\times \\text{AGB};\\quad C_{\\text{total}} \\approx 5.8 \\times C_{\\text{AGB}}\\;[\\text{Mg\\,C\\,ha}^{-1}]",
-        true);
-      rk("eqNDVI",
-        "\\text{NDVI} = \\frac{\\rho_{\\text{NIR}} - \\rho_{\\text{RED}}}{\\rho_{\\text{NIR}} + \\rho_{\\text{RED}}};\\quad \\text{LAI} = 0.57 \\cdot \\text{NDVI}^{1.84}",
-        true);
-      rk("eqFeno",
-        "V(t)=c_1+c_2\\!\\left[\\frac{1}{1+e^{k_1(t_1-t)}}-\\frac{1}{1+e^{k_2(t_2-t)}}\\right]",
-        true);
-      rk("eqFWI",
-        "\\text{ISI}=e^{0.05039 F}\\cdot\\frac{1}{1+0.01998\\,D};\\quad \\text{FWI}=f(\\text{ISI},\\text{BUI})",
-        true);
-      rk("eqVario",
-        "\\gamma(h)=C_0+C\\!\\left[\\frac{3h}{2a}-\\frac{1}{2}\\!\\left(\\frac{h}{a}\\right)^{\\!3}\\right]\\;(h\\le a)",
-        true);
-      rk("eqHydro",
-        "\\frac{E_a}{P}=\\phi\\!\\left(\\frac{E_0}{P}\\right);\\quad Q = P - E_a",
-        true);
-      rk("eqMESH",
-        "\\text{MESH}=\\frac{\\displaystyle\\sum_{i=1}^{n} a_i^2}{A_{\\text{tot}}}\\;[\\text{ha}]",
-        true);
     }
 
     function renderCharts(stats) {
