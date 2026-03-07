@@ -1,1152 +1,1052 @@
 <!doctype html>
 <html lang="es">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Geoportal · Ecología del paisaje forestal · Sololá</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Geoportal · Ecología Forestal · Sololá</title>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 
   <script src="https://unpkg.com/proj4@2.9.2/dist/proj4.js"></script>
   <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
-
   <script src="https://unpkg.com/georaster/dist/georaster.browser.bundle.min.js"></script>
   <script src="https://unpkg.com/georaster-layer-for-leaflet@3.10.0/dist/georaster-layer-for-leaflet.min.js"></script>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css">
-
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bgA:#effff6;
-      --bgB:#eefbff;
-      --card: rgba(255,255,255,.92);
-      --card2: rgba(255,255,255,.98);
-      --ink:#0f2a1a;
-      --muted:#3c5b4a;
-      --stroke: rgba(15,42,26,.12);
-      --stroke2: rgba(15,42,26,.08);
-      --green:#2bb673;
-      --teal:#22c1c3;
-      --sky:#38bdf8;
-      --shadow: 0 14px 40px rgba(10,50,20,.10);
-      --shadowSm: 0 10px 22px rgba(10,50,20,.08);
-      --radius: 18px;
-      --radiusSm: 14px;
+      --E:#065f46;--E2:#064e3b;--leaf:#16a34a;--sage:#6ee7b7;--mint:#a7f3d0;
+      --lime:#bef264;--amber:#fbbf24;--sky:#0ea5e9;--violet:#7c3aed;--rose:#e11d48;
+      --ink:#0f1a13;--muted:#3d5c46;
+      --panel:rgba(255,255,255,.86);--card:rgba(255,255,255,.94);
+      --stroke:rgba(6,95,70,.13);--r:16px;
+      --shadow:0 16px 44px rgba(6,50,30,.13);--shadow-sm:0 8px 22px rgba(6,50,30,.09);
     }
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      margin:0;
-      color:var(--ink);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif;
-      background: radial-gradient(1200px 420px at 18% 0%, rgba(43,182,115,.22), transparent 60%),
-                  radial-gradient(980px 520px at 74% 6%, rgba(34,193,195,.16), transparent 60%),
-                  radial-gradient(760px 520px at 56% 18%, rgba(180,240,210,.20), transparent 65%),
-                  linear-gradient(180deg, var(--bgB), var(--bgA));
+      font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);
+      background:
+        radial-gradient(900px 500px at 0% 0%,rgba(6,95,70,.20),transparent 60%),
+        radial-gradient(800px 400px at 100% 20%,rgba(110,231,183,.22),transparent 60%),
+        radial-gradient(600px 400px at 55% 100%,rgba(190,242,100,.16),transparent 55%),
+        linear-gradient(180deg,#f0fdf4,#ecfdf5 50%,#f7fee7);
       min-height:100vh;
     }
-    .topbar{
-      height:72px;
-      display:grid;
-      grid-template-columns: 1fr minmax(280px, 520px) 1fr;
-      align-items:center;
-      gap:12px;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.78);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    .topbar .slot{display:flex; align-items:center; gap:12px;}
-    .topbar .slot.right{justify-content:flex-end;}
-    .brandTitle{
-      text-align:center;
-      line-height:1.1;
-    }
-    .brandTitle .h{
-      font-weight:900;
-      letter-spacing:.2px;
-      font-size: 16px;
-      margin:0;
-    }
-    .brandTitle .s{
-      margin:4px 0 0 0;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .logo{
-      height: 42px;
-      width:auto;
-      border-radius: 10px;
-      background: transparent;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,.12));
-    }
-    .wrap{
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap: 14px;
-      padding: 14px;
-    }
-    @media (max-width: 980px){
-      .wrap{grid-template-columns: 1fr; }
-    }
-    .panel{
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-      min-width: 0;
-    }
-    .card{
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadowSm);
-      padding: 12px;
-    }
-    .card h3{
-      margin:0 0 10px 0;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: .2px;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .badgeDot{
-      width: 10px; height: 10px; border-radius: 999px;
-      background: linear-gradient(180deg, var(--green), var(--teal));
-      box-shadow: 0 6px 14px rgba(34,193,195,.25);
-    }
-    .row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      padding: 10px 10px;
-      border-radius: var(--radiusSm);
-      border: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.75);
-    }
-    .row .name{
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1.15;
-    }
-    .row .desc{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 3px;
-    }
-    .toggle{
-      width: 54px;
-      height: 30px;
-      border-radius: 999px;
-      position: relative;
-      background: rgba(15,42,26,.10);
-      border: 1px solid rgba(15,42,26,.15);
-      cursor: pointer;
-      flex: 0 0 auto;
-    }
-    .toggle::after{
-      content:"";
-      position:absolute;
-      top: 3px;
-      left: 3px;
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: #fff;
-      box-shadow: 0 10px 18px rgba(0,0,0,.10);
-      transition: transform .18s ease;
-    }
-    .toggle.on{
-      background: rgba(56,189,248,.28);
-      border-color: rgba(56,189,248,.45);
-    }
-    .toggle.on::after{ transform: translateX(24px); }
-    .select, .btn{
-      width:100%;
-      padding: 10px 10px;
-      border-radius: var(--radiusSm);
-      border: 1px solid rgba(15,42,26,.14);
-      background: rgba(255,255,255,.92);
-      color: var(--ink);
-      outline: none;
-      font-weight: 700;
-      font-size: 13px;
-    }
-    .btn{
-      cursor:pointer;
-      background: linear-gradient(180deg, rgba(56,189,248,.18), rgba(43,182,115,.12));
-    }
-    .btn:hover{ filter: brightness(0.98); }
-    .btnRow{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .muted{ color: var(--muted); font-size: 12px; }
-    .status{
-      font-size:12px;
-      font-weight: 800;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.78);
-    }
-    .status.ok{ color:#0a7b4d; }
-    .status.warn{ color:#9a6b00; }
-    .status.err{ color:#a3162b; }
-    .mapcol{
-      min-width: 0;
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-    }
-    #map{
-      height: 560px;
-      border-radius: var(--radius);
-      overflow:hidden;
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      background: #fff;
-    }
-    @media (max-width: 980px){
-      #map{ height: 520px; }
-    }
-    .below{
-      background: var(--card2);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadowSm);
-      padding: 12px;
-    }
-    .below h2{
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      font-weight: 900;
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .kpis{
-      display:grid;
-      grid-template-columns: 1.1fr 1fr 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    @media (max-width: 980px){
-      .kpis{ grid-template-columns: 1fr 1fr; }
-    }
-    .kpi{
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radiusSm);
-      background: rgba(255,255,255,.82);
-      padding: 10px;
-    }
-    .kpi .lab{ font-size: 12px; color: var(--muted); font-weight: 700; }
-    .kpi .val{ font-size: 18px; font-weight: 1000; margin-top: 2px; }
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
-    }
-    @media (max-width: 980px){ .grid2{ grid-template-columns: 1fr; } }
-    .chartCard{
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.82);
-      padding: 10px;
-      overflow:hidden;
-    }
-    .chartTitle{
-      font-size: 12px;
-      font-weight: 900;
-      margin: 2px 0 10px 0;
-      color: var(--muted);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
-    canvas{ max-width: 100%; }
-    .interp{
-      margin-top: 12px;
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.84);
-      padding: 12px;
-    }
-    .interp h4{
-      margin: 0 0 6px 0;
-      font-size: 12px;
-      font-weight: 1000;
-      color: var(--muted);
-    }
-    .interp p{
-      margin: 8px 0 0 0;
-      font-size: 13px;
-      line-height: 1.35;
-    }
-    .eqBlock{
-      margin-top: 12px;
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.84);
-      padding: 12px;
-    }
-    .eqBlock h4{
-      margin: 0 0 8px 0;
-      font-size: 12px;
-      font-weight: 1000;
-      color: var(--muted);
-    }
-    .eq{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-      align-items:center;
-      justify-content:flex-start;
-      padding: 10px 10px;
-      border-radius: var(--radiusSm);
-      border: 1px solid rgba(15,42,26,.10);
-      background: rgba(238,255,246,.72);
-    }
-    .eq .lbl{
-      font-size:12px;
-      color: var(--muted);
-      font-weight: 900;
-    }
-    .tblWrap{
-      margin-top: 12px;
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.86);
-      overflow:hidden;
-    }
-    table{
-      width:100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-    thead th{
-      text-align:left;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 900;
-      padding: 10px 10px;
-      border-bottom: 1px solid rgba(15,42,26,.10);
-      background: rgba(238,251,255,.70);
-    }
-    tbody td{
-      padding: 9px 10px;
-      border-bottom: 1px solid rgba(15,42,26,.08);
-    }
-    tbody tr:hover{ background: rgba(56,189,248,.06); }
-    .right{ text-align:right; }
-    .sw{
-      display:inline-block;
-      width: 12px; height: 12px;
-      border-radius: 4px;
-      border: 1px solid rgba(0,0,0,.12);
-      margin-right: 8px;
-      vertical-align: -2px;
-    }
-    .footer{
-      margin: 16px 14px 20px 14px;
-      padding: 18px 14px;
-      border-radius: var(--radius);
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.82);
-      box-shadow: var(--shadowSm);
-      text-align:center;
-    }
-    .footer .t{
-      font-weight: 900;
-      font-size: 13px;
-      margin: 0 0 10px 0;
-    }
-    .footer .p{
-      margin: 0 0 12px 0;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.35;
-    }
-    .logos{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      justify-content: center;
-      align-items:center;
-      padding-top: 6px;
-    }
-    .logos img{
-      height: 34px;
-      width:auto;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,.10));
-      border-radius: 8px;
-    }
-    .leaflet-control-layers, .leaflet-bar a{
-      background: rgba(255,255,255,.94) !important;
-      border-color: rgba(15,42,26,.14) !important;
-    }
+    a{color:inherit;text-decoration:none}
 
-    .navBtns{display:flex; gap:10px; align-items:center;}
-    .navBtn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(15,42,26,.14);
-      background: linear-gradient(180deg, rgba(43,182,115,.22), rgba(255,255,255,.70));
-      box-shadow: 0 10px 18px rgba(10,50,20,.08);
-      color: var(--ink);
-      text-decoration:none;
-      font-weight: 900;
-      font-size: 12px;
-      letter-spacing:.2px;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .12s ease, filter .12s ease;
+    header{
+      position:sticky;top:0;z-index:1000;
+      background:linear-gradient(100deg,rgba(6,95,70,.97) 0%,rgba(5,78,58,.93) 45%,rgba(22,163,74,.89) 100%);
+      border-bottom:1px solid rgba(255,255,255,.15);
+      box-shadow:0 8px 32px rgba(6,50,30,.24);backdrop-filter:blur(10px);
+      padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
     }
-    .navBtn:hover{ filter: brightness(0.98); transform: translateY(-1px); }
-    .navBtn:active{ transform: translateY(0px); }
-    .navBtn.secondary{
-      background: linear-gradient(180deg, rgba(34,193,195,.16), rgba(255,255,255,.74));
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-logos{display:flex;gap:8px;align-items:center}
+    .brand-logos a,.footer-logos a{display:flex}
+    .brand-logos img{
+      height:52px;width:auto;border-radius:12px;background:rgba(255,255,255,.92);
+      border:1px solid rgba(255,255,255,.22);box-shadow:0 6px 18px rgba(6,50,30,.18);
+      padding:6px;transition:transform .15s
     }
-    .navBtn .dot{
-      width: 8px; height: 8px; border-radius: 999px;
-      background: linear-gradient(180deg, var(--teal), var(--green));
+    .brand-logos img:hover,.footer-logos img:hover{transform:scale(1.04)}
+    .title-wrap{display:flex;flex-direction:column;gap:2px}
+    .title-main{font-family:'Playfair Display',serif;font-size:17px;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.20)}
+    .title-sub{font-size:11.5px;color:rgba(255,255,255,.78)}
+    .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+    .btn{
+      border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.14);color:#fff;padding:8px 12px;border-radius:12px;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;cursor:pointer;text-decoration:none;
+      display:inline-flex;align-items:center;gap:7px;white-space:nowrap;transition:transform .12s,box-shadow .12s,background .12s
+    }
+    .btn:hover{background:rgba(255,255,255,.26);box-shadow:0 10px 22px rgba(6,50,30,.18);transform:translateY(-2px)}
+    .btn.primary{background:linear-gradient(135deg,rgba(190,242,100,.30),rgba(110,231,183,.28));border-color:rgba(190,242,100,.40);font-weight:700}
+
+    .wrap{height:calc(100vh - 74px);display:grid;grid-template-columns:330px 1fr}
+    aside{background:var(--panel);border-right:1px solid var(--stroke);backdrop-filter:blur(12px);padding:12px;overflow-y:auto;overflow-x:hidden}
+    #mapFrame{position:relative;width:100%;height:100%}
+    #map{position:absolute;inset:0}
+
+    details{background:var(--card);border:1px solid var(--stroke);box-shadow:var(--shadow-sm);border-radius:var(--r);padding:10px 12px;margin-bottom:10px}
+    summary{list-style:none;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;font-size:13px;color:var(--E)}
+    summary::-webkit-details-marker{display:none}
+    summary::after{content:'▸';font-size:11px;color:var(--muted);transition:transform .2s}
+    details[open] summary::after{transform:rotate(90deg)}
+    .pill{font-size:11px;color:var(--muted);padding:4px 9px;border:1px solid var(--stroke);border-radius:999px;background:rgba(255,255,255,.70)}
+    .small{font-size:12px;color:var(--muted);line-height:1.4}
+    .mt8{margin-top:8px}.mt10{margin-top:10px}.mt12{margin-top:12px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+    .layerItem{padding:10px;border:1px solid var(--stroke);border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(240,253,244,.92));margin-top:8px}
+    .layerHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .layerName{font-size:13px;font-weight:700;color:var(--E);line-height:1.3}
+    .layerDesc{font-size:11.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+    .layerControls{display:flex;align-items:center;gap:8px;margin-top:8px}
+    .layerControls label{font-size:11.5px;color:var(--muted)}
+    .layerControls input[type=range]{flex:1;accent-color:var(--leaf)}
+    .toggle{position:relative;display:inline-block;width:36px;height:20px;flex-shrink:0}
+    .toggle input{opacity:0;width:0;height:0}
+    .toggle .slider{position:absolute;cursor:pointer;inset:0;background:rgba(6,95,70,.18);border-radius:20px;transition:background .2s}
+    .toggle .slider::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+    .toggle input:checked + .slider{background:var(--leaf)}
+    .toggle input:checked + .slider::before{transform:translateX(16px)}
+    .legendBlock{display:none;margin-top:8px;border-top:1px dashed var(--stroke);padding-top:8px}
+    .legendBlock.show{display:block}
+    .legendRow{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:12px}
+    .swatch{width:13px;height:13px;border-radius:4px;border:1px solid rgba(0,0,0,.12);flex-shrink:0}
+    .bmBtn,.ghostBtn,.select,
+    .dl-btn{
+      padding:8px 10px;border-radius:12px;font-size:12px;font-weight:600;border:1px solid var(--stroke);background:rgba(255,255,255,.80);color:var(--E);cursor:pointer;transition:transform .12s,box-shadow .12s,background .12s
+    }
+    .bmBtn:hover,.ghostBtn:hover,.dl-btn:hover,.select:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm)}
+    .bmBtn.active{background:linear-gradient(135deg,rgba(6,95,70,.14),rgba(110,231,183,.18));border-color:rgba(6,95,70,.28)}
+    .select{width:100%;font-family:inherit}
+    .status{font-size:12px;color:var(--muted);padding:8px 10px;border:1px dashed var(--stroke);border-radius:13px;background:rgba(255,255,255,.62);margin-top:8px;line-height:1.45}
+    .status.ok{border-color:rgba(22,163,74,.35);color:#166534}
+    .status.warn{border-color:rgba(245,158,11,.40);color:#92400e}
+    .status.err{border-color:rgba(220,38,38,.35);color:#b91c1c}
+    .metaList{display:grid;gap:8px;margin-top:8px}
+    .metaRow{padding:8px 10px;border:1px solid var(--stroke);border-radius:12px;background:rgba(255,255,255,.80)}
+    .metaRow .lab{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+    .metaRow .val{font-size:12.5px;font-weight:700;color:var(--E);margin-top:2px}
+
+    .analysis-section{padding:0 0 40px}
+    .analysis-hero{
+      background:linear-gradient(135deg,#064e3b 0%,#065f46 40%,#166534 70%,#14532d 100%);
+      padding:28px 32px 24px;position:relative;overflow:hidden;
+    }
+    .analysis-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(700px 300px at 80% 50%,rgba(190,242,100,.10),transparent 60%),radial-gradient(400px 300px at 10% 80%,rgba(110,231,183,.08),transparent 55%)}
+    .analysis-hero-inner{position:relative;max-width:1600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .analysis-hero-left h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.25);margin-bottom:4px}
+    .analysis-hero-left p{font-size:12.5px;color:rgba(255,255,255,.78);max-width:720px;line-height:1.55}
+    .analysis-hero-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .badgeHero{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);font-size:13.5px;font-weight:700;color:#fff;backdrop-filter:blur(8px)}
+    .badgeHero .dot{width:8px;height:8px;border-radius:50%;background:#86efac;flex-shrink:0;box-shadow:0 0 6px #86efac}
+    .btn-dl{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:13px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer;transition:transform .12s,box-shadow .12s,background .12s;backdrop-filter:blur(8px)}
+    .btn-dl:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,0,0,.25);background:rgba(255,255,255,.24)}
+    .analysis-body{max-width:1600px;margin:0 auto;padding:24px 24px 0}
+
+    .kpi-row,.kpi-row2{display:grid;gap:12px;margin-bottom:20px}
+    .kpi-row{grid-template-columns:repeat(4,1fr)}
+    .kpi-row2{grid-template-columns:repeat(4,1fr)}
+    .kpi-card{background:var(--card);border:1px solid var(--stroke);border-radius:18px;padding:15px 14px 12px;position:relative;overflow:hidden;box-shadow:var(--shadow-sm);transition:transform .12s,box-shadow .12s}
+    .kpi-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+    .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0}
+    .kpi-card.c1::before{background:linear-gradient(90deg,#065f46,#10b981)}
+    .kpi-card.c2::before{background:linear-gradient(90deg,#16a34a,#86efac)}
+    .kpi-card.c3::before{background:linear-gradient(90deg,#0ea5e9,#67e8f9)}
+    .kpi-card.c4::before{background:linear-gradient(90deg,#7c3aed,#c4b5fd)}
+    .kpi-card.c5::before{background:linear-gradient(90deg,#fbbf24,#fde68a)}
+    .kpi-card.c6::before{background:linear-gradient(90deg,#e11d48,#fca5a5)}
+    .kpi-card.c7::before{background:linear-gradient(90deg,#0891b2,#a5f3fc)}
+    .kpi-card.c8::before{background:linear-gradient(90deg,#d97706,#fde68a)}
+    .kpi-label{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+    .kpi-val{font-size:21px;font-weight:900;color:var(--E);margin-top:4px;line-height:1;font-variant-numeric:tabular-nums}
+    .kpi-eq{font-size:10px;color:var(--muted);margin-top:6px;min-height:18px;line-height:1.45}
+
+    .section-divider{display:flex;align-items:center;gap:14px;margin:28px 0 18px;padding:0 2px}
+    .section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--stroke)}
+    .section-divider span{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:var(--E);white-space:nowrap;padding:6px 14px;background:var(--card);border:1px solid var(--stroke);border-radius:999px}
+
+    .charts-2,.charts-3{display:grid;gap:16px;margin-bottom:20px}
+    .charts-2{grid-template-columns:1fr 1fr}
+    .charts-3{grid-template-columns:1fr 1fr 1fr}
+    .chart-card{background:var(--card);border:1px solid var(--stroke);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:16px 18px 14px;min-width:0;position:relative}
+    .chart-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--r) var(--r) 0 0;background:linear-gradient(90deg,rgba(6,95,70,.55),rgba(110,231,183,.55))}
+    .chart-title{font-size:13.5px;font-weight:700;color:var(--E);margin-bottom:3px}
+    .chart-source{font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.4;font-style:italic}
+    .chart-eq{margin-top:10px;padding:10px 12px;background:linear-gradient(135deg,rgba(6,95,70,.04),rgba(110,231,183,.04));border:1px solid var(--stroke);border-radius:12px;font-size:11px;color:var(--muted);overflow-x:auto}
+    .chart-eq-label{font-size:10.5px;font-weight:700;color:var(--E);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+    .chart-interp{margin-top:8px;padding:9px 12px;background:rgba(255,255,255,.75);border:1px dashed var(--stroke);border-radius:11px;font-size:11.5px;color:var(--muted);line-height:1.6}
+    .chart-interp b{color:var(--E)}
+
+    .model-box{background:linear-gradient(135deg,rgba(6,95,70,.06),rgba(5,78,58,.04));border:1.5px solid rgba(6,95,70,.18);border-radius:var(--r);padding:18px 20px;margin-bottom:20px;box-shadow:var(--shadow-sm)}
+    .model-box h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--E);margin-bottom:12px}
+    .model-box-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .model-sub{font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:8px}
+    .model-sub b{color:var(--E)}
+    .model-eq-block{padding:12px 14px;background:rgba(255,255,255,.80);border:1px solid var(--stroke);border-radius:12px;overflow-x:auto}
+
+    .interpret-panel{background:linear-gradient(135deg,rgba(6,95,70,.03),rgba(5,78,58,.02));border:1.5px solid rgba(6,95,70,.16);border-radius:var(--r);padding:20px 22px;margin-bottom:20px}
+    .interpret-panel h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--E);margin-bottom:14px}
+    .interpret-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .interpret-item{padding:12px 14px;background:rgba(255,255,255,.80);border:1px solid var(--stroke);border-radius:13px;font-size:12px;color:var(--muted);line-height:1.65}
+    .interpret-item b{color:var(--E);display:block;margin-bottom:3px;font-size:12.5px}
+
+    .table-wrap{background:var(--card);border:1px solid var(--stroke);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:20px}
+    .table-header{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--stroke);background:linear-gradient(135deg,rgba(6,95,70,.04),rgba(110,231,183,.04))}
+    .table-title{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:var(--E)}
+    .table-sub{font-size:11.5px;color:var(--muted);margin-top:2px;font-style:italic}
+    .table-scroll{overflow-x:auto;max-height:420px;overflow-y:auto}
+    table{width:100%;border-collapse:collapse;font-size:12px}
+    thead th{position:sticky;top:0;z-index:1;background:rgba(240,253,244,.97);border-bottom:1px solid var(--stroke);text-align:left;padding:10px 11px;color:var(--E);white-space:nowrap;font-weight:700;font-size:11.5px}
+    tbody td{border-bottom:1px solid rgba(6,95,70,.06);padding:9px 11px;color:var(--ink);vertical-align:middle;white-space:nowrap}
+    tbody tr:hover{background:rgba(240,253,244,.65)}
+    .right{text-align:right}
+
+    footer{padding:24px 16px 32px;background:rgba(255,255,255,.55);border-top:1px solid var(--stroke)}
+    .footer-inner{max-width:1100px;margin:0 auto;background:var(--card);border:1px solid var(--stroke);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:18px 22px}
+    .footer-text{font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:10px}
+    .footer-text strong{color:var(--E)}
+    .footer-sub{font-size:12px;color:var(--E);text-align:center;font-weight:700;margin-bottom:12px}
+    .footer-logos{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+    .footer-logos img{max-height:50px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08));transition:transform .15s,filter .15s}
+    .footer-src{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
+
+    .leaflet-control-layers,.leaflet-bar a,.leaflet-control-zoom a{
+      background:#fff!important;border-color:rgba(6,95,70,.14)!important;color:var(--E)!important;
+      box-shadow:0 8px 22px rgba(6,50,30,.10)!important
+    }
+    .leaflet-popup-content-wrapper{background:linear-gradient(180deg,#f0fdf4,#ecfdf5)!important;color:#0f1a13!important;border:1px solid rgba(6,95,70,.16);border-radius:14px!important;box-shadow:0 14px 32px rgba(6,50,30,.18)}
+    .leaflet-popup-tip{background:#ecfdf5!important}
+    .popupCard{padding:4px 2px}
+    .popupTitle{font-weight:800;font-size:13px;color:var(--E);margin-bottom:8px}
+    .popupRow{font-size:12px;background:rgba(255,255,255,.7);border:1px solid var(--stroke);border-radius:9px;padding:5px 8px;margin-bottom:4px;line-height:1.35}
+
+    @media(max-width:1100px){
+      .wrap{grid-template-columns:1fr;height:auto}
+      aside{display:block}
+      #mapFrame{height:60vh;min-height:440px}
+      .charts-3{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:760px){
+      .charts-2,.charts-3,.kpi-row,.kpi-row2,.interpret-grid,.model-box-grid,.grid2{grid-template-columns:1fr}
+      .analysis-hero{padding:22px 18px}
+      .analysis-body{padding:18px 14px 0}
     }
   </style>
 </head>
-
 <body>
-  <header class="topbar">
-    <div class="slot left">
-      <img class="logo" src="../../BOSQUE.png" alt="Eje de Bosques">
-      <img class="logo" src="../../CODEMA%20%282%29.png" alt="CODEMA">
+<header>
+  <div class="brand">
+    <div class="brand-logos">
+      <a href="../../index.html"><img src="../../BOSQUE.png" alt="Eje de Bosques"/></a>
+      <a href="../../index.html"><img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá"/></a>
     </div>
-    <div class="brandTitle">
-      <p class="h">Geoportal · Ecología del paisaje forestal · Sololá</p>
-      <p class="s">Clasificación fenológica forestal · Estadísticas por municipio y microcuenca</p>
+    <div class="title-wrap">
+      <div class="title-main">Geoportal · Ecología Forestal</div>
+      <div class="title-sub">Capas funcionales + análisis espacial por recorte · Sololá, Guatemala</div>
     </div>
-    <div class="slot right">
-      <div class="navBtns">
-        <a class="navBtn" href="../../index.html" title="Regresar al inicio"><span class="dot"></span>Inicio</a>
-        <a class="navBtn secondary" href="#informes" title="Ir a informes (próximamente)"><span class="dot"></span>Informes</a>
+  </div>
+  <div class="btns">
+    <a class="btn" href="../../index.html">🏠 Volver a Inicio</a>
+    <a class="btn primary" href="#analisis">📊 Ir al análisis</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <aside>
+    <details open>
+      <summary>Base cartográfica <span class="pill" id="baseName">OSM</span></summary>
+      <div class="mt10 grid2">
+        <button class="bmBtn active" id="bmOsm">🗺 Calles</button>
+        <button class="bmBtn" id="bmSat">🛰 Satélite</button>
       </div>
-      <img class="logo" src="../../aala_logo.png" alt="Laboratorio SIG">
+      <div class="mt8"><button class="bmBtn" id="bmTopo" style="width:100%">⛰ Topo</button></div>
+    </details>
+
+    <details open>
+      <summary>Capas temáticas <span class="pill" id="layersCount">0</span></summary>
+      <div class="small mt8">Se conserva la lógica funcional del geoportal original: las capas se leen desde <code>layers.json</code> y se dibujan como ráster sobre el mapa.</div>
+      <div id="layersList"></div>
+    </details>
+
+    <details open>
+      <summary>Recorte y análisis <span class="pill" id="recorteLabel">Municipios</span></summary>
+      <div class="small mt8">Selecciona el tipo de recorte y luego haz clic sobre un polígono en el mapa para disparar el análisis.</div>
+      <div class="mt10">
+        <select id="selRecorte" class="select">
+          <option value="muni" selected>Municipios (Sololá)</option>
+          <option value="micro">Microcuencas (Atitlán)</option>
+        </select>
+      </div>
+      <div class="mt10 grid2">
+        <button id="btnZoom" class="ghostBtn">🎯 Zoom</button>
+        <button id="btnClear" class="ghostBtn">🧹 Limpiar</button>
+      </div>
+      <div class="status" id="status">Listo. Activa una capa y selecciona un recorte.</div>
+      <div class="metaList">
+        <div class="metaRow">
+          <div class="lab">Recorte seleccionado</div>
+          <div class="val" id="metaSelection">Sin selección</div>
+        </div>
+        <div class="metaRow">
+          <div class="lab">Capa usada para análisis</div>
+          <div class="val" id="metaLayer">Sin capa activa</div>
+        </div>
+      </div>
+    </details>
+  </aside>
+
+  <div id="mapFrame"><div id="map"></div></div>
+</div>
+
+<div class="analysis-section" id="analisis">
+  <div class="analysis-hero">
+    <div class="analysis-hero-inner">
+      <div class="analysis-hero-left">
+        <h2>🔬 Análisis espacial integrado</h2>
+        <p>La interfaz y la lectura analítica toman la referencia visual del geoportal de estilo, pero los resultados se calculan con la lógica real del geoportal funcional: capas ráster activas, recortes vectoriales y estadísticas por píxel válidamente intersectado.</p>
+      </div>
+      <div class="analysis-hero-right">
+        <div class="badgeHero"><div class="dot"></div><span id="heroSelection">Sin selección activa</span></div>
+        <button class="btn-dl" id="btnDlCSV">📄 Descargar CSV</button>
+        <button class="btn-dl" id="btnDlXLSX">📥 Descargar Excel</button>
+      </div>
     </div>
-  </header>
-
-  <div class="wrap">
-    <aside class="panel">
-      <div class="card">
-        <h3><span class="badgeDot"></span>Capas</h3>
-        <div id="layersList"></div>
-        <div class="mt-2">
-          <div class="muted mb-2">Recorte</div>
-          <select id="selRecorte" class="select">
-            <option value="muni" selected>Municipios (Sololá)</option>
-            <option value="micro">Microcuencas (Atitlán)</option>
-          </select>
-        </div>
-        <div class="mt-2 btnRow">
-          <button id="btnZoom" class="btn" type="button">Zoom a Sololá</button>
-          <button id="btnClear" class="btn" type="button">Limpiar selección</button>
-        </div>
-        <div class="mt-2 status" id="status">Listo.</div>
-        <div class="muted mt-2">Tip: haz clic en un polígono para calcular hectáreas por categoría (sin incluir 0/nulos).</div>
-      </div>
-    </aside>
-
-    <section class="mapcol">
-      <div id="map"></div>
-
-      <div class="below">
-        <h2><span class="badgeDot"></span>Resultados y análisis</h2>
-
-        <div class="kpis">
-          <div class="kpi">
-            <div class="lab">Selección</div>
-            <div class="val" id="kpiSel">—</div>
-          </div>
-          <div class="kpi">
-            <div class="lab">Área evaluada (ha)</div>
-            <div class="val" id="kpiArea">—</div>
-          </div>
-          <div class="kpi">
-            <div class="lab">Índice Shannon (H')</div>
-            <div class="val" id="kpiH">—</div>
-          </div>
-          <div class="kpi">
-            <div class="lab">Evenness (J)</div>
-            <div class="val" id="kpiJ">—</div>
-          </div>
-        </div>
-
-        <div class="grid2">
-          <div class="chartCard">
-            <div class="chartTitle">
-              <span>Hectáreas por categoría</span>
-              <span class="muted" id="chartNote">—</span>
-            </div>
-            <canvas id="chartBar" height="190"></canvas>
-          </div>
-          <div class="chartCard">
-            <div class="chartTitle">
-              <span>Participación relativa</span>
-              <span class="muted" id="chartNote2">—</span>
-            </div>
-            <canvas id="chartDonut" height="190"></canvas>
-          </div>
-        </div>
-
-        <div class="interp">
-          <h4>Interpretación espacial</h4>
-          <div class="muted">Se infiere a partir de la distribución de pixeles por cuadrantes dentro del recorte (NO/NE/SO/SE).</div>
-          <p id="interpText">Selecciona un municipio o microcuenca para generar interpretación.</p>
-        </div>
-
-        <div class="eqBlock">
-          <h4>Ecuaciones (métricas ecológicas)</h4>
-          <div class="eq">
-            <div class="lbl">Proporción</div><div id="eqP"></div>
-            <div class="lbl">Shannon</div><div id="eqH"></div>
-            <div class="lbl">Evenness</div><div id="eqJ"></div>
-          </div>
-          <div class="muted" style="margin-top:10px;">Las métricas se calculan a partir de hectáreas por clase dentro del recorte seleccionado (sin 0/nulos).</div>
-        </div>
-
-        <div class="tblWrap">
-          <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; padding: 10px 10px; border-bottom: 1px solid rgba(15,42,26,.08); background: rgba(238,251,255,.55);">
-            <div style="font-weight:900; font-size:12px; color: var(--muted);">Resumen por categoría</div>
-            <div style="display:flex; gap:10px;">
-              <button id="btnCSV" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar CSV</button>
-              <button id="btnXLSX" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar Excel</button>
-            </div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Categoría</th>
-                <th class="right">Ha</th>
-                <th class="right">%</th>
-              </tr>
-            </thead>
-            <tbody id="tblBody">
-              <tr><td class="muted" colspan="3">Selecciona un recorte en el mapa.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="eqBlock" id="informes" style="margin-top:12px;">
-          <h4>Informes</h4>
-          <div class="muted">Esta sección se configurará después (reportes descargables, series temporales, comparaciones y mapas temáticos).</div>
-        </div>
-
-
-      </div>
-    </section>
   </div>
 
-  <footer class="footer">
-    <div class="t">Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
-    <div class="p"><strong>Instituciones y organizaciones</strong><br>El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
-    <div class="logos">
-      <img src="../../marn.png" alt="MARN">
-      <img src="../../maga.png" alt="MAGA">
-      <img src="../../inab.png" alt="INAB">
-      <img src="../../conap.png" alt="CONAP">
-      <img src="../../amsclae.png" alt="AMSCLAE">
-      <img src="../../conred.png" alt="CONRED">
-      <img src="../../cea.png" alt="CEA">
-      <img src="../../aala_logo.png" alt="AALA">
+  <div class="analysis-body">
+    <div class="kpi-row">
+      <div class="kpi-card c1"><div class="kpi-label">Selección</div><div class="kpi-val" id="kpi-sel">—</div><div class="kpi-eq">Entidad activa del recorte</div></div>
+      <div class="kpi-card c2"><div class="kpi-label">Capa analizada</div><div class="kpi-val" id="kpi-layer">—</div><div class="kpi-eq">Última capa activa usada para cálculo</div></div>
+      <div class="kpi-card c3"><div class="kpi-label">Área evaluada</div><div class="kpi-val" id="kpi-area">—</div><div class="kpi-eq">ha = pix × área de celda</div></div>
+      <div class="kpi-card c4"><div class="kpi-label">Categorías detectadas</div><div class="kpi-val" id="kpi-rich">—</div><div class="kpi-eq">S = número de clases presentes</div></div>
     </div>
-  </footer>
 
-  <script>
-    const LAYERS_URL = "./config/layers.json";
-    const RECORTES = {
-      muni:  { url: "../incendios/data/municipios_solola.geojson", label: "Municipios (Sololá)" },
-      micro: { url: "../incendios/data/microcuencas_atitlan.geojson", label: "Microcuencas (Atitlán)" }
-    };
+    <div class="kpi-row2">
+      <div class="kpi-card c5"><div class="kpi-label">Clase dominante</div><div class="kpi-val" id="kpi-dom">—</div><div class="kpi-eq">Clase con mayor área relativa</div></div>
+      <div class="kpi-card c6"><div class="kpi-label">Dominancia</div><div class="kpi-val" id="kpi-domPct">—</div><div class="kpi-eq">D = max(pᵢ)</div></div>
+      <div class="kpi-card c7"><div class="kpi-label">Shannon H'</div><div class="kpi-val" id="kpi-h">—</div><div class="kpi-eq">H' = −Σ pᵢ ln(pᵢ)</div></div>
+      <div class="kpi-card c8"><div class="kpi-label">Evenness J</div><div class="kpi-val" id="kpi-j">—</div><div class="kpi-eq">J = H'/ln(S)</div></div>
+    </div>
 
-    const DEFAULT_LEGEND = [
-      { value: 1, label: "Vegetación herbácea estacional", color: "#d4b483" },
-      { value: 2, label: "Bosque perennifolio", color: "#2bb673" },
-      { value: 3, label: "Bosque caducifolio", color: "#95d5b2" },
-      { value: 4, label: "Bosque semi-caducifolio", color: "#b5179e" }
-    ];
+    <div class="section-divider"><span>📊 Composición del paisaje</span></div>
+    <div class="charts-2">
+      <div class="chart-card">
+        <div class="chart-title">📊 Hectáreas por categoría</div>
+        <div class="chart-source">Distribución absoluta de clases dentro del recorte seleccionado, excluyendo nodata y valores nulos.</div>
+        <canvas id="chartBar" height="170"></canvas>
+        <div class="chart-eq"><div class="chart-eq-label">Cálculo de área por clase</div><div id="eqArea"></div></div>
+        <div class="chart-interp" id="interpBar">Activa una capa y selecciona un recorte para comenzar.</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🧭 Participación relativa</div>
+        <div class="chart-source">Peso porcentual de cada categoría respecto al área total válida analizada.</div>
+        <canvas id="chartDonut" height="170"></canvas>
+        <div class="chart-eq"><div class="chart-eq-label">Proporción por clase</div><div id="eqShare"></div></div>
+        <div class="chart-interp" id="interpDonut">La dominancia y el balance entre clases se actualizarán aquí.</div>
+      </div>
+    </div>
 
-    const NODATA_VALUES = new Set([0, -9999, 255]);
+    <div class="section-divider"><span>〰 Organización espacial</span></div>
+    <div class="charts-2">
+      <div class="chart-card">
+        <div class="chart-title">🧩 Cuadrantes por categoría</div>
+        <div class="chart-source">Conteo de píxeles por cuadrante (NO, NE, SO, SE), útil para detectar sesgos espaciales de la clase dominante.</div>
+        <canvas id="chartQuadrants" height="170"></canvas>
+        <div class="chart-eq"><div class="chart-eq-label">Asignación espacial</div><div id="eqQuadrants"></div></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">🕸 Perfil ecológico sintético</div>
+        <div class="chart-source">Radar normalizado a 0–10 con métricas derivadas del raster activo y del recorte seleccionado.</div>
+        <canvas id="chartRadar" height="170"></canvas>
+        <div class="chart-eq"><div class="chart-eq-label">Normalización</div><div id="eqRadar"></div></div>
+      </div>
+    </div>
 
-    const $ = (id) => document.getElementById(id);
+    <div class="model-box">
+      <h3>📐 Marco de cálculo aplicado</h3>
+      <div class="model-box-grid">
+        <div>
+          <div class="model-eq-block" id="eqBlockMain"></div>
+          <div class="model-sub"><b>Lectura general:</b> el análisis se hace sobre la capa actualmente activa para análisis. El recorte vectorial se reproyecta al CRS del raster antes de intersectar centro de celda por centro de celda.</div>
+        </div>
+        <div>
+          <div class="model-eq-block" id="eqBlockSecondary"></div>
+          <div class="model-sub"><b>Buenas prácticas:</b> el cálculo ignora valores <code>0</code>, <code>-9999</code> y <code>255</code>, y solo considera clases presentes en la leyenda de la capa seleccionada.</div>
+        </div>
+      </div>
+    </div>
 
-    const statusEl = $("status");
-    const layersListEl = $("layersList");
-    const selRecorteEl = $("selRecorte");
+    <div class="interpret-panel">
+      <h3>🧠 Interpretación espacial</h3>
+      <div class="interpret-grid" id="interpretGrid">
+        <div class="interpret-item"><b>Dominancia</b>Selecciona un recorte para generar interpretación.</div>
+        <div class="interpret-item"><b>Diversidad</b>El balance entre clases se calculará automáticamente.</div>
+        <div class="interpret-item"><b>Patrón espacial</b>Se analizará el cuadrante predominante de las clases más extensas.</div>
+        <div class="interpret-item"><b>Lectura técnica</b>Las conclusiones se basan en estadísticas reales del raster, no en valores simulados.</div>
+      </div>
+    </div>
 
-    const kpiSelEl = $("kpiSel");
-    const kpiAreaEl = $("kpiArea");
-    const kpiHEl = $("kpiH");
-    const kpiJEl = $("kpiJ");
+    <div class="table-wrap">
+      <div class="table-header">
+        <div>
+          <div class="table-title">📋 Resumen por categoría</div>
+          <div class="table-sub">Exportable a CSV y Excel.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="dl-btn" id="btnTableCSV">CSV</button>
+          <button class="dl-btn" id="btnTableXLSX">Excel</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th class="right">Ha</th>
+              <th class="right">%</th>
+              <th>Cuadrante principal</th>
+              <th class="right">Pixeles</th>
+            </tr>
+          </thead>
+          <tbody id="tblBody">
+            <tr><td colspan="5">Selecciona un recorte para comenzar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 
-    const interpTextEl = $("interpText");
-    const tblBodyEl = $("tblBody");
-    const chartNoteEl = $("chartNote");
-    const chartNote2El = $("chartNote2");
+<footer>
+  <div class="footer-inner">
+    <div class="footer-text">Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong></div>
+    <div class="footer-sub">Instituciones y organizaciones que integran el Eje de Bosques</div>
+    <div class="footer-logos">
+      <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
+      <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
+      <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
+      <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
+      <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
+      <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
+      <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA-UVG"></a>
+      <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago"></a>
+    </div>
+    <div class="footer-src">Fuentes operativas: layers.json · GeoTIFF/COG · GeoJSON de recortes · Chart.js · Leaflet · GeoRaster</div>
+  </div>
+</footer>
 
-    const map = L.map("map", { zoomControl: true });
-    const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap" });
-    const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "&copy; OpenTopoMap" });
-    const sat = L.tileLayer(
-      "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-      { maxZoom: 20, attribution: "Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community" }
-    );
-    osm.addTo(map);
-    map.setView([14.65, -91.2], 10);
-    L.control.layers({ "OSM": osm, "Topo": topo, "Satélite": sat }, null, { collapsed: true }).addTo(map);
+<script>
+  const LAYERS_URL = "./config/layers.json";
+  const RECORTES = {
+    muni:  { url: "../incendios/data/municipios_solola.geojson", label: "Municipios (Sololá)" },
+    micro: { url: "../incendios/data/microcuencas_atitlan.geojson", label: "Microcuencas (Atitlán)" }
+  };
+  const DEFAULT_LEGEND = [
+    { value: 1, label: "Vegetación herbácea estacional", color: "#d4b483" },
+    { value: 2, label: "Bosque perennifolio", color: "#2bb673" },
+    { value: 3, label: "Bosque caducifolio", color: "#95d5b2" },
+    { value: 4, label: "Bosque semi-caducifolio", color: "#b5179e" }
+  ];
+  const NODATA_VALUES = new Set([0, -9999, 255]);
+  const $ = (id) => document.getElementById(id);
 
-    let layersCfg = [];
-    let rasterState = new Map();
-    let recorteKey = "muni";
-    let recorteLayer = null;
-    let selectedFeatureLayer = null;
-    let selectedFeature = null;
+  const statusEl = $("status");
+  const layersListEl = $("layersList");
+  const selRecorteEl = $("selRecorte");
+  const tblBodyEl = $("tblBody");
 
-    let chartBar = null;
-    let chartDonut = null;
-    let lastStats = null;
+  const map = L.map("map", { zoomControl: true, preferCanvas: true });
+  const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap" });
+  const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "&copy; OpenTopoMap" });
+  const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, attribution: "Tiles &copy; Esri" });
+  osm.addTo(map);
+  map.setView([14.65, -91.2], 10);
+  L.control.layers({ "OSM": osm, "Topo": topo, "Satélite": sat }, null, { collapsed: true }).addTo(map);
 
-    function setStatus(msg, kind) {
-      statusEl.textContent = msg;
-      statusEl.classList.remove("ok","warn","err");
-      if (kind) statusEl.classList.add(kind);
+  let baseKey = "osm";
+  let layersCfg = [];
+  let rasterState = new Map();
+  let recorteKey = "muni";
+  let recorteLayer = null;
+  let selectedFeatureLayer = null;
+  let selectedFeature = null;
+  let activeAnalysisLayerId = null;
+  let lastStats = null;
+  let chartBar = null, chartDonut = null, chartQuadrants = null, chartRadar = null;
+
+  function setStatus(msg, kind){
+    statusEl.textContent = msg;
+    statusEl.classList.remove("ok","warn","err");
+    if(kind) statusEl.classList.add(kind);
+  }
+  function fmt(x, digits=2){
+    if (x === null || x === undefined || Number.isNaN(x)) return "—";
+    return Number(x).toLocaleString("es-GT", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  }
+  function pct(x){
+    if (x === null || x === undefined || Number.isNaN(x)) return "—";
+    return Number(x).toLocaleString("es-GT", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
+  }
+  function shortLayerName(name, max=18){
+    if(!name) return "—";
+    return name.length > max ? name.slice(0,max-1) + "…" : name;
+  }
+  function friendlyLayerName(layer){
+    const id = (layer?.id || "").toLowerCase();
+    const n = (layer?.nombre || layer?.name || "").trim();
+    if (n) return n;
+    if (id.includes("biomasa")) return "Biomasa forestal";
+    if (id.includes("fenologia")) return "Clasificación fenológica";
+    return layer?.id || "Capa";
+  }
+  function legendFor(layer){
+    if (layer?.legend?.items && Array.isArray(layer.legend.items) && layer.legend.items.length) {
+      return layer.legend.items.filter(x => !NODATA_VALUES.has(Number(x.value)));
     }
-
-    function fmt(x, digits=2) {
-      if (x === null || x === undefined || Number.isNaN(x)) return "—";
-      const v = Math.round(x * Math.pow(10, digits)) / Math.pow(10, digits);
-      return v.toLocaleString("es-GT", { minimumFractionDigits: digits, maximumFractionDigits: digits });
-    }
-
-    function pct(x) {
-      if (x === null || x === undefined || Number.isNaN(x)) return "—";
-      const v = Math.round(x * 10) / 10;
-      return v.toLocaleString("es-GT", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
-    }
-
-    function friendlyLayerName(layer) {
-      const id = (layer.id || "").toLowerCase();
-      if (id.includes("biomasa")) return "Biomasa forestal (y su dimensional)";
-      const n = (layer.nombre || "").trim();
-      if (n) return n;
-      if (id.includes("fenologia")) return "Clasificación fenológica forestal";
-      return layer.id || "Capa";
-    }
-
-    function legendFor(layer) {
-      if (layer.legend && layer.legend.items && Array.isArray(layer.legend.items) && layer.legend.items.length) {
-        return layer.legend.items.filter(x => !NODATA_VALUES.has(Number(x.value)));
-      }
-      return DEFAULT_LEGEND;
-    }
-
-    function buildLayerRow(layer) {
-      const row = document.createElement("div");
-      row.className = "row";
-      const left = document.createElement("div");
-      left.style.minWidth = "0";
-      const name = document.createElement("div");
-      name.className = "name";
-      name.textContent = friendlyLayerName(layer);
-      const desc = document.createElement("div");
-      desc.className = "desc";
-      desc.textContent = "COG · análisis por recorte (sin 0/nulos)";
-      left.appendChild(name);
-      left.appendChild(desc);
-
-      const toggle = document.createElement("div");
-      toggle.className = "toggle";
-      toggle.setAttribute("role", "switch");
-      toggle.setAttribute("aria-checked", "false");
-
-      toggle.addEventListener("click", async () => {
-        const on = toggle.classList.contains("on");
-        if (on) {
-          await deactivateLayer(layer.id);
-          toggle.classList.remove("on");
-          toggle.setAttribute("aria-checked", "false");
-        } else {
-          try {
-            await activateLayer(layer.id);
-            toggle.classList.add("on");
-            toggle.setAttribute("aria-checked", "true");
-          } catch (e) {
-            setStatus("Error: " + String(e.message || e), "err");
-          }
-        }
-        if (selectedFeature) recomputeStats();
-      });
-
-      row.appendChild(left);
-      row.appendChild(toggle);
-      return row;
-    }
-
-    async function loadLayersConfig() {
-      const res = await fetch(LAYERS_URL, { cache: "no-store" });
-      if (!res.ok) throw new Error("No se pudo cargar layers.json");
-      const cfg = await res.json();
-      layersCfg = Array.isArray(cfg) ? cfg : [];
-      if (!layersCfg.length) throw new Error("layers.json no tiene capas");
-      layersListEl.innerHTML = "";
-      for (const layer of layersCfg) layersListEl.appendChild(buildLayerRow(layer));
-    }
-
-    function parseEpsgCode(gr) {
-      const p = gr && (gr.projection || gr.proj4 || gr.crs || gr.srs);
-      if (!p) return null;
-      if (typeof p === "number") return p;
-      const s = String(p);
-      const m = s.match(/EPSG\:?(\d+)/i) || s.match(/(\d{4,5})/);
-      return m ? Number(m[1]) : null;
-    }
-
-    function ensureProj(epsg) {
-      if (!epsg) return null;
-      const code = "EPSG:" + epsg;
-      try { if (proj4.defs(code)) return code; } catch (_) {}
-      if (epsg === 32615) {
-        proj4.defs(code, "+proj=utm +zone=15 +datum=WGS84 +units=m +no_defs");
-        return code;
-      }
-      if (epsg === 4326) return "EPSG:4326";
+    return DEFAULT_LEGEND;
+  }
+  function resolveUrl(u){ try { return new URL(u, window.location.href).toString(); } catch (_) { return u; } }
+  function parseEpsgCode(gr){
+    const p = gr && (gr.projection || gr.proj4 || gr.crs || gr.srs);
+    if (!p) return null;
+    if (typeof p === "number") return p;
+    const s = String(p);
+    const m = s.match(/EPSG\:?(\d+)/i) || s.match(/(\d{4,5})/);
+    return m ? Number(m[1]) : null;
+  }
+  function ensureProj(epsg){
+    if (!epsg) return null;
+    const code = "EPSG:" + epsg;
+    try { if (proj4.defs(code)) return code; } catch (_) {}
+    if (epsg === 32615) {
+      proj4.defs(code, "+proj=utm +zone=15 +datum=WGS84 +units=m +no_defs");
       return code;
     }
+    if (epsg === 4326) return "EPSG:4326";
+    return code;
+  }
 
-    function resolveUrl(u) {
-      try { return new URL(u, window.location.href).toString(); } catch (_) { return u; }
-    }
+  function setBasemap(key){
+    baseKey = key;
+    [osm, topo, sat].forEach(layer => { if (map.hasLayer(layer)) map.removeLayer(layer); });
+    ({ osm, topo, sat }[key]).addTo(map);
+    $("baseName").textContent = {osm:"OSM", topo:"Topo", sat:"Satélite"}[key];
+    ["bmOsm","bmTopo","bmSat"].forEach(id => $(id).classList.remove("active"));
+    $("bm" + key.charAt(0).toUpperCase() + key.slice(1)).classList.add("active");
+  }
+  $("bmOsm").onclick = () => setBasemap("osm");
+  $("bmTopo").onclick = () => setBasemap("topo");
+  $("bmSat").onclick = () => setBasemap("sat");
 
-    async function loadRasterForLayer(layer) {
-      const state = rasterState.get(layer.id) || {};
-      if (state.georaster) return state;
+  function updateMetaLabels(){
+    $("metaSelection").textContent = selectedFeature ? humanizeFeatureName(selectedFeature.properties || {}) : "Sin selección";
+    const layer = layersCfg.find(x => x.id === activeAnalysisLayerId);
+    const name = layer ? friendlyLayerName(layer) : "Sin capa activa";
+    $("metaLayer").textContent = name;
+    $("heroSelection").textContent = selectedFeature ? `${humanizeFeatureName(selectedFeature.properties || {})} · ${name}` : "Sin selección activa";
+  }
 
-      setStatus("Cargando raster…", null);
+  function pickFallbackActiveLayer(){
+    const activeIds = [...rasterState.entries()].filter(([,st]) => st.leafletLayer && map.hasLayer(st.leafletLayer)).map(([id]) => id);
+    activeAnalysisLayerId = activeIds.length ? activeIds[activeIds.length - 1] : null;
+    updateMetaLabels();
+  }
 
-      const url = resolveUrl(layer.url);
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) throw new Error("No se pudo descargar el raster");
+  async function loadRasterForLayer(layer){
+    const state = rasterState.get(layer.id) || {};
+    if (state.georaster) return state;
 
-      const ab = await res.arrayBuffer();
-      const georasterObj = await parseGeoraster(ab);
-      const epsg = parseEpsgCode(georasterObj);
-      const proj = ensureProj(epsg);
+    setStatus(`Cargando raster: ${friendlyLayerName(layer)}…`, null);
+    const res = await fetch(resolveUrl(layer.url), { cache: "no-store" });
+    if (!res.ok) throw new Error(`No se pudo descargar el raster de ${friendlyLayerName(layer)}`);
 
-      const legend = legendFor(layer);
-      const colorMap = new Map(legend.map(x => [Number(x.value), String(x.color)]));
+    const georasterObj = await parseGeoraster(await res.arrayBuffer());
+    const epsg = parseEpsgCode(georasterObj);
+    const proj = ensureProj(epsg);
+    const legend = legendFor(layer);
+    const colorMap = new Map(legend.map(x => [Number(x.value), String(x.color)]));
 
-      const layerObj = new GeoRasterLayer({
-        georaster: georasterObj,
-        opacity: (layer.opacity ?? 0.85),
-        resolution: 256,
-        pixelValuesToColorFn: (values) => {
-          const v = values && values.length ? Number(values[0]) : null;
-          if (v === null || v === undefined || Number.isNaN(v)) return null;
-          if (NODATA_VALUES.has(v)) return null;
-          return colorMap.get(v) || null;
-        }
-      });
-
-      const out = { georaster: georasterObj, epsg, proj, leafletLayer: layerObj, legend };
-      rasterState.set(layer.id, out);
-      setStatus("Raster cargado.", "ok");
-      return out;
-    }
-
-    async function activateLayer(id) {
-      const layer = layersCfg.find(x => x.id === id) || layersCfg[0];
-      const state = await loadRasterForLayer(layer);
-      if (!map.hasLayer(state.leafletLayer)) state.leafletLayer.addTo(map);
-      setStatus("Capa activa.", "ok");
-    }
-
-    async function deactivateLayer(id) {
-      const state = rasterState.get(id);
-      if (state && state.leafletLayer && map.hasLayer(state.leafletLayer)) map.removeLayer(state.leafletLayer);
-      setStatus("Capa desactivada.", null);
-    }
-
-    function styleRecorte() {
-      return { color: "#38bdf8", weight: 2, fillColor: "#38bdf8", fillOpacity: 0.08 };
-    }
-    function styleSelected() {
-      return { color: "#2bb673", weight: 3, fillColor: "#2bb673", fillOpacity: 0.12 };
-    }
-
-    function humanizeFeatureName(props) {
-      const preferred = ["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","MICROCUENCA","microcuenca","NAME","name"];
-      for (const k of preferred) if (props && props[k]) return String(props[k]);
-      if (props) {
-        const keys = Object.keys(props);
-        if (keys.length) return String(props[keys[0]]);
+    const layerObj = new GeoRasterLayer({
+      georaster: georasterObj,
+      opacity: (layer.opacity ?? 0.85),
+      resolution: 256,
+      pixelValuesToColorFn: (values) => {
+        const v = values && values.length ? Number(values[0]) : null;
+        if (v === null || v === undefined || Number.isNaN(v)) return null;
+        if (NODATA_VALUES.has(v)) return null;
+        return colorMap.get(v) || null;
       }
-      return "Sin nombre";
-    }
-
-    async function loadRecorte(key) {
-      recorteKey = key;
-      if (recorteLayer) map.removeLayer(recorteLayer);
-      recorteLayer = null;
-      selectedFeatureLayer = null;
-      selectedFeature = null;
-      lastStats = null;
-      resetOutputs();
-
-      const res = await fetch(RECORTES[key].url, { cache: "no-store" });
-      if (!res.ok) { setStatus("No se pudo cargar recorte.", "err"); return; }
-      const data = await res.json();
-
-      recorteLayer = L.geoJSON(data, {
-        style: styleRecorte,
-        onEachFeature: (feature, layer) => {
-          layer.on("click", () => {
-            if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
-            selectedFeatureLayer = layer;
-            selectedFeature = feature;
-            layer.setStyle(styleSelected());
-            layer.bringToFront();
-            recomputeStats();
-          });
-        }
-      }).addTo(map);
-
-      try { map.fitBounds(recorteLayer.getBounds(), { padding: [16, 16] }); } catch (_) {}
-      setStatus("Recorte cargado: " + RECORTES[key].label, "ok");
-    }
-
-    function projectFeatureToRasterCrs(feature, projRaster) {
-      if (!projRaster || !feature) return feature;
-      const coords = feature.geometry.coordinates;
-      const t = (lng, lat) => {
-        const xy = proj4("EPSG:4326", projRaster, [lng, lat]);
-        return [xy[0], xy[1]];
-      };
-      const gtype = feature.geometry.type;
-      let newCoords;
-      if (gtype === "Polygon") newCoords = coords.map(ring => ring.map(([lng, lat]) => t(lng, lat)));
-      else if (gtype === "MultiPolygon") newCoords = coords.map(poly => poly.map(ring => ring.map(([lng, lat]) => t(lng, lat))));
-      else return feature;
-      return { type: "Feature", properties: feature.properties || {}, geometry: { type: gtype, coordinates: newCoords } };
-    }
-
-    function cellCenterXY(col, row, gr) {
-      const x = gr.xmin + (col + 0.5) * gr.pixelWidth;
-      const y = gr.ymax - (row + 0.5) * Math.abs(gr.pixelHeight);
-      return [x, y];
-    }
-
-    function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
-
-    function computeStats(gr, featureProj, legend) {
-      const bbox = turf.bbox(featureProj);
-      const xmin = bbox[0], ymin = bbox[1], xmax = bbox[2], ymax = bbox[3];
-
-      const colMin = clamp(Math.floor((xmin - gr.xmin) / gr.pixelWidth), 0, gr.width - 1);
-      const colMax = clamp(Math.ceil((xmax - gr.xmin) / gr.pixelWidth), 0, gr.width - 1);
-      const rowMin = clamp(Math.floor((gr.ymax - ymax) / Math.abs(gr.pixelHeight)), 0, gr.height - 1);
-      const rowMax = clamp(Math.ceil((gr.ymax - ymin) / Math.abs(gr.pixelHeight)), 0, gr.height - 1);
-
-      const cats = legend.map(x => Number(x.value));
-      const counts = new Map(cats.map(v => [v, 0]));
-      const quad = new Map(cats.map(v => [v, [0,0,0,0]]));
-      let pix = 0;
-
-      const poly = featureProj;
-      const cx = (xmin + xmax) / 2;
-      const cy = (ymin + ymax) / 2;
-
-      for (let row = rowMin; row <= rowMax; row++) {
-        const rowArr = gr.values[0][row];
-        if (!rowArr) continue;
-        for (let col = colMin; col <= colMax; col++) {
-          const raw = rowArr[col];
-          if (raw === null || raw === undefined || Number.isNaN(raw)) continue;
-          const v = Number(raw);
-          if (NODATA_VALUES.has(v)) continue;
-          if (!counts.has(v)) continue;
-
-          const [x, y] = cellCenterXY(col, row, gr);
-          if (!turf.booleanPointInPolygon(turf.point([x, y]), poly)) continue;
-
-          pix++;
-          counts.set(v, (counts.get(v) || 0) + 1);
-
-          const q = (y >= cy ? 0 : 2) + (x >= cx ? 1 : 0);
-          const a = quad.get(v);
-          a[q] = a[q] + 1;
-        }
-      }
-
-      const pixelArea = Math.abs(gr.pixelWidth * gr.pixelHeight);
-      const areaHa = (pix * pixelArea) / 10000;
-
-      const byCat = legend.map(c => {
-        const vv = Number(c.value);
-        const n = counts.get(vv) || 0;
-        const ha = (n * pixelArea) / 10000;
-        return { value: vv, label: c.label, color: c.color, count: n, ha, quad: quad.get(vv) || [0,0,0,0] };
-      }).filter(x => x.count > 0);
-
-      const totalHa = byCat.reduce((s, r) => s + r.ha, 0);
-      const p = byCat.map(r => (totalHa > 0 ? r.ha / totalHa : 0));
-
-      const shannon = p.reduce((s, pi) => (pi > 0 ? s - (pi * Math.log(pi)) : s), 0);
-      const sCount = byCat.length;
-      const evenness = (sCount > 1 ? (shannon / Math.log(sCount)) : 0);
-
-      return { pix, areaHa, totalHa, byCat, shannon, evenness };
-    }
-
-    function resetOutputs() {
-      kpiSelEl.textContent = "—";
-      kpiAreaEl.textContent = "—";
-      kpiHEl.textContent = "—";
-      kpiJEl.textContent = "—";
-      tblBodyEl.innerHTML = `<tr><td class="muted" colspan="3">Selecciona un recorte en el mapa.</td></tr>`;
-      interpTextEl.textContent = "Selecciona un municipio o microcuenca para generar interpretación.";
-      chartNoteEl.textContent = "—";
-      chartNote2El.textContent = "—";
-      renderCharts(null);
-      renderEquations();
-    }
-
-    function renderEquations() {
-      const elP = $("eqP");
-      const elH = $("eqH");
-      const elJ = $("eqJ");
-      elP.innerHTML = "";
-      elH.innerHTML = "";
-      elJ.innerHTML = "";
-      katex.render("p_i = \\frac{A_i}{\\sum A_i}", elP, { throwOnError:false });
-      katex.render("H' = -\\sum_{i=1}^{S} p_i\\,\\ln(p_i)", elH, { throwOnError:false });
-      katex.render("J = \\frac{H'}{\\ln(S)}", elJ, { throwOnError:false });
-    }
-
-    function renderCharts(stats) {
-      const barCtx = $("chartBar");
-      const donutCtx = $("chartDonut");
-
-      const labels = stats ? stats.byCat.map(r => r.label) : [];
-      const vals = stats ? stats.byCat.map(r => Math.round(r.ha * 100) / 100) : [];
-      const colors = stats ? stats.byCat.map(r => r.color) : [];
-
-      if (!chartBar) {
-        chartBar = new Chart(barCtx, {
-          type: "bar",
-          data: { labels, datasets: [{ label: "Hectáreas", data: vals, backgroundColor: colors, borderWidth: 0 }] },
-          options: {
-            responsive: true,
-            plugins: { legend: { display:false } },
-            scales: {
-              x: { ticks: { color: "#2a5a40" }, grid: { color: "rgba(15,42,26,.08)" } },
-              y: { ticks: { color: "#2a5a40" }, grid: { color: "rgba(15,42,26,.08)" } }
-            }
-          }
-        });
-      } else {
-        chartBar.data.labels = labels;
-        chartBar.data.datasets[0].data = vals;
-        chartBar.data.datasets[0].backgroundColor = colors;
-        chartBar.update();
-      }
-
-      if (!chartDonut) {
-        chartDonut = new Chart(donutCtx, {
-          type: "doughnut",
-          data: { labels, datasets: [{ data: vals, backgroundColor: colors, borderWidth: 0 }] },
-          options: { responsive:true, plugins: { legend: { position: "bottom", labels: { color: "#2a5a40" } } } }
-        });
-      } else {
-        chartDonut.data.labels = labels;
-        chartDonut.data.datasets[0].data = vals;
-        chartDonut.data.datasets[0].backgroundColor = colors;
-        chartDonut.update();
-      }
-    }
-
-    function dominantQuadrant(q) {
-      const idx = q.indexOf(Math.max(...q));
-      if (idx === 0) return "noroeste";
-      if (idx === 1) return "noreste";
-      if (idx === 2) return "suroeste";
-      return "sureste";
-    }
-
-    function buildInterpretation(stats) {
-      if (!stats || !stats.byCat.length) return "Sin datos suficientes para interpretar.";
-      const top = [...stats.byCat].sort((a,b) => b.ha - a.ha)[0];
-      const parts = [];
-      parts.push(`${top.label} abarcan aproximadamente ${fmt(top.ha)} ha (${pct((top.ha / stats.totalHa)*100)}%). Se concentran hacia el ${dominantQuadrant(top.quad)} del recorte.`);
-
-      const others = [...stats.byCat].sort((a,b) => b.ha - a.ha).slice(1,3);
-      for (const r of others) {
-        parts.push(`${r.label} suman ${fmt(r.ha)} ha y muestran mayor presencia hacia el ${dominantQuadrant(r.quad)}.`);
-      }
-
-      parts.push(`La diversidad de clases (H'=${fmt(stats.shannon, 3)}) y su equidad (J=${fmt(stats.evenness, 3)}) resumen qué tan balanceadas están las categorías dentro del recorte.`);
-      return parts.join(" ");
-    }
-
-    function renderTable(stats) {
-      if (!stats || !stats.byCat.length) {
-        tblBodyEl.innerHTML = `<tr><td class="muted" colspan="3">Sin datos en el recorte seleccionado.</td></tr>`;
-        return;
-      }
-      const rows = [...stats.byCat]
-        .sort((a,b) => b.ha - a.ha)
-        .map(r => {
-          const share = stats.totalHa > 0 ? (r.ha / stats.totalHa) * 100 : 0;
-          return `<tr>
-            <td><span class="sw" style="background:${r.color}"></span>${r.label}</td>
-            <td class="right">${fmt(r.ha)}</td>
-            <td class="right">${pct(share)}</td>
-          </tr>`;
-        }).join("");
-      tblBodyEl.innerHTML = rows;
-    }
-
-    function activeLayerIds() {
-      const ids = [];
-      for (const [id, st] of rasterState.entries()) {
-        if (st.leafletLayer && map.hasLayer(st.leafletLayer)) ids.push(id);
-      }
-      return ids;
-    }
-
-    async function recomputeStats() {
-      if (!selectedFeature) {
-        resetOutputs();
-        return;
-      }
-
-      const ids = activeLayerIds();
-      const name = humanizeFeatureName(selectedFeature.properties || {});
-      kpiSelEl.textContent = name;
-
-      if (!ids.length) {
-        setStatus("Activa al menos una capa para calcular.", "warn");
-        interpTextEl.textContent = "Activa una capa y luego selecciona el recorte para ver análisis.";
-        return;
-      }
-
-      const id = ids[0];
-      const layer = layersCfg.find(x => x.id === id) || layersCfg[0];
-      const state = await loadRasterForLayer(layer);
-
-      if (!state.proj) {
-        setStatus("No se pudo determinar la proyección del raster.", "err");
-        return;
-      }
-
-      setStatus("Calculando…", null);
-
-      const featureProj = projectFeatureToRasterCrs(selectedFeature, state.proj);
-      const stats = computeStats(state.georaster, featureProj, state.legend);
-
-      lastStats = { name, layerName: friendlyLayerName(layer), ...stats };
-
-      kpiAreaEl.textContent = fmt(stats.areaHa);
-      kpiHEl.textContent = fmt(stats.shannon, 3);
-      kpiJEl.textContent = fmt(stats.evenness, 3);
-
-      chartNoteEl.textContent = lastStats.layerName;
-      chartNote2El.textContent = name;
-
-      renderCharts(stats);
-      renderTable(stats);
-      interpTextEl.textContent = buildInterpretation(stats);
-      renderEquations();
-
-      setStatus("Listo.", "ok");
-    }
-
-    function downloadCSV() {
-      if (!lastStats || !lastStats.byCat) return;
-      const lines = [];
-      lines.push("recorte,capa,categoria,ha,porcentaje");
-      for (const r of lastStats.byCat) {
-        const share = lastStats.totalHa > 0 ? (r.ha / lastStats.totalHa) * 100 : 0;
-        lines.push([`"${lastStats.name}"`,`"${lastStats.layerName}"`,`"${r.label}"`, (Math.round(r.ha*100)/100), (Math.round(share*10)/10)].join(","));
-      }
-      const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `resumen_${lastStats.name}.csv`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      setTimeout(() => URL.revokeObjectURL(a.href), 1500);
-    }
-
-    function downloadXLSX() {
-      if (!lastStats || !lastStats.byCat) return;
-      const rows = lastStats.byCat.map(r => {
-        const share = lastStats.totalHa > 0 ? (r.ha / lastStats.totalHa) * 100 : 0;
-        return {
-          Recorte: lastStats.name,
-          Capa: lastStats.layerName,
-          Categoria: r.label,
-          Ha: Math.round(r.ha * 100) / 100,
-          Porcentaje: Math.round(share * 10) / 10
-        };
-      });
-      const ws = XLSX.utils.json_to_sheet(rows);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Resumen");
-      XLSX.writeFile(wb, `resumen_${lastStats.name}.xlsx`);
-    }
-
-    $("btnCSV").addEventListener("click", downloadCSV);
-    $("btnXLSX").addEventListener("click", downloadXLSX);
-
-    $("btnClear").addEventListener("click", () => {
-      if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
-      selectedFeatureLayer = null;
-      selectedFeature = null;
-      lastStats = null;
-      resetOutputs();
-      setStatus("Listo.", null);
     });
 
-    $("btnZoom").addEventListener("click", () => {
+    const out = { georaster: georasterObj, epsg, proj, leafletLayer: layerObj, legend };
+    rasterState.set(layer.id, out);
+    setStatus(`Raster listo: ${friendlyLayerName(layer)}.`, "ok");
+    return out;
+  }
+
+  async function activateLayer(id){
+    const layer = layersCfg.find(x => x.id === id);
+    if (!layer) return;
+    const state = await loadRasterForLayer(layer);
+    if (!map.hasLayer(state.leafletLayer)) state.leafletLayer.addTo(map);
+    state.leafletLayer.setOpacity(layer.opacity ?? 0.85);
+    activeAnalysisLayerId = id;
+    updateMetaLabels();
+    setStatus(`Capa activa: ${friendlyLayerName(layer)}.`, "ok");
+  }
+
+  async function deactivateLayer(id){
+    const state = rasterState.get(id);
+    if (state?.leafletLayer && map.hasLayer(state.leafletLayer)) map.removeLayer(state.leafletLayer);
+    if (activeAnalysisLayerId === id) pickFallbackActiveLayer();
+    setStatus("Capa desactivada.", null);
+  }
+
+  function setLayerOpacity(id, opacity){
+    const layer = layersCfg.find(x => x.id === id);
+    if (layer) layer.opacity = opacity;
+    const state = rasterState.get(id);
+    if (state?.leafletLayer) state.leafletLayer.setOpacity(opacity);
+  }
+
+  function buildLayerCard(layer){
+    const wrap = document.createElement("div");
+    wrap.className = "layerItem";
+    const lid = `tog-${layer.id}`;
+    const rid = `rng-${layer.id}`;
+    const vid = `val-${layer.id}`;
+    const legId = `leg-${layer.id}`;
+    const legend = legendFor(layer);
+
+    wrap.innerHTML = `
+      <div class="layerHeader">
+        <div>
+          <div class="layerName">${friendlyLayerName(layer)}</div>
+          <div class="layerDesc">COG/GeoTIFF · análisis por recorte real</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="${lid}"><span class="slider"></span></label>
+      </div>
+      <div class="layerControls">
+        <label>Opacidad</label>
+        <input type="range" id="${rid}" min="0" max="1" step="0.05" value="${layer.opacity ?? 0.85}">
+        <span id="${vid}" class="small">${Math.round((layer.opacity ?? 0.85)*100)}%</span>
+      </div>
+      <div id="${legId}" class="legendBlock">
+        ${legend.map(item => `<div class="legendRow"><div class="swatch" style="background:${item.color}"></div><span class="small">${item.label}</span></div>`).join("")}
+      </div>
+    `;
+
+    const tog = wrap.querySelector(`#${lid}`);
+    const rng = wrap.querySelector(`#${rid}`);
+    const val = wrap.querySelector(`#${vid}`);
+    const leg = wrap.querySelector(`#${legId}`);
+
+    tog.addEventListener("change", async () => {
       try {
-        if (recorteLayer) map.fitBounds(recorteLayer.getBounds(), { padding: [16,16] });
-        else map.setView([14.65, -91.2], 10);
-      } catch (_) { map.setView([14.65, -91.2], 10); }
+        if (tog.checked) {
+          await activateLayer(layer.id);
+          leg.classList.add("show");
+        } else {
+          await deactivateLayer(layer.id);
+          leg.classList.remove("show");
+        }
+        if (selectedFeature) recomputeStats();
+      } catch (e) {
+        tog.checked = false;
+        leg.classList.remove("show");
+        setStatus("Error: " + String(e.message || e), "err");
+      }
     });
 
-    selRecorteEl.addEventListener("change", async (e) => {
+    rng.addEventListener("input", () => {
+      const opacity = parseFloat(rng.value);
+      val.textContent = Math.round(opacity * 100) + "%";
+      setLayerOpacity(layer.id, opacity);
+    });
+
+    return wrap;
+  }
+
+  async function loadLayersConfig(){
+    const res = await fetch(LAYERS_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error("No se pudo cargar layers.json");
+    const cfg = await res.json();
+    layersCfg = Array.isArray(cfg) ? cfg : [];
+    if (!layersCfg.length) throw new Error("layers.json no contiene capas");
+    layersListEl.innerHTML = "";
+    layersCfg.forEach(layer => layersListEl.appendChild(buildLayerCard(layer)));
+    $("layersCount").textContent = String(layersCfg.length);
+  }
+
+  function styleRecorte(){ return { color: "#0ea5e9", weight: 2, fillColor: "#0ea5e9", fillOpacity: 0.08 }; }
+  function styleSelected(){ return { color: "#16a34a", weight: 3, fillColor: "#6ee7b7", fillOpacity: 0.16 }; }
+
+  function humanizeFeatureName(props){
+    const preferred = ["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","MICROCUENCA","microcuenca","NAME","name"];
+    for (const k of preferred) if (props && props[k]) return String(props[k]);
+    if (props) {
+      const keys = Object.keys(props);
+      if (keys.length) return String(props[keys[0]]);
+    }
+    return "Sin nombre";
+  }
+
+  async function loadRecorte(key){
+    recorteKey = key;
+    $("recorteLabel").textContent = key === "muni" ? "Municipios" : "Microcuencas";
+    if (recorteLayer) map.removeLayer(recorteLayer);
+    recorteLayer = null;
+    selectedFeatureLayer = null;
+    selectedFeature = null;
+    lastStats = null;
+    resetOutputs();
+
+    const res = await fetch(RECORTES[key].url, { cache: "no-store" });
+    if (!res.ok) throw new Error("No se pudo cargar el recorte");
+    const data = await res.json();
+
+    recorteLayer = L.geoJSON(data, {
+      style: styleRecorte,
+      onEachFeature: (feature, layer) => {
+        layer.on("click", () => {
+          if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
+          selectedFeatureLayer = layer;
+          selectedFeature = feature;
+          layer.setStyle(styleSelected());
+          try { layer.bringToFront(); } catch(_) {}
+
+          const name = humanizeFeatureName(feature.properties || {});
+          layer.bindPopup(`<div class="popupCard"><div class="popupTitle">📍 ${name}</div><div class="popupRow"><b>Recorte:</b> ${RECORTES[recorteKey].label}</div><div class="popupRow"><b>Análisis:</b> ${activeAnalysisLayerId ? 'listo para calcular' : 'activa una capa primero'}</div></div>`).openPopup();
+          recomputeStats();
+        });
+      }
+    }).addTo(map);
+
+    try { map.fitBounds(recorteLayer.getBounds(), { padding: [18,18] }); } catch (_) {}
+    updateMetaLabels();
+    setStatus(`Recorte cargado: ${RECORTES[key].label}.`, "ok");
+  }
+
+  function projectFeatureToRasterCrs(feature, projRaster){
+    if (!projRaster || !feature) return feature;
+    const coords = feature.geometry.coordinates;
+    const t = (lng, lat) => proj4("EPSG:4326", projRaster, [lng, lat]);
+    const gtype = feature.geometry.type;
+    let newCoords;
+    if (gtype === "Polygon") newCoords = coords.map(ring => ring.map(([lng, lat]) => t(lng, lat)));
+    else if (gtype === "MultiPolygon") newCoords = coords.map(poly => poly.map(ring => ring.map(([lng, lat]) => t(lng, lat))));
+    else return feature;
+    return { type: "Feature", properties: feature.properties || {}, geometry: { type: gtype, coordinates: newCoords } };
+  }
+
+  function cellCenterXY(col, row, gr){
+    const x = gr.xmin + (col + 0.5) * gr.pixelWidth;
+    const y = gr.ymax - (row + 0.5) * Math.abs(gr.pixelHeight);
+    return [x, y];
+  }
+  function clamp(n, a, b){ return Math.max(a, Math.min(b, n)); }
+  function dominantQuadrant(q){
+    const idx = q.indexOf(Math.max(...q));
+    return ["noroeste","noreste","suroeste","sureste"][idx] || "—";
+  }
+
+  function computeStats(gr, featureProj, legend){
+    const bbox = turf.bbox(featureProj);
+    const [xmin, ymin, xmax, ymax] = bbox;
+
+    const colMin = clamp(Math.floor((xmin - gr.xmin) / gr.pixelWidth), 0, gr.width - 1);
+    const colMax = clamp(Math.ceil((xmax - gr.xmin) / gr.pixelWidth), 0, gr.width - 1);
+    const rowMin = clamp(Math.floor((gr.ymax - ymax) / Math.abs(gr.pixelHeight)), 0, gr.height - 1);
+    const rowMax = clamp(Math.ceil((gr.ymax - ymin) / Math.abs(gr.pixelHeight)), 0, gr.height - 1);
+
+    const cats = legend.map(x => Number(x.value));
+    const counts = new Map(cats.map(v => [v, 0]));
+    const quad = new Map(cats.map(v => [v, [0,0,0,0]]));
+    let pix = 0;
+    const poly = featureProj;
+    const cx = (xmin + xmax) / 2;
+    const cy = (ymin + ymax) / 2;
+
+    for (let row = rowMin; row <= rowMax; row++) {
+      const rowArr = gr.values[0][row];
+      if (!rowArr) continue;
+      for (let col = colMin; col <= colMax; col++) {
+        const raw = rowArr[col];
+        if (raw === null || raw === undefined || Number.isNaN(raw)) continue;
+        const v = Number(raw);
+        if (NODATA_VALUES.has(v) || !counts.has(v)) continue;
+
+        const [x, y] = cellCenterXY(col, row, gr);
+        if (!turf.booleanPointInPolygon(turf.point([x, y]), poly)) continue;
+
+        pix++;
+        counts.set(v, (counts.get(v) || 0) + 1);
+        const q = (y >= cy ? 0 : 2) + (x >= cx ? 1 : 0);
+        const arr = quad.get(v);
+        arr[q] = arr[q] + 1;
+      }
+    }
+
+    const pixelArea = Math.abs(gr.pixelWidth * gr.pixelHeight);
+    const areaHa = (pix * pixelArea) / 10000;
+    const byCat = legend.map(c => {
+      const vv = Number(c.value);
+      const n = counts.get(vv) || 0;
+      const ha = (n * pixelArea) / 10000;
+      return { value: vv, label: c.label, color: c.color, count: n, ha, quad: quad.get(vv) || [0,0,0,0] };
+    }).filter(x => x.count > 0);
+
+    const totalHa = byCat.reduce((s, r) => s + r.ha, 0);
+    const shares = byCat.map(r => totalHa > 0 ? r.ha / totalHa : 0);
+    const shannon = shares.reduce((s, pi) => pi > 0 ? s - (pi * Math.log(pi)) : s, 0);
+    const richness = byCat.length;
+    const evenness = richness > 1 ? (shannon / Math.log(richness)) : 0;
+    const dominant = [...byCat].sort((a,b) => b.ha - a.ha)[0] || null;
+    const dominance = dominant && totalHa > 0 ? dominant.ha / totalHa : 0;
+    return { pix, pixelArea, areaHa, totalHa, byCat, shannon, evenness, richness, dominant, dominance };
+  }
+
+  function resetOutputs(){
+    lastStats = null;
+    updateMetaLabels();
+    $("kpi-sel").textContent = "—";
+    $("kpi-layer").textContent = "—";
+    $("kpi-area").textContent = "—";
+    $("kpi-rich").textContent = "—";
+    $("kpi-dom").textContent = "—";
+    $("kpi-domPct").textContent = "—";
+    $("kpi-h").textContent = "—";
+    $("kpi-j").textContent = "—";
+    $("heroSelection").textContent = selectedFeature ? `${humanizeFeatureName(selectedFeature.properties || {})} · sin capa activa` : "Sin selección activa";
+    $("interpBar").textContent = "Activa una capa y selecciona un recorte para comenzar.";
+    $("interpDonut").textContent = "La dominancia y el balance entre clases se actualizarán aquí.";
+    tblBodyEl.innerHTML = `<tr><td colspan="5">Selecciona un recorte para comenzar.</td></tr>`;
+    $("interpretGrid").innerHTML = `
+      <div class="interpret-item"><b>Dominancia</b>Selecciona un recorte para generar interpretación.</div>
+      <div class="interpret-item"><b>Diversidad</b>El balance entre clases se calculará automáticamente.</div>
+      <div class="interpret-item"><b>Patrón espacial</b>Se analizará el cuadrante predominante de las clases más extensas.</div>
+      <div class="interpret-item"><b>Lectura técnica</b>Las conclusiones se basan en estadísticas reales del raster, no en valores simulados.</div>`;
+    renderEquations();
+    renderCharts(null);
+  }
+
+  function renderEquations(){
+    const eq = (el, latex) => { const node = $(el); node.innerHTML = ""; if (window.katex) katex.render(latex, node, { throwOnError:false }); else node.textContent = latex; };
+    eq("eqArea", "A_i = n_i \\times a_{celda}");
+    eq("eqShare", "p_i = \\frac{A_i}{\\sum A_i}");
+    eq("eqQuadrants", "q = (y \\ge c_y ? N : S) + (x \\ge c_x ? E : O)");
+    eq("eqRadar", "x' = 10 \\times \\frac{x - x_{min}}{x_{max}-x_{min}}");
+    $("eqBlockMain").innerHTML = "";
+    $("eqBlockSecondary").innerHTML = "";
+    if (window.katex) {
+      katex.render(String.raw`H' = -\\sum_{i=1}^{S} p_i\\ln(p_i)`, $("eqBlockMain"), { throwOnError:false, displayMode:true });
+      katex.render(String.raw`J = \\frac{H'}{\\ln(S)} \\qquad D = \\max(p_i)`, $("eqBlockSecondary"), { throwOnError:false, displayMode:true });
+    }
+  }
+
+  function destroyChart(ch){ if (ch) ch.destroy(); }
+  function renderCharts(stats){
+    const labels = stats ? stats.byCat.map(r => r.label) : [];
+    const valsHa = stats ? stats.byCat.map(r => +(r.ha.toFixed(2))) : [];
+    const valsPct = stats ? stats.byCat.map(r => +((stats.totalHa > 0 ? (r.ha / stats.totalHa) * 100 : 0).toFixed(1))) : [];
+    const colors = stats ? stats.byCat.map(r => r.color) : [];
+
+    if (chartBar) destroyChart(chartBar);
+    if (chartDonut) destroyChart(chartDonut);
+    if (chartQuadrants) destroyChart(chartQuadrants);
+    if (chartRadar) destroyChart(chartRadar);
+
+    chartBar = new Chart($("chartBar"), {
+      type: "bar",
+      data: { labels, datasets: [{ label: "Hectáreas", data: valsHa, backgroundColor: colors, borderWidth: 0 }] },
+      options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:"#065f46" } }, y:{ ticks:{ color:"#065f46" }, beginAtZero:true } } }
+    });
+
+    chartDonut = new Chart($("chartDonut"), {
+      type: "doughnut",
+      data: { labels, datasets: [{ data: valsPct, backgroundColor: colors, borderWidth: 0 }] },
+      options: { responsive:true, plugins:{ legend:{ position:"bottom", labels:{ color:"#065f46" } } } }
+    });
+
+    const quadLabels = ["NO","NE","SO","SE"];
+    const quadDatasets = stats ? stats.byCat.map(r => ({ label:r.label, data:r.quad, backgroundColor:r.color, borderWidth:0 })) : [];
+    chartQuadrants = new Chart($("chartQuadrants"), {
+      type: "bar",
+      data: { labels: quadLabels, datasets: quadDatasets },
+      options: { responsive:true, plugins:{ legend:{ position:"bottom", labels:{ color:"#065f46" } } }, scales:{ x:{ stacked:true, ticks:{ color:"#065f46" } }, y:{ stacked:true, beginAtZero:true, ticks:{ color:"#065f46" } } } }
+    });
+
+    const radarValues = stats ? [
+      +(Math.min(10, stats.richness * 2.5)).toFixed(2),
+      +(Math.min(10, stats.evenness * 10)).toFixed(2),
+      +(Math.min(10, stats.shannon * 5)).toFixed(2),
+      +(Math.min(10, (1 - stats.dominance) * 10)).toFixed(2),
+      +(Math.min(10, stats.areaHa > 0 ? 10 : 0)).toFixed(2)
+    ] : [0,0,0,0,0];
+    chartRadar = new Chart($("chartRadar"), {
+      type: "radar",
+      data: {
+        labels: ["Riqueza","Equidad","Diversidad","Balance","Cobertura útil"],
+        datasets: [{ label:"Perfil", data: radarValues, fill:true, backgroundColor:"rgba(22,163,74,.18)", borderColor:"#16a34a", pointBackgroundColor:"#065f46" }]
+      },
+      options: { responsive:true, scales:{ r:{ suggestedMin:0, suggestedMax:10, angleLines:{ color:"rgba(6,95,70,.12)" }, grid:{ color:"rgba(6,95,70,.12)" }, pointLabels:{ color:"#065f46", font:{ size:11 } }, ticks:{ display:false } } }, plugins:{ legend:{ display:false } } }
+    });
+  }
+
+  function renderTable(stats){
+    if (!stats?.byCat?.length) {
+      tblBodyEl.innerHTML = `<tr><td colspan="5">Sin datos válidos dentro del recorte seleccionado.</td></tr>`;
+      return;
+    }
+    tblBodyEl.innerHTML = [...stats.byCat].sort((a,b) => b.ha - a.ha).map(r => {
+      const share = stats.totalHa > 0 ? (r.ha / stats.totalHa) * 100 : 0;
+      return `<tr>
+        <td><span class="swatch" style="display:inline-block;vertical-align:-2px;margin-right:8px;background:${r.color}"></span>${r.label}</td>
+        <td class="right">${fmt(r.ha)}</td>
+        <td class="right">${pct(share)}</td>
+        <td>${dominantQuadrant(r.quad)}</td>
+        <td class="right">${r.count.toLocaleString("es-GT")}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  function renderInterpretation(stats, layerName, selectionName){
+    if (!stats?.byCat?.length) return;
+    const top = stats.dominant;
+    const second = [...stats.byCat].sort((a,b)=>b.ha-a.ha)[1] || null;
+    $("interpBar").innerHTML = `<b>${top.label}</b> es la clase dominante con ${fmt(top.ha)} ha dentro de <b>${selectionName}</b>. Esto representa ${pct(stats.dominance*100)} del área válida analizada.`;
+    $("interpDonut").innerHTML = stats.evenness >= 0.75
+      ? `<b>Paisaje balanceado:</b> la equidad entre clases es alta (J=${fmt(stats.evenness,3)}), por lo que ninguna categoría monopoliza completamente el recorte.`
+      : `<b>Paisaje concentrado:</b> la equidad es ${fmt(stats.evenness,3)}, señal de predominio marcado de una o pocas clases dentro del recorte.`;
+
+    $("interpretGrid").innerHTML = `
+      <div class="interpret-item"><b>Dominancia</b>${top.label} controla ${pct(stats.dominance*100)} del mosaico analizado en la capa <b>${layerName}</b>.</div>
+      <div class="interpret-item"><b>Diversidad</b>Se detectaron <b>${stats.richness}</b> categorías con un índice de Shannon <b>H'=${fmt(stats.shannon,3)}</b> y equidad <b>J=${fmt(stats.evenness,3)}</b>.</div>
+      <div class="interpret-item"><b>Patrón espacial</b>La clase dominante se concentra hacia el <b>${dominantQuadrant(top.quad)}</b>${second ? `, mientras que ${second.label} se inclina al ${dominantQuadrant(second.quad)}` : ""}.</div>
+      <div class="interpret-item"><b>Lectura técnica</b>El cálculo usó <b>${stats.pix.toLocaleString("es-GT")}</b> píxeles válidos, equivalente a <b>${fmt(stats.areaHa)}</b> ha, proyectando el recorte al CRS nativo del raster antes de evaluar cada celda.</div>`;
+  }
+
+  function updateKPIs(stats, layerName, selectionName){
+    $("kpi-sel").textContent = shortLayerName(selectionName, 16);
+    $("kpi-layer").textContent = shortLayerName(layerName, 16);
+    $("kpi-area").textContent = fmt(stats.areaHa) + " ha";
+    $("kpi-rich").textContent = String(stats.richness);
+    $("kpi-dom").textContent = shortLayerName(stats.dominant?.label || "—", 16);
+    $("kpi-domPct").textContent = pct(stats.dominance * 100);
+    $("kpi-h").textContent = fmt(stats.shannon, 3);
+    $("kpi-j").textContent = fmt(stats.evenness, 3);
+  }
+
+  function activeLayerIds(){
+    return [...rasterState.entries()].filter(([,st]) => st.leafletLayer && map.hasLayer(st.leafletLayer)).map(([id]) => id);
+  }
+
+  async function recomputeStats(){
+    updateMetaLabels();
+    if (!selectedFeature) { resetOutputs(); return; }
+
+    const ids = activeLayerIds();
+    if (!ids.length) {
+      resetOutputs();
+      setStatus("Activa al menos una capa para calcular.", "warn");
+      return;
+    }
+    if (!activeAnalysisLayerId || !ids.includes(activeAnalysisLayerId)) activeAnalysisLayerId = ids[ids.length - 1];
+
+    const layer = layersCfg.find(x => x.id === activeAnalysisLayerId);
+    if (!layer) return;
+    const state = await loadRasterForLayer(layer);
+    if (!state.proj) {
+      setStatus("No se pudo determinar la proyección del raster.", "err");
+      return;
+    }
+
+    setStatus("Calculando estadísticas espaciales…", null);
+    const featureProj = projectFeatureToRasterCrs(selectedFeature, state.proj);
+    const stats = computeStats(state.georaster, featureProj, state.legend);
+    const selectionName = humanizeFeatureName(selectedFeature.properties || {});
+    const layerName = friendlyLayerName(layer);
+
+    lastStats = { ...stats, name: selectionName, layerName };
+    updateMetaLabels();
+    updateKPIs(stats, layerName, selectionName);
+    renderCharts(stats);
+    renderTable(stats);
+    renderInterpretation(stats, layerName, selectionName);
+    $("heroSelection").textContent = `${selectionName} · ${layerName}`;
+
+    setStatus(stats.byCat.length ? "Análisis actualizado correctamente." : "No hubo clases válidas dentro del recorte.", stats.byCat.length ? "ok" : "warn");
+  }
+
+  function makeExportRows(){
+    if (!lastStats?.byCat?.length) return [];
+    return lastStats.byCat.map(r => {
+      const share = lastStats.totalHa > 0 ? (r.ha / lastStats.totalHa) * 100 : 0;
+      return {
+        Recorte: lastStats.name,
+        Capa: lastStats.layerName,
+        Categoria: r.label,
+        Hectareas: +(r.ha.toFixed(2)),
+        Porcentaje: +(share.toFixed(1)),
+        Cuadrante_principal: dominantQuadrant(r.quad),
+        Pixeles: r.count
+      };
+    });
+  }
+  function downloadCSV(){
+    const rows = makeExportRows();
+    if (!rows.length) return;
+    const headers = Object.keys(rows[0]);
+    const lines = [headers.join(",")];
+    rows.forEach(r => lines.push(headers.map(h => JSON.stringify(r[h])).join(",")));
+    const blob = new Blob([lines.join("\n")], { type:"text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `resumen_${(lastStats.name || 'recorte').replace(/\s+/g,'_')}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+  }
+  function downloadXLSX(){
+    const rows = makeExportRows();
+    if (!rows.length) return;
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Resumen");
+    XLSX.writeFile(wb, `resumen_${(lastStats.name || 'recorte').replace(/\s+/g,'_')}.xlsx`);
+  }
+
+  $("btnDlCSV").onclick = downloadCSV;
+  $("btnDlXLSX").onclick = downloadXLSX;
+  $("btnTableCSV").onclick = downloadCSV;
+  $("btnTableXLSX").onclick = downloadXLSX;
+
+  $("btnClear").onclick = () => {
+    if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
+    selectedFeatureLayer = null;
+    selectedFeature = null;
+    resetOutputs();
+    updateMetaLabels();
+    setStatus("Selección limpiada.", null);
+  };
+
+  $("btnZoom").onclick = () => {
+    try {
+      if (selectedFeatureLayer) map.fitBounds(selectedFeatureLayer.getBounds(), { padding:[18,18] });
+      else if (recorteLayer) map.fitBounds(recorteLayer.getBounds(), { padding:[18,18] });
+      else map.setView([14.65, -91.2], 10);
+    } catch (_) { map.setView([14.65, -91.2], 10); }
+  };
+
+  selRecorteEl.addEventListener("change", async (e) => {
+    try {
       await loadRecorte(e.target.value);
       recomputeStats();
-    });
+    } catch (err) {
+      setStatus("Error cargando recorte: " + String(err.message || err), "err");
+    }
+  });
 
-    (async () => {
-      try {
-        renderEquations();
-        await loadLayersConfig();
-        await loadRecorte(recorteKey);
-        setStatus("Listo. Activa una capa y selecciona un recorte.", "ok");
-      } catch (e) {
-        setStatus("Error de inicio: " + String(e.message || e), "err");
-      }
-    })();
-  </script>
+  (async () => {
+    try {
+      renderEquations();
+      await loadLayersConfig();
+      await loadRecorte(recorteKey);
+      updateMetaLabels();
+      setStatus("Listo. Activa una capa y selecciona un recorte.", "ok");
+    } catch (e) {
+      console.error(e);
+      setStatus("Error de inicio: " + String(e.message || e), "err");
+    }
+  })();
+</script>
 </body>
 </html>
