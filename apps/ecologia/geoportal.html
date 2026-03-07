@@ -890,19 +890,68 @@ let fenoLoaded=false, bioLoaded=false;
 
 function statusMsg(id,msg,ok){const e=document.getElementById(id);if(e){e.textContent=msg;e.style.borderColor=ok?"rgba(22,163,74,.35)":"rgba(251,191,36,.40)"}}
 
+// Convierte coordenadas proyectadas UTM/EPSG:32615 a WGS84 si el bbox está en metros
+function bboxToWGS84(bbox,geoKeys){
+  // Si las coordenadas ya están en rango lon/lat, úsalas directo
+  if(Math.abs(bbox[0])<=180 && Math.abs(bbox[1])<=90 && Math.abs(bbox[2])<=180 && Math.abs(bbox[3])<=90){
+    return bbox;
+  }
+  // UTM Zona 15N (EPSG:32615) — cubre Guatemala
+  // Aproximación inversa UTM→WGS84 suficiente para bbox de imagen
+  function utmToLatLon(easting,northing,zone=15,north=true){
+    const a=6378137,f=1/298.257223563,k0=0.9996;
+    const e2=2*f-f*f, e_=Math.sqrt(e2/(1-e2));
+    const x=easting-500000, y=north?northing:northing-10000000;
+    const M=y/k0;
+    const mu=M/(a*(1-(e2/4)-(3*e2*e2/64)-(5*e2*e2*e2/256)));
+    const e1=(1-Math.sqrt(1-e2))/(1+Math.sqrt(1-e2));
+    const p1=mu+(3*e1/2-(27*e1*e1*e1/32))*Math.sin(2*mu);
+    const p2=p1+(21*e1*e1/16-(55*e1*e1*e1*e1/32))*Math.sin(4*mu);
+    const p3=p2+(151*e1*e1*e1/96)*Math.sin(6*mu);
+    const lat1=p3;
+    const N1=a/Math.sqrt(1-e2*Math.sin(lat1)*Math.sin(lat1));
+    const T1=Math.tan(lat1)*Math.tan(lat1);
+    const C1=e_*e_*Math.cos(lat1)*Math.cos(lat1);
+    const R1=a*(1-e2)/Math.pow(1-e2*Math.sin(lat1)*Math.sin(lat1),1.5);
+    const D=x/(N1*k0);
+    const lat=lat1-(N1*Math.tan(lat1)/R1)*(D*D/2-(5+3*T1+10*C1-4*C1*C1-9*e_*e_)*D*D*D*D/24+(61+90*T1+298*C1+45*T1*T1-252*e_*e_-3*C1*C1)*D*D*D*D*D*D/720);
+    const lon0=(zone-1)*6-180+3;
+    const lon=lon0+(D-(1+2*T1+C1)*D*D*D/6+(5-2*C1+28*T1-3*C1*C1+8*e_*e_+24*T1*T1)*D*D*D*D*D/120)/Math.cos(lat1);
+    return[lon*180/Math.PI, lat*180/Math.PI];
+  }
+  const sw=utmToLatLon(bbox[0],bbox[1]);
+  const ne=utmToLatLon(bbox[2],bbox[3]);
+  return[sw[0],sw[1],ne[0],ne[1]];
+}
+
 async function cogToCanvas(url,palette,onStatus){
   onStatus("Descargando COG…");
   try{
     const tiff=await GeoTIFF.fromUrl(url,{allowFullFile:true});
     const img=await tiff.getImage();
+    // Leer nodata del metadata
+    const geoKeys=img.getGeoKeys()||{};
+    const fdim=img.fileDirectory||{};
+    const noDataVal=fdim.GDAL_NODATA!=null?parseFloat(fdim.GDAL_NODATA):null;
     const data=await img.readRasters({interleave:true});
     const w=img.getWidth(),h=img.getHeight();
     onStatus(`Renderizando ${w}×${h}…`);
     const cv=document.createElement("canvas");cv.width=w;cv.height=h;
     const ctx=cv.getContext("2d"),id2=ctx.createImageData(w,h);
-    for(let i=0;i<w*h;i++){const c=palette[data[i]]||[0,0,0,0];id2.data[i*4]=c[0];id2.data[i*4+1]=c[1];id2.data[i*4+2]=c[2];id2.data[i*4+3]=c[3]??220}
+    for(let i=0;i<w*h;i++){
+      const raw=data[i];
+      // Saltar nodata, NaN, ceros
+      if(raw==null||isNaN(raw)||(noDataVal!=null&&raw===noDataVal)||raw===0){
+        id2.data[i*4+3]=0; continue;
+      }
+      const v=Math.round(raw);
+      const c=palette[v];
+      if(!c||c[3]===0){id2.data[i*4+3]=0;continue;}
+      id2.data[i*4]=c[0];id2.data[i*4+1]=c[1];id2.data[i*4+2]=c[2];id2.data[i*4+3]=c[3]??220;
+    }
     ctx.putImageData(id2,0,0);
-    const bbox=img.getBoundingBox();
+    const rawBbox=img.getBoundingBox();
+    const bbox=bboxToWGS84(rawBbox,geoKeys);
     onStatus("✅ Capa cargada.");
     return{dataUrl:cv.toDataURL(),bbox};
   }catch(e){onStatus("⚠️ "+e.message);console.error(e);return null}
