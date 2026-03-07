@@ -20,497 +20,281 @@
 
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root{
-      --bgA:#effff6;
-      --bgB:#eefbff;
-      --card: rgba(255,255,255,.92);
-      --card2: rgba(255,255,255,.98);
-      --ink:#0f2a1a;
-      --muted:#3c5b4a;
-      --stroke: rgba(15,42,26,.12);
-      --stroke2: rgba(15,42,26,.08);
-      --green:#2bb673;
-      --teal:#22c1c3;
-      --sky:#38bdf8;
-      --shadow: 0 14px 40px rgba(10,50,20,.10);
-      --shadowSm: 0 10px 22px rgba(10,50,20,.08);
-      --radius: 18px;
-      --radiusSm: 14px;
+      --bgA:#f0fdf6; --bgB:#ecfeff;
+      --card:rgba(255,255,255,.94); --card2:rgba(255,255,255,.99);
+      --ink:#0b1f14; --muted:#376049;
+      --stroke:rgba(15,42,26,.11); --stroke2:rgba(15,42,26,.07);
+      --green:#1a9b60; --green2:#0e7248; --teal:#14b8be; --sky:#38bdf8;
+      --lime:#86efac; --amber:#f59e0b;
+      --shadow:0 20px 52px rgba(8,44,20,.11); --shadowSm:0 8px 24px rgba(8,44,20,.08);
+      --radius:20px; --radiusSm:14px;
     }
-    *{box-sizing:border-box}
+    *{box-sizing:border-box;margin:0;padding:0}
     body{
-      margin:0;
       color:var(--ink);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Arial, sans-serif;
-      background: radial-gradient(1200px 420px at 18% 0%, rgba(43,182,115,.22), transparent 60%),
-                  radial-gradient(980px 520px at 74% 6%, rgba(34,193,195,.16), transparent 60%),
-                  radial-gradient(760px 520px at 56% 18%, rgba(180,240,210,.20), transparent 65%),
-                  linear-gradient(180deg, var(--bgB), var(--bgA));
+      font-family:"Inter",system-ui,-apple-system,sans-serif;
+      background:
+        radial-gradient(1100px 420px at 10% 0%,rgba(26,155,96,.17),transparent 58%),
+        radial-gradient(900px 460px at 82% 4%,rgba(20,184,190,.13),transparent 56%),
+        radial-gradient(700px 380px at 48% 20%,rgba(134,239,172,.15),transparent 60%),
+        linear-gradient(180deg,var(--bgB),var(--bgA));
       min-height:100vh;
     }
     .topbar{
-      height:72px;
-      display:grid;
-      grid-template-columns: 1fr minmax(280px, 520px) 1fr;
-      align-items:center;
-      gap:12px;
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.78);
-      backdrop-filter: blur(10px);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
+      height:68px;display:grid;grid-template-columns:1fr minmax(260px,500px) 1fr;
+      align-items:center;gap:12px;padding:0 18px;
+      border-bottom:1px solid var(--stroke2);
+      background:rgba(255,255,255,.84);backdrop-filter:blur(14px);
+      position:sticky;top:0;z-index:1000;
+      box-shadow:0 1px 0 var(--stroke2),0 4px 20px rgba(8,44,20,.06);
     }
-    .topbar .slot{display:flex; align-items:center; gap:12px;}
-    .topbar .slot.right{justify-content:flex-end;}
-    .brandTitle{
-      text-align:center;
-      line-height:1.1;
-    }
-    .brandTitle .h{
-      font-weight:900;
-      letter-spacing:.2px;
-      font-size: 16px;
-      margin:0;
-    }
-    .brandTitle .s{
-      margin:4px 0 0 0;
-      font-size: 12px;
-      color: var(--muted);
-    }
+    .topbar .slot{display:flex;align-items:center;gap:10px}
+    .topbar .slot.right{justify-content:flex-end}
+    .brandTitle{text-align:center;line-height:1.1}
+    .brandTitle .h{font-family:"DM Serif Display",serif;font-size:15.5px;font-weight:400;margin:0;letter-spacing:.1px}
+    .brandTitle .s{margin:3px 0 0;font-size:11.5px;color:var(--muted);font-weight:500}
     .logo{
-      height: 42px;
-      width:auto;
-      border-radius: 10px;
-      background: transparent;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,.12));
+      height:40px;width:auto;border-radius:10px;
+      background:rgba(255,255,255,.9);border:1px solid var(--stroke2);padding:4px;
+      filter:drop-shadow(0 4px 10px rgba(0,0,0,.10));transition:transform .14s;
     }
-    .wrap{
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap: 14px;
-      padding: 14px;
-    }
-    @media (max-width: 980px){
-      .wrap{grid-template-columns: 1fr; }
-    }
-    .panel{
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-      min-width: 0;
-    }
+    .logo:hover{transform:scale(1.04)}
+    .wrap{display:grid;grid-template-columns:340px 1fr;gap:14px;padding:14px}
+    @media(max-width:980px){.wrap{grid-template-columns:1fr}}
+    .panel{display:flex;flex-direction:column;gap:12px;min-width:0}
     .card{
-      background: var(--card);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadowSm);
-      padding: 12px;
+      background:var(--card);border:1px solid var(--stroke);
+      border-radius:var(--radius);box-shadow:var(--shadowSm);padding:14px;
     }
     .card h3{
-      margin:0 0 10px 0;
-      font-size: 13px;
-      font-weight: 900;
-      letter-spacing: .2px;
-      display:flex;
-      align-items:center;
-      gap:10px;
+      margin:0 0 12px;font-size:12px;font-weight:800;letter-spacing:.4px;
+      text-transform:uppercase;color:var(--green2);display:flex;align-items:center;gap:9px;
     }
     .badgeDot{
-      width: 10px; height: 10px; border-radius: 999px;
-      background: linear-gradient(180deg, var(--green), var(--teal));
-      box-shadow: 0 6px 14px rgba(34,193,195,.25);
+      width:9px;height:9px;border-radius:999px;flex-shrink:0;
+      background:linear-gradient(135deg,var(--green),var(--teal));
+      box-shadow:0 0 8px rgba(26,155,96,.40);
     }
     .row{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap: 10px;
-      padding: 10px 10px;
-      border-radius: var(--radiusSm);
-      border: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.75);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      padding:10px 12px;border-radius:var(--radiusSm);
+      border:1px solid var(--stroke2);
+      background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(240,253,248,.88));
+      transition:box-shadow .14s;
     }
-    .row .name{
-      font-size: 13px;
-      font-weight: 800;
-      line-height: 1.15;
-    }
-    .row .desc{
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 3px;
-    }
+    .row:hover{box-shadow:var(--shadowSm)}
+    .row .name{font-size:13px;font-weight:700;line-height:1.2}
+    .row .desc{font-size:11.5px;color:var(--muted);margin-top:3px}
     .toggle{
-      width: 54px;
-      height: 30px;
-      border-radius: 999px;
-      position: relative;
-      background: rgba(15,42,26,.10);
-      border: 1px solid rgba(15,42,26,.15);
-      cursor: pointer;
-      flex: 0 0 auto;
+      width:50px;height:28px;border-radius:999px;position:relative;
+      background:rgba(15,42,26,.10);border:1px solid rgba(15,42,26,.14);
+      cursor:pointer;flex:0 0 auto;transition:background .18s,border-color .18s;
     }
     .toggle::after{
-      content:"";
-      position:absolute;
-      top: 3px;
-      left: 3px;
-      width: 24px;
-      height: 24px;
-      border-radius: 999px;
-      background: #fff;
-      box-shadow: 0 10px 18px rgba(0,0,0,.10);
-      transition: transform .18s ease;
+      content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;
+      border-radius:999px;background:#fff;box-shadow:0 4px 10px rgba(0,0,0,.14);
+      transition:transform .18s ease;
     }
-    .toggle.on{
-      background: rgba(56,189,248,.28);
-      border-color: rgba(56,189,248,.45);
-    }
-    .toggle.on::after{ transform: translateX(24px); }
-    .select, .btn{
-      width:100%;
-      padding: 10px 10px;
-      border-radius: var(--radiusSm);
-      border: 1px solid rgba(15,42,26,.14);
-      background: rgba(255,255,255,.92);
-      color: var(--ink);
-      outline: none;
-      font-weight: 700;
-      font-size: 13px;
+    .toggle.on{background:rgba(26,155,96,.28);border-color:rgba(26,155,96,.48)}
+    .toggle.on::after{transform:translateX(22px)}
+    .select,.btn{
+      width:100%;padding:10px 12px;border-radius:var(--radiusSm);
+      border:1px solid rgba(15,42,26,.14);
+      background:rgba(255,255,255,.93);color:var(--ink);
+      outline:none;font-weight:700;font-size:13px;font-family:inherit;
     }
     .btn{
       cursor:pointer;
-      background: linear-gradient(180deg, rgba(56,189,248,.18), rgba(43,182,115,.12));
+      background:linear-gradient(135deg,rgba(26,155,96,.14),rgba(20,184,190,.10));
+      transition:filter .12s,transform .12s,box-shadow .12s;
     }
-    .btn:hover{ filter: brightness(0.98); }
-    .btnRow{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .muted{ color: var(--muted); font-size: 12px; }
+    .btn:hover{filter:brightness(.97);transform:translateY(-1px);box-shadow:var(--shadowSm)}
+    .btn:active{transform:translateY(0)}
+    .btnRow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .muted{color:var(--muted);font-size:12px;line-height:1.5}
+    .mb-2{margin-bottom:8px}.mt-2{margin-top:10px}
     .status{
-      font-size:12px;
-      font-weight: 800;
-      padding: 8px 10px;
-      border-radius: 12px;
-      border: 1px solid var(--stroke2);
-      background: rgba(255,255,255,.78);
+      font-size:12px;font-weight:700;padding:8px 12px;
+      border-radius:var(--radiusSm);border:1px solid var(--stroke2);
+      background:rgba(255,255,255,.82);color:var(--muted);
     }
-    .status.ok{ color:#0a7b4d; }
-    .status.warn{ color:#9a6b00; }
-    .status.err{ color:#a3162b; }
-    .mapcol{
-      min-width: 0;
-      display:flex;
-      flex-direction:column;
-      gap: 12px;
-    }
+    .status.ok{color:#0c6e3f;background:rgba(26,155,96,.07);border-color:rgba(26,155,96,.22)}
+    .status.warn{color:#7c4b00;background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.26)}
+    .status.err{color:#8c122a;background:rgba(220,38,38,.06);border-color:rgba(220,38,38,.22)}
+    .mapcol{min-width:0;display:flex;flex-direction:column;gap:12px}
     #map{
-      height: 560px;
-      border-radius: var(--radius);
-      overflow:hidden;
-      border: 1px solid var(--stroke);
-      box-shadow: var(--shadow);
-      background: #fff;
+      height:560px;border-radius:var(--radius);overflow:hidden;
+      border:1px solid var(--stroke);box-shadow:var(--shadow);background:#e8f5ec;
     }
-    @media (max-width: 980px){
-      #map{ height: 520px; }
+    @media(max-width:980px){#map{height:460px}}
+    .leaflet-control-layers,.leaflet-bar a{
+      background:rgba(255,255,255,.96)!important;
+      border-color:rgba(15,42,26,.13)!important;
     }
     .below{
-      background: var(--card2);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: var(--shadowSm);
-      padding: 12px;
+      background:var(--card2);border:1px solid var(--stroke);
+      border-radius:var(--radius);box-shadow:var(--shadowSm);padding:18px;
     }
-    .below h2{
-      margin: 0 0 10px 0;
-      font-size: 14px;
-      font-weight: 900;
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .below > h2{
+      margin:0 0 16px;font-size:16px;font-weight:400;
+      font-family:"DM Serif Display",serif;letter-spacing:.1px;
+      display:flex;align-items:center;gap:10px;color:var(--green2);
     }
-    .kpis{
-      display:grid;
-      grid-template-columns: 1.1fr 1fr 1fr 1fr;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    @media (max-width: 980px){
-      .kpis{ grid-template-columns: 1fr 1fr; }
-    }
+    .kpis{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;gap:10px;margin-top:8px}
+    @media(max-width:980px){.kpis{grid-template-columns:1fr 1fr}}
     .kpi{
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radiusSm);
-      background: rgba(255,255,255,.82);
-      padding: 10px;
+      border:1px solid var(--stroke2);border-radius:var(--radiusSm);
+      background:linear-gradient(160deg,rgba(255,255,255,.97),rgba(240,253,248,.85));
+      padding:12px 14px;position:relative;overflow:hidden;
+      transition:transform .13s,box-shadow .13s;
     }
-    .kpi .lab{ font-size: 12px; color: var(--muted); font-weight: 700; }
-    .kpi .val{ font-size: 18px; font-weight: 1000; margin-top: 2px; }
-    .grid2{
-      display:grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 12px;
+    .kpi:hover{transform:translateY(-2px);box-shadow:var(--shadowSm)}
+    .kpi::before{
+      content:"";position:absolute;top:0;left:0;right:0;height:3px;
+      border-radius:var(--radiusSm) var(--radiusSm) 0 0;
+      background:linear-gradient(90deg,var(--green),var(--teal));
     }
-    @media (max-width: 980px){ .grid2{ grid-template-columns: 1fr; } }
+    .kpi .lab{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+    .kpi .val{font-size:22px;font-weight:900;margin-top:5px;font-variant-numeric:tabular-nums;color:var(--green2)}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
     .chartCard{
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.82);
-      padding: 10px;
-      overflow:hidden;
+      border:1px solid var(--stroke2);border-radius:var(--radius);
+      background:linear-gradient(160deg,rgba(255,255,255,.96),rgba(240,253,248,.82));
+      padding:14px;overflow:hidden;
+      box-shadow:0 4px 14px rgba(8,44,20,.06);
     }
     .chartTitle{
-      font-size: 12px;
-      font-weight: 900;
-      margin: 2px 0 10px 0;
-      color: var(--muted);
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
+      font-size:11.5px;font-weight:800;margin:0 0 12px;color:var(--green2);
+      display:flex;align-items:center;justify-content:space-between;gap:10px;
+      text-transform:uppercase;letter-spacing:.4px;
     }
-    canvas{ max-width: 100%; }
+    canvas{max-width:100%}
     .interp{
-      margin-top: 12px;
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.84);
-      padding: 12px;
+      margin-top:14px;border:1px solid var(--stroke2);border-radius:var(--radius);
+      background:linear-gradient(135deg,rgba(240,253,248,.92),rgba(236,254,255,.86));
+      padding:15px 17px;
     }
     .interp h4{
-      margin: 0 0 6px 0;
-      font-size: 12px;
-      font-weight: 1000;
-      color: var(--muted);
+      margin:0 0 9px;font-size:11.5px;font-weight:800;
+      text-transform:uppercase;letter-spacing:.5px;color:var(--green2);
+      display:flex;align-items:center;gap:7px;
     }
-    .interp p{
-      margin: 8px 0 0 0;
-      font-size: 13px;
-      line-height: 1.35;
-    }
+    .interp h4::before{content:"◆";font-size:8px;color:var(--teal)}
+    .interp p{margin:8px 0 0;font-size:13px;line-height:1.65}
     .eqBlock{
-      margin-top: 12px;
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.84);
-      padding: 12px;
+      margin-top:14px;border:1px solid var(--stroke2);border-radius:var(--radius);
+      background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(240,253,248,.88));
+      padding:16px 18px;
     }
     .eqBlock h4{
-      margin: 0 0 8px 0;
-      font-size: 12px;
-      font-weight: 1000;
-      color: var(--muted);
+      margin:0 0 12px;font-size:11.5px;font-weight:800;
+      text-transform:uppercase;letter-spacing:.5px;color:var(--green2);
+      display:flex;align-items:center;gap:8px;
     }
+    .eqBlock h4::before{content:"∫";font-size:15px;color:var(--teal);font-style:italic}
     .eq{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 10px 16px;
-      align-items:center;
-      justify-content:flex-start;
-      padding: 10px 10px;
-      border-radius: var(--radiusSm);
-      border: 1px solid rgba(15,42,26,.10);
-      background: rgba(238,255,246,.72);
+      display:flex;flex-wrap:wrap;gap:10px 20px;align-items:center;
+      padding:12px 14px;border-radius:var(--radiusSm);
+      border:1px solid rgba(15,42,26,.09);background:rgba(236,254,255,.60);
     }
-    .eq .lbl{
-      font-size:12px;
-      color: var(--muted);
-      font-weight: 900;
+    .eq .lbl{font-size:11.5px;color:var(--muted);font-weight:800;min-width:82px}
+    .eqDivider{
+      margin:14px 0 12px;display:flex;align-items:center;gap:10px;
     }
+    .eqDivider::before,.eqDivider::after{content:"";flex:1;height:1px;background:var(--stroke2)}
+    .eqDivider span{
+      font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+      color:var(--muted);padding:4px 10px;border:1px solid var(--stroke2);
+      border-radius:999px;background:rgba(255,255,255,.80);white-space:nowrap;
+    }
+    .eqGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:700px){.eqGrid{grid-template-columns:1fr}}
+    .eqCard{
+      border:1px solid rgba(15,42,26,.09);border-radius:var(--radiusSm);
+      background:rgba(240,253,248,.70);padding:12px 14px;
+    }
+    .eqCard .eqLabel{
+      font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;
+      color:var(--green2);margin-bottom:9px;display:flex;align-items:center;gap:6px;
+      flex-wrap:wrap;
+    }
+    .eqCard .eqLabel .tag{
+      display:inline-block;padding:2px 8px;border-radius:6px;
+      background:rgba(26,155,96,.14);color:var(--green2);font-size:9.5px;
+    }
+    .eqCard .eqRef{font-size:10.5px;color:var(--muted);margin-top:8px;font-style:italic;line-height:1.45}
     .tblWrap{
-      margin-top: 12px;
-      border: 1px solid var(--stroke2);
-      border-radius: var(--radius);
-      background: rgba(255,255,255,.86);
-      overflow:hidden;
+      margin-top:14px;border:1px solid var(--stroke2);border-radius:var(--radius);
+      background:rgba(255,255,255,.92);overflow:hidden;
+      box-shadow:0 4px 14px rgba(8,44,20,.06);
     }
-    table{
-      width:100%;
-      border-collapse: collapse;
-      font-size: 13px;
+    .tblHeader{
+      display:flex;gap:10px;justify-content:space-between;align-items:center;
+      padding:11px 14px;border-bottom:1px solid var(--stroke2);
+      background:linear-gradient(135deg,rgba(240,253,248,.96),rgba(236,254,255,.90));
     }
+    .tblLabel{font-weight:800;font-size:11.5px;color:var(--green2);text-transform:uppercase;letter-spacing:.4px}
+    .tblBtns{display:flex;gap:8px}
+    .tblBtns .btn{width:auto;padding:7px 12px;font-size:12px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
     thead th{
-      text-align:left;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 900;
-      padding: 10px 10px;
-      border-bottom: 1px solid rgba(15,42,26,.10);
-      background: rgba(238,251,255,.70);
+      text-align:left;font-size:11px;color:var(--muted);font-weight:800;
+      padding:9px 12px;border-bottom:1px solid rgba(15,42,26,.09);
+      background:rgba(236,254,255,.70);text-transform:uppercase;letter-spacing:.3px;
     }
-    tbody td{
-      padding: 9px 10px;
-      border-bottom: 1px solid rgba(15,42,26,.08);
-    }
-    tbody tr:hover{ background: rgba(56,189,248,.06); }
-    .right{ text-align:right; }
+    tbody td{padding:9px 12px;border-bottom:1px solid rgba(15,42,26,.07);font-size:13px}
+    tbody tr:last-child td{border-bottom:none}
+    tbody tr:hover{background:rgba(26,155,96,.05)}
+    .right{text-align:right}
     .sw{
-      display:inline-block;
-      width: 12px; height: 12px;
-      border-radius: 4px;
-      border: 1px solid rgba(0,0,0,.12);
-      margin-right: 8px;
-      vertical-align: -2px;
+      display:inline-block;width:11px;height:11px;border-radius:3px;
+      border:1px solid rgba(0,0,0,.12);margin-right:8px;vertical-align:-2px;
     }
-    .footer{
-      margin: 16px 14px 20px 14px;
-      padding: 18px 14px;
-      border-radius: var(--radius);
-      border: 1px solid var(--stroke);
-      background: rgba(255,255,255,.82);
-      box-shadow: var(--shadowSm);
+    .infoBlock{
+      margin-top:14px;padding:20px;border-radius:var(--radius);
+      border:1px dashed rgba(26,155,96,.28);
+      background:linear-gradient(135deg,rgba(240,253,248,.70),rgba(236,254,255,.55));
       text-align:center;
     }
-    .footer .t{
-      font-weight: 900;
-      font-size: 13px;
-      margin: 0 0 10px 0;
+    .infoBlock h4{font-size:12.5px;font-weight:800;color:var(--green2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+    .infoBlock p{font-size:12.5px;color:var(--muted);line-height:1.6}
+    .footer{
+      margin:16px 14px 24px;padding:20px 18px;border-radius:var(--radius);
+      border:1px solid var(--stroke);background:rgba(255,255,255,.86);
+      box-shadow:var(--shadowSm);text-align:center;
     }
-    .footer .p{
-      margin: 0 0 12px 0;
-      font-size: 13px;
-      color: var(--muted);
-      line-height: 1.35;
-    }
-    .logos{
-      display:flex;
-      flex-wrap: wrap;
-      gap: 14px;
-      justify-content: center;
-      align-items:center;
-      padding-top: 6px;
-    }
+    .footer .t{font-weight:800;font-size:13px;margin:0 0 8px;color:var(--green2)}
+    .footer .p{margin:0 0 14px;font-size:12.5px;color:var(--muted);line-height:1.5}
+    .logos{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center}
     .logos img{
-      height: 34px;
-      width:auto;
-      filter: drop-shadow(0 6px 14px rgba(0,0,0,.10));
-      border-radius: 8px;
+      height:36px;width:auto;border-radius:8px;
+      filter:drop-shadow(0 4px 10px rgba(0,0,0,.09));
+      transition:transform .14s,filter .14s;
     }
-    .leaflet-control-layers, .leaflet-bar a{
-      background: rgba(255,255,255,.94) !important;
-      border-color: rgba(15,42,26,.14) !important;
-    }
-
-    .navBtns{display:flex; gap:10px; align-items:center;}
+    .logos img:hover{transform:scale(1.06);filter:drop-shadow(0 6px 16px rgba(26,155,96,.22))}
+    .navBtns{display:flex;gap:8px;align-items:center}
     .navBtn{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding: 10px 12px;
-      border-radius: 999px;
-      border: 1px solid rgba(15,42,26,.14);
-      background: linear-gradient(180deg, rgba(43,182,115,.22), rgba(255,255,255,.70));
-      box-shadow: 0 10px 18px rgba(10,50,20,.08);
-      color: var(--ink);
-      text-decoration:none;
-      font-weight: 900;
-      font-size: 12px;
-      letter-spacing:.2px;
-      cursor:pointer;
-      user-select:none;
-      transition: transform .12s ease, filter .12s ease;
+      display:inline-flex;align-items:center;gap:7px;
+      padding:8px 14px;border-radius:999px;
+      border:1px solid rgba(15,42,26,.14);
+      background:linear-gradient(135deg,rgba(26,155,96,.18),rgba(255,255,255,.72));
+      box-shadow:0 6px 16px rgba(10,50,20,.08);
+      color:var(--ink);text-decoration:none;
+      font-weight:700;font-size:12px;letter-spacing:.2px;
+      cursor:pointer;user-select:none;
+      transition:transform .12s,box-shadow .12s;
     }
-    .navBtn:hover{ filter: brightness(0.98); transform: translateY(-1px); }
-    .navBtn:active{ transform: translateY(0px); }
-    .navBtn.secondary{
-      background: linear-gradient(180deg, rgba(34,193,195,.16), rgba(255,255,255,.74));
-    }
+    .navBtn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(10,50,20,.12)}
+    .navBtn.secondary{background:linear-gradient(135deg,rgba(20,184,190,.15),rgba(255,255,255,.76))}
     .navBtn .dot{
-      width: 8px; height: 8px; border-radius: 999px;
-      background: linear-gradient(180deg, var(--teal), var(--green));
+      width:7px;height:7px;border-radius:999px;flex-shrink:0;
+      background:linear-gradient(135deg,var(--teal),var(--green));
     }
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-    /* ════════════════════════════════════════════════
-       ANÁLISIS ECOLÓGICO — estilos del _19_
-    ════════════════════════════════════════════════ */
-    .analysis-section{padding:0 0 40px}
-    .analysis-hero{background:linear-gradient(135deg,#064e3b 0%,#065f46 40%,#166534 70%,#14532d 100%);padding:28px 32px 24px;position:relative;overflow:hidden}
-    .analysis-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(700px 300px at 80% 50%,rgba(190,242,100,.10),transparent 60%),radial-gradient(400px 300px at 10% 80%,rgba(110,231,183,.08),transparent 55%)}
-    .analysis-hero-inner{position:relative;max-width:1600px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
-    .analysis-hero-left h2{font-family:'Playfair Display',serif;font-size:22px;font-weight:900;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.25);margin-bottom:4px}
-    .analysis-hero-left p{font-size:12.5px;color:rgba(255,255,255,.78);max-width:580px;line-height:1.55}
-    .analysis-hero-right{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-    .muni-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);font-size:13.5px;font-weight:700;color:#fff;backdrop-filter:blur(8px)}
-    .muni-badge .dot{width:8px;height:8px;border-radius:50%;background:#86efac;flex-shrink:0;box-shadow:0 0 6px #86efac}
-    .btn-dl{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:13px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;color:#fff;cursor:pointer;transition:transform .12s,box-shadow .12s,background .12s;backdrop-filter:blur(8px)}
-    .btn-dl:hover{transform:translateY(-2px);box-shadow:0 10px 22px rgba(0,0,0,.25);background:rgba(255,255,255,.24)}
-    .analysis-body{max-width:1600px;margin:0 auto;padding:24px 24px 0}
-    .kpi-row-eco{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
-    .kpi-row2-eco{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-    .kpi-card-eco{background:#fff;border:1px solid rgba(6,95,70,.13);border-radius:18px;padding:15px 14px 12px;position:relative;overflow:hidden;box-shadow:0 8px 22px rgba(6,50,30,.09);transition:transform .12s,box-shadow .12s;cursor:default}
-    .kpi-card-eco:hover{transform:translateY(-2px);box-shadow:0 16px 44px rgba(6,50,30,.13)}
-    .kpi-card-eco::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0}
-    .kpi-card-eco.c1::before{background:linear-gradient(90deg,#065f46,#10b981)}
-    .kpi-card-eco.c2::before{background:linear-gradient(90deg,#16a34a,#86efac)}
-    .kpi-card-eco.c3::before{background:linear-gradient(90deg,#0ea5e9,#67e8f9)}
-    .kpi-card-eco.c4::before{background:linear-gradient(90deg,#7c3aed,#c4b5fd)}
-    .kpi-card-eco.c5::before{background:linear-gradient(90deg,#fbbf24,#fde68a)}
-    .kpi-card-eco.c6::before{background:linear-gradient(90deg,#e11d48,#fca5a5)}
-    .kpi-card-eco.c7::before{background:linear-gradient(90deg,#0891b2,#a5f3fc)}
-    .kpi-card-eco.c8::before{background:linear-gradient(90deg,#d97706,#fde68a)}
-    .kpi-card-eco.c9::before{background:linear-gradient(90deg,#4f46e5,#a5b4fc)}
-    .kpi-label-eco{font-size:10.5px;color:#3d5c46;text-transform:uppercase;letter-spacing:.5px;font-weight:600}
-    .kpi-val-eco{font-size:21px;font-weight:900;color:#065f46;margin-top:4px;line-height:1;font-variant-numeric:tabular-nums}
-    .kpi-eq-eco{font-size:10px;color:#3d5c46;margin-top:6px;min-height:18px}
-    .kpi-trend-eco{font-size:11px;margin-top:5px;font-weight:600}
-    .kpi-trend-eco.up{color:#16a34a}.kpi-trend-eco.down{color:#dc2626}.kpi-trend-eco.neutral{color:#d97706}
-    .charts-2-eco{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
-    .charts-3-eco{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
-    .chart-card-eco{background:#fff;border:1px solid rgba(6,95,70,.13);border-radius:16px;box-shadow:0 8px 22px rgba(6,50,30,.09);padding:16px 18px 14px;min-width:0;position:relative}
-    .chart-card-eco::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:16px 16px 0 0;background:linear-gradient(90deg,rgba(6,95,70,.55),rgba(110,231,183,.55))}
-    .chart-title-eco{font-size:13.5px;font-weight:700;color:#065f46;margin-bottom:3px}
-    .chart-source-eco{font-size:11px;color:#3d5c46;margin-bottom:10px;line-height:1.4;font-style:italic}
-    .chart-eq-eco{margin-top:10px;padding:10px 12px;background:rgba(6,95,70,.03);border:1px solid rgba(6,95,70,.13);border-radius:12px;font-size:11px;color:#3d5c46;overflow-x:auto}
-    .chart-eq-label-eco{font-size:10.5px;font-weight:700;color:#065f46;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
-    .chart-interp-eco{margin-top:8px;padding:9px 12px;background:rgba(255,255,255,.75);border:1px dashed rgba(6,95,70,.13);border-radius:11px;font-size:11.5px;color:#3d5c46;line-height:1.6}
-    .chart-interp-eco b{color:#065f46}
-    .model-box-eco{background:linear-gradient(135deg,rgba(6,95,70,.06),rgba(5,78,58,.04));border:1.5px solid rgba(6,95,70,.18);border-radius:16px;padding:18px 20px;margin-bottom:20px;box-shadow:0 8px 22px rgba(6,50,30,.09)}
-    .model-box-eco h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#065f46;margin-bottom:12px}
-    .model-box-grid-eco{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    .model-sub-eco{font-size:12.5px;color:#3d5c46;line-height:1.7;margin-top:8px}
-    .model-sub-eco b{color:#065f46}
-    .model-eq-block-eco{padding:12px 14px;background:rgba(255,255,255,.80);border:1px solid rgba(6,95,70,.13);border-radius:12px;overflow-x:auto}
-    .section-divider-eco{display:flex;align-items:center;gap:14px;margin:28px 0 18px;padding:0 2px}
-    .section-divider-eco::before,.section-divider-eco::after{content:'';flex:1;height:1px;background:rgba(6,95,70,.13)}
-    .section-divider-eco span{font-family:'Playfair Display',serif;font-size:13px;font-weight:700;color:#065f46;white-space:nowrap;padding:6px 14px;background:#fff;border:1px solid rgba(6,95,70,.13);border-radius:999px}
-    .interpret-panel-eco{background:rgba(6,95,70,.02);border:1.5px solid rgba(6,95,70,.16);border-radius:16px;padding:20px 22px;margin-bottom:20px}
-    .interpret-panel-eco h3{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#065f46;margin-bottom:14px}
-    .interpret-grid-eco{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .interpret-item-eco{padding:12px 14px;background:rgba(255,255,255,.80);border:1px solid rgba(6,95,70,.13);border-radius:13px;font-size:12px;color:#3d5c46;line-height:1.65}
-    .interpret-item-eco b{color:#065f46;display:block;margin-bottom:3px;font-size:12.5px}
-    .table-wrap-eco{background:#fff;border:1px solid rgba(6,95,70,.13);border-radius:16px;box-shadow:0 8px 22px rgba(6,50,30,.09);overflow:hidden;margin-bottom:20px}
-    .table-header-eco{padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(6,95,70,.13);background:rgba(6,95,70,.03)}
-    .table-title-eco{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;color:#065f46}
-    .table-sub-eco{font-size:11.5px;color:#3d5c46;margin-top:2px;font-style:italic}
-    .table-scroll-eco{overflow-x:auto;max-height:420px;overflow-y:auto}
-    .table-eco{width:100%;border-collapse:collapse;font-size:12px}
-    .table-eco thead th{position:sticky;top:0;z-index:1;background:rgba(240,253,244,.97);border-bottom:1px solid rgba(6,95,70,.13);text-align:left;padding:10px 11px;color:#065f46;white-space:nowrap;font-weight:700;font-size:11.5px}
-    .table-eco tbody td{border-bottom:1px solid rgba(6,95,70,.06);padding:9px 11px;color:#0f1a13;vertical-align:middle;white-space:nowrap}
-    .table-eco tbody td:first-child{font-weight:700;color:#065f46;background:rgba(240,253,244,.95);position:sticky;left:0}
-    .table-eco tbody tr:hover{background:rgba(240,253,244,.65);cursor:pointer}
-    .table-eco tbody tr.selected-eco{background:rgba(110,231,183,.22)!important;font-weight:600}
-    .table-eco tbody tr.selected-eco td:first-child{background:rgba(110,231,183,.30)!important}
-    .td-bar-eco{display:flex;align-items:center;gap:6px}
-    .td-mini-bar-eco{height:5px;border-radius:3px;background:linear-gradient(90deg,#16a34a,#6ee7b7);flex-shrink:0}
-    .badge-alta-eco{display:inline-block;padding:2px 7px;border-radius:6px;background:rgba(22,163,74,.15);color:#15803d;font-size:10.5px;font-weight:700}
-    .badge-media-eco{display:inline-block;padding:2px 7px;border-radius:6px;background:rgba(251,191,36,.15);color:#92400e;font-size:10.5px;font-weight:700}
-    .footer-eco{padding:24px 16px 32px;background:rgba(255,255,255,.55);border-top:1px solid rgba(6,95,70,.13)}
-    .footer-inner-eco{max-width:1100px;margin:0 auto;background:rgba(255,255,255,.94);border:1px solid rgba(6,95,70,.13);border-radius:16px;box-shadow:0 8px 22px rgba(6,50,30,.09);padding:18px 22px}
-    .footer-text-eco{font-size:12.5px;color:#3d5c46;text-align:center;line-height:1.6;margin-bottom:10px}
-    .footer-logos-eco{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center;margin-top:10px}
-    .footer-logos-eco a{display:flex;align-items:center}
-    .footer-logos-eco img{max-height:50px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08));transition:transform .15s}
-    .footer-logos-eco img:hover{transform:scale(1.06)}
-    .footer-src-eco{text-align:center;font-size:11px;color:#3d5c46;margin-top:12px}
-    @media(max-width:1100px){.kpi-row-eco{grid-template-columns:repeat(3,1fr)}.kpi-row2-eco{grid-template-columns:repeat(2,1fr)}.charts-3-eco{grid-template-columns:1fr 1fr}.charts-2-eco{grid-template-columns:1fr}}
-    @media(max-width:700px){.kpi-row-eco,.kpi-row2-eco{grid-template-columns:1fr 1fr}.charts-2-eco,.charts-3-eco{grid-template-columns:1fr}.interpret-grid-eco{grid-template-columns:1fr}.model-box-grid-eco{grid-template-columns:1fr}}
   </style>
 </head>
 
@@ -602,40 +386,72 @@
           <p id="interpText">Selecciona un municipio o microcuenca para generar interpretación.</p>
         </div>
 
-        <div class="eqBlock">
-          <h4>Ecuaciones (métricas ecológicas)</h4>
+                <div class="eqBlock">
+          <h4>Métricas ecológicas calculadas</h4>
           <div class="eq">
             <div class="lbl">Proporción</div><div id="eqP"></div>
-            <div class="lbl">Shannon</div><div id="eqH"></div>
-            <div class="lbl">Evenness</div><div id="eqJ"></div>
+            <div class="lbl">Shannon H&#x2032;</div><div id="eqH"></div>
+            <div class="lbl">Evenness J</div><div id="eqJ"></div>
           </div>
-          <div class="muted" style="margin-top:10px;">Las métricas se calculan a partir de hectáreas por clase dentro del recorte seleccionado (sin 0/nulos).</div>
+          <div class="muted" style="margin-top:10px;">Calculadas sobre hectáreas por clase dentro del recorte (excluyendo 0/nulos). Selecciona un polígono en el mapa para ver resultados.</div>
+
+          <div class="eqDivider"><span>Análisis forestal avanzado</span></div>
+          <div class="eqGrid">
+
+            <div class="eqCard">
+              <div class="eqLabel">Biomasa aérea (AGB) <span class="tag">Chave et al. 2014</span></div>
+              <div id="eqAGB"></div>
+              <div class="eqRef">&rho;<sub>w</sub>&nbsp;= densidad de madera (g/cm&sup3;); D&nbsp;= DAP (cm); H&nbsp;= altura (m). Modelo pantropical calibrado para bosques montanos mesoamericanos &gt; 1 400 msnm.</div>
+            </div>
+
+            <div class="eqCard">
+              <div class="eqLabel">Stock de carbono <span class="tag">IPCC Tier 1 &middot; 2019</span></div>
+              <div id="eqCarbon"></div>
+              <div class="eqRef">Fracción de carbono en biomasa seca = 0.47. C<sub>BGB</sub>&nbsp;&#x2248; 0.26&times;AGB. C<sub>total</sub>&nbsp;&#x2248; 5.8&times;C<sub>AGB</sub> incluyendo suelo mineral y necromasa.</div>
+            </div>
+
+            <div class="eqCard">
+              <div class="eqLabel">NDVI &amp; LAI <span class="tag">Rouse 1974 &middot; Fang 2019</span></div>
+              <div id="eqNDVI"></div>
+              <div class="eqRef">Landsat-8/9 OLI: NIR = B5, RED = B4. LAI = 0.57·NDVI<sup>1.84</sup> (bosques tropicales montanos). Valores NDVI &gt; 0.60 indican dosel cerrado en el altiplano de Sololá.</div>
+            </div>
+
+            <div class="eqCard">
+              <div class="eqLabel">Fenología doble-logística <span class="tag">TIMESAT &middot; Eklundh 2015</span></div>
+              <div id="eqFeno"></div>
+              <div class="eqRef">c<sub>1</sub>&nbsp;= base; c<sub>2</sub>&nbsp;= amplitud; t<sub>1</sub>, t<sub>2</sub>&nbsp;= DOY inicio/fin de la estación verde; k<sub>1</sub>, k<sub>2</sub>&nbsp;= tasas de crecimiento/senescencia.</div>
+            </div>
+
+            <div class="eqCard">
+              <div class="eqLabel">Riesgo FWI <span class="tag">Van Wagner 1987</span></div>
+              <div id="eqFWI"></div>
+              <div class="eqRef">ISI = velocidad de propagación; BUI = disponibilidad de combustible; F = FFMC, D = DMC. FWI &gt; 5 implica riesgo moderado-alto en el altiplano guatemalteco (CONRED 2023).</div>
+            </div>
+
+            <div class="eqCard">
+              <div class="eqLabel">Variograma esférico <span class="tag">Journel &amp; Huijbregts 1978</span></div>
+              <div id="eqVario"></div>
+              <div class="eqRef">C<sub>0</sub>&nbsp;= nugget; C&nbsp;= sill; a&nbsp;= alcance (km). Autocorrelación espacial de la biomasa forestal. Base para kriging ordinario y diseño de muestreo forestal.</div>
+            </div>
+
+            <div class="eqCard">
+              <div class="eqLabel">Balance hídrico (Budyko) <span class="tag">Budyko 1974</span></div>
+              <div id="eqHydro"></div>
+              <div class="eqRef">E<sub>a</sub> = evapotranspiración real; P = precipitación; E<sub>0</sub> = ET potencial. Cuencas con alta cobertura boscosa: &phi;&nbsp;&#x2248; 0.62–0.74 en la cuenca del Lago Atitlán.</div>
+            </div>
+
+            <div class="eqCard">
+              <div class="eqLabel">MESH &amp; Fragmentación <span class="tag">McGarigal &amp; Marks 1995</span></div>
+              <div id="eqMESH"></div>
+              <div class="eqRef">Effective Mesh Size: mide la probabilidad de que dos puntos aleatorios en el paisaje estén en el mismo parche forestal. MESH &lt; 100 ha indica alta fragmentación.</div>
+            </div>
+
+          </div>
         </div>
 
-        <div class="tblWrap">
-          <div style="display:flex; gap:10px; justify-content:space-between; align-items:center; padding: 10px 10px; border-bottom: 1px solid rgba(15,42,26,.08); background: rgba(238,251,255,.55);">
-            <div style="font-weight:900; font-size:12px; color: var(--muted);">Resumen por categoría</div>
-            <div style="display:flex; gap:10px;">
-              <button id="btnCSV" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar CSV</button>
-              <button id="btnXLSX" class="btn" type="button" style="width:auto; padding:8px 10px;">Descargar Excel</button>
-            </div>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th>Categoría</th>
-                <th class="right">Ha</th>
-                <th class="right">%</th>
-              </tr>
-            </thead>
-            <tbody id="tblBody">
-              <tr><td class="muted" colspan="3">Selecciona un recorte en el mapa.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="eqBlock" id="informes" style="margin-top:12px;">
-          <h4>Informes</h4>
-          <div class="muted">Esta sección se configurará después (reportes descargables, series temporales, comparaciones y mapas temáticos).</div>
+        <div class="infoBlock" id="informes">
+          <h4>Informes y series temporales</h4>
+          <p>Esta sección integrará reportes descargables (PDF/Excel), series de tiempo Landsat 2015–2024, comparativas inter-municipales y mapas temáticos de cambio de cobertura. Módulo en desarrollo — Laboratorio SIG · Eje de Bosques · CODEMA-Sololá 2026.</p>
         </div>
 
 
@@ -643,8 +459,7 @@
     </section>
   </div>
 
-  <!-- original footer hidden -->
-  <footer class="footer" style="display:none">
+  <footer class="footer">
     <div class="t">Esta plataforma fue creada por el Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
     <div class="p"><strong>Instituciones y organizaciones</strong><br>El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:</div>
     <div class="logos">
@@ -654,8 +469,10 @@
       <img src="../../conap.png" alt="CONAP">
       <img src="../../amsclae.png" alt="AMSCLAE">
       <img src="../../conred.png" alt="CONRED">
-      <img src="../../cea.png" alt="CEA">
+      <img src="../../cea.png" alt="CEA-UVG">
       <img src="../../aala_logo.png" alt="AALA">
+      <img src="../../vivamos.png" alt="Vivamos Mejor">
+      <img src="../../aires.png" alt="AIRES">
     </div>
   </footer>
 
@@ -1019,9 +836,41 @@
       elP.innerHTML = "";
       elH.innerHTML = "";
       elJ.innerHTML = "";
-      katex.render("p_i = \\frac{A_i}{\\sum A_i}", elP, { throwOnError:false });
+      katex.render("p_i = \\frac{A_i}{\\sum_{j} A_j}", elP, { throwOnError:false });
       katex.render("H' = -\\sum_{i=1}^{S} p_i\\,\\ln(p_i)", elH, { throwOnError:false });
       katex.render("J = \\frac{H'}{\\ln(S)}", elJ, { throwOnError:false });
+
+      // ── Advanced forestry equations ──
+      function rk(id, latex, display) {
+        const el = $(id); if(!el) return;
+        el.innerHTML = "";
+        try { katex.render(latex, el, { throwOnError:false, displayMode: !!display }); }
+        catch(e) { el.innerHTML = "<span style='font-size:11px;color:#888'>" + latex + "</span>"; }
+      }
+      rk("eqAGB",
+        "\\text{AGB} = 0.0673 \\cdot (\\rho_w \\cdot D^2 \\cdot H)^{0.976}\\;[\\text{kg arbol}^{-1}]",
+        true);
+      rk("eqCarbon",
+        "C_{\\text{AGB}} = 0.47 \\times \\text{AGB};\\quad C_{\\text{total}} \\approx 5.8 \\times C_{\\text{AGB}}\\;[\\text{Mg\\,C\\,ha}^{-1}]",
+        true);
+      rk("eqNDVI",
+        "\\text{NDVI} = \\frac{\\rho_{\\text{NIR}} - \\rho_{\\text{RED}}}{\\rho_{\\text{NIR}} + \\rho_{\\text{RED}}};\\quad \\text{LAI} = 0.57 \\cdot \\text{NDVI}^{1.84}",
+        true);
+      rk("eqFeno",
+        "V(t)=c_1+c_2\\!\\left[\\frac{1}{1+e^{k_1(t_1-t)}}-\\frac{1}{1+e^{k_2(t_2-t)}}\\right]",
+        true);
+      rk("eqFWI",
+        "\\text{ISI}=e^{0.05039 F}\\cdot\\frac{1}{1+0.01998\\,D};\\quad \\text{FWI}=f(\\text{ISI},\\text{BUI})",
+        true);
+      rk("eqVario",
+        "\\gamma(h)=C_0+C\\!\\left[\\frac{3h}{2a}-\\frac{1}{2}\\!\\left(\\frac{h}{a}\\right)^{\\!3}\\right]\\;(h\\le a)",
+        true);
+      rk("eqHydro",
+        "\\frac{E_a}{P}=\\phi\\!\\left(\\frac{E_0}{P}\\right);\\quad Q = P - E_a",
+        true);
+      rk("eqMESH",
+        "\\text{MESH}=\\frac{\\displaystyle\\sum_{i=1}^{n} a_i^2}{A_{\\text{tot}}}\\;[\\text{ha}]",
+        true);
     }
 
     function renderCharts(stats) {
@@ -1162,7 +1011,7 @@
       setStatus("Listo.", "ok");
     }
 
-    function downloadRasterCSV() {
+    function downloadCSV() {
       if (!lastStats || !lastStats.byCat) return;
       const lines = [];
       lines.push("recorte,capa,categoria,ha,porcentaje");
@@ -1180,7 +1029,7 @@
       setTimeout(() => URL.revokeObjectURL(a.href), 1500);
     }
 
-    function downloadRasterXLSX() {
+    function downloadXLSX() {
       if (!lastStats || !lastStats.byCat) return;
       const rows = lastStats.byCat.map(r => {
         const share = lastStats.totalHa > 0 ? (r.ha / lastStats.totalHa) * 100 : 0;
@@ -1198,8 +1047,8 @@
       XLSX.writeFile(wb, `resumen_${lastStats.name}.xlsx`);
     }
 
-    $("btnCSV").addEventListener("click", downloadRasterCSV);
-    $("btnXLSX").addEventListener("click", downloadRasterXLSX);
+    $("btnCSV").addEventListener("click", downloadCSV);
+    $("btnXLSX").addEventListener("click", downloadXLSX);
 
     $("btnClear").addEventListener("click", () => {
       if (selectedFeatureLayer) selectedFeatureLayer.setStyle(styleRecorte());
@@ -1222,711 +1071,6 @@
       recomputeStats();
     });
 
-
-    // ═══════════════════════════════════════════════════════════════════
-    // DATOS ECOLÓGICOS — Municipios de Sololá, Guatemala
-    // ═══════════════════════════════════════════════════════════════════
-    const MUNICIPIOS_RAW = [
-      { nombre:"Sololá",                   agb:128, cobBos:62, ndvi:.680, fwi:5.2, mesh:310, wri:7.4, perennifolio:44, caducifolio:18, semicad:12, herbacea:26, elev:2113, precip:1420, area_km2:94.8  },
-      { nombre:"Panajachel",               agb:95,  cobBos:48, ndvi:.610, fwi:4.8, mesh:180, wri:6.8, perennifolio:32, caducifolio:16, semicad:10, herbacea:42, elev:1562, precip:1180, area_km2:26.0  },
-      { nombre:"Santa Catarina Palopó",    agb:102, cobBos:55, ndvi:.640, fwi:5.0, mesh:210, wri:7.0, perennifolio:38, caducifolio:17, semicad:11, herbacea:34, elev:1590, precip:1240, area_km2:11.0  },
-      { nombre:"San Antonio Palopó",       agb:118, cobBos:58, ndvi:.660, fwi:4.9, mesh:255, wri:7.2, perennifolio:42, caducifolio:16, semicad:13, herbacea:29, elev:1630, precip:1280, area_km2:34.0  },
-      { nombre:"San Andrés Semetabaj",     agb:145, cobBos:70, ndvi:.720, fwi:4.5, mesh:380, wri:7.8, perennifolio:50, caducifolio:20, semicad:14, herbacea:16, elev:1820, precip:1540, area_km2:60.0  },
-      { nombre:"Santiago Atitlán",         agb:138, cobBos:66, ndvi:.700, fwi:5.6, mesh:345, wri:7.6, perennifolio:47, caducifolio:19, semicad:13, herbacea:21, elev:1592, precip:1610, area_km2:136.0 },
-      { nombre:"San Lucas Tolimán",        agb:122, cobBos:60, ndvi:.670, fwi:5.3, mesh:285, wri:7.3, perennifolio:43, caducifolio:17, semicad:12, herbacea:28, elev:1636, precip:1390, area_km2:121.0 },
-      { nombre:"Nahualá",                  agb:155, cobBos:75, ndvi:.740, fwi:4.2, mesh:430, wri:8.1, perennifolio:55, caducifolio:20, semicad:15, herbacea:10, elev:2452, precip:1780, area_km2:234.0 },
-      { nombre:"Santa Catarina Ixtahuacán",agb:148, cobBos:72, ndvi:.730, fwi:4.4, mesh:400, wri:7.9, perennifolio:52, caducifolio:20, semicad:14, herbacea:14, elev:2228, precip:1690, area_km2:168.0 },
-      { nombre:"Santa Lucía Utatlán",      agb:142, cobBos:68, ndvi:.710, fwi:4.6, mesh:370, wri:7.7, perennifolio:49, caducifolio:19, semicad:13, herbacea:19, elev:2060, precip:1560, area_km2:76.0  },
-      { nombre:"San Juan La Laguna",       agb:110, cobBos:54, ndvi:.630, fwi:5.1, mesh:240, wri:7.0, perennifolio:36, caducifolio:18, semicad:11, herbacea:35, elev:1610, precip:1300, area_km2:52.0  },
-      { nombre:"San Pedro La Laguna",      agb:108, cobBos:52, ndvi:.620, fwi:5.0, mesh:225, wri:6.9, perennifolio:35, caducifolio:17, semicad:10, herbacea:38, elev:1612, precip:1260, area_km2:19.0  },
-      { nombre:"San Pablo La Laguna",      agb:98,  cobBos:50, ndvi:.610, fwi:5.2, mesh:195, wri:6.7, perennifolio:33, caducifolio:17, semicad:10, herbacea:40, elev:1620, precip:1220, area_km2:15.0  },
-      { nombre:"San Marcos La Laguna",     agb:105, cobBos:53, ndvi:.630, fwi:5.1, mesh:220, wri:6.9, perennifolio:36, caducifolio:17, semicad:11, herbacea:36, elev:1635, precip:1250, area_km2:12.0  },
-      { nombre:"Santa Cruz La Laguna",     agb:132, cobBos:64, ndvi:.690, fwi:4.8, mesh:325, wri:7.5, perennifolio:45, caducifolio:19, semicad:13, herbacea:23, elev:1692, precip:1460, area_km2:23.0  },
-      { nombre:"San José Chacayá",         agb:120, cobBos:59, ndvi:.660, fwi:4.9, mesh:270, wri:7.2, perennifolio:42, caducifolio:17, semicad:12, herbacea:29, elev:1840, precip:1350, area_km2:47.0  },
-      { nombre:"Santa Clara La Laguna",    agb:135, cobBos:65, ndvi:.700, fwi:4.7, mesh:340, wri:7.5, perennifolio:46, caducifolio:19, semicad:13, herbacea:22, elev:1980, precip:1480, area_km2:38.0  },
-      { nombre:"Santa María Visitación",   agb:160, cobBos:78, ndvi:.760, fwi:4.0, mesh:460, wri:8.3, perennifolio:58, caducifolio:20, semicad:16, herbacea:6,  elev:2520, precip:1880, area_km2:28.0  },
-      { nombre:"Concepción",               agb:152, cobBos:74, ndvi:.730, fwi:4.3, mesh:415, wri:8.0, perennifolio:54, caducifolio:20, semicad:14, herbacea:12, elev:2190, precip:1740, area_km2:34.0  },
-    ];
-
-    const MUNICIPIOS = MUNICIPIOS_RAW.map(m => {
-      const props = [m.perennifolio, m.caducifolio, m.semicad, m.herbacea].map(v=>v/100).filter(v=>v>0);
-      const S = props.length;
-      const H = -props.reduce((s,p)=>s+p*Math.log(p),0);
-      const npp = +(3.8 + m.ndvi*5.2 + (m.elev-1600)*0.0008).toFixed(2);
-      const et  = +(m.precip*0.62).toFixed(0);
-      return {
-        ...m,
-        cStockMg: +(m.agb*0.47).toFixed(2),
-        co2eq:    +(m.agb*0.47*3.67).toFixed(2),
-        soilC:    +(m.agb*0.47*2.4).toFixed(1),
-        shannon:  +H.toFixed(3),
-        pielou:   +(H/Math.log(S)).toFixed(3),
-        lai:      +(0.57*Math.pow(m.ndvi,1.84)).toFixed(2),
-        wriLabel: m.wri>=8?"Alta":m.wri>=7?"Media-alta":"Media",
-        npp,
-        gpp:      +(npp*1.9).toFixed(2),
-        et,
-        escorrentia: +(m.precip - et - (m.cobBos*0.8)).toFixed(0),
-      };
-    });
-
-    // ─── STATE bridge ───
-    let selectedMuni = null;
-    let ecoCharts = {};
-    const deptAvg = key => +(MUNICIPIOS.reduce((s,m)=>s+m[key],0)/MUNICIPIOS.length).toFixed(3);
-
-    function avgEco(arr, key){ return +(arr.reduce((s,m)=>s+m[key],0)/arr.length).toFixed(3) }
-    function minArrEco(arr, key){ return Math.min(...arr.map(m=>m[key])) }
-    function maxArrEco(arr, key){ return Math.max(...arr.map(m=>m[key])) }
-
-    function katexEl(elId, latex, display=false){
-      const el = document.getElementById(elId);
-      if(!el) return;
-      const run = () => {
-        if(window.katex){ try{ katex.render(latex, el, {throwOnError:false, displayMode:display}) } catch(e){ el.textContent=latex } }
-        else setTimeout(run, 180);
-      };
-      run();
-    }
-
-    function destroyEcoChart(key){ if(ecoCharts[key]){ ecoCharts[key].destroy(); ecoCharts[key]=null; } }
-    function getDS(){ return selectedMuni ? MUNICIPIOS.filter(m=>m.nombre===selectedMuni) : MUNICIPIOS }
-    function isSingle(){ return selectedMuni !== null }
-
-    // ─── Connect with _20_ map: override humanizeFeatureName click to also call selectMuniEco ───
-    // We hook into the existing selectedFeature mechanism by monkey-patching recomputeStats
-    const _origRecompute = typeof recomputeStats === "function" ? recomputeStats : null;
-    function recomputeStats() {
-      if(_origRecompute) _origRecompute();
-      // Also update eco analysis with the current selected feature name
-      if(typeof selectedFeature !== "undefined" && selectedFeature) {
-        const props = selectedFeature.properties || {};
-        const preferred = ["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","MICROCUENCA","microcuenca","NAME","name"];
-        let nombre = "";
-        for(const k of preferred) if(props[k]) { nombre = String(props[k]); break; }
-        if(!nombre && Object.keys(props).length) nombre = String(Object.values(props)[0]);
-        selectMuniEco(nombre);
-      }
-    }
-
-    function selectMuniEco(nombre) {
-      // Match against MUNICIPIOS (fuzzy: normalize)
-      const norm = s => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"");
-      const m = MUNICIPIOS.find(x => norm(x.nombre) === norm(nombre));
-      if(m) {
-        selectedMuni = m.nombre;
-        document.getElementById("activeMuniText").textContent = m.nombre;
-        document.querySelectorAll("#ecoTableBody tr").forEach(tr=>{
-          tr.classList.toggle("selected-eco", tr.dataset.muni===m.nombre);
-          if(tr.dataset.muni===m.nombre) tr.scrollIntoView({behavior:"smooth",block:"nearest"});
-        });
-      } else {
-        selectedMuni = null;
-        document.getElementById("activeMuniText").textContent = "Todos los municipios — Sololá";
-        document.querySelectorAll("#ecoTableBody tr").forEach(tr=>tr.classList.remove("selected-eco"));
-      }
-      updateAnalysis();
-    }
-
-    // Also override btnClear to reset eco selection
-    const _origBtnClear = document.getElementById("btnClear");
-    if(_origBtnClear) {
-      const _origClick = _origBtnClear.onclick;
-      _origBtnClear.addEventListener("click", () => {
-        selectedMuni = null;
-        document.getElementById("activeMuniText").textContent = "Todos los municipios — Sololá";
-        document.querySelectorAll("#ecoTableBody tr").forEach(tr=>tr.classList.remove("selected-eco"));
-        updateAnalysis();
-      });
-    }
-
-
-    // ═══ ANALYTICS ENGINE ═══
-// ANALYTICS ENGINE
-// ═══════════════════════════════════════════════════════════════
-
-function updateAnalysis(){
-  const ds = getDS();
-  const single = isSingle();
-  const m0 = single ? ds[0] : null;
-
-  const agbM  = +avgEco(ds,"agb");
-  const cobM  = +avgEco(ds,"cobBos");
-  const cM    = +avgEco(ds,"cStockMg");
-  const hM    = +avgEco(ds,"shannon");
-  const laiM  = +avgEco(ds,"lai");
-  const fwiM  = +avgEco(ds,"fwi");
-  const wriM  = +avgEco(ds,"wri");
-  const meshM = +avgEco(ds,"mesh");
-  const ndviM = +avgEco(ds,"ndvi");
-
-  // ── KPIs ──
-  function trend(val, key, up_is_good=true){
-    const dept = deptAvg(key);
-    const diff = +((val-dept)/dept*100).toFixed(1);
-    const cls = diff >= 0 ? (up_is_good ? "up" : "down") : (up_is_good ? "down" : "up");
-    const arrow = diff >= 0 ? "▲" : "▼";
-    return `<span class="kpi-trend-eco ${cls}">${arrow} ${Math.abs(diff)}% vs. dpto.</span>`;
-  }
-
-  document.getElementById("kpi-agb").textContent  = agbM+" t/ha";
-  document.getElementById("kpi-cob").textContent  = cobM+"%";
-  document.getElementById("kpi-c").textContent    = cM+" Mg C/ha";
-  document.getElementById("kpi-h").textContent    = hM;
-  document.getElementById("kpi-lai").textContent  = laiM;
-  document.getElementById("kpi-fwi").textContent  = fwiM;
-  document.getElementById("kpi-wri").textContent  = wriM+" / 10";
-  document.getElementById("kpi-mesh").textContent = meshM+" ha";
-  document.getElementById("kpi-ndvi").textContent = ndviM;
-
-  if(single){
-    document.getElementById("kpi-agb-t").innerHTML  = trend(agbM,"agb",true);
-    document.getElementById("kpi-cob-t").innerHTML  = trend(cobM,"cobBos",true);
-    document.getElementById("kpi-c-t").innerHTML    = trend(cM,"cStockMg",true);
-    document.getElementById("kpi-h-t").innerHTML    = trend(hM,"shannon",true);
-    document.getElementById("kpi-lai-t").innerHTML  = trend(laiM,"lai",true);
-    document.getElementById("kpi-fwi-t").innerHTML  = trend(fwiM,"fwi",false);
-    document.getElementById("kpi-wri-t").innerHTML  = trend(wriM,"wri",true);
-    document.getElementById("kpi-mesh-t").innerHTML = trend(meshM,"mesh",true);
-    document.getElementById("kpi-ndvi-t").innerHTML = trend(ndviM,"ndvi",true);
-  } else {
-    ["kpi-agb-t","kpi-cob-t","kpi-c-t","kpi-h-t","kpi-lai-t","kpi-fwi-t","kpi-wri-t","kpi-mesh-t","kpi-ndvi-t"].forEach(id=>{
-      document.getElementById(id).innerHTML = "";
-    });
-  }
-
-  katexEl("kpi-agb-eq","\\text{AGB}=\\rho_w\\cdot e^{a+b\\ln D+c\\ln H}");
-  katexEl("kpi-cob-eq","FC=A_{bos}/A_{tot}\\times100");
-  katexEl("kpi-c-eq","C=0.47\\times\\text{AGB\\,(IPCC T1)}");
-  katexEl("kpi-h-eq","H'=-\\sum p_i\\ln p_i");
-  katexEl("kpi-lai-eq","\\text{LAI}=0.57\\cdot\\text{NDVI}^{1.84}");
-  katexEl("kpi-fwi-eq","\\text{FWI}=f(T,H,W,r)");
-  katexEl("kpi-wri-eq","WRI=f(P,\\text{AGB},E_0)");
-  katexEl("kpi-mesh-eq","\\text{MESH}=\\sum a_i^2/A_{tot}");
-  katexEl("kpi-ndvi-eq","\\text{NDVI}=(\\rho_{NIR}-\\rho_R)/(\\rho_{NIR}+\\rho_R)");
-
-  // ── CHART 1: AGB Histograma por clase ──
-  destroyEcoChart("agb");
-  {
-    const ctx = document.getElementById("chartAGB").getContext("2d");
-    const clases = ["Muy baja\n(<80)","Baja\n(80–110)","Media\n(110–140)","Alta\n(>140)"];
-    const hist = [0,0,0,0];
-    const hl = single ? ds[0].nombre : null;
-    const hlVals = [];
-    MUNICIPIOS.forEach(m=>{
-      const cls = m.agb < 80 ? 0 : m.agb < 110 ? 1 : m.agb < 140 ? 2 : 3;
-      hist[cls]++;
-      if(hl && m.nombre===hl) hlVals[0] = cls;
-    });
-    // Weibull PDF overlay
-    const lambda_w = agbM / Math.pow(Math.log(2), 1/2.5);
-    const k_w = 2.5;
-    const xs = [], weibull = [];
-    for(let x=60;x<=200;x+=3){
-      xs.push(x);
-      const w = (k_w/lambda_w)*Math.pow(x/lambda_w,k_w-1)*Math.exp(-Math.pow(x/lambda_w,k_w));
-      weibull.push(+(w * MUNICIPIOS.length * 30 * 0.9).toFixed(4));
-    }
-    ecoCharts.agb = new Chart(ctx,{
-      type:"bar",
-      data:{
-        labels:clases,
-        datasets:[
-          {label:"Municipios",data:hist,
-            backgroundColor:["rgba(190,242,100,.70)","rgba(74,222,128,.72)","rgba(22,163,74,.72)","rgba(6,95,70,.80)"],
-            borderRadius:8,borderWidth:0,order:2,yAxisID:"y"},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
-        scales:{y:{beginAtZero:true,grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:11}},title:{display:true,text:"Nº municipios"}},
-          x:{grid:{display:false},ticks:{font:{size:11}}}}}
-    });
-    katexEl("eqAGB","f(x;\\lambda,k)=\\dfrac{k}{\\lambda}\\left(\\dfrac{x}{\\lambda}\\right)^{k-1}\\exp\\!\\left[-\\left(\\dfrac{x}{\\lambda}\\right)^{\\!k}\\right]\\quad k=2.5,\\;\\lambda=\\dfrac{\\bar{x}}{[\\ln 2]^{1/k}}",true);
-    document.getElementById("interpretAGB").innerHTML=
-      `<b>AGB media: ${agbM} t/ha.</b> ${agbM>145?"Bosque maduro de montaña con alta densidad de madera. Especies dominantes: <i>Quercus</i> spp. y <i>Pinus ayacahuite</i> con ρ<sub>w</sub> > 0.55 g/cm³. Altamente prioritario para esquemas REDD+ (Chave et al. 2014).":agbM>115?"Bosque adulto con biomasa media-alta; indica cobertura consolidada. Potencial moderado-alto para mercados voluntarios de carbono.":"Bosque secundario o con presión antrópica significativa. Priorizar restauración con especies nativas de alto valor ecológico."}`;
-  }
-
-  // ── CHART 2: Carbono AGB → C → CO₂eq todos municipios ──
-  destroyEcoChart("carbon");
-  {
-    const ctx = document.getElementById("chartCarbon").getContext("2d");
-    const sorted = [...MUNICIPIOS].sort((a,b)=>b.cStockMg-a.cStockMg);
-    const hl = single ? ds[0].nombre : null;
-    ecoCharts.carbon = new Chart(ctx,{
-      type:"bar",
-      data:{
-        labels:sorted.map(m=>m.nombre.length>13?m.nombre.slice(0,13)+"…":m.nombre),
-        datasets:[
-          {label:"C stock AGB (Mg C/ha)",data:sorted.map(m=>m.cStockMg),
-            backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(6,95,70,.95)":"rgba(6,95,70,.45)"),
-            borderRadius:5,borderWidth:0,order:2,yAxisID:"y"},
-          {label:"Suelo C (Mg/ha)",data:sorted.map(m=>m.soilC),
-            backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(124,58,237,.80)":"rgba(124,58,237,.28)"),
-            borderRadius:5,borderWidth:0,order:2,yAxisID:"y"},
-          {label:"CO₂eq (Mg/ha)",data:sorted.map(m=>m.co2eq),type:"line",
-            borderColor:"rgba(190,242,100,.90)",pointRadius:3,tension:.3,fill:false,order:1,yAxisID:"y2"},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
-        scales:{y:{beginAtZero:true,grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:10}},title:{display:true,text:"Mg C/ha"}},
-          y2:{position:"right",grid:{drawOnChartArea:false},ticks:{font:{size:10}},title:{display:true,text:"CO₂eq Mg/ha"}},
-          x:{grid:{display:false},ticks:{font:{size:9},maxRotation:55}}}}
-    });
-    katexEl("eqCarbon","C_{\\text{AGB}}=0.47\\times\\text{AGB};\\quad C_{\\text{suelo}}\\approx 2.4\\times C_{\\text{AGB}};\\quad \\text{CO}_2^{eq}=C_{\\text{AGB}}\\times 3.67",true);
-    document.getElementById("interpretCarbon").innerHTML=
-      `<b>C stock AGB:</b> ${cM} Mg C/ha → ${(cM*3.67).toFixed(1)} Mg CO₂eq/ha. <b>C suelo estimado:</b> ${(cM*2.4).toFixed(1)} Mg/ha (Jobbagy &amp; Jackson 2000). ${cM>70?"Alto potencial como sumidero; elegible para créditos REDD+ (IPCC Tier 2).":"Carbono bajo-medio; restauración activa elevaría el stock en 15–30%."}`;
-  }
-
-  // ── CHART 3: Fenología NDVI doble-logística ──
-  destroyEcoChart("feno");
-  {
-    const ctx = document.getElementById("chartFeno").getContext("2d");
-    const doys = Array.from({length:24},(_,i)=>Math.round(15+i*15.5));
-    const perFrac = avgEco(ds,"perennifolio")/100, cadFrac = avgEco(ds,"caducifolio")/100;
-    const semicFrac = avgEco(ds,"semicad")/100, herbFrac = avgEco(ds,"herbacea")/100;
-
-    function dblLog(doy,min,max,sos,eos,sig=35){
-      const r = 1/(1+Math.exp(-(doy-sos)/sig));
-      const f = 1/(1+Math.exp( (doy-eos)/sig));
-      return min+(max-min)*r*f;
-    }
-    // Calibrated curves for Guatemalan highland forests
-    const ndviBase = ndviM;
-    const curvePer = doys.map(d=>+(dblLog(d, ndviBase*.72, ndviBase*1.08, 58, 310, 42)).toFixed(3));
-    const curveCad = doys.map(d=>+(dblLog(d, ndviBase*.38, ndviBase*.98, 75, 285, 28)).toFixed(3));
-    const curveSem = doys.map(d=>+(dblLog(d, ndviBase*.52, ndviBase*1.02, 82, 298, 32)).toFixed(3));
-    const curveHer = doys.map(d=>+(dblLog(d, ndviBase*.28, ndviBase*.86, 92, 268, 22)).toFixed(3));
-
-    ecoCharts.feno = new Chart(ctx,{
-      type:"line",
-      data:{
-        labels:doys.map(d=>"DOY "+d),
-        datasets:[
-          {label:"Perennifolio",data:curvePer,borderColor:"#065f46",borderWidth:2.5,tension:.4,pointRadius:2,fill:false},
-          {label:"Caducifolio", data:curveCad,borderColor:"#86efac",borderWidth:2,  tension:.4,pointRadius:2,fill:false},
-          {label:"Semi-caducifolio",data:curveSem,borderColor:"#b5179e",borderWidth:2,tension:.4,pointRadius:2,fill:false},
-          {label:"Herbácea",   data:curveHer,borderColor:"#d4b483",borderWidth:1.5,tension:.4,pointRadius:2,fill:false,borderDash:[5,4]},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
-        scales:{y:{min:.20,max:.90,title:{display:true,text:"NDVI"},grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:10}}},
-          x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,maxTicksLimit:12}}}}
-    });
-    katexEl("eqFeno","\\text{NDVI}(t)=\\delta_1+\\delta_2\\cdot\\underbrace{\\dfrac{1}{1+e^{-(t-t_1)/\\sigma_1}}}_{\\text{ascenso (SOS)}}\\cdot\\underbrace{\\dfrac{1}{1+e^{(t-t_2)/\\sigma_2}}}_{\\text{descenso (EOS)}}",true);
-    document.getElementById("interpretFeno").innerHTML=
-      `<b>Bosque perennifolio (${avgEco(ds,"perennifolio").toFixed(0)}%):</b> NDVI estable alto — resiliente a variabilidad estacional. <b>Caducifolio (${avgEco(ds,"caducifolio").toFixed(0)}%):</b> ${avgEco(ds,"caducifolio")>16?"señal de sensibilidad al ENSO; SOS ≈ DOY 75, EOS ≈ DOY 285.":"fracción baja — sistema mayoritariamente estable."} Temporada vegetativa: ~230 días.`;
-  }
-
-  // ── CHART 4: Serie temporal Landsat ──
-  destroyEcoChart("timeSeries");
-  {
-    const ctx = document.getElementById("chartTimeSeries").getContext("2d");
-    const years = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
-    const n = years.length;
-    const seed = single ? ds[0].nombre.charCodeAt(0) : 83;
-    const rng = (i,a) => a*(Math.sin(i*1.3+seed*.06)*.45+Math.cos(i*.75+seed*.09)*.45);
-
-    const ndviS = years.map((_,i)=>+(ndviM+rng(i,.038)+(i*.0025)).toFixed(3));
-    const eviS  = years.map((_,i)=>+(ndviM*.86+rng(i,.028)+(i*.0018)).toFixed(3));
-    const nirvS = years.map((_,i)=>+(ndviM*ndviM+rng(i,.007)+(i*.0009)).toFixed(4));
-
-    // OLS on NDVI
-    const xs = Array.from({length:n},(_,i)=>i);
-    const mX=xs.reduce((a,b)=>a+b,0)/n, mY=ndviS.reduce((a,b)=>a+b,0)/n;
-    let num=0,den=0;
-    for(let i=0;i<n;i++){num+=(xs[i]-mX)*(ndviS[i]-mY);den+=(xs[i]-mX)*(xs[i]-mX)}
-    const slope=den?num/den:0, intc=mY-slope*mX;
-    const trend = xs.map(x=>+(slope*x+intc).toFixed(4));
-    const r2 = (()=>{
-      const ss_res = ndviS.reduce((s,y,i)=>s+(y-trend[i])**2,0);
-      const ss_tot = ndviS.reduce((s,y)=>s+(y-mY)**2,0);
-      return ss_tot>0?+(1-ss_res/ss_tot).toFixed(3):0;
-    })();
-
-    ecoCharts.timeSeries = new Chart(ctx,{
-      type:"line",
-      data:{
-        labels:years.map(String),
-        datasets:[
-          {label:"NDVI",  data:ndviS,borderColor:"#065f46",backgroundColor:"rgba(6,95,70,.09)",tension:.4,pointRadius:4,fill:true,yAxisID:"y"},
-          {label:"EVI₂",  data:eviS, borderColor:"#4ade80",backgroundColor:"rgba(74,222,128,.06)",tension:.4,pointRadius:3,fill:false,yAxisID:"y"},
-          {label:"NIRv",  data:nirvS,borderColor:"#fbbf24",backgroundColor:"rgba(251,191,36,.06)",tension:.4,pointRadius:3,fill:false,yAxisID:"y2"},
-          {label:"Tend. OLS", data:trend,borderColor:"rgba(14,165,233,.75)",pointRadius:0,borderDash:[6,4],fill:false,yAxisID:"y",borderWidth:1.5},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
-        scales:{y:{title:{display:true,text:"NDVI / EVI₂"},grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:10}}},
-          y2:{position:"right",grid:{drawOnChartArea:false},title:{display:true,text:"NIRv"},ticks:{font:{size:10}}},
-          x:{grid:{display:false},ticks:{font:{size:10}}}}}
-    });
-    const sSign = slope>=0?"+":"";
-    katexEl("eqTimeSeries",`\\hat{\\text{NDVI}}_t=${intc.toFixed(3)}${sSign}${slope.toFixed(4)}\\,t\\;(\\text{OLS});\\;\\;R^2=${r2}\\;\\;\\text{EVI}_2=2.5\\dfrac{\\rho_{NIR}-\\rho_R}{\\rho_{NIR}+2.4\\rho_R+1}`,true);
-    document.getElementById("interpretTimeSeries").innerHTML=
-      `<b>Tendencia NDVI 2015–2024:</b> ${slope>=0?"📈 +":"📉 "}${(slope*9).toFixed(3)} total (OLS; R²=${r2}). ${Math.abs(slope)>.003?"Cambio significativo — posible recuperación/pérdida de cobertura forestal durante la década.":"Tendencia estable — cobertura forestal mantenida."} NIRv correlaciona con GPP (r²≈0.72 en bosques tropicales montanos).`;
-  }
-
-  // ── CHART 5: Shannon + Pielou ──
-  destroyEcoChart("shannon");
-  {
-    const ctx = document.getElementById("chartShannon").getContext("2d");
-    const sorted = [...MUNICIPIOS].sort((a,b)=>b.shannon-a.shannon);
-    const hl = single ? ds[0].nombre : null;
-    ecoCharts.shannon = new Chart(ctx,{
-      type:"bar",
-      data:{
-        labels:sorted.map(m=>m.nombre.length>12?m.nombre.slice(0,12)+"…":m.nombre),
-        datasets:[
-          {label:"Shannon H'",data:sorted.map(m=>m.shannon),
-            backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(6,95,70,.92)":"rgba(6,95,70,.45)"),
-            borderRadius:5,borderWidth:0,yAxisID:"y"},
-          {label:"Pielou J'",data:sorted.map(m=>m.pielou),
-            backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(190,242,100,.90)":"rgba(190,242,100,.55)"),
-            borderRadius:5,borderWidth:0,yAxisID:"y2"},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}},
-        scales:{y:{beginAtZero:true,max:2.2,grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:9}},title:{display:true,text:"H'"}},
-          y2:{position:"right",beginAtZero:true,max:1.1,grid:{drawOnChartArea:false},ticks:{font:{size:9}},title:{display:true,text:"J'"}},
-          x:{grid:{display:false},ticks:{font:{size:8},maxRotation:60}}}}
-    });
-    katexEl("eqShannon","H'=-\\sum_{i=1}^{S}p_i\\ln p_i\\;\\;\\text{(Shannon 1948)};\\quad J'=H'/\\ln S\\;\\;\\text{(Pielou 1966)}",true);
-  }
-
-  // ── CHART 6: LAI modelo potencial ──
-  destroyEcoChart("lai");
-  {
-    const ctx = document.getElementById("chartLAI").getContext("2d");
-    const ndvRange = Array.from({length:38},(_,i)=>+(.18+i*.016).toFixed(3));
-    const laiCurve = ndvRange.map(v=>+(0.57*Math.pow(v,1.84)).toFixed(3));
-    // Escatter: todos los municipios
-    const muniNdvi = MUNICIPIOS.map(m=>m.ndvi);
-    const muniLai  = MUNICIPIOS.map(m=>m.lai);
-    const hl = single ? ds[0].nombre : null;
-    ecoCharts.lai = new Chart(ctx,{
-      type:"scatter",
-      data:{
-        datasets:[
-          {label:"Curva LAI teórica",data:ndvRange.map((v,i)=>({x:v,y:laiCurve[i]})),
-            borderColor:"rgba(6,95,70,.55)",pointRadius:0,showLine:true,tension:.4,fill:false,borderWidth:2},
-          {label:"Municipios",data:MUNICIPIOS.map(m=>({x:m.ndvi,y:m.lai,nombre:m.nombre})),
-            backgroundColor:MUNICIPIOS.map(m=>hl&&m.nombre===hl?"rgba(251,191,36,1)":"rgba(6,95,70,.55)"),
-            pointRadius:MUNICIPIOS.map(m=>hl&&m.nombre===hl?8:5),
-            borderWidth:0},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}},
-        tooltip:{callbacks:{label:d=>{const p=d.raw;return p.nombre?`${p.nombre}: LAI=${p.y}, NDVI=${p.x}`:`LAI=${p.y}`}}}},
-        scales:{x:{title:{display:true,text:"NDVI"},ticks:{font:{size:10}},grid:{color:"rgba(6,95,70,.07)"}},
-          y:{title:{display:true,text:"LAI (m²/m²)"},beginAtZero:true,grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:10}}}}}
-    });
-    katexEl("eqLAI","\\text{LAI}=\\alpha\\cdot\\text{NDVI}^{\\,\\beta}=0.57\\cdot\\text{NDVI}^{1.84}\\;\\;(\\text{Fang et al. 2019, bosques tropicales montanos})",true);
-  }
-
-  // ── CHART 7: Radar multidimensional ──
-  destroyEcoChart("radar");
-  {
-    const ctx = document.getElementById("chartRadar").getContext("2d");
-    const labs = ["AGB","Cobertura","NDVI","Shannon","LAI","Reg. Hídrica","MESH","FWI⁻¹"];
-    const mmx = {agb:[90,165],cobBos:[46,80],ndvi:[.59,.78],shannon:[.96,1.62],lai:[.24,.65],wri:[6.5,8.4],mesh:[170,465],fwi:[3.8,5.7]};
-    const norm = (v,mn,mx)=>+Math.max(0,Math.min(10,(v-mn)/(mx-mn)*10)).toFixed(1);
-    function radarVals(arr){
-      const a = k=>avgEco(arr,k);
-      return[norm(a("agb"),mmx.agb[0],mmx.agb[1]),norm(a("cobBos"),mmx.cobBos[0],mmx.cobBos[1]),
-        norm(a("ndvi"),mmx.ndvi[0],mmx.ndvi[1]),norm(a("shannon"),mmx.shannon[0],mmx.shannon[1]),
-        norm(a("lai"),mmx.lai[0],mmx.lai[1]),norm(a("wri"),mmx.wri[0],mmx.wri[1]),
-        norm(a("mesh"),mmx.mesh[0],mmx.mesh[1]),+(10-norm(a("fwi"),mmx.fwi[0],mmx.fwi[1])).toFixed(1)];
-    }
-    ecoCharts.radar = new Chart(ctx,{
-      type:"radar",
-      data:{
-        labels:labs,
-        datasets:[
-          {label:"Seleccionado",data:radarVals(ds),backgroundColor:"rgba(6,95,70,.18)",borderColor:"#065f46",pointBackgroundColor:"#065f46",pointRadius:4,borderWidth:2.5},
-          {label:"Prom. dpto.",data:radarVals(MUNICIPIOS),backgroundColor:"rgba(190,242,100,.14)",borderColor:"rgba(190,242,100,.80)",pointBackgroundColor:"rgba(190,242,100,.80)",pointRadius:3,borderDash:[4,4],borderWidth:1.5},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}},
-        scales:{r:{suggestedMin:0,suggestedMax:10,grid:{color:"rgba(6,95,70,.12)"},ticks:{font:{size:9},backdropColor:"transparent"},pointLabels:{font:{size:9.5}}}}}
-    });
-    katexEl("eqRadar","\\hat{x}_i=\\dfrac{x_i-x_{\\min}}{x_{\\max}-x_{\\min}}\\times 10\\;\\;\\text{(normalización min-max)}",true);
-  }
-
-  // ── CHART 8: Variograma esférico AGB ──
-  destroyEcoChart("vario");
-  {
-    const ctx = document.getElementById("chartVario").getContext("2d");
-    const hs = Array.from({length:22},(_,i)=>(i+1)*2);
-    const nugget = 90, sill = agbM*agbM*0.38, range = 28;
-    const sph = hs.map(h=>h>=range?nugget+sill:+(nugget+sill*(1.5*(h/range)-.5*Math.pow(h/range,3))).toFixed(1));
-    const exp = hs.map(h=>+(nugget+sill*(1-Math.exp(-3*h/range))).toFixed(1));
-    const gau = hs.map(h=>+(nugget+sill*(1-Math.exp(-h*h/(range*range*0.5)))).toFixed(1));
-    // Simulated experimental points
-    const expPts = hs.map((h,i)=>+(sph[i]+sill*(Math.random()-.5)*.28).toFixed(1));
-
-    ecoCharts.vario = new Chart(ctx,{
-      type:"scatter",
-      data:{
-        datasets:[
-          {label:"Experimental γ̂(h)",data:hs.map((h,i)=>({x:h,y:expPts[i]})),backgroundColor:"rgba(6,95,70,.65)",pointRadius:6,borderWidth:0,order:1},
-          {label:"Esférico",data:hs.map((h,i)=>({x:h,y:sph[i]})),showLine:true,borderColor:"#065f46",pointRadius:0,tension:.3,fill:false,borderWidth:2.5,order:2},
-          {label:"Exponencial",data:hs.map((h,i)=>({x:h,y:exp[i]})),showLine:true,borderColor:"#4ade80",pointRadius:0,tension:.3,fill:false,borderWidth:1.5,borderDash:[6,4],order:2},
-          {label:"Gaussiano",data:hs.map((h,i)=>({x:h,y:gau[i]})),showLine:true,borderColor:"#7c3aed",pointRadius:0,tension:.3,fill:false,borderWidth:1.5,borderDash:[2,4],order:2},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}},
-        scales:{x:{title:{display:true,text:"Distancia h (km)"},grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:10}}},
-          y:{title:{display:true,text:"γ(h)"},beginAtZero:true,grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:10}}}}}
-    });
-    katexEl("eqVario","\\gamma(h)=C_0+C\\left[\\tfrac{3h}{2a}-\\tfrac{1}{2}\\left(\\tfrac{h}{a}\\right)^3\\right]\\;(h\\leq a);\\quad C_0={\\rm nugget},\\;C={\\rm sill},\\;a={\\rm range}",true);
-    document.getElementById("interpretVario").innerHTML=
-      `<b>Nugget:</b> ~${nugget} t²/ha (varianza a escala <1 km). <b>Sill:</b> ~${(nugget+sill).toFixed(0)} t²/ha. <b>Range:</b> ~${range} km — dependencia espacial significativa de la biomasa hasta ~${range} km (Zawadzki et al. 2016).`;
-  }
-
-  // ── CHART 9: Scatter AGB vs NDVI + power law ──
-  destroyEcoChart("scatter");
-  {
-    const ctx = document.getElementById("chartScatter").getContext("2d");
-    const hl = single ? ds[0].nombre : null;
-    // Power law regression: AGB = a * NDVI^b
-    const logX = MUNICIPIOS.map(m=>Math.log(m.ndvi));
-    const logY = MUNICIPIOS.map(m=>Math.log(m.agb));
-    const n2=MUNICIPIOS.length, mLX=logX.reduce((s,v)=>s+v,0)/n2, mLY=logY.reduce((s,v)=>s+v,0)/n2;
-    let numR=0,denR=0; for(let i=0;i<n2;i++){numR+=(logX[i]-mLX)*(logY[i]-mLY);denR+=(logX[i]-mLX)**2}
-    const b_pow=denR?numR/denR:1.5, a_pow=Math.exp(mLY-b_pow*mLX);
-    // R²
-    const pred=MUNICIPIOS.map(m=>a_pow*Math.pow(m.ndvi,b_pow));
-    const ssR=MUNICIPIOS.reduce((s,m,i)=>s+(m.agb-pred[i])**2,0);
-    const ssT=MUNICIPIOS.reduce((s,m)=>s+(m.agb-avgEco(MUNICIPIOS,"agb"))**2,0);
-    const r2s=+(1-ssR/ssT).toFixed(3);
-    // Curve
-    const ndvCurve=Array.from({length:35},(_,i)=>+(.54+i*.007).toFixed(3));
-    ecoCharts.scatter = new Chart(ctx,{
-      type:"scatter",
-      data:{
-        datasets:[
-          {label:"AGB observada",data:MUNICIPIOS.map(m=>({x:m.ndvi,y:m.agb,nombre:m.nombre})),
-            backgroundColor:MUNICIPIOS.map(m=>hl&&m.nombre===hl?"rgba(251,191,36,1)":"rgba(6,95,70,.60)"),
-            pointRadius:MUNICIPIOS.map(m=>hl&&m.nombre===hl?9:5),borderWidth:0},
-          {label:`Ajuste power (R²=${r2s})`,data:ndvCurve.map(v=>({x:v,y:+(a_pow*Math.pow(v,b_pow)).toFixed(1)})),
-            showLine:true,borderColor:"rgba(220,38,38,.75)",pointRadius:0,tension:.4,fill:false,borderWidth:2},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}},
-        tooltip:{callbacks:{label:d=>{const p=d.raw;return p.nombre?`${p.nombre}: AGB=${p.y} t/ha, NDVI=${p.x}`:`AGB=${p.y}`}}}},
-        scales:{x:{title:{display:true,text:"NDVI"},ticks:{font:{size:10}},grid:{color:"rgba(6,95,70,.07)"}},
-          y:{title:{display:true,text:"AGB (t/ha)"},beginAtZero:true,grid:{color:"rgba(6,95,70,.07)"},ticks:{font:{size:10}}}}}
-    });
-    katexEl("eqScatter",`\\text{AGB}=${a_pow.toFixed(1)}\\cdot\\text{NDVI}^{${b_pow.toFixed(2)}}\\;\\;(R^2=${r2s})\\quad\\text{(regresión power-law en espacio logarítmico)}`,true);
-    document.getElementById("interpretScatter").innerHTML=
-      `<b>Modelo power-law AGB = ${a_pow.toFixed(1)}·NDVI<sup>${b_pow.toFixed(2)}</sup></b> (R²=${r2s}). ${r2s>.70?"Fuerte relación espectral-estructural; el NDVI explica >" +(r2s*100).toFixed(0)+"% de la varianza en biomasa a escala municipal.":"Correlación moderada; la elevación y la precipitación añaden poder predictivo adicional (Tucker 1979; Foody et al. 2003)."}`;
-  }
-
-  // ── CHART 10: FWI estacional componentes ──
-  destroyEcoChart("fwi");
-  {
-    const ctx = document.getElementById("chartFWI").getContext("2d");
-    const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-    const ffmc = [82,86,89,88,74,64,67,69,65,66,71,77];
-    const dmc  = [22,30,38,42,30,18,20,22,16,14,13,17];
-    const dc   = [80,115,152,168,125,68,72,78,58,52,48,62];
-    const fwiBase = fwiM;
-    const fwiMens = meses.map((_,i)=>{
-      const isi = Math.exp(.05039*ffmc[i])*(1/(1+0.01998*dmc[i]));
-      const bui = 0.8*dmc[i]*dc[i]/(dmc[i]+0.4*dc[i]);
-      const bb  = 0.1*(isi*(0.626*Math.pow(bui,.809)+2));
-      return +(bb*fwiBase*.82).toFixed(1);
-    });
-    ecoCharts.fwi = new Chart(ctx,{
-      type:"bar",
-      data:{
-        labels:meses,
-        datasets:[
-          {label:"FFMC (escalado)",data:ffmc.map(v=>(v-60)/3),backgroundColor:"rgba(251,191,36,.60)",borderRadius:5,order:2,yAxisID:"y"},
-          {label:"FWI mensual",data:fwiMens,backgroundColor:fwiMens.map(v=>v>fwiBase*1.25?"rgba(220,38,38,.80)":v>fwiBase*.88?"rgba(251,191,36,.75)":"rgba(74,222,128,.65)"),borderRadius:5,order:2,yAxisID:"y",type:"bar"},
-          {label:"Riesgo norm.",data:fwiMens.map(v=>+(v/Math.max(...fwiMens)*10).toFixed(1)),borderColor:"rgba(124,58,237,.85)",type:"line",tension:.4,pointRadius:3,fill:false,order:1,yAxisID:"y2"},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}},
-        scales:{y:{beginAtZero:true,grid:{color:"rgba(220,38,38,.06)"},ticks:{font:{size:10}},title:{display:true,text:"Índice"}},
-          y2:{position:"right",beginAtZero:true,max:11,grid:{drawOnChartArea:false},ticks:{font:{size:10}},title:{display:true,text:"Riesgo 0–10"}},
-          x:{grid:{display:false},ticks:{font:{size:10}}}}}
-    });
-    katexEl("eqFWI","\\text{ISI}=e^{0.05039\\cdot F}\\cdot\\dfrac{1}{1+0.01998\\cdot D};\\quad\\text{BUI}=\\dfrac{0.8\\cdot D\\cdot C}{D+0.4C};\\quad\\text{FWI}=f(\\text{ISI},\\text{BUI})",true);
-    const peakMes = meses[fwiMens.indexOf(Math.max(...fwiMens))];
-    document.getElementById("interpretFWI").innerHTML=
-      `<b>Pico FWI en ${peakMes}</b> (temporada seca del altiplano, DJF-MAM). FFMC alto → combustible superficial muy seco. ${fwiM>5?"⚠️ Riesgo moderado-alto — activar brigadas CONRED/INAB y monitoreo FIRMS NRT en feb–abr.":"Riesgo moderado — mantenimiento preventivo de cortafuegos y rondas de vigilancia en temporada seca."}`;
-  }
-
-  // ── CHART 11: Balance hídrico ──
-  destroyEcoChart("hydro");
-  {
-    const ctx = document.getElementById("chartHydro").getContext("2d");
-    const sorted = [...MUNICIPIOS].sort((a,b)=>b.precip-a.precip);
-    const hl = single ? ds[0].nombre : null;
-    ecoCharts.hydro = new Chart(ctx,{
-      type:"bar",
-      data:{
-        labels:sorted.map(m=>m.nombre.length>12?m.nombre.slice(0,12)+"…":m.nombre),
-        datasets:[
-          {label:"Precipitación (mm/año)",data:sorted.map(m=>m.precip),
-            backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(14,165,233,.90)":"rgba(14,165,233,.40)"),
-            borderRadius:5,borderWidth:0,yAxisID:"y",order:2},
-          {label:"ET₀ estimada (mm)",data:sorted.map(m=>m.et),
-            backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(6,95,70,.85)":"rgba(6,95,70,.38)"),
-            borderRadius:5,borderWidth:0,yAxisID:"y",order:2},
-          {label:"Escorrentía reg. (mm)",data:sorted.map(m=>Math.max(0,m.escorrentia)),
-            type:"line",borderColor:"rgba(190,242,100,.85)",backgroundColor:"rgba(190,242,100,.10)",
-            tension:.4,pointRadius:3,fill:false,order:1,yAxisID:"y"},
-        ]
-      },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}},
-        scales:{y:{beginAtZero:true,grid:{color:"rgba(14,165,233,.07)"},ticks:{font:{size:10}},title:{display:true,text:"mm/año"}},
-          x:{grid:{display:false},ticks:{font:{size:9},maxRotation:55}}}}
-    });
-    katexEl("eqHydro","\\dfrac{E_a}{P}=\\phi\\left(\\dfrac{E_0}{P}\\right);\\quad E_a=P-Q\\;\\;\\text{(Budyko 1974)};\\quad Q=P-E_a\\;\\;\\text{(escorrentía)}",true);
-    const precM = +avgEco(ds,"precip");
-    const etM   = +avgEco(ds,"et");
-    document.getElementById("interpretHydro").innerHTML=
-      `<b>Precip. media: ${precM} mm/año → ET₀: ${etM} mm/año.</b> Bosque forestal regula ~${(etM/precM*100).toFixed(0)}% del flujo hídrico. ${wriM>=8?"Alta regulación hídrica — bosques maduros interceptan y retienen precipitación, protegiendo la cuenca del lago Atitlán.":"Regulación moderada — reforestación con especies nativas mejoraría el balance y reduciría escorrentía superficial erosiva."}`;
-  }
-
-  // ── MODEL BOX ──
-  katexEl("modelEq1",`\\textbf{1. Alométrico Chave et al. (2014):}\\\\\\text{AGB}=0.0673\\cdot(\\rho_w\\cdot D^2\\cdot H)^{0.976}\\quad[\\text{kg/árbol}]`,true);
-  katexEl("modelEq2",`\\textbf{2. Fenología doble-logística (TIMESAT):}\\\\V(t)=c_1+c_2\\left[\\tfrac{1}{1+e^{k_1(t_1-t)}}-\\tfrac{1}{1+e^{k_2(t_2-t)}}\\right]`,true);
-  katexEl("modelEq3",`\\textbf{3. Variograma esférico:}\\\\\\gamma(h)=C_0+C\\!\\left[\\tfrac{3h}{2a}-\\tfrac{1}{2}\\!\\left(\\tfrac{h}{a}\\right)^{\\!3}\\right];\\;\\gamma(h)=C_0+C\\;(h>a)`,true);
-  katexEl("modelEq4",`\\textbf{4. Carbono ecosistémico (IPCC T2):}\\\\C_{\\rm total}\\approx C_{\\rm AGB}+C_{\\rm BGB}+C_{\\rm suelo}\\approx 5.8\\times C_{\\rm AGB}`,true);
-
-  const precM = +avgEco(ds,"precip");
-  document.getElementById("modelBoxText").innerHTML=
-    `<b>Síntesis para ${single?ds[0].nombre:"Sololá"}:</b> AGB=${agbM} t/ha · C total ecosistémico ≈ ${(cM*5.8).toFixed(0)} Mg C/ha · NDVI=${ndviM} · LAI=${laiM} m²/m² · NPP≈${+avgEco(ds,"npp")} gC/m²/día · GPP≈${+avgEco(ds,"gpp")} gC/m²/día. Los modelos alométricos de Chave et al. (2014) calibrados con datos de densidad de madera (<i>ρ<sub>w</sub></i>) de <i>Pinus</i> y <i>Quercus</i> del altiplano guatemalteco permiten estimar AGB desde inventarios de campo o regresión espectral satelital con error <±15% a nivel municipal.`;
-
-  // ── INTERPRETACIÓN INTEGRAL ──
-  buildInterpretation(ds);
-  buildTable();
-
-  // Trigger KaTeX auto-render
-  setTimeout(()=>{
-    if(window.renderMathInElement){
-      renderMathInElement(document.querySelector(".analysis-section"),{
-        delimiters:[{left:"$$",right:"$$",display:true},{left:"\\[",right:"\\]",display:true},{left:"\\(",right:"\\)",display:false}],
-        throwOnError:false,
-      });
-    }
-  },350);
-}
-
-function buildInterpretation(ds){
-  const single = isSingle();
-  const nombre = single ? ds[0].nombre : "Sololá (departamento)";
-  const agbM=+avgEco(ds,"agb"), cobM=+avgEco(ds,"cobBos"), cM=+avgEco(ds,"cStockMg"),
-        hM=+avgEco(ds,"shannon"), laiM=+avgEco(ds,"lai"), fwiM=+avgEco(ds,"fwi"),
-        wriM=+avgEco(ds,"wri"), meshM=+avgEco(ds,"mesh"), ndviM=+avgEco(ds,"ndvi");
-
-  document.getElementById("interpretTitle").textContent = nombre;
-
-  const items = [
-    {icon:"🌲",title:"Biomasa aérea (AGB)",
-      text:`${agbM} t/ha — ${agbM>145?"bosque maduro; especies dominantes <i>Quercus</i>/<i>Pinus ayacahuite</i>. Prioritario REDD+ y conservación de carbono.":agbM>115?"bosque adulto con capacidad media-alta de almacenamiento. Candidato a manejo silvícola selectivo.":"bosque secundario o perturbado — restauración activa recomendada con especies nativas."} Ecuación alométrica: AGB = ρ<sub>w</sub> · e<sup>a+b·ln(DBH)</sup>.`},
-    {icon:"♻️",title:"Ciclo de carbono forestal",
-      text:`C<sub>AGB</sub> = ${cM} Mg C/ha · C<sub>suelo</sub> ≈ ${(cM*2.4).toFixed(1)} Mg/ha · CO₂eq = ${(cM*3.67).toFixed(1)} Mg/ha. ${cM>70?"Alto potencial de sumidero bajo REDD+ (IPCC Tier 2). Intégrese con inventarios forestales nacionales (INAB/MAGA).":"Oportunidad de restauración: cada hectárea reforestada puede capturar ~2–5 Mg CO₂eq/año en los primeros 20 años."}`},
-    {icon:"🌿",title:"Fenología y dinámica estacional",
-      text:`Bosque perennifolio: ${+avgEco(ds,"perennifolio").toFixed(0)}% — patrón NDVI estable (σ NDVI ≈ 0.04). ${+avgEco(ds,"caducifolio")>15?"Fracción caducifolio ("+avgEco(ds,"caducifolio").toFixed(0)+"%) indica sensibilidad al ENSO; años Niña → SOS adelantado ~8 días (Méndez-Barroso et al. 2018).":"Baja proporción caducifolio — ecosistema estable, poca variabilidad interanual."} Temporada vegetativa: ~230 días (DOY 75–305).`},
-    {icon:"🧬",title:"Diversidad estructural del paisaje",
-      text:`Shannon H'=${hM} — ${hM>1.3?"alta diversidad funcional; múltiples tipos de cobertura favorecen resiliencia ante perturbaciones (Tilman et al. 2006).":hM>1.0?"diversidad moderada; sistema funcionalmente estable.":"baja diversidad — dominio de una clase fenológica, evaluar presión antrópica."} Equitatividad J'=${+avgEco(ds,"pielou").toFixed(3)}.`},
-    {icon:"📐",title:"Índice de Área Foliar (LAI)",
-      text:`LAI = ${laiM} m²/m² (modelo LAI = 0.57·NDVI<sup>1.84</sup>). ${laiM>.40?"Dosel cerrado — alta intercepción de lluvia (40–60%) y evapotranspiración regulada. Estabiliza microclima y protege suelo de erosión.":"Dosel en desarrollo; intercepción parcial. Evaluar con imágenes de alta resolución temporal (Sentinel-2)."}`},
-    {icon:"🔥",title:"Riesgo de incendio forestal (FWI)",
-      text:`FWI=${fwiM} — ${fwiM>5.5?"⚠️ riesgo moderado-alto. Pico estacional Feb–Abr (estación seca del altiplano). Activar brigadas CONRED/INAB y monitoreo FIRMS-VIIRS NRT.":fwiM>4.5?"riesgo moderado — vigilancia preventiva en temporada seca. Cortafuegos y fajas de seguridad prioritarios.":"riesgo bajo — cobertura densa actúa como buffer natural. Monitoreo preventivo estándar."}`},
-    {icon:"💧",title:"Regulación hídrica y cuenca",
-      text:`WRI = ${wriM}/10 — ${wriM>=8?"muy alta capacidad reguladora; bosques maduros interceptan P y sostienen flujo base del lago Atitlán. Servicio ecosistémico crítico para comunidades lacustres.":"alta-media regulación; reforestación con <i>Pinus</i>/<i>Quercus</i> en microcuencas degradadas mejoraría el balance hídrico local."} ET₀ ≈ ${+avgEco(ds,"et").toFixed(0)} mm/año.`},
-    {icon:"🧩",title:"Fragmentación del paisaje (FRAGSTATS)",
-      text:`MESH = ${meshM} ha — ${meshM>380?"paisaje bien conectado; parches grandes favorecen dispersión de fauna y flujo genético (McGarigal &amp; Marks 1995). Corredores biológicos funcionales.":meshM>250?"fragmentación moderada; implementar restauración en matrices agrícolas y corredores riparios.":"alta fragmentación — comprometidos biodiversidad y servicios ecosistémicos. Plan urgente de conectividad funcional."}`},
-  ];
-
-  document.getElementById("interpretGrid").innerHTML = items.map(it=>
-    `<div class="interpret-item"><b>${it.icon} ${it.title}</b>${it.text}</div>`
-  ).join("");
-}
-
-// ─── TABLE ───
-function buildTable(){
-  const tbody = document.getElementById("ecoTableBody");
-  tbody.innerHTML = "";
-  const frag = document.createDocumentFragment();
-  const maxAGB = maxArrEco(MUNICIPIOS,"agb"), maxC = maxArrEco(MUNICIPIOS,"cStockMg");
-  MUNICIPIOS.forEach(m=>{
-    const tr = document.createElement("tr");
-    tr.dataset.muni = m.nombre;
-    if(selectedMuni===m.nombre) tr.classList.add("selected-eco");
-    const barW = Math.round(m.agb/maxAGB*60);
-    const cells = [
-      m.nombre,
-      `<div class="td-bar"><div class="td-mini-bar" style="width:${barW}px"></div>${m.agb}</div>`,
-      m.cobBos+"%",
-      m.cStockMg,
-      m.co2eq,
-      m.soilC,
-      m.shannon,
-      m.pielou,
-      m.lai,
-      m.ndvi,
-      m.npp,
-      m.gpp,
-      m.fwi,
-      m.mesh,
-      `<span class="badge-${m.wri>=8?"alta":"media"}">${m.wriLabel}</span>`,
-      m.precip,
-      m.elev,
-      m.area_km2,
-      m.perennifolio+"%",
-      m.caducifolio+"%",
-      m.semicad+"%",
-      m.herbacea+"%",
-    ];
-    cells.forEach((v,i)=>{
-      const td = document.createElement("td");
-      if(typeof v === "string" && v.includes("<")) td.innerHTML = v;
-      else td.textContent = v;
-      tr.appendChild(td);
-    });
-    tr.onclick = ()=>selectMuni(m.nombre);
-    frag.appendChild(tr);
-  });
-  tbody.appendChild(frag);
-}
-
-// ─── DOWNLOADS ───
-function downloadExcel(){
-  if(!window.XLSX){ alert("SheetJS no disponible."); return; }
-  const rows = MUNICIPIOS.map(m=>({
-    Municipio:m.nombre,"AGB (t/ha)":m.agb,"Cob. Boscosa (%)":m.cobBos,
-    "C stock AGB (Mg C/ha)":m.cStockMg,"CO2eq (Mg/ha)":m.co2eq,"C suelo (Mg/ha)":m.soilC,
-    "Shannon H'":m.shannon,"Pielou J'":m.pielou,"LAI":m.lai,"NDVI":m.ndvi,
-    "NPP (gC/m2/d)":m.npp,"GPP (gC/m2/d)":m.gpp,"FWI":m.fwi,"MESH (ha)":m.mesh,
-    "Reg. Hídrica":m.wriLabel,"Precip. (mm/a)":m.precip,"Elev. (msnm)":m.elev,
-    "Área (km2)":m.area_km2,
-    "Perennifolio (%)":m.perennifolio,"Caducifolio (%)":m.caducifolio,
-    "Semi-caducifolio (%)":m.semicad,"Herbácea (%)":m.herbacea,
-  }));
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,"Ecologia_Forestal");
-  XLSX.writeFile(wb,"ecologia_forestal_solola_2026.xlsx");
-}
-
-function downloadCSV(){
-  const cols=["Municipio","AGB (t/ha)","Cob. Boscosa (%)","C stock (Mg C/ha)","CO2eq (Mg/ha)","C suelo (Mg/ha)","Shannon H'","Pielou J'","LAI","NDVI","NPP","GPP","FWI","MESH (ha)","Reg. Hídrica","Precip. (mm/a)","Elev. (msnm)","Área (km2)","Perennifolio (%)","Caducifolio (%)","Semi-caduc. (%)","Herbácea (%)"];
-  const rows = MUNICIPIOS.map(m=>[m.nombre,m.agb,m.cobBos,m.cStockMg,m.co2eq,m.soilC,m.shannon,m.pielou,m.lai,m.ndvi,m.npp,m.gpp,m.fwi,m.mesh,m.wriLabel,m.precip,m.elev,m.area_km2,m.perennifolio,m.caducifolio,m.semicad,m.herbacea]);
-  const lines=[cols.join(","),...rows.map(r=>r.map(v=>typeof v==="string"&&v.includes(",")?`"${v}"`:v).join(","))];
-  const blob=new Blob(["\uFEFF"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="ecologia_forestal_solola_2026.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
-}
-
-["btnDlExcel","btnDlExcel2"].forEach(id=>{const el=document.getElementById(id);if(el)el.onclick=downloadExcel});
-["btnDlCSV","btnDlCSV2"].forEach(id=>{const el=document.getElementById(id);if(el)el.onclick=downloadCSV});
-
-    // ─── Init analytics ───
-    updateAnalysis();
     (async () => {
       try {
         renderEquations();
@@ -1938,136 +1082,5 @@ function downloadCSV(){
       }
     })();
   </script>
-
-  </footer>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     ANÁLISIS ECOLÓGICO FORESTAL AVANZADO
-═══════════════════════════════════════════════════════════════ -->
-<div class="analysis-section">
-
-  <div class="analysis-hero">
-    <div class="analysis-hero-inner">
-      <div class="analysis-hero-left">
-        <h2>Análisis Ecológico Forestal Avanzado</h2>
-        <p>Indicadores de vanguardia: Chave et al. (2014) · Eklundh &amp; Jönsson (2015) · Fang et al. (2019) · Van Wagner (1987) · IPCC Tier 1/2 · McGarigal &amp; Marks (1995). Haz clic en un municipio del mapa para actualizar todos los gráficos.</p>
-      </div>
-      <div class="analysis-hero-right">
-        <div class="muni-badge" id="activeMuniBadge"><div class="dot"></div><span id="activeMuniText">Todos los municipios — Sololá</span></div>
-        <button class="btn-dl" id="btnDlExcel">Descargar Excel</button>
-        <button class="btn-dl" id="btnDlCSV">Descargar CSV</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="analysis-body">
-
-    <div class="kpi-row-eco">
-      <div class="kpi-card-eco c1"><div class="kpi-label-eco">AGB media</div><div class="kpi-val-eco" id="kpi-agb">— t/ha</div><div class="kpi-eq-eco" id="kpi-agb-eq"></div><div class="kpi-trend-eco neutral" id="kpi-agb-t"></div></div>
-      <div class="kpi-card-eco c2"><div class="kpi-label-eco">Cobertura boscosa</div><div class="kpi-val-eco" id="kpi-cob">—%</div><div class="kpi-eq-eco" id="kpi-cob-eq"></div><div class="kpi-trend-eco neutral" id="kpi-cob-t"></div></div>
-      <div class="kpi-card-eco c3"><div class="kpi-label-eco">C stock (AGB)</div><div class="kpi-val-eco" id="kpi-c">— Mg C/ha</div><div class="kpi-eq-eco" id="kpi-c-eq"></div><div class="kpi-trend-eco neutral" id="kpi-c-t"></div></div>
-      <div class="kpi-card-eco c4"><div class="kpi-label-eco">Shannon H'</div><div class="kpi-val-eco" id="kpi-h">—</div><div class="kpi-eq-eco" id="kpi-h-eq"></div><div class="kpi-trend-eco neutral" id="kpi-h-t"></div></div>
-      <div class="kpi-card-eco c5"><div class="kpi-label-eco">LAI estimado</div><div class="kpi-val-eco" id="kpi-lai">—</div><div class="kpi-eq-eco" id="kpi-lai-eq"></div><div class="kpi-trend-eco neutral" id="kpi-lai-t"></div></div>
-    </div>
-
-    <div class="kpi-row2-eco">
-      <div class="kpi-card-eco c6"><div class="kpi-label-eco">Riesgo FWI</div><div class="kpi-val-eco" id="kpi-fwi">—</div><div class="kpi-eq-eco" id="kpi-fwi-eq"></div><div class="kpi-trend-eco neutral" id="kpi-fwi-t"></div></div>
-      <div class="kpi-card-eco c7"><div class="kpi-label-eco">Regulación hídrica</div><div class="kpi-val-eco" id="kpi-wri">— / 10</div><div class="kpi-eq-eco" id="kpi-wri-eq"></div><div class="kpi-trend-eco neutral" id="kpi-wri-t"></div></div>
-      <div class="kpi-card-eco c8"><div class="kpi-label-eco">Fragmentación MESH</div><div class="kpi-val-eco" id="kpi-mesh">— ha</div><div class="kpi-eq-eco" id="kpi-mesh-eq"></div><div class="kpi-trend-eco neutral" id="kpi-mesh-t"></div></div>
-      <div class="kpi-card-eco c9"><div class="kpi-label-eco">NDVI medio</div><div class="kpi-val-eco" id="kpi-ndvi">—</div><div class="kpi-eq-eco" id="kpi-ndvi-eq"></div><div class="kpi-trend-eco neutral" id="kpi-ndvi-t"></div></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Biomasa &amp; Ciclo de Carbono</span></div>
-    <div class="charts-2-eco">
-      <div class="chart-card-eco"><div class="chart-title-eco">Distribución AGB · Histograma + Ajuste Weibull</div><div class="chart-source-eco">Biomasa aérea forestal (t/ha) — distribución Weibull de 2 parámetros (Chave et al. 2014)</div><canvas id="chartAGB" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Función de densidad Weibull</div><div id="eqAGB"></div></div><div class="chart-interp-eco" id="interpretAGB"></div></div>
-      <div class="chart-card-eco"><div class="chart-title-eco">Stock de carbono · AGB → C → CO₂eq por municipio</div><div class="chart-source-eco">Conversión IPCC Tier 1: C = 0.47 × AGB; CO₂eq = C × 3.67 (IPCC 2019)</div><canvas id="chartCarbon" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Conversión carbono IPCC Tier 1</div><div id="eqCarbon"></div></div><div class="chart-interp-eco" id="interpretCarbon"></div></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Fenología Forestal Espectral</span></div>
-    <div class="charts-2-eco">
-      <div class="chart-card-eco"><div class="chart-title-eco">Perfil NDVI anual · Modelo doble-logístico por tipo fenológico</div><div class="chart-source-eco">Series temporales NDVI estacional (DOY 1–365) — modelo doble-logístico (Eklundh &amp; Jönsson 2015 · TIMESAT)</div><canvas id="chartFeno" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Modelo doble-logístico TIMESAT</div><div id="eqFeno"></div></div><div class="chart-interp-eco" id="interpretFeno"></div></div>
-      <div class="chart-card-eco"><div class="chart-title-eco">Índices espectrales · Serie temporal 2015–2024 (Landsat)</div><div class="chart-source-eco">NDVI, EVI₂ y NIRv — tendencia decenal OLS (Jiang et al. 2008; Badgley et al. 2017)</div><canvas id="chartTimeSeries" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Regresión OLS temporal + EVI₂ + NIRv</div><div id="eqTimeSeries"></div></div><div class="chart-interp-eco" id="interpretTimeSeries"></div></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Diversidad Estructural del Paisaje Forestal</span></div>
-    <div class="charts-3-eco">
-      <div class="chart-card-eco"><div class="chart-title-eco">Shannon H' &amp; Pielou J' — Diversidad de cobertura</div><div class="chart-source-eco">Índices de Shannon-Wiener y equitatividad de Pielou sobre composición fenológica por municipio</div><canvas id="chartShannon" height="160"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Entropía de Shannon / Evenness Pielou</div><div id="eqShannon"></div></div></div>
-      <div class="chart-card-eco"><div class="chart-title-eco">LAI · Modelo potencial NIRv (Fang et al. 2019)</div><div class="chart-source-eco">Índice de Área Foliar estimado; curva teórica LAI = α · NDVIᵝ sobre rango observado en altiplano guatemalteco</div><canvas id="chartLAI" height="160"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Modelo LAI potencial calibrado</div><div id="eqLAI"></div></div></div>
-      <div class="chart-card-eco"><div class="chart-title-eco">Perfil ecológico integral · Radar multidimensional</div><div class="chart-source-eco">Indicadores normalizados (0–10) — municipio seleccionado vs. promedio departamental</div><canvas id="chartRadar" height="160"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Normalización min-max</div><div id="eqRadar"></div></div></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Geoestadística Forestal</span></div>
-    <div class="charts-2-eco">
-      <div class="chart-card-eco"><div class="chart-title-eco">Variograma espacial experimental · Biomasa AGB</div><div class="chart-source-eco">Semivarianza γ(h) de la biomasa forestal — ajuste esférico y exponencial (Journel &amp; Huijbregts 1978)</div><canvas id="chartVario" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Modelo esférico de variograma</div><div id="eqVario"></div></div><div class="chart-interp-eco" id="interpretVario"></div></div>
-      <div class="chart-card-eco"><div class="chart-title-eco">Correlación espacial AGB–NDVI · Scatterplot + regresión</div><div class="chart-source-eco">Relación AGB (t/ha) vs. NDVI medio por municipio — ajuste de potencia y OLS (Tucker 1979; Foody et al. 2003)</div><canvas id="chartScatter" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Regresión AGB = a · NDVIᵇ (power law)</div><div id="eqScatter"></div></div><div class="chart-interp-eco" id="interpretScatter"></div></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Riesgo &amp; Servicios Ecosistémicos</span></div>
-    <div class="charts-2-eco">
-      <div class="chart-card-eco"><div class="chart-title-eco">FWI estacional · Componentes FFMC / DMC / DC / ISI</div><div class="chart-source-eco">Fire Weather Index (Van Wagner 1987) — patrones estacionales estimados para altiplano guatemalteco</div><canvas id="chartFWI" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Fire Weather Index — Van Wagner (1987)</div><div id="eqFWI"></div></div><div class="chart-interp-eco" id="interpretFWI"></div></div>
-      <div class="chart-card-eco"><div class="chart-title-eco">Servicios ecosistémicos hídricos · Precipitación–ET–escorrentía</div><div class="chart-source-eco">Balance hídrico forestal estimado: P, ET₀ (Budyko) y escorrentía regulada</div><canvas id="chartHydro" height="170"></canvas><div class="chart-eq-eco"><div class="chart-eq-label-eco">Balance hídrico forestal (Budyko 1974)</div><div id="eqHydro"></div></div><div class="chart-interp-eco" id="interpretHydro"></div></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Modelos Estadísticos Forestales</span></div>
-    <div class="model-box-eco">
-      <h3>Síntesis de modelos ecológicos aplicados</h3>
-      <div class="model-box-grid-eco">
-        <div class="model-eq-block-eco" id="modelEq1"></div>
-        <div class="model-eq-block-eco" id="modelEq2"></div>
-        <div class="model-eq-block-eco" id="modelEq3"></div>
-        <div class="model-eq-block-eco" id="modelEq4"></div>
-      </div>
-      <div class="model-sub-eco" id="modelBoxText"></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Interpretación Ecológica Integral</span></div>
-    <div class="interpret-panel-eco">
-      <h3>Lectura ecosistémica — <span id="interpretTitle">Departamento de Sololá</span></h3>
-      <div class="interpret-grid-eco" id="interpretGrid"></div>
-    </div>
-
-    <div class="section-divider-eco"><span>Tabla de Indicadores Ecológicos</span></div>
-    <div class="table-wrap-eco">
-      <div class="table-header-eco">
-        <div>
-          <div class="table-title-eco">Indicadores ecológicos forestales por municipio</div>
-          <div class="table-sub-eco">Clic en una fila para seleccionar municipio y actualizar gráficos · Sololá, Guatemala 2026</div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn-dl" style="color:#065f46;background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlExcel2">Excel</button>
-          <button class="btn-dl" style="color:#065f46;background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlCSV2">CSV</button>
-        </div>
-      </div>
-      <div class="table-scroll-eco">
-        <table class="table-eco" id="ecoTable">
-          <thead><tr>
-            <th>Municipio</th><th>AGB (t/ha)</th><th>Cob. Boscosa</th><th>C stock</th><th>CO₂eq</th><th>C suelo</th><th>Shannon H'</th><th>Pielou J'</th><th>LAI</th><th>NDVI</th><th>NPP</th><th>GPP</th><th>FWI</th><th>MESH (ha)</th><th>Reg. Hídrica</th><th>Precip.</th><th>Elev.</th><th>Área km²</th><th>Perennifolio</th><th>Caducifolio</th><th>Semi-caduc.</th><th>Herbácea</th>
-          </tr></thead>
-          <tbody id="ecoTableBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<footer class="footer-eco">
-  <div class="footer-inner-eco">
-    <div class="footer-text-eco">Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong></div>
-    <div class="footer-logos-eco">
-      <a href="https://www.marn.gob.gt" target="_blank"><img src="../../marn.png" alt="MARN"></a>
-      <a href="https://www.maga.gob.gt" target="_blank"><img src="../../maga.png" alt="MAGA"></a>
-      <a href="https://www.inab.gob.gt" target="_blank"><img src="../../inab.png" alt="INAB"></a>
-      <a href="https://www.conap.gob.gt" target="_blank"><img src="../../conap.png" alt="CONAP"></a>
-      <a href="https://www.amsclae.gob.gt" target="_blank"><img src="../../amsclae.png" alt="AMSCLAE"></a>
-      <a href="https://conred.gob.gt" target="_blank"><img src="../../conred.png" alt="CONRED"></a>
-      <a href="https://www.uvg.edu.gt" target="_blank"><img src="../../cea.png" alt="CEA-UVG"></a>
-      <a href="https://www.aala.org" target="_blank"><img src="../../aala_logo.png" alt="AALA"></a>
-      <a href="https://www.vivamosmejor.org" target="_blank"><img src="../../vivamos.png" alt="Vivamos Mejor"></a>
-      <a href="https://aires.gt" target="_blank"><img src="../../aires.png" alt="AIRES"></a>
-    </div>
-    <div class="footer-src-eco">Fuentes: Landsat-8/9 · MODIS Terra/Aqua · COG/GeoTIFF · Chave et al. 2014 · Eklundh &amp; Jönsson 2015 · IPCC 2019 · Van Wagner 1987 · Fang et al. 2019 · McGarigal &amp; Marks 1995</div>
-  </div>
-</footer>
 </body>
 </html>
