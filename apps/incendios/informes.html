@@ -371,11 +371,6 @@
   </div>
 </footer>
 
-<!-- CANVAS ocultos para graficar y exportar imagenes al informe -->
-<canvas id="cvDaily" style="display:none" width="600" height="220"></canvas>
-<canvas id="cvSensors" style="display:none" width="400" height="220"></canvas>
-<canvas id="cvZones" style="display:none" width="400" height="220"></canvas>
-<canvas id="cvConf" style="display:none" width="400" height="220"></canvas>
 
 <script>
 (function(){
@@ -462,37 +457,135 @@ function setWarning(msg){
 }
 
 /* =============================================
+   GEO LAYERS — point-in-polygon zone assignment
+   ============================================= */
+const LAYER_SOURCES = {
+  muni:  { url:"./data/municipios_solola.geojson",    label:"Municipio",        nameFields:["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","NAME","name"] },
+  micro: { url:"./data/microcuencas_atitlan.geojson", label:"Microcuenca",      nameFields:["MICROCUENCA","microcuenca","NOMBRE","Nombre","nombre","NAME","name"] },
+  ap:    { url:"./data/areas_protegidas.geojson",     label:"Area protegida",   nameFields:["NOM_AREA","NOMBRE","Nombre","nombre","NAME","name"] }
+};
+
+const polyCache = {};  // mode -> { items:[{name,bbox,poly}], label }
+
+function pickName(props, fields){
+  for(const f of fields){ const v = props[f]; if(typeof v==="string"&&v.trim()) return v.trim(); }
+  return null;
+}
+
+function bboxOf(coords, type){
+  let minLon=Infinity,maxLon=-Infinity,minLat=Infinity,maxLat=-Infinity;
+  function scan(c){ if(typeof c[0]==="number"){if(c[0]<minLon)minLon=c[0];if(c[0]>maxLon)maxLon=c[0];if(c[1]<minLat)minLat=c[1];if(c[1]>maxLat)maxLat=c[1];}else c.forEach(scan); }
+  scan(coords);
+  return [minLon,minLat,maxLon,maxLat];
+}
+
+// Simple ray-casting point-in-polygon (handles Polygon + MultiPolygon)
+function pointInPoly(lon, lat, feature){
+  const geom = feature.geometry;
+  if(!geom) return false;
+  const rings = geom.type==="Polygon" ? [geom.coordinates] : geom.type==="MultiPolygon" ? geom.coordinates : [];
+  for(const poly of rings){
+    for(const ring of poly){
+      let inside=false;
+      for(let i=0,j=ring.length-1;i<ring.length;j=i++){
+        const xi=ring[i][0],yi=ring[i][1],xj=ring[j][0],yj=ring[j][1];
+        if(((yi>lat)!==(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi)) inside=!inside;
+      }
+      if(inside) return true;
+    }
+  }
+  return false;
+}
+
+async function loadLayer(mode){
+  if(polyCache[mode]) return polyCache[mode];
+  const src = LAYER_SOURCES[mode];
+  let gj;
+  try{
+    const r = await fetch(src.url,{cache:"force-cache"});
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    gj = await r.json();
+  }catch(e){
+    console.warn("No se pudo cargar capa",mode,e.message);
+    polyCache[mode] = {items:[], label:src.label};
+    return polyCache[mode];
+  }
+  const items = (gj.features||[]).map(f=>{
+    const name = pickName(f.properties||{}, src.nameFields) || "Zona sin nombre";
+    const coords = f.geometry?.coordinates;
+    const bbox = coords ? bboxOf(coords) : [-180,-90,180,90];
+    return {name, bbox, feature:f};
+  });
+  polyCache[mode] = {items, label:src.label};
+  return polyCache[mode];
+}
+
+// Assign zone_name to each row using point-in-polygon
+function assignZones(rows, layerData){
+  if(!layerData||!layerData.items.length) return rows;
+  return rows.map(r=>{
+    if(!Number.isFinite(r.lat)||!Number.isFinite(r.lon)) return r;
+    const lon=r.lon, lat=r.lat;
+    for(const it of layerData.items){
+      if(lon<it.bbox[0]||lon>it.bbox[2]||lat<it.bbox[1]||lat>it.bbox[3]) continue;
+      if(pointInPoly(lon,lat,it.feature)){
+        return {...r, zone_name:it.name, zone_type:layerData.label};
+      }
+    }
+    return {...r, zone_name:"Fuera del recorte", zone_type:layerData.label};
+  });
+}
+
+// Populate zonaItem selector from loaded layer
+function populateZonaItem(layerData){
+  const sel = els.zonaItem;
+  sel.innerHTML = '<option value="">Todas las zonas</option>';
+  if(!layerData) return;
+  const names = [...new Set(layerData.items.map(it=>it.name))].sort((a,b)=>a.localeCompare(b,"es"));
+  names.forEach(n=>{ const o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o); });
+}
+
+/* =============================================
    FETCH DATA
    ============================================= */
 async function fetchData(){
   const days = Number(els.diasRef.value)||30;
   const sensors = "VIIRS_SNPP_NRT,VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT,MODIS_NRT";
-  const bbox = "-91.586608,14.495833,-91.040503,14.992742"; // Solola departamento
+  const bbox = "-91.586608,14.495833,-91.040503,14.992742";
   const url = `${PROXY_BASE}/api/firms?bbox=${encodeURIComponent(bbox)}&days=${days}&sensors=${encodeURIComponent(sensors)}&limit=50000`;
   els.chipData.textContent = "Consultando FIRMS NASA...";
+
+  let raw = [];
   try{
     const r = await fetch(url);
     const j = await r.json();
-    if (!r.ok) throw new Error(j.error||"Error API");
-    return (j.rows||[]).filter(r=>Number.isFinite(r.lat)&&Number.isFinite(r.lon));
+    if(!r.ok) throw new Error(j.error||"Error API");
+    raw = (j.rows||[]).filter(r=>Number.isFinite(r.lat)&&Number.isFinite(r.lon));
   }catch(e){
     setWarning("No se pudo conectar con la API FIRMS: "+e.message+". Se genera informe con datos de demostracion.");
-    return generateDemoData(days);
+    raw = generateDemoData(days);
   }
+
+  // Always assign zones via point-in-polygon
+  const mode = els.zona.value==="all" ? "muni" : els.zona.value;
+  els.chipData.textContent = "Cargando capa de recorte...";
+  const layerData = await loadLayer(mode);
+  populateZonaItem(layerData);
+  const withZones = assignZones(raw, layerData);
+  return withZones;
 }
 
 function generateDemoData(days){
-  // Datos representativos de Solola para demostrar la estructura del informe
   const sensors = ["VIIRS_SNPP_NRT","VIIRS_NOAA20_NRT","VIIRS_NOAA21_NRT","MODIS_NRT"];
-  const munis = ["Solola","Panajachel","San Pedro La Laguna","Santiago Atitlan","Nahuala","Santa Catarina Ixtahuacan","San Lucas Toliman","San Juan La Laguna"];
+  const munis = ["Solola","Panajachel","San Pedro La Laguna","Santiago Atitlan","Nahuala","Santa Catarina Ixtahuacan","San Lucas Toliman","San Juan La Laguna","Santa Clara La Laguna","San Marcos La Laguna"];
   const rows = [];
   const now = Date.now();
-  const n = Math.round(15 + Math.random()*30);
+  const n = Math.round(20 + Math.random()*35);
   for(let i=0;i<n;i++){
     const dAgo = Math.random()*days;
     const dt = new Date(now - dAgo*86400000);
     rows.push({
-      id: "demo_"+i,
+      id:"demo_"+i,
       lat: 14.495833 + Math.random()*(14.992742-14.495833),
       lon: -91.586608 + Math.random()*(-91.040503+91.586608),
       acq_date: dt.toISOString().slice(0,10),
@@ -501,28 +594,32 @@ function generateDemoData(days){
       source: sensors[Math.floor(Math.random()*sensors.length)],
       confidence: [35,55,65,80,90,95][Math.floor(Math.random()*6)],
       frp: +(1+Math.random()*25).toFixed(2),
-      satellite: "Suomi-NPP",
-      instrument: "VIIRS",
+      satellite:"Suomi-NPP", instrument:"VIIRS",
       zone_name: munis[Math.floor(Math.random()*munis.length)],
-      zone_type: "Municipios (Solola)",
-      _demo: true
+      zone_type:"Municipio",
+      _demo:true
     });
   }
   return rows;
 }
 
 /* =============================================
-   FILTER
+   FILTER  (zona-aware — point-in-polygon already done)
    ============================================= */
 function applyFilters(rows){
   let out = rows.slice();
   const desde = els.desde.value ? new Date(els.desde.value+"T00:00:00") : null;
-  const hasta  = els.hasta.value  ? new Date(els.hasta.value+"T23:59:59")  : null;
+  const hasta  = els.hasta.value ? new Date(els.hasta.value+"T23:59:59") : null;
   if(desde) out = out.filter(r=>{ const d=new Date(r.acq_date); return !isNaN(d)&&d>=desde; });
   if(hasta)  out = out.filter(r=>{ const d=new Date(r.acq_date); return !isNaN(d)&&d<=hasta;  });
-  const zona  = els.zona.value;
+
+  // Filter by specific zone item if selected
   const zonaV = els.zonaItem.value;
-  if(zona!=="all"&&zonaV) out = out.filter(r=>(r.zone_name||"")=== zonaV);
+  if(zonaV) out = out.filter(r=>(r.zone_name||"")===zonaV);
+
+  // Exclude "Fuera del recorte" from analysis (optional: keep if zona is "all")
+  if(els.zona.value!=="all") out = out.filter(r=>r.zone_name!=="Fuera del recorte");
+
   return out;
 }
 
@@ -711,15 +808,16 @@ function alertColor(level){
 function buildNarrative(rows, agg){
   const tipo = els.tipoInforme.value;
   const alert = determineAlert(agg);
+  const modeLabel = {all:"departamento de Solola",muni:"municipios seleccionados",micro:"microcuencas del lago Atitlan",ap:"areas protegidas"}[els.zona.value]||"zona seleccionada";
+  const zonaItemLabel = els.zonaItem.value ? `zona "${els.zonaItem.value}"` : modeLabel;
   const periodo = agg.dMin&&agg.dMax ? `del ${fmtDate(agg.dMin)} al ${fmtDate(agg.dMax)}` : `de los ultimos ${els.diasRef.value} dias`;
-  const topZone = agg.zones[0];
-  const topSensor = agg.bySensor[0];
+  const topZone = agg.zones.filter(([z])=>z!=="Fuera del recorte")[0];
   const glm = agg.glm;
   const nni = agg.nni;
   const vario = agg.vario;
 
   const resumen = [
-    `Con base en el analisis de datos FIRMS NRT (Fire Information for Resource Management System, NASA/LANCE) correspondientes al periodo ${periodo}, se identificaron ${fmt(agg.n)} detecciones de anomalias termicas activas en el ambito territorial del departamento de Solola, Guatemala. De estas detecciones, ${fmt(agg.hi)} (${fmt(agg.n>0?100*agg.hi/agg.n:0,1)} %) presentaron clasificacion de alta confianza segun el algoritmo de deteccion del sensor.`,
+    `Con base en el analisis de datos FIRMS NRT (Fire Information for Resource Management System, NASA/LANCE) correspondientes al periodo ${periodo}, se identificaron ${fmt(agg.n)} detecciones de anomalias termicas activas en el ambito territorial de ${zonaItemLabel}, departamento de Solola, Guatemala. De estas detecciones, ${fmt(agg.hi)} (${fmt(agg.n>0?100*agg.hi/agg.n:0,1)} %) presentaron clasificacion de alta confianza segun el algoritmo de deteccion del sensor.`,
     `La potencia radiativa del fuego (Fire Radiative Power, FRP) acumulada para el periodo fue de ${fmt(agg.frpSum,2)} MW, con un promedio por deteccion de ${fmt(agg.frpMean,2)} MW (desviacion estandar: ${fmt(agg.frpStd,2)} MW), valor maximo de ${fmt(agg.frpMax,2)} MW y minimo de ${fmt(agg.frpMin,2)} MW. ${topZone?`La zona con mayor concentracion de detecciones fue ${topZone[0]} con ${fmt(topZone[1])} eventos.`:""} El nivel de alerta para el periodo evaluado se clasifica como <strong>${alertLabel(alert)}</strong>.`,
     tipo==="ejecutivo"?`Se recomienda mantener monitoreo activo y coordinar con las instituciones del Eje de Bosques de CODEMA-Solola, especialmente en los municipios con mayor concentracion de focos, para activacion oportuna de protocolos de respuesta segun nivel de alerta establecido por CONRED y el Plan Departamental de Manejo del Fuego.`:
     `La distribucion espacio-temporal de las detecciones sugiere ${nni&&nni.nni<1?"un patron de agregacion espacial significativo, indicando posible concentracion de focos en areas especificas del departamento, lo cual es consistente con la presencia de frentes de fuego o multiples igniciones en zonas de alta carga de combustible.":"una distribucion espacialmente aleatoria o regular, consistente con igniciones dispersas sin aparente nucleacion territorial."}`
@@ -749,14 +847,19 @@ function buildNarrative(rows, agg){
   ];
 
   const espacial = [];
-  if(agg.zones.length){
-    const top5 = agg.zones.slice(0,5);
+  const zoneLabel = {all:"departamento de Solola",muni:"municipios de Solola",micro:"microcuencas del lago Atitlan",ap:"areas protegidas de Solola"}[els.zona.value]||"zona seleccionada";
+  if(agg.zones.filter(([z])=>z!=="Fuera del recorte").length){
+    const validZones = agg.zones.filter(([z])=>z!=="Fuera del recorte");
+    const top5 = validZones.slice(0,5);
     espacial.push(
-      `La distribucion territorial de las detecciones por zona indica las siguientes concentraciones principales (Top 5): ${top5.map(([z,c])=>`${z} con ${fmt(c)} eventos (${fmt(100*c/agg.n,1)} %)`).join("; ")}. La concentracion en zonas especificas puede indicar factores de riesgo locales como uso del suelo, tipo de vegetacion, pendiente, accesibilidad o practicas de manejo del territorio.`,
-      `La intensidad media de detecciones en el departamento de Solola (area de referencia ≈ 3,296 km²) fue de ${fmt(agg.intensidadMedia,4)} detecciones/km² para el periodo evaluado. Este indicador permite comparacion entre periodos y cuantificar la presion de anomalias termicas sobre el territorio.`
+      `La distribucion territorial de las detecciones en ${zoneLabel} indica las siguientes concentraciones principales (Top 5): ${top5.map(([z,c])=>`${z} con ${fmt(c)} eventos (${fmt(100*c/agg.n,1)} %)`).join("; ")}. La concentracion en zonas especificas puede indicar factores de riesgo locales como uso del suelo, tipo de vegetacion, pendiente, accesibilidad o practicas de manejo del territorio.`,
+      `La intensidad media de detecciones en el area de referencia fue de ${fmt(agg.intensidadMedia,4)} detecciones/km² para el periodo evaluado (area de referencia departamental: ~3,296 km²). Este indicador permite comparacion entre periodos y cuantificar la presion de anomalias termicas sobre el territorio.`
     );
   } else {
-    espacial.push("No se dispone de informacion de zona asignada para las detecciones del periodo. Se recomienda ejecutar la consulta con recorte espacial activado desde el modulo Geoportal.");
+    espacial.push(
+      `No se identificaron detecciones dentro del recorte espacial seleccionado (${zoneLabel}) para el periodo evaluado. Esto puede deberse a ausencia real de focos activos, cobertura nubosa durante el paso orbital, o a que los puntos detectados caen fuera del poligono de la zona seleccionada.`,
+      `Se recomienda ampliar el periodo de consulta, verificar la seleccion de zona o revisar el estado del recorte geografico en el modulo Geoportal.`
+    );
   }
 
   const geoestadistica = [];
@@ -797,75 +900,6 @@ function buildNarrative(rows, agg){
 /* =============================================
    CHART IMAGE BUILDERS
    ============================================= */
-async function buildChartImage(canvasId, config){
-  return new Promise(resolve=>{
-    const canvas = $(canvasId);
-    if(!canvas||!window.Chart){ resolve(""); return; }
-    // Destroy existing
-    const existing = Chart.getChart(canvas);
-    if(existing) existing.destroy();
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle="#fff";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
-    const c = new Chart(ctx, config);
-    setTimeout(()=>{ resolve(canvas.toDataURL("image/png",1.0)); c.destroy(); },400);
-  });
-}
-
-const FIRE_COLORS = ["#dc2626","#ea580c","#f97316","#fbbf24","#16a34a","#0ea5e9","#7c3aed","#db2777","#059669","#6366f1"];
-
-async function buildChartDaily(agg){
-  if(!agg.dates.length) return "";
-  const glm = agg.glm;
-  const datasets = [
-    {label:"Detecciones/dia",data:agg.counts,type:"bar",backgroundColor:"rgba(220,38,38,.65)",borderColor:"#dc2626",borderWidth:1}
-  ];
-  if(glm) datasets.push({label:"Tendencia Poisson",data:glm.muHat.map(v=>+v.toFixed(2)),type:"line",tension:.3,pointRadius:0,borderColor:"#ea580c",borderWidth:2,fill:false,borderDash:[5,3]});
-  datasets.push({label:"FRP acum. (MW)",data:agg.frpSeries,type:"line",tension:.3,pointRadius:3,borderColor:"#fbbf24",borderWidth:2,yAxisID:"y1",backgroundColor:"rgba(251,191,36,.12)",fill:true});
-  return buildChartImage("cvDaily",{type:"bar",data:{labels:agg.dates,datasets},options:{
-    responsive:false,animation:false,
-    plugins:{legend:{position:"bottom",labels:{font:{size:10}}},title:{display:true,text:"Serie temporal diaria de detecciones y FRP",font:{size:11,weight:"bold"}}},
-    scales:{
-      x:{ticks:{font:{size:8},maxRotation:45}},
-      y:{beginAtZero:true,title:{display:true,text:"Detecciones",font:{size:9}}},
-      y1:{type:"linear",position:"right",title:{display:true,text:"FRP total (MW)",font:{size:9}},grid:{drawOnChartArea:false}}
-    }
-  }});
-}
-
-async function buildChartSensors(agg){
-  if(!agg.bySensor.length) return "";
-  const labels = agg.bySensor.map(([s])=>s.replace("_NRT",""));
-  const data   = agg.bySensor.map(([,c])=>c);
-  return buildChartImage("cvSensors",{type:"doughnut",data:{labels,datasets:[{data,backgroundColor:FIRE_COLORS,borderWidth:2,borderColor:"#fff"}]},options:{
-    responsive:false,animation:false,
-    plugins:{legend:{position:"right",labels:{font:{size:10}}},title:{display:true,text:"Distribucion por sensor",font:{size:11,weight:"bold"}}}
-  }});
-}
-
-async function buildChartZones(agg){
-  if(!agg.zones.length) return "";
-  const top = agg.zones.slice(0,8);
-  return buildChartImage("cvZones",{type:"bar",data:{
-    labels:top.map(([z])=>z.length>18?z.slice(0,17)+"…":z),
-    datasets:[{label:"Detecciones",data:top.map(([,c])=>c),backgroundColor:FIRE_COLORS,borderRadius:4}]
-  },options:{
-    responsive:false,animation:false,indexAxis:"y",
-    plugins:{legend:{display:false},title:{display:true,text:"Top zonas por numero de detecciones",font:{size:11,weight:"bold"}}},
-    scales:{x:{beginAtZero:true,ticks:{font:{size:9}}},y:{ticks:{font:{size:9}}}}
-  }});
-}
-
-async function buildChartConf(agg){
-  return buildChartImage("cvConf",{type:"pie",data:{
-    labels:["Alta confianza","Nominal/Media","Baja"],
-    datasets:[{data:[agg.hi,agg.nom,agg.lo],backgroundColor:["#dc2626","#f59e0b","#94a3b8"],borderWidth:2,borderColor:"#fff"}]
-  },options:{
-    responsive:false,animation:false,
-    plugins:{legend:{position:"bottom",labels:{font:{size:10}}},title:{display:true,text:"Distribucion por clase de confianza",font:{size:11,weight:"bold"}}}
-  }});
-}
 
 /* =============================================
    HTML BUILDERS
@@ -967,10 +1001,7 @@ async function buildPages(rows, agg, texts){
     firmante: (els.firmante.value||"Laboratorio SIG · Eje de Bosques · CODEMA-Solola").trim()
   };
 
-  // Build chart images in parallel
-  const [imgDaily, imgSensors, imgZones, imgConf] = await Promise.all([
-    buildChartDaily(agg), buildChartSensors(agg), buildChartZones(agg), buildChartConf(agg)
-  ]);
+  // Charts rendered as live interactive Canvas — no image build needed
 
   const pages = [];
   let p = 1;
@@ -1015,12 +1046,25 @@ async function buildPages(rows, agg, texts){
   let body3 = "";
   if(els.secTemporal.checked){
     body3 += `<p class="section-title">3. Analisis temporal</p>${texts.temporal.map(t=>`<p>${esc(t)}</p>`).join("")}`;
-    if(imgDaily) body3 += `<div class="chart-container"><div class="chart-title-rpt">Figura 1. Serie temporal diaria de detecciones y FRP acumulado con tendencia Poisson (GLM)</div><img src="${imgDaily}" style="width:100%;max-height:70mm" alt="Grafica temporal"><div class="chart-note">La linea naranja discontinua representa la tendencia estimada mediante un Modelo Lineal Generalizado Poisson (GLM Poisson con enlace logaritmico). Las barras rojas corresponden al numero de detecciones diarias. La linea amarilla muestra el FRP acumulado diario (eje derecho). Fuente: NASA FIRMS NRT, procesamiento propio.</div></div>`;
+    if(agg.dates.length){
+      const cId1="cDaily"+Date.now();
+      const glmHat=agg.glm?JSON.stringify(agg.glm.muHat.map(v=>+v.toFixed(2))):"[]";
+      const dLabels=JSON.stringify(agg.dates);
+      const dCounts=JSON.stringify(agg.counts);
+      const dFrp=JSON.stringify(agg.frpSeries);
+      const hasGlm=!!agg.glm;
+      body3+=`<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figura 1. Serie temporal diaria de detecciones y FRP acumulado con tendencia Poisson (GLM)</div><div style="position:relative;height:220px;width:100%"><canvas id="${cId1}"></canvas></div><div class="chart-note">Barras rojas: detecciones diarias (eje izq.). Linea naranja: tendencia Poisson-GLM. Linea amarilla: FRP acumulado diario en MW (eje der.). Tooltip interactivo al pasar el cursor. Fuente: NASA FIRMS NRT.</div></div><script>(function(){var el=document.getElementById("${cId1}");if(!el||!window.Chart)return;var ds=[{label:"Detecciones/dia",type:"bar",data:${dCounts},backgroundColor:"rgba(220,38,38,.65)",borderColor:"#dc2626",borderWidth:1,order:3}];if(${hasGlm})ds.push({label:"Tendencia Poisson",type:"line",data:${glmHat},tension:.35,pointRadius:0,borderColor:"#ea580c",borderWidth:2.5,borderDash:[6,3],fill:false,order:2});ds.push({label:"FRP acum. (MW)",type:"line",data:${dFrp},tension:.3,pointRadius:3,pointBackgroundColor:"#fbbf24",borderColor:"#fbbf24",borderWidth:2,yAxisID:"y1",backgroundColor:"rgba(251,191,36,.10)",fill:true,order:1});new Chart(el.getContext("2d"),{data:{labels:${dLabels},datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},interaction:{mode:"index",intersect:false},plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{title:function(i){return"Fecha: "+i[0].label}}}},scales:{x:{ticks:{font:{size:8},maxRotation:50},grid:{color:"rgba(0,0,0,.05)"}},y:{beginAtZero:true,title:{display:true,text:"Detecciones",font:{size:9}},grid:{color:"rgba(0,0,0,.06)"}},y1:{type:"linear",position:"right",title:{display:true,text:"FRP (MW)",font:{size:9}},grid:{drawOnChartArea:false}}}}});})()\x3c/script>`;
+    }
   }
   if(els.secSensores.checked){
     body3 += `<p class="section-title">4. Analisis por sensor y confianza</p>${texts.sensores.map(t=>`<p>${esc(t)}</p>`).join("")}`;
-    const imgRow = [imgSensors,imgConf].filter(Boolean).map(img=>`<img src="${img}" style="width:48%;max-height:60mm" alt="Grafica sensor">`).join(" ");
-    if(imgRow) body3 += `<div class="chart-container"><div class="chart-title-rpt">Figuras 2 y 3. Distribucion por sensor y clase de confianza del algoritmo de deteccion</div><div style="display:flex;gap:2%;align-items:center">${imgRow}</div><div class="chart-note">Izquierda: proporcion de detecciones por sensor NRT. Derecha: clasificacion por confianza del algoritmo (alta ≥80 %; nominal 30-79 %; baja <30 %). Fuente: NASA FIRMS NRT.</div></div>`;
+    if(agg.bySensor.length){
+      const cId2="cSens"+Date.now(), cId3="cConf"+(Date.now()+1);
+      const sLabels=JSON.stringify(agg.bySensor.map(([s])=>s.replace("_NRT","")));
+      const sData=JSON.stringify(agg.bySensor.map(([,c])=>c));
+      const sColors=JSON.stringify(["#dc2626","#ea580c","#f97316","#fbbf24","#16a34a","#0ea5e9"].slice(0,agg.bySensor.length));
+      body3+=`<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figuras 2 y 3. Distribucion por sensor NRT y clase de confianza del algoritmo</div><div style="display:flex;gap:12px;align-items:center;height:200px"><div style="flex:1;position:relative;height:200px"><canvas id="${cId2}"></canvas></div><div style="flex:1;position:relative;height:200px"><canvas id="${cId3}"></canvas></div></div><div class="chart-note">Izq: proporcion de detecciones por sensor. Der: clasificacion por confianza (alta ≥80%; nominal 30-79%; baja &lt;30%). Pasa el cursor para ver valores. Fuente: NASA FIRMS NRT.</div></div><script>(function(){var e2=document.getElementById("${cId2}"),e3=document.getElementById("${cId3}");if(!window.Chart)return;if(e2)new Chart(e2.getContext("2d"),{type:"doughnut",data:{labels:${sLabels},datasets:[{data:${sData},backgroundColor:${sColors},borderWidth:2,borderColor:"#fff",hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{position:"right",labels:{font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);return" "+ctx.label+": "+ctx.parsed+" ("+((ctx.parsed/t)*100).toFixed(1)+"%)"}}}}}});if(e3)new Chart(e3.getContext("2d"),{type:"pie",data:{labels:["Alta confianza","Nominal/Media","Baja"],datasets:[{data:[${agg.hi},${agg.nom},${agg.lo}],backgroundColor:["#dc2626","#f59e0b","#94a3b8"],borderWidth:2,borderColor:"#fff",hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{position:"right",labels:{font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);return" "+ctx.label+": "+ctx.parsed+" ("+((ctx.parsed/t)*100).toFixed(1)+"%)"}}}}}});})()\x3c/script>`;
+    }
   }
   pages.push(`
   <div class="page page-break">
@@ -1038,7 +1082,16 @@ async function buildPages(rows, agg, texts){
     body4 += `<p class="section-title">5. Analisis espacial por zona</p>${texts.espacial.map(t=>`<p>${esc(t)}</p>`).join("")}`;
     const zoneRows = agg.zones.slice(0,10).map(([z,c])=>[z,fmt(c),fmt(100*c/agg.n,1)+"%"]);
     body4 += buildTopTable("Cuadro 1. Distribucion de detecciones por zona (Top 10)",["Zona","Detecciones","% del total"],zoneRows);
-    if(imgZones) body4 += `<div class="chart-container"><div class="chart-title-rpt">Figura 4. Numero de detecciones por zona geografica (Top 8)</div><img src="${imgZones}" style="width:100%;max-height:65mm" alt="Grafica zonas"><div class="chart-note">Barras horizontales que representan el numero de detecciones FIRMS NRT por unidad territorial para el periodo evaluado. Fuente: NASA FIRMS NRT, capa de municipios de Solola.</div></div>`;
+    if(agg.zones.length){
+      const zoneChartId = "czLive"+Date.now();
+      const top8 = agg.zones.slice(0,8);
+      const zL = JSON.stringify(top8.map(([z])=>z));
+      const zD = JSON.stringify(top8.map(([,c])=>c));
+      const zC = JSON.stringify(["#dc2626","#ea580c","#f97316","#fbbf24","#f59e0b","#16a34a","#0ea5e9","#7c3aed"].slice(0,top8.length));
+      const zN = agg.n;
+      const zH = Math.max(160, top8.length*34);
+      body4 += `<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figura 4. Numero de detecciones por zona geografica (Top 8)</div><div style="position:relative;height:${zH}px;width:100%"><canvas id="${zoneChartId}"></canvas></div><div class="chart-note">Barras horizontales — detecciones FIRMS NRT por unidad territorial. Pasa el cursor sobre las barras para ver valores exactos y porcentaje del total. Fuente: NASA FIRMS NRT.</div></div><script>(function(){var el=document.getElementById("${zoneChartId}");if(!el||!window.Chart)return;new Chart(el.getContext("2d"),{type:"bar",data:{labels:${zL},datasets:[{label:"Detecciones",data:${zD},backgroundColor:${zC},borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",animation:{duration:700},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){var pct=(ctx.parsed.x/${zN}*100).toFixed(1);return" "+ctx.parsed.x+" detecciones ("+pct+"%)"}}}},scales:{x:{beginAtZero:true,grid:{color:"rgba(0,0,0,.07)"},ticks:{font:{size:10}},title:{display:true,text:"Detecciones",font:{size:10}}},y:{ticks:{font:{size:10}},grid:{display:false}}}}});})()\x3c/script>`;
+    }
   }
   if(els.secGeoestadistica.checked){
     body4 += `<p class="section-title">6. Geoestadistica (NNI, CSR, variograma FRP)</p>${texts.geoestadistica.map(t=>`<p>${esc(t)}</p>`).join("")}`;
@@ -1205,11 +1258,31 @@ function exportJSON(){
   if(!els.hasta.value) els.hasta.value = now.toISOString().slice(0,10);
 })();
 
+// When zona type changes: load that layer, populate item selector, clear old selection
+els.zona.addEventListener("change", async ()=>{
+  const mode = els.zona.value==="all" ? "muni" : els.zona.value;
+  const zonaDetalle = document.getElementById("zonaDetalle");
+  if(zonaDetalle) zonaDetalle.style.display = els.zona.value==="all" ? "none" : "block";
+  els.chipData.textContent = "Cargando capa...";
+  const layerData = await loadLayer(mode);
+  populateZonaItem(layerData);
+  els.chipData.textContent = layerData.items.length
+    ? `Capa lista: ${layerData.items.length} zonas`
+    : "Capa no disponible — se usara zona_name de la API";
+});
+
 // Events
 [els.btnGenerar,els.btnGenerar2].forEach(b=>b.addEventListener("click",generatePreview));
 [els.btnPrint,els.btnPrint2].forEach(b=>b.addEventListener("click",()=>{generatePreview().then(()=>window.print());window.print();}));
 els.btnCSV.addEventListener("click",exportCSV);
 els.btnJSON.addEventListener("click",exportJSON);
+
+// Preload default layer (municipios) on page load so selector is ready
+(async()=>{
+  const layerData = await loadLayer("muni");
+  populateZonaItem(layerData);
+  if(layerData.items.length) els.chipData.textContent = `Capa lista: ${layerData.items.length} municipios`;
+})();
 
 })();
 </script>
