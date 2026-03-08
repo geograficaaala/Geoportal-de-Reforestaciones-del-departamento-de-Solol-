@@ -1,25 +1,6 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Centro de detección de anomalías térmicas (FIRMS NRT) · Sololá</title>
-
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="" />
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script>
-  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
+<head> <meta charset="utf-8" /> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Centro de detección de anomalías térmicas (FIRMS NRT) · Sololá</title> <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" /> <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script> <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" crossorigin="" /> <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" crossorigin="" /> <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js" crossorigin=""></script> <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.css" crossorigin="anonymous"> <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/katex.min.js" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.10/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script> <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"> <style> :root{
       --fire1: #dc2626;
       --fire2: #ea580c;
       --fire3: #fbbf24;
@@ -59,7 +40,7 @@
       min-height:100vh;
     }
 
-    /* ── HEADER ── */
+    /*  HEADER  */
     header{
       position:sticky;top:0;z-index:60;
       backdrop-filter:blur(10px);
@@ -79,10 +60,7 @@
     .brand-logos a{display:flex;align-items:center}
     .brand-logos img{
       height:52px;width:auto;object-fit:contain;
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(255,255,255,.22);
-      border-radius:12px;padding:6px;
-      box-shadow:0 6px 16px rgba(120,20,10,.18);
+      filter:drop-shadow(0 2px 8px rgba(0,0,0,.30));
       transition:transform .15s;
     }
     .brand-logos img:hover{transform:scale(1.04)}
@@ -96,7 +74,7 @@
     }
     .title .sub{font-size:11.5px;color:rgba(255,255,255,.75)}
 
-    /* ── BUTTONS (unified style) ── */
+    /*  BUTTONS (unified style)  */
     .navbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;flex:0 0 auto}
     .navbtn{
       display:inline-flex;align-items:center;gap:7px;
@@ -135,7 +113,7 @@
     }
     .dot{width:10px;height:10px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 4px rgba(47,208,143,.18)}
 
-    /* ── LAYOUT ── */
+    /*  LAYOUT  */
     main{
       display:grid;grid-template-columns:400px 1fr;
       gap:14px;padding:14px 14px 18px;align-items:stretch;
@@ -182,7 +160,7 @@
     .notes ul{margin:8px 0 0;padding-left:18px}
     .notes li{margin:6px 0}
 
-    /* ── RIGHT COLUMN ── */
+    /*  RIGHT COLUMN  */
     .right{display:grid;grid-template-rows:auto auto auto auto auto;gap:14px;min-width:0}
     .mapWrap{padding:12px 14px 14px;position:relative}
     #map{height:460px;min-height:460px;border-radius:var(--radius);background:#fef3e2;outline:1px solid rgba(0,0,0,.06)}
@@ -192,7 +170,7 @@
     .lg{display:flex;align-items:center;gap:6px;padding:6px 8px;background:#fff;border:1px solid rgba(0,0,0,.10);border-radius:999px}
     .sw{width:10px;height:10px;border-radius:50%}
 
-    /* ── KPI cards — mejoradas ── */
+    /*  KPI cards — mejoradas  */
     .kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px 14px}
     .kpi{
       border:1px solid rgba(0,0,0,.09);border-radius:16px;padding:12px 10px;
@@ -208,7 +186,7 @@
     .kpi .v{font-size:18px;font-weight:900;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--fire2)}
     .kpi .eq{font-size:10px;color:var(--muted);margin-top:3px;font-style:italic}
 
-    /* ── Charts ── */
+    /*  Charts  */
     .chartsGrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     .chartCard{
       background:#fff;border:1px solid rgba(0,0,0,.09);
@@ -223,7 +201,7 @@
     .chartTitle{font-size:12px;font-weight:700;color:#3a1008;margin-bottom:6px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
     .chartEq{margin-top:6px;font-size:12px;color:var(--muted);line-height:1.35;overflow:auto}
 
-    /* ── GeoKPIs ── */
+    /*  GeoKPIs  */
     .geoKpiGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:12px 14px 14px}
     .geoKpi{
       background:linear-gradient(160deg,#fff,#fff8f0);
@@ -254,7 +232,7 @@
     .hint{font-size:12px;color:var(--muted);line-height:1.35;margin-top:8px}
     .hotspot{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.92);box-shadow:0 6px 18px rgba(0,0,0,.18)}
 
-    /* ── FOOTER ── */
+    /*  FOOTER  */
     footer{padding:20px 16px 28px}
     .footer-box{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 20px}
     .footer-text{font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:10px}
@@ -272,268 +250,9 @@
       .geoKpiGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .chartsGrid{grid-template-columns:1fr}
       #map{height:420px;min-height:420px}
-    }
-  </style>
+    } </style>
 </head>
-<body>
-  <header>
-    <div class="header-wrap">
-      <div class="brand-logos" aria-label="Logos institucionales">
-        <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques"></a>
-        <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Sololá"></a>
-      </div>
-      <div class="title">
-        <h1>Centro de detección de anomalías térmicas (FIRMS NRT)</h1>
-        <div class="sub">Recorte por capas SIG (Municipios / Microcuencas / Áreas protegidas) · UTC</div>
-      </div>
-
-      <div class="navbtns" aria-label="Navegación del geoportal">
-        <a class="navbtn" href="../../index.html">🏠 Volver a Inicio</a>
-        <a class="navbtn" href="./index.html">◀ Regresar a Módulo</a>
-        <a class="navbtn navbtn-primary" href="./geoportal.html" aria-current="page">🗺 Geoportal</a>
-        <a class="navbtn" href="./dashboard.html">📊 Dashboard</a>
-        <a class="navbtn" href="./informes.html">📋 Resumen</a>
-      </div>
-
-      <div class="chips">
-        <div class="chip" title="Estado del proxy"><span class="dot" id="dot"></span><span id="pillText">Proxy: sin verificar</span></div>
-        <div class="chip" title="Auto actualización"><input id="auto" type="checkbox" checked /><label for="auto" style="margin:0;cursor:pointer;color:inherit">Auto (10 min)</label></div>
-        <div class="chip" id="lastRun">Última actualización: —</div>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <!-- LEFT: filtros -->
-    <section class="panel">
-      <h2>Consulta y recorte <small>(solo capas)</small></h2>
-      <div class="content">
-        <div class="grid2">
-          <div>
-            <label for="days">Período</label>
-            <select id="days">
-              <option value="1">24 horas (1 día)</option>
-              <option value="3" selected>72 horas (3 días)</option>
-              <option value="7">7 días</option>
-              <option value="30">30 días</option>
-              <option value="60">60 días</option>
-              <option value="90">90 días</option>
-            </select>
-          </div>
-          <div>
-            <label for="clipMode">Capa de recorte</label>
-            <select id="clipMode">
-              <option value="muni" selected>Municipios (Sololá)</option>
-              <option value="micro">Microcuencas (Atitlán)</option>
-              <option value="ap">Áreas protegidas</option>
-            </select>
-          </div>
-        </div>
-        <div style="height:10px"></div>
-        <div>
-          <label id="polyLabel">Elemento de recorte</label>
-          <select id="polySelect"></select>
-          <div class="hint" id="polyHint"></div>
-        </div>
-        <div style="height:10px"></div>
-        <label>Sensores (Near Real-Time)</label>
-        <div class="checks">
-          <div class="row"><input type="checkbox" id="s_snpp" checked><div><b>VIIRS Suomi-NPP</b><small>VIIRS_SNPP_NRT</small></div></div>
-          <div class="row"><input type="checkbox" id="s_n20" checked><div><b>VIIRS NOAA-20 (JPSS-1)</b><small>VIIRS_NOAA20_NRT</small></div></div>
-          <div class="row"><input type="checkbox" id="s_n21" checked><div><b>VIIRS NOAA-21 (JPSS-2)</b><small>VIIRS_NOAA21_NRT</small></div></div>
-          <div class="row"><input type="checkbox" id="s_modis" checked><div><b>MODIS (Terra/Aqua) NRT</b><small>MODIS_NRT</small></div></div>
-        </div>
-        <div style="height:10px"></div>
-        <div class="grid2">
-          <div>
-            <label for="conf">Confianza del algoritmo</label>
-            <select id="conf">
-              <option value="all" selected>Todas</option>
-              <option value="high">Alta</option>
-              <option value="nominal">Nominal/Media</option>
-              <option value="low">Baja</option>
-            </select>
-          </div>
-          <div>
-            <label for="limit">Límite filas</label>
-            <select id="limit">
-              <option value="2000">2,000</option>
-              <option value="10000" selected>10,000</option>
-              <option value="20000">20,000</option>
-              <option value="50000">50,000</option>
-            </select>
-          </div>
-        </div>
-        <div class="btns">
-          <button class="btn-primary" id="btnRun">🔄 Actualizar</button>
-          <button class="btn-ghost" id="btnFit">⛶ Ajustar mapa</button>
-        </div>
-        <div class="status" id="status">Listo.</div>
-        <div class="notes">
-          <b>Notas técnicas</b>
-          <ul>
-            <li>Hotspots (fuego activo) ≠ perímetro ni área quemada. Ubicación aproximada al píxel (VIIRS ~375 m; MODIS ~1 km).</li>
-            <li>Nubosidad/humo y tiempo de paso orbital pueden ocultar focos; se recomienda verificación operativa local.</li>
-            <li>FRP (MW) es potencia radiativa del fuego (indicador energético), no equivale directamente a superficie afectada.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <!-- RIGHT -->
-    <section class="right">
-      <!-- 1) MAPA -->
-      <section class="panel">
-        <h2>Mapa <small id="mapSubtitle">—</small></h2>
-        <div class="mapWrap">
-          <div id="map"></div>
-          <div class="mapError" id="mapError"></div>
-        </div>
-        <div class="legend">
-          <div class="lg"><span class="sw" style="background:var(--hi)"></span> Alta confianza</div>
-          <div class="lg"><span class="sw" style="background:var(--nom)"></span> Nominal/Media</div>
-          <div class="lg"><span class="sw" style="background:var(--low)"></span> Baja</div>
-        </div>
-      </section>
-
-      <!-- 2) KPIs operativos -->
-      <section class="panel">
-        <h2>KPIs operativos <small>(recorte actual)</small></h2>
-        <div class="kpis">
-          <div class="kpi">
-            <div class="k">🔥 Detecciones</div>
-            <div class="v" id="k_total">—</div>
-            <div class="eq">\(n = \sum_{i} \mathbf{1}[\text{hotspot}]\)</div>
-          </div>
-          <div class="kpi">
-            <div class="k">⚠️ Alta confianza</div>
-            <div class="v" id="k_high">—</div>
-            <div class="eq">\(n_{hi} / n\) conf≥80%</div>
-          </div>
-          <div class="kpi">
-            <div class="k">⚡ FRP total (MW)</div>
-            <div class="v" id="k_frp">—</div>
-            <div class="eq">\(\Sigma\,\text{FRP}_i\) (MW)</div>
-          </div>
-          <div class="kpi">
-            <div class="k">🕐 Última detección (UTC)</div>
-            <div class="v" id="k_last" style="font-size:13px">—</div>
-            <div class="eq">tiempo más reciente</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 3) GRÁFICAS -->
-      <section class="panel">
-        <h2>Gráficas <small>(recorte espacial)</small></h2>
-        <div class="content">
-          <div class="chartsGrid">
-            <div class="chartCard">
-              <div class="chartTitle">📈 Serie temporal &amp; tendencia (OLS)</div>
-              <canvas id="chartDaily" height="150"></canvas>
-              <div class="chartEq" id="eqDaily"></div>
-            </div>
-            <div class="chartCard">
-              <div class="chartTitle">📡 Detecciones por sensor</div>
-              <canvas id="chartSensors" height="150"></canvas>
-            </div>
-            <div class="chartCard">
-              <div class="chartTitle" id="zoneChartTitle">🗺 Detecciones por zona</div>
-              <canvas id="chartZonesPie" height="150"></canvas>
-              <div class="chartEq" id="zoneChartNote"></div>
-            </div>
-            <div class="chartCard">
-              <div class="chartTitle">📐 Ripley \(L(r)\) + envelope CSR</div>
-              <canvas id="chartRipley" height="150"></canvas>
-              <div class="chartEq" id="eqRipley"></div>
-            </div>
-            <div class="chartCard">
-              <div class="chartTitle">〰 Variograma experimental \(\gamma(h)\) (FRP)</div>
-              <canvas id="chartVariogram" height="150"></canvas>
-              <div class="chartEq" id="eqVario"></div>
-            </div>
-            <div class="chartCard">
-              <div class="chartTitle">📊 Histograma vecino más cercano</div>
-              <canvas id="chartNN" height="150"></canvas>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 4) GEOESTADÍSTICA -->
-      <section class="panel">
-        <h2>Geoestadística <small>(NNI / CSR / SDE)</small></h2>
-        <div class="geoKpiGrid">
-          <div class="geoKpi"><div class="k">Área \(A\)</div><div class="v" id="g_area">—</div><div class="s" id="g_area_s">—</div></div>
-          <div class="geoKpi"><div class="k">Muestra \(n\) / Total</div><div class="v" id="g_n">—</div><div class="s" id="g_n_s">—</div></div>
-          <div class="geoKpi"><div class="k">Intensidad \(\lambda\)</div><div class="v" id="g_lambda">—</div><div class="s">\(\lambda=n/A\)</div></div>
-          <div class="geoKpi"><div class="k">NNI</div><div class="v" id="g_nni">—</div><div class="s" id="g_nni_s">—</div></div>
-          <div class="geoKpi"><div class="k">z / p</div><div class="v" id="g_z">—</div><div class="s" id="g_p">p: —</div></div>
-          <div class="geoKpi"><div class="k">Pico \(L(r)\)</div><div class="v" id="g_lmax">—</div><div class="s" id="g_lr">—</div></div>
-          <div class="geoKpi"><div class="k">CSR (Monte Carlo)</div><div class="v" id="g_mc">—</div><div class="s" id="g_mc_s">—</div></div>
-          <div class="geoKpi"><div class="k">SDE / Elipse</div><div class="v" id="g_sd">—</div><div class="s" id="g_sde">—</div></div>
-        </div>
-        <div class="geoInterpret" id="geoInterpret">—</div>
-        <div class="eq">
-          <div class="eq-title">Modelo matemático dependiente del filtro</div>
-          <div class="eq-box" id="modelBox"><div style="color:var(--muted);font-size:12px;line-height:1.5">Ejecuta una consulta para estimar parámetros del modelo.</div></div>
-        </div>
-      </section>
-
-      <!-- 5) TABLA -->
-      <section class="panel">
-        <h2>Tabla de resultados <small>(descarga Excel/CSV)</small></h2>
-        <div class="content">
-          <div class="filtersRow">
-            <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite…)" />
-            <button class="btn-ghost" id="btnClear">Limpiar</button>
-          </div>
-          <div class="btns" style="margin-top:10px">
-            <button class="btn-ghost" id="btnExcel">📊 Excel</button>
-            <button class="btn-ghost" id="btnCSV">📄 CSV</button>
-            <button class="btn-ghost" id="btnGeoJSON">🗺 GeoJSON</button>
-          </div>
-          <div class="tableWrap">
-            <table id="tbl">
-              <thead>
-                <tr><th>UTC</th><th>Zona</th><th>Sensor</th><th>Conf.</th><th>Lat</th><th>Lon</th><th>FRP</th></tr>
-              </thead>
-              <tbody></tbody>
-            </table>
-          </div>
-          <div class="hint" id="tableNote"></div>
-        </div>
-      </section>
-    </section>
-  </main>
-
-  <!-- ── FOOTER INSTITUCIONAL ── -->
-  <footer>
-    <div class="footer-box">
-      <div class="footer-text">
-        Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
-      </div>
-      <div class="footer-sub">Instituciones y organizaciones</div>
-      <div class="footer-text">
-        El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
-      </div>
-      <div class="footer-logos">
-        <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
-        <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
-        <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
-        <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
-        <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
-        <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
-        <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA - UVG"></a>
-        <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán"></a>
-        <a href="https://www.vivamosmejor.org" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor Guatemala"></a>
-        <a href="https://aires.gt" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIRES"></a>
-      </div>
-      <div class="footer-src">Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Turf.js · Leaflet · Chart.js · KaTeX</div>
-    </div>
-  </footer>
-
-<script>
+<body> <header> <div class="header-wrap"> <div class="brand-logos" aria-label="Logos institucionales"> <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques"></a> <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Sololá"></a> </div> <div class="title"> <h1>Centro de detección de anomalías térmicas (FIRMS NRT)</h1> <div class="sub">Recorte por capas SIG (Municipios / Microcuencas / Áreas protegidas) · UTC</div> </div> <div class="navbtns" aria-label="Navegacion del geoportal"> <a class="navbtn" href="../../index.html">Volver a Inicio</a> <a class="navbtn" href="./index.html">Volver al Modulo</a> <a class="navbtn navbtn-primary" href="./informes.html">Informes</a> </div> <div class="chips"> <div class="chip" title="Estado del proxy"><span class="dot" id="dot"></span><span id="pillText">Proxy: sin verificar</span></div> <div class="chip" title="Auto actualizacion"><input id="auto" type="checkbox" checked /><label for="auto" style="margin:0;cursor:pointer;color:inherit">Auto 10 min</label></div> <div class="chip" id="lastRun">Ultima actualizacion: —</div> </div> </div> </header> <main> <!-- LEFT: filtros --> <section class="panel"> <h2>Consulta y recorte <small>(solo capas)</small></h2> <div class="content"> <div class="grid2"> <div> <label for="days">Período</label> <select id="days"> <option value="1">24 horas (1 día)</option> <option value="3" selected>72 horas (3 días)</option> <option value="7">7 días</option> <option value="30">30 días</option> <option value="60">60 días</option> <option value="90">90 días</option> </select> </div> <div> <label for="clipMode">Capa de recorte</label> <select id="clipMode"> <option value="muni" selected>Municipios (Sololá)</option> <option value="micro">Microcuencas (Atitlán)</option> <option value="ap">Áreas protegidas</option> </select> </div> </div> <div style="height:10px"></div> <div> <label id="polyLabel">Elemento de recorte</label> <select id="polySelect"></select> <div class="hint" id="polyHint"></div> </div> <div style="height:10px"></div> <label>Sensores (Near Real-Time)</label> <div class="checks"> <div class="row"><input type="checkbox" id="s_snpp" checked><div><b>VIIRS Suomi-NPP</b><small>VIIRS_SNPP_NRT</small></div></div> <div class="row"><input type="checkbox" id="s_n20" checked><div><b>VIIRS NOAA-20 (JPSS-1)</b><small>VIIRS_NOAA20_NRT</small></div></div> <div class="row"><input type="checkbox" id="s_n21" checked><div><b>VIIRS NOAA-21 (JPSS-2)</b><small>VIIRS_NOAA21_NRT</small></div></div> <div class="row"><input type="checkbox" id="s_modis" checked><div><b>MODIS (Terra/Aqua) NRT</b><small>MODIS_NRT</small></div></div> </div> <div style="height:10px"></div> <div class="grid2"> <div> <label for="conf">Confianza del algoritmo</label> <select id="conf"> <option value="all" selected>Todas</option> <option value="high">Alta</option> <option value="nominal">Nominal/Media</option> <option value="low">Baja</option> </select> </div> <div> <label for="limit">Límite filas</label> <select id="limit"> <option value="2000">2,000</option> <option value="10000" selected>10,000</option> <option value="20000">20,000</option> <option value="50000">50,000</option> </select> </div> </div> <div class="btns"> <button class="btn-primary" id="btnRun"> Actualizar</button> <button class="btn-ghost" id="btnFit"> Ajustar mapa</button> </div> <div class="status" id="status">Listo.</div> <div class="notes"> <b>Notas técnicas</b> <ul> <li>Hotspots (fuego activo) ≠ perímetro ni área quemada. Ubicación aproximada al píxel (VIIRS ~375 m; MODIS ~1 km).</li> <li>Nubosidad/humo y tiempo de paso orbital pueden ocultar focos; se recomienda verificación operativa local.</li> <li>FRP (MW) es potencia radiativa del fuego (indicador energético), no equivale directamente a superficie afectada.</li> </ul> </div> </div> </section> <!-- RIGHT --> <section class="right"> <!-- 1) MAPA --> <section class="panel"> <h2>Mapa <small id="mapSubtitle">—</small></h2> <div class="mapWrap"> <div id="map"></div> <div class="mapError" id="mapError"></div> </div> <div class="legend"> <div class="lg"><span class="sw" style="background:var(--hi)"></span> Alta confianza</div> <div class="lg"><span class="sw" style="background:var(--nom)"></span> Nominal/Media</div> <div class="lg"><span class="sw" style="background:var(--low)"></span> Baja</div> </div> </section> <!-- 2) KPIs operativos --> <section class="panel"> <h2>KPIs operativos <small>(recorte actual)</small></h2> <div class="kpis"> <div class="kpi"> <div class="k"> Detecciones</div> <div class="v" id="k_total">—</div> <div class="eq">\(n = \sum_{i} \mathbf{1}[\text{hotspot}]\)</div> </div> <div class="kpi"> <div class="k"> Alta confianza</div> <div class="v" id="k_high">—</div> <div class="eq">\(n_{hi} / n\) conf≥80%</div> </div> <div class="kpi"> <div class="k"> FRP total (MW)</div> <div class="v" id="k_frp">—</div> <div class="eq">\(\Sigma\,\text{FRP}_i\) (MW)</div> </div> <div class="kpi"> <div class="k"> Última detección (UTC)</div> <div class="v" id="k_last" style="font-size:13px">—</div> <div class="eq">tiempo más reciente</div> </div> </div> </section> <!-- 3) GRÁFICAS --> <section class="panel"> <h2>Gráficas <small>(recorte espacial)</small></h2> <div class="content"> <div class="chartsGrid"> <div class="chartCard"> <div class="chartTitle"> Serie temporal &amp; tendencia (OLS)</div> <canvas id="chartDaily" height="150"></canvas> <div class="chartEq" id="eqDaily"></div> </div> <div class="chartCard"> <div class="chartTitle"> Detecciones por sensor</div> <canvas id="chartSensors" height="150"></canvas> </div> <div class="chartCard"> <div class="chartTitle" id="zoneChartTitle"> Detecciones por zona</div> <canvas id="chartZonesPie" height="150"></canvas> <div class="chartEq" id="zoneChartNote"></div> </div> <div class="chartCard"> <div class="chartTitle"> Ripley \(L(r)\) + envelope CSR</div> <canvas id="chartRipley" height="150"></canvas> <div class="chartEq" id="eqRipley"></div> </div> <div class="chartCard"> <div class="chartTitle"> Variograma experimental \(\gamma(h)\) (FRP)</div> <canvas id="chartVariogram" height="150"></canvas> <div class="chartEq" id="eqVario"></div> </div> <div class="chartCard"> <div class="chartTitle"> Histograma vecino más cercano</div> <canvas id="chartNN" height="150"></canvas> </div> </div> </div> </section> <!-- 4) GEOESTADÍSTICA --> <section class="panel"> <h2>Geoestadística <small>(NNI / CSR / SDE)</small></h2> <div class="geoKpiGrid"> <div class="geoKpi"><div class="k">Área \(A\)</div><div class="v" id="g_area">—</div><div class="s" id="g_area_s">—</div></div> <div class="geoKpi"><div class="k">Muestra \(n\) / Total</div><div class="v" id="g_n">—</div><div class="s" id="g_n_s">—</div></div> <div class="geoKpi"><div class="k">Intensidad \(\lambda\)</div><div class="v" id="g_lambda">—</div><div class="s">\(\lambda=n/A\)</div></div> <div class="geoKpi"><div class="k">NNI</div><div class="v" id="g_nni">—</div><div class="s" id="g_nni_s">—</div></div> <div class="geoKpi"><div class="k">z / p</div><div class="v" id="g_z">—</div><div class="s" id="g_p">p: —</div></div> <div class="geoKpi"><div class="k">Pico \(L(r)\)</div><div class="v" id="g_lmax">—</div><div class="s" id="g_lr">—</div></div> <div class="geoKpi"><div class="k">CSR (Monte Carlo)</div><div class="v" id="g_mc">—</div><div class="s" id="g_mc_s">—</div></div> <div class="geoKpi"><div class="k">SDE / Elipse</div><div class="v" id="g_sd">—</div><div class="s" id="g_sde">—</div></div> </div> <div class="geoInterpret" id="geoInterpret">—</div> <div class="eq"> <div class="eq-title">Modelo matemático dependiente del filtro</div> <div class="eq-box" id="modelBox"><div style="color:var(--muted);font-size:12px;line-height:1.5">Ejecuta una consulta para estimar parámetros del modelo.</div></div> </div> </section> <!-- 5) TABLA --> <section class="panel"> <h2>Tabla de resultados <small>(descarga Excel/CSV)</small></h2> <div class="content"> <div class="filtersRow"> <input id="q" type="text" placeholder="Filtrar tabla (zona, sensor, fecha, satélite…)" /> <button class="btn-ghost" id="btnClear">Limpiar</button> </div> <div class="btns" style="margin-top:10px"> <button class="btn-ghost" id="btnExcel"> Excel</button> <button class="btn-ghost" id="btnCSV"> CSV</button> <button class="btn-ghost" id="btnGeoJSON"> GeoJSON</button> </div> <div class="tableWrap"> <table id="tbl"> <thead> <tr><th>UTC</th><th>Zona</th><th>Sensor</th><th>Conf.</th><th>Lat</th><th>Lon</th><th>FRP</th></tr> </thead> <tbody></tbody> </table> </div> <div class="hint" id="tableNote"></div> </div> </section> </section> </main> <!--  FOOTER INSTITUCIONAL  --> <footer> <div class="footer-box"> <div class="footer-text"> Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong> </div> <div class="footer-sub">Instituciones y organizaciones</div> <div class="footer-text"> El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por: </div> <div class="footer-logos"> <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a> <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a> <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a> <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a> <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a> <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a> <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA - UVG"></a> <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán"></a> <a href="https://www.vivamosmejor.org" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor Guatemala"></a> <a href="https://aires.gt" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIRES"></a> </div> <div class="footer-src">Fuentes: NASA FIRMS (LANCE) — Active Fire (NRT) · Turf.js · Leaflet · Chart.js · KaTeX</div> </div> </footer> <script>
 (() => {
   // ======================
   // CONFIG
@@ -822,15 +541,7 @@
       const mk = L.marker([r.lat, r.lon], { icon: markerIcon(col) });
 
       const zone = r.zone_name ? `<div><b>${r.zone_type}:</b> ${r.zone_name}</div>` : "";
-      mk.bindPopup(`
-        <div style="font-family:system-ui; font-size:12px; line-height:1.35">
-          <div><b>${r.source}</b></div>
-          ${zone}
-          <div>UTC: ${r.datetime_utc || (r.acq_date + " " + r.acq_time)}</div>
-          <div>Conf: ${r.confidence || "—"} · FRP: ${r.frp ?? "—"} MW</div>
-          <div>Sat: ${r.satellite || "—"} · Inst: ${r.instrument || "—"}</div>
-        </div>
-      `);
+      mk.bindPopup(` <div style="font-family:system-ui; font-size:12px; line-height:1.35"> <div><b>${r.source}</b></div> ${zone} <div>UTC: ${r.datetime_utc || (r.acq_date + " " + r.acq_time)}</div> <div>Conf: ${r.confidence || "—"} · FRP: ${r.frp ?? "—"} MW</div> <div>Sat: ${r.satellite || "—"} · Inst: ${r.instrument || "—"}</div> </div> `);
 
       markerById.set(r.id, mk);
       clusters.addLayer(mk);
@@ -845,15 +556,7 @@
     for (const r of rows){
       const tr = document.createElement("tr");
       tr.dataset.id = r.id;
-      tr.innerHTML = `
-        <td>${r.datetime_utc || "—"}</td>
-        <td>${r.zone_name || "—"}</td>
-        <td>${r.source || "—"}</td>
-        <td>${r.confidence || "—"}</td>
-        <td>${Number.isFinite(r.lat) ? r.lat.toFixed(5) : "—"}</td>
-        <td>${Number.isFinite(r.lon) ? r.lon.toFixed(5) : "—"}</td>
-        <td>${r.frp ?? "—"}</td>
-      `;
+      tr.innerHTML = ` <td>${r.datetime_utc || "—"}</td> <td>${r.zone_name || "—"}</td> <td>${r.source || "—"}</td> <td>${r.confidence || "—"}</td> <td>${Number.isFinite(r.lat) ? r.lat.toFixed(5) : "—"}</td> <td>${Number.isFinite(r.lon) ? r.lon.toFixed(5) : "—"}</td> <td>${r.frp ?? "—"}</td> `;
       frag.appendChild(tr);
     }
     tbody.appendChild(frag);
@@ -1114,10 +817,8 @@
       parts.push(`$$\\textbf{Intensidad media:}\\quad \\lambda=\\frac{n}{A}\\approx ${lam.toFixed(4)}\\;\\text{puntos/km}^2$$`);
     }
 
-    parts.push(`<div style="margin-top:8px; color:var(--muted); font-size:12px; line-height:1.55; text-align:justify;">
-      <b>Lectura:</b> el <i>Modelo 1</i> cuantifica tendencia temporal del conteo diario (Poisson con enlace log). El <i>Modelo 2</i> define una superficie de densidad (Kernel Gaussiano) con banda \\(h\\) estimada desde la dispersión de puntos; útil para identificar “zonas calientes” (hotspots) como picos de \\(\\hat\\lambda(\\mathbf{s})\\). 
-      Estos modelos describen patrones de detecciones FIRMS NRT; no equivalen a perímetro/área quemada y dependen de nubosidad, hora de sobrevuelo y resolución del sensor.
-    </div>`);
+    parts.push(`<div style="margin-top:8px; color:var(--muted); font-size:12px; line-height:1.55; text-align:justify;"> <b>Lectura:</b> el <i>Modelo 1</i> cuantifica tendencia temporal del conteo diario (Poisson con enlace log). El <i>Modelo 2</i> define una superficie de densidad (Kernel Gaussiano) con banda \\(h\\) estimada desde la dispersión de puntos; útil para identificar “zonas calientes” (hotspots) como picos de \\(\\hat\\lambda(\\mathbf{s})\\). 
+      Estos modelos describen patrones de detecciones FIRMS NRT; no equivalen a perímetro/área quemada y dependen de nubosidad, hora de sobrevuelo y resolución del sensor. </div>`);
 
     box.innerHTML = parts.join("\n");
   }
@@ -1816,7 +1517,7 @@
     dataTableView = rows.slice();
 
     setStatus(`OK. Detecciones: ${rows.length} (ya recortadas). Respuesta FIRMS: ${j.rows.length} filas. (${ms} ms)`);
-    $("lastRun").textContent = `Última actualización: ${new Date().toLocaleString("es-GT")}`;
+    $("lastRun").textContent = `Ultima actualizacion: ${new Date().toLocaleString("es-GT")}`;
 
     updateMap(dataSpatial);
     applyTableFilter();
