@@ -230,9 +230,16 @@
           <option value="ap">Por area protegida</option>
         </select>
       </div>
-      <div class="field" style="margin-top:8px" id="zonaDetalle" style="display:none">
+      <div class="field" style="margin-top:8px" id="zonaDetalle">
         <label>Elemento especifico</label>
-        <select id="zonaItem"><option value="">Todos</option></select>
+        <select id="zonaItem"><option value="">Todas las zonas</option></select>
+      </div>
+      <div style="margin-top:8px;padding:8px 10px;background:rgba(255,255,255,.72);border:1px solid rgba(180,80,20,.18);border-radius:10px;display:flex;align-items:center;gap:10px">
+        <input type="checkbox" id="inclFuera" style="width:16px;height:16px;cursor:pointer"/>
+        <div>
+          <label for="inclFuera" style="font-size:12px;font-weight:700;color:#7f1d1d;cursor:pointer;display:block">Incluir puntos fuera del recorte</label>
+          <span style="font-size:10.5px;color:#6b4c2a">Por defecto solo se analizan detecciones dentro del poligono seleccionado</span>
+        </div>
       </div>
       <div class="field" style="margin-top:8px">
         <label>Periodo de referencia climatica (dias de consulta FIRMS)</label>
@@ -398,6 +405,7 @@ const INSTITUTION_LOGOS = [
 
 const $ = id => document.getElementById(id);
 const els = {
+  inclFuera: $("inclFuera"),
   desde:$("desde"), hasta:$("hasta"), zona:$("zona"), zonaItem:$("zonaItem"),
   diasRef:$("diasRef"), tipoInforme:$("tipoInforme"), nivelAlerta:$("nivelAlerta"),
   firmante:$("firmante"), destinatario:$("destinatario"), notaTecnica:$("notaTecnica"),
@@ -617,8 +625,9 @@ function applyFilters(rows){
   const zonaV = els.zonaItem.value;
   if(zonaV) out = out.filter(r=>(r.zone_name||"")===zonaV);
 
-  // Exclude "Fuera del recorte" from analysis (optional: keep if zona is "all")
-  if(els.zona.value!=="all") out = out.filter(r=>r.zone_name!=="Fuera del recorte");
+  // Exclude "Fuera del recorte" unless user explicitly includes them
+  const inclFuera = document.getElementById("inclFuera");
+  if(!(inclFuera&&inclFuera.checked)) out = out.filter(r=>r.zone_name!=="Fuera del recorte");
 
   return out;
 }
@@ -983,6 +992,29 @@ function buildDeteccionesTable(rows){
 }
 
 /* =============================================
+   CHART INIT — runs after innerHTML is set
+   ============================================= */
+window._pendingCharts = [];
+function registerChart(id, config){
+  window._pendingCharts.push({id, config});
+}
+function initPendingCharts(){
+  const pending = window._pendingCharts.splice(0);
+  if(!pending.length) return;
+  // Give DOM a tick to render the canvases
+  requestAnimationFrame(()=>{
+    pending.forEach(({id, config})=>{
+      const el = document.getElementById(id);
+      if(!el||!window.Chart) return;
+      // Destroy any existing chart on this canvas
+      const existing = Chart.getChart(el);
+      if(existing) existing.destroy();
+      new Chart(el.getContext("2d"), config);
+    });
+  });
+}
+
+/* =============================================
    BUILD PAGES HTML
    ============================================= */
 async function buildPages(rows, agg, texts){
@@ -1047,23 +1079,22 @@ async function buildPages(rows, agg, texts){
   if(els.secTemporal.checked){
     body3 += `<p class="section-title">3. Analisis temporal</p>${texts.temporal.map(t=>`<p>${esc(t)}</p>`).join("")}`;
     if(agg.dates.length){
-      const cId1="cDaily"+Date.now();
-      const glmHat=agg.glm?JSON.stringify(agg.glm.muHat.map(v=>+v.toFixed(2))):"[]";
-      const dLabels=JSON.stringify(agg.dates);
-      const dCounts=JSON.stringify(agg.counts);
-      const dFrp=JSON.stringify(agg.frpSeries);
-      const hasGlm=!!agg.glm;
-      body3+=`<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figura 1. Serie temporal diaria de detecciones y FRP acumulado con tendencia Poisson (GLM)</div><div style="position:relative;height:220px;width:100%"><canvas id="${cId1}"></canvas></div><div class="chart-note">Barras rojas: detecciones diarias (eje izq.). Linea naranja: tendencia Poisson-GLM. Linea amarilla: FRP acumulado diario en MW (eje der.). Tooltip interactivo al pasar el cursor. Fuente: NASA FIRMS NRT.</div></div><script>(function(){var el=document.getElementById("${cId1}");if(!el||!window.Chart)return;var ds=[{label:"Detecciones/dia",type:"bar",data:${dCounts},backgroundColor:"rgba(220,38,38,.65)",borderColor:"#dc2626",borderWidth:1,order:3}];if(${hasGlm})ds.push({label:"Tendencia Poisson",type:"line",data:${glmHat},tension:.35,pointRadius:0,borderColor:"#ea580c",borderWidth:2.5,borderDash:[6,3],fill:false,order:2});ds.push({label:"FRP acum. (MW)",type:"line",data:${dFrp},tension:.3,pointRadius:3,pointBackgroundColor:"#fbbf24",borderColor:"#fbbf24",borderWidth:2,yAxisID:"y1",backgroundColor:"rgba(251,191,36,.10)",fill:true,order:1});new Chart(el.getContext("2d"),{data:{labels:${dLabels},datasets:ds},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},interaction:{mode:"index",intersect:false},plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:12}},tooltip:{callbacks:{title:function(i){return"Fecha: "+i[0].label}}}},scales:{x:{ticks:{font:{size:8},maxRotation:50},grid:{color:"rgba(0,0,0,.05)"}},y:{beginAtZero:true,title:{display:true,text:"Detecciones",font:{size:9}},grid:{color:"rgba(0,0,0,.06)"}},y1:{type:"linear",position:"right",title:{display:true,text:"FRP (MW)",font:{size:9}},grid:{drawOnChartArea:false}}}}});})()\x3c/script>`;
+      const cId1 = "cDaily"+Date.now();
+      const ds1 = [{label:"Detecciones/dia",type:"bar",data:agg.counts,backgroundColor:"rgba(220,38,38,.65)",borderColor:"#dc2626",borderWidth:1,order:3}];
+      if(agg.glm) ds1.push({label:"Tendencia Poisson",type:"line",data:agg.glm.muHat.map(v=>+v.toFixed(2)),tension:.35,pointRadius:0,borderColor:"#ea580c",borderWidth:2.5,borderDash:[6,3],fill:false,order:2});
+      ds1.push({label:"FRP acum. (MW)",type:"line",data:agg.frpSeries,tension:.3,pointRadius:3,pointBackgroundColor:"#fbbf24",borderColor:"#fbbf24",borderWidth:2,yAxisID:"y1",backgroundColor:"rgba(251,191,36,.10)",fill:true,order:1});
+      registerChart(cId1,{data:{labels:agg.dates,datasets:ds1},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},interaction:{mode:"index",intersect:false},plugins:{legend:{position:"bottom",labels:{font:{size:10},boxWidth:12}}},scales:{x:{ticks:{font:{size:8},maxRotation:50},grid:{color:"rgba(0,0,0,.05)"}},y:{beginAtZero:true,title:{display:true,text:"Detecciones",font:{size:9}}},y1:{type:"linear",position:"right",title:{display:true,text:"FRP (MW)",font:{size:9}},grid:{drawOnChartArea:false}}}}});
+      body3+=`<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figura 1. Serie temporal diaria de detecciones y FRP acumulado con tendencia Poisson (GLM)</div><div style="position:relative;height:220px;width:100%"><canvas id="${cId1}"></canvas></div><div class="chart-note">Barras rojas: detecciones diarias. Linea naranja: tendencia Poisson-GLM. Linea amarilla: FRP acumulado (eje der.). Tooltip interactivo. Fuente: NASA FIRMS NRT.</div></div>`;
     }
   }
   if(els.secSensores.checked){
     body3 += `<p class="section-title">4. Analisis por sensor y confianza</p>${texts.sensores.map(t=>`<p>${esc(t)}</p>`).join("")}`;
     if(agg.bySensor.length){
       const cId2="cSens"+Date.now(), cId3="cConf"+(Date.now()+1);
-      const sLabels=JSON.stringify(agg.bySensor.map(([s])=>s.replace("_NRT","")));
-      const sData=JSON.stringify(agg.bySensor.map(([,c])=>c));
-      const sColors=JSON.stringify(["#dc2626","#ea580c","#f97316","#fbbf24","#16a34a","#0ea5e9"].slice(0,agg.bySensor.length));
-      body3+=`<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figuras 2 y 3. Distribucion por sensor NRT y clase de confianza del algoritmo</div><div style="display:flex;gap:12px;align-items:center;height:200px"><div style="flex:1;position:relative;height:200px"><canvas id="${cId2}"></canvas></div><div style="flex:1;position:relative;height:200px"><canvas id="${cId3}"></canvas></div></div><div class="chart-note">Izq: proporcion de detecciones por sensor. Der: clasificacion por confianza (alta ≥80%; nominal 30-79%; baja &lt;30%). Pasa el cursor para ver valores. Fuente: NASA FIRMS NRT.</div></div><script>(function(){var e2=document.getElementById("${cId2}"),e3=document.getElementById("${cId3}");if(!window.Chart)return;if(e2)new Chart(e2.getContext("2d"),{type:"doughnut",data:{labels:${sLabels},datasets:[{data:${sData},backgroundColor:${sColors},borderWidth:2,borderColor:"#fff",hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{position:"right",labels:{font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);return" "+ctx.label+": "+ctx.parsed+" ("+((ctx.parsed/t)*100).toFixed(1)+"%)"}}}}}});if(e3)new Chart(e3.getContext("2d"),{type:"pie",data:{labels:["Alta confianza","Nominal/Media","Baja"],datasets:[{data:[${agg.hi},${agg.nom},${agg.lo}],backgroundColor:["#dc2626","#f59e0b","#94a3b8"],borderWidth:2,borderColor:"#fff",hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{position:"right",labels:{font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b},0);return" "+ctx.label+": "+ctx.parsed+" ("+((ctx.parsed/t)*100).toFixed(1)+"%)"}}}}}});})()\x3c/script>`;
+      const sColors=["#dc2626","#ea580c","#f97316","#fbbf24","#16a34a","#0ea5e9"].slice(0,agg.bySensor.length);
+      registerChart(cId2,{type:"doughnut",data:{labels:agg.bySensor.map(([s])=>s.replace("_NRT","")),datasets:[{data:agg.bySensor.map(([,c])=>c),backgroundColor:sColors,borderWidth:2,borderColor:"#fff",hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{position:"right",labels:{font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:function(ctx){const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return" "+ctx.label+": "+ctx.parsed+" ("+(ctx.parsed/t*100).toFixed(1)+"%)"}}}}}});
+      registerChart(cId3,{type:"pie",data:{labels:["Alta confianza","Nominal/Media","Baja"],datasets:[{data:[agg.hi,agg.nom,agg.lo],backgroundColor:["#dc2626","#f59e0b","#94a3b8"],borderWidth:2,borderColor:"#fff",hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:600},plugins:{legend:{position:"right",labels:{font:{size:9},boxWidth:10}},tooltip:{callbacks:{label:function(ctx){const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return" "+ctx.label+": "+ctx.parsed+" ("+(ctx.parsed/t*100).toFixed(1)+"%)"}}}}}});
+      body3+=`<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figuras 2 y 3. Distribucion por sensor NRT y clase de confianza del algoritmo</div><div style="display:flex;gap:12px;height:200px"><div style="flex:1;position:relative"><canvas id="${cId2}"></canvas></div><div style="flex:1;position:relative"><canvas id="${cId3}"></canvas></div></div><div class="chart-note">Izq: detecciones por sensor. Der: clasificacion por confianza (alta ≥80%; nominal 30-79%; baja &lt;30%). Tooltip interactivo. Fuente: NASA FIRMS NRT.</div></div>`;
     }
   }
   pages.push(`
@@ -1082,15 +1113,13 @@ async function buildPages(rows, agg, texts){
     body4 += `<p class="section-title">5. Analisis espacial por zona</p>${texts.espacial.map(t=>`<p>${esc(t)}</p>`).join("")}`;
     const zoneRows = agg.zones.slice(0,10).map(([z,c])=>[z,fmt(c),fmt(100*c/agg.n,1)+"%"]);
     body4 += buildTopTable("Cuadro 1. Distribucion de detecciones por zona (Top 10)",["Zona","Detecciones","% del total"],zoneRows);
-    if(agg.zones.length){
-      const zoneChartId = "czLive"+Date.now();
-      const top8 = agg.zones.slice(0,8);
-      const zL = JSON.stringify(top8.map(([z])=>z));
-      const zD = JSON.stringify(top8.map(([,c])=>c));
-      const zC = JSON.stringify(["#dc2626","#ea580c","#f97316","#fbbf24","#f59e0b","#16a34a","#0ea5e9","#7c3aed"].slice(0,top8.length));
-      const zN = agg.n;
-      const zH = Math.max(160, top8.length*34);
-      body4 += `<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figura 4. Numero de detecciones por zona geografica (Top 8)</div><div style="position:relative;height:${zH}px;width:100%"><canvas id="${zoneChartId}"></canvas></div><div class="chart-note">Barras horizontales — detecciones FIRMS NRT por unidad territorial. Pasa el cursor sobre las barras para ver valores exactos y porcentaje del total. Fuente: NASA FIRMS NRT.</div></div><script>(function(){var el=document.getElementById("${zoneChartId}");if(!el||!window.Chart)return;new Chart(el.getContext("2d"),{type:"bar",data:{labels:${zL},datasets:[{label:"Detecciones",data:${zD},backgroundColor:${zC},borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",animation:{duration:700},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){var pct=(ctx.parsed.x/${zN}*100).toFixed(1);return" "+ctx.parsed.x+" detecciones ("+pct+"%)"}}}},scales:{x:{beginAtZero:true,grid:{color:"rgba(0,0,0,.07)"},ticks:{font:{size:10}},title:{display:true,text:"Detecciones",font:{size:10}}},y:{ticks:{font:{size:10}},grid:{display:false}}}}});})()\x3c/script>`;
+    const validZones4 = agg.zones.filter(([z])=>z!=="Fuera del recorte");
+    if(validZones4.length){
+      const zoneChartId="czLive"+Date.now();
+      const top8=validZones4.slice(0,8);
+      const zH=Math.max(160,top8.length*36);
+      registerChart(zoneChartId,{type:"bar",data:{labels:top8.map(([z])=>z),datasets:[{label:"Detecciones",data:top8.map(([,c])=>c),backgroundColor:["#dc2626","#ea580c","#f97316","#fbbf24","#f59e0b","#16a34a","#0ea5e9","#7c3aed"].slice(0,top8.length),borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:"y",animation:{duration:700},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){const pct=(ctx.parsed.x/agg.n*100).toFixed(1);return" "+ctx.parsed.x+" detecciones ("+pct+"%)"}}}},scales:{x:{beginAtZero:true,grid:{color:"rgba(0,0,0,.07)"},ticks:{font:{size:10}},title:{display:true,text:"Detecciones",font:{size:10}}},y:{ticks:{font:{size:10}},grid:{display:false}}}}});
+      body4+=`<div class="chart-container" style="page-break-inside:avoid"><div class="chart-title-rpt">Figura 4. Numero de detecciones por zona geografica (Top 8)</div><div style="position:relative;height:${zH}px;width:100%"><canvas id="${zoneChartId}"></canvas></div><div class="chart-note">Barras horizontales — detecciones dentro del recorte por unidad territorial. Tooltip interactivo con valores exactos y porcentaje. Fuente: NASA FIRMS NRT.</div></div>`;
     }
   }
   if(els.secGeoestadistica.checked){
@@ -1209,7 +1238,9 @@ async function generatePreview(){
 
     const texts = buildNarrative(filtered, agg);
     const html = await buildPages(filtered, agg, texts);
+    window._pendingCharts = window._pendingCharts || [];
     els.pages.innerHTML = html;
+    initPendingCharts();
 
     const isDemoWarn = agg.isDemo?" (datos de demostracion)":"";
     els.chipData.textContent = `${fmt(filtered.length)} deteccion(es)${isDemoWarn}`;
