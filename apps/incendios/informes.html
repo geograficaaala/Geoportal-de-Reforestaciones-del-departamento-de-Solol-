@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Informes · Anomalias Termicas · Solola</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --fire1:#dc2626;--fire2:#ea580c;--fire3:#fbbf24;--fire4:#f97316;
+      --forest:#065f46;--ink:#1c1008;--muted:#6b4c2a;
+      --bg0:#fff7ed;--card:rgba(255,255,255,.92);
+      --stroke:rgba(180,80,20,.12);
+      --shadow:0 16px 44px rgba(180,60,10,.13);
+      --shadow-sm:0 8px 22px rgba(180,60,10,.09);
+      --radius:18px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);
+      background:
+        radial-gradient(900px 560px at 0% 0%,rgba(220,38,38,.10),transparent 60%),
+        radial-gradient(700px 400px at 100% 0%,rgba(251,191,36,.12),transparent 60%),
+        linear-gradient(180deg,#fff7ed,#fef9f0);
+      min-height:100vh;
+    }
+    a{color:inherit;text-decoration:none}
+
+    /* HEADER */
+    header{
+      position:sticky;top:0;z-index:60;backdrop-filter:blur(10px);
+      background:linear-gradient(100deg,rgba(185,28,28,.94),rgba(154,52,18,.90) 45%,rgba(217,119,6,.88));
+      border-bottom:1px solid rgba(255,255,255,.15);
+      box-shadow:0 8px 32px rgba(120,20,10,.22);
+    }
+    .header-wrap{padding:10px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .brand-logos{display:flex;gap:10px;align-items:center}
+    .brand-logos img{height:52px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.3));transition:transform .15s}
+    .brand-logos img:hover{transform:scale(1.04)}
+    .title-wrap{display:flex;flex-direction:column;gap:2px;flex:1;text-align:center}
+    .title-main{font-family:'Playfair Display',serif;font-size:15px;font-weight:900;
+      background:linear-gradient(135deg,#fde68a,#fed7aa);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .title-sub{font-size:11px;color:rgba(255,255,255,.75)}
+    .navbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .navbtn{
+      display:inline-flex;align-items:center;gap:7px;padding:8px 12px;
+      background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:12px;
+      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;color:#fff;white-space:nowrap;
+      transition:transform .12s,box-shadow .12s,background .12s
+    }
+    .navbtn:hover{transform:translateY(-2px);background:rgba(255,255,255,.26);box-shadow:0 10px 22px rgba(120,20,10,.18)}
+    .navbtn-primary{background:linear-gradient(135deg,rgba(253,230,138,.30),rgba(254,215,170,.26));border-color:rgba(253,230,138,.40);font-weight:700}
+
+    /* LAYOUT */
+    .wrap{width:min(1400px,calc(100% - 24px));margin:14px auto 24px;display:grid;grid-template-columns:370px 1fr;gap:14px;align-items:start}
+    .shell{background:rgba(255,255,255,.88);border:1px solid rgba(255,255,255,.80);border-radius:var(--radius);box-shadow:var(--shadow);backdrop-filter:blur(9px)}
+    .controls{position:sticky;top:76px;padding:14px;display:grid;gap:12px}
+
+    /* Controls UI */
+    .ctrl-title{font-family:'Playfair Display',serif;font-size:14px;font-weight:700;color:var(--fire2);display:flex;align-items:center;gap:8px}
+    .ctrl-badge{display:inline-block;background:linear-gradient(135deg,var(--fire2),var(--fire3));color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px}
+    .card{background:rgba(255,255,255,.72);border:1px solid var(--stroke);border-radius:14px;padding:12px;box-shadow:var(--shadow-sm)}
+    .card h3{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--fire2)}
+    .card p{margin:0;color:var(--muted);font-size:12px;line-height:1.4}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .field{display:grid;gap:5px}
+    .field label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
+    .field select,.field input,.field textarea{
+      width:100%;border:1px solid rgba(0,0,0,.14);background:#fff;border-radius:10px;
+      padding:8px 10px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);outline:none
+    }
+    .field select:focus,.field input:focus,.field textarea:focus{border-color:rgba(220,38,38,.35);box-shadow:0 0 0 3px rgba(220,38,38,.08)}
+    .checks{display:grid;gap:6px}
+    .checks label{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--ink);cursor:pointer;line-height:1.25}
+    .checks input{margin-top:2px}
+    .btns-row{display:flex;gap:8px;flex-wrap:wrap}
+    .btn{
+      appearance:none;border:none;cursor:pointer;
+      display:inline-flex;align-items:center;justify-content:center;gap:7px;
+      padding:10px 13px;border-radius:12px;font-weight:700;font-size:12px;
+      font-family:'DM Sans',sans-serif;transition:.15s ease;white-space:nowrap;text-decoration:none
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:linear-gradient(135deg,#fecaca,#fed7aa);color:#7f1d1d;border:1px solid rgba(220,38,38,.20);box-shadow:0 6px 16px rgba(220,38,38,.14)}
+    .btn-outline{background:#fff;color:var(--ink);border:1px solid rgba(0,0,0,.14);box-shadow:var(--shadow-sm)}
+    .btn-ghost{background:rgba(255,255,255,.72);border:1px solid var(--stroke);color:var(--fire2)}
+
+    .stat-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .mini{background:#fff;border:1px solid var(--stroke);border-radius:12px;padding:8px 9px;position:relative;overflow:hidden}
+    .mini::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--fire2),var(--fire3))}
+    .mini .t{font-size:10px;color:var(--muted);margin-bottom:3px;text-transform:uppercase;letter-spacing:.02em}
+    .mini .v{font-size:15px;font-weight:800;color:var(--fire2)}
+    .hint{font-size:11px;color:var(--muted);background:rgba(255,255,255,.62);border:1px dashed rgba(180,80,20,.18);border-radius:10px;padding:8px 10px;line-height:1.35}
+    .alert{font-size:11px;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:8px 10px;line-height:1.3}
+
+    /* PREVIEW */
+    .preview-shell{padding:12px;display:grid;gap:10px}
+    .preview-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 2px 4px}
+    .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--stroke);background:#fff;color:var(--muted);border-radius:999px;padding:5px 10px;font-size:11px;font-weight:700}
+    .chip .led{width:8px;height:8px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 4px rgba(47,208,143,.14)}
+    .preview-empty{width:210mm;min-height:120mm;border:1px dashed rgba(180,80,20,.25);border-radius:14px;background:rgba(255,255,255,.78);display:grid;place-items:center;color:var(--muted);text-align:center;padding:18px;font-size:13px}
+
+    /* PAGES A4 */
+    .pages{display:grid;gap:12px;justify-content:center}
+    .page{width:210mm;min-height:297mm;background:#fff;border:1px solid #ddd;box-shadow:0 14px 30px rgba(120,30,10,.10);padding:12mm 14mm 15mm 14mm;position:relative;overflow:visible}
+    .page-break{page-break-after:always}
+
+    /* REPORT TYPOGRAPHY */
+    .report{font-family:"Times New Roman",Times,serif;font-size:10pt;line-height:1.55;color:#000}
+    .report p{margin:0 0 7pt;text-align:justify}
+    .report ul{margin:0 0 7pt 17pt;padding:0}
+    .report li{margin:0 0 3pt;text-align:justify}
+    .report table{width:100%;border-collapse:collapse;font-family:"Times New Roman",Times,serif;font-size:9.5pt;margin:0 0 8pt}
+    .report th,.report td{border:1px solid #000;padding:4px 5px;vertical-align:top}
+    .report th{font-weight:700;text-align:center;background:#f5f5f5}
+    .report .small{font-size:9pt;line-height:1.35}
+    .report .muted{color:#333}
+    .report .center{text-align:center}
+    .report .right{text-align:right}
+    .report .section-title{font-weight:700;text-transform:uppercase;margin:0 0 5pt;letter-spacing:.02em;font-size:10pt;border-bottom:1px solid #000;padding-bottom:2pt}
+    .report .subsection{font-weight:700;margin:0 0 4pt;font-size:10pt}
+
+    /* REPORT HEADER */
+    .report-header{display:grid;grid-template-columns:22mm 1fr 22mm;gap:5mm;align-items:center;margin-bottom:8pt;border-bottom:1.5px solid #000;padding-bottom:5pt}
+    .logo-box{width:22mm;height:22mm;display:grid;place-items:center;border:1px solid #ccc;overflow:hidden;background:#fff}
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    .logo-fallback{font-family:"Times New Roman",Times,serif;font-size:7.5pt;text-align:center;line-height:1.1;padding:2mm;color:#555}
+    .head-text{text-align:center;line-height:1.25}
+    .head-text .line{font-weight:700;font-size:10pt;text-transform:uppercase}
+    .head-text .line.sm{font-weight:400;text-transform:none;font-size:9.5pt}
+
+    /* META GRID */
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6pt;margin-bottom:7pt}
+    .meta-item{border:1px solid #000;padding:4pt 5pt}
+    .meta-item .k{font-weight:700;display:block;font-size:9.5pt}
+    .meta-item .v{font-size:9.5pt}
+
+    /* COVER */
+    .cover-box{border:1px solid #000;padding:9pt 11pt;margin-top:9pt;margin-bottom:6pt}
+    .kpi-table td:nth-child(1){width:55%;font-weight:700}
+    .kpi-table td:nth-child(2){text-align:right;font-variant-numeric:tabular-nums}
+
+    /* CHART in report */
+    .chart-container{margin:6pt 0 8pt;border:1px solid #ccc;padding:8pt;background:#fff;page-break-inside:avoid}
+    .chart-title-rpt{font-weight:700;font-size:9.5pt;text-align:center;margin-bottom:4pt;color:#333}
+    .chart-note{font-size:8.5pt;color:#555;line-height:1.3;margin-top:4pt;text-align:justify}
+
+    /* FOOTER */
+    .footer-line{margin-top:8pt;border-top:1px solid #000;padding-top:3pt;display:flex;justify-content:space-between;gap:8pt;font-family:"Times New Roman",Times,serif;font-size:8.5pt;color:#000}
+    .footer-logos-rpt{display:flex;flex-wrap:wrap;gap:3mm;align-items:center;justify-content:center;margin-top:6pt;padding-top:5pt;border-top:1px solid #ccc}
+    .footer-logos-rpt img{max-height:10mm;width:auto;object-fit:contain}
+
+    /* PAGE FOOTER (web) */
+    footer{padding:16px 14px 24px}
+    .footer-box{background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 18px}
+    .footer-text{font-size:12px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:8px}
+    .footer-text strong{color:var(--ink)}
+    .footer-logos-web{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center}
+    .footer-logos-web img{max-height:46px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.07));transition:transform .15s}
+    .footer-logos-web img:hover{transform:scale(1.06)}
+    .footer-src{text-align:center;font-size:11px;color:var(--muted);margin-top:10px}
+
+    @media(max-width:1120px){.wrap{grid-template-columns:1fr}.controls{position:static}.page,.preview-empty{width:min(100%,210mm)}}
+    @media print{
+      html,body{background:#fff !important;margin:0 !important;padding:0 !important}
+      .wrap{width:100%;margin:0;display:block}
+      .controls,.preview-toolbar,#warnBox,header,footer{display:none !important}
+      .preview-shell{padding:0 !important;background:#fff !important;box-shadow:none !important;border:none !important}
+      .shell{background:#fff !important;border:none !important;box-shadow:none !important;border-radius:0 !important}
+      .pages{display:block !important;gap:0 !important}
+      .page{width:auto !important;min-height:0 !important;border:none !important;box-shadow:none !important;margin:0 !important;padding:0 !important;break-inside:avoid-page;page-break-inside:avoid}
+      .page-break{break-after:page;page-break-after:always}
+      .page:last-child{break-after:auto;page-break-after:auto}
+      @page{size:A4;margin:10mm}
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="header-wrap">
+    <div class="brand-logos">
+      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques"></a>
+      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Solola"></a>
+    </div>
+    <div class="title-wrap">
+      <div class="title-main">Centro de Informes · Anomalias Termicas FIRMS NRT · Solola</div>
+      <div class="title-sub">Generacion automatica de informes tecnicos por periodo y zona geografica</div>
+    </div>
+    <div class="navbtns">
+      <a class="navbtn" href="../../index.html">Volver a Inicio</a>
+      <a class="navbtn" href="./index.html">Volver al Modulo</a>
+      <a class="navbtn navbtn-primary" href="./informes.html" aria-current="page">Informes</a>
+      <a class="navbtn" href="./geoportal_incendios.html">Geoportal</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <!-- PANEL DE CONTROL -->
+  <aside class="shell controls">
+    <div class="ctrl-title">
+      Generacion de Informe
+      <span class="ctrl-badge">FIRMS NRT</span>
+    </div>
+
+    <div class="card">
+      <h3>Acerca de este centro</h3>
+      <p>Genera informes tecnicos automaticos a partir de datos FIRMS NASA (Fire Information for Resource Management System) filtrados por periodo y zona. El informe incluye analisis estadistico, geoestadistico, graficas y texto cientifico derivado de los datos reales consultados.</p>
+    </div>
+
+    <div class="card">
+      <h3>Periodo y zona</h3>
+      <div class="grid2">
+        <div class="field">
+          <label>Fecha inicial</label>
+          <input type="date" id="desde"/>
+        </div>
+        <div class="field">
+          <label>Fecha final</label>
+          <input type="date" id="hasta"/>
+        </div>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Zona de analisis</label>
+        <select id="zona">
+          <option value="all">Todo el departamento de Solola</option>
+          <option value="muni">Por municipio (seleccionar)</option>
+          <option value="micro">Por microcuenca (Atitlan)</option>
+          <option value="ap">Por area protegida</option>
+        </select>
+      </div>
+      <div class="field" style="margin-top:8px" id="zonaDetalle" style="display:none">
+        <label>Elemento especifico</label>
+        <select id="zonaItem"><option value="">Todos</option></select>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Periodo de referencia climatica (dias de consulta FIRMS)</label>
+        <select id="diasRef">
+          <option value="7">7 dias</option>
+          <option value="30" selected>30 dias</option>
+          <option value="60">60 dias</option>
+          <option value="90">90 dias</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Configuracion del informe</h3>
+      <div class="grid2">
+        <div class="field">
+          <label>Tipo de informe</label>
+          <select id="tipoInforme">
+            <option value="tecnico">Tecnico-cientifico</option>
+            <option value="ejecutivo">Ejecutivo</option>
+            <option value="operativo">Operativo de campo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nivel de alerta</label>
+          <select id="nivelAlerta">
+            <option value="auto">Automatico (por datos)</option>
+            <option value="bajo">Bajo</option>
+            <option value="moderado">Moderado</option>
+            <option value="alto">Alto</option>
+            <option value="muy_alto">Muy alto</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Firmante / elaboro</label>
+        <input type="text" id="firmante" value="Laboratorio SIG · Eje de Bosques · CODEMA-Solola"/>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Dirigido a</label>
+        <input type="text" id="destinatario" placeholder="Ej. Coordinacion CODEMA, Mesa tecnica forestal"/>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Nota / alcance adicional</label>
+        <textarea id="notaTecnica" rows="2" placeholder="Observaciones complementarias para el informe..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Secciones a incluir</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="secResumen" checked> Resumen ejecutivo y nivel de alerta</label>
+        <label><input type="checkbox" id="secContexto" checked> Contexto cientifico (FIRMS, sensores, FRP)</label>
+        <label><input type="checkbox" id="secTemporal" checked> Analisis temporal (serie diaria, tendencia)</label>
+        <label><input type="checkbox" id="secSensores" checked> Analisis por sensor y confianza</label>
+        <label><input type="checkbox" id="secEspacial" checked> Analisis espacial por zona</label>
+        <label><input type="checkbox" id="secGeoestadistica" checked> Geoestadistica (NNI, CSR, intensidad)</label>
+        <label><input type="checkbox" id="secRiesgo" checked> Evaluacion de riesgo y recomendaciones</label>
+        <label><input type="checkbox" id="secTabla" checked> Anexo de detecciones (tabla filtrada)</label>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Acciones</h3>
+      <div class="btns-row">
+        <button class="btn btn-primary" id="btnGenerar">Generar vista previa</button>
+        <button class="btn btn-outline" id="btnPrint">Imprimir / Guardar PDF</button>
+      </div>
+      <div class="btns-row" style="margin-top:6px">
+        <button class="btn btn-ghost" id="btnCSV">Exportar CSV</button>
+        <button class="btn btn-ghost" id="btnJSON">Exportar JSON</button>
+      </div>
+      <div class="hint" style="margin-top:8px">
+        Para guardar el PDF: <strong>Ctrl+P</strong>, selecciona <em>Guardar como PDF</em>, desactiva encabezados/pies del navegador.
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Indicadores del filtro actual</h3>
+      <div class="stat-strip">
+        <div class="mini"><div class="t">Detecciones</div><div class="v" id="mini_n">—</div></div>
+        <div class="mini"><div class="t">Alta confianza</div><div class="v" id="mini_hi">—</div></div>
+        <div class="mini"><div class="t">FRP total (MW)</div><div class="v" id="mini_frp">—</div></div>
+        <div class="mini"><div class="t">Zonas afectadas</div><div class="v" id="mini_zonas">—</div></div>
+      </div>
+      <div class="hint" style="margin-top:8px" id="mini_periodo">Periodo: —</div>
+    </div>
+  </aside>
+
+  <!-- VISTA PREVIA -->
+  <section class="shell preview-shell">
+    <div class="preview-toolbar">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span class="chip"><span class="led"></span> Vista previa A4</span>
+        <span class="chip" id="chipData">Sin datos cargados</span>
+      </div>
+      <div class="btns-row">
+        <button class="btn btn-primary" id="btnGenerar2">Generar vista previa</button>
+        <button class="btn btn-outline" id="btnPrint2">Imprimir / PDF</button>
+      </div>
+    </div>
+
+    <div id="warnBox" class="alert" style="display:none"></div>
+
+    <div id="pages" class="pages">
+      <div class="preview-empty">
+        <div>
+          <strong>Genera la vista previa del informe</strong><br/>
+          Configura los filtros en el panel izquierdo y pulsa <em>Generar vista previa</em>.<br/><br/>
+          <span style="font-size:11px">Los datos se obtienen en tiempo real desde la API FIRMS NASA a traves del proxy institucional.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- FOOTER WEB -->
+<footer>
+  <div class="footer-box">
+    <div class="footer-text">
+      Plataforma desarrollada por el <strong>Laboratorio SIG · Eje de Bosques · Comision Departamental de Medio Ambiente de Solola 2026</strong>
+    </div>
+    <div class="footer-logos-web">
+      <img src="../../marn.png" alt="MARN">
+      <img src="../../maga.png" alt="MAGA">
+      <img src="../../inab.png" alt="INAB">
+      <img src="../../conap.png" alt="CONAP">
+      <img src="../../amsclae.png" alt="AMSCLAE">
+      <img src="../../conred.png" alt="CONRED">
+      <img src="../../cea.png" alt="CEA-UVG">
+      <img src="../../aala_logo.png" alt="AALA">
+      <img src="../../vivamos.png" alt="Vivamos Mejor">
+      <img src="../../aires.png" alt="AIRES">
+    </div>
+    <div class="footer-src">Fuentes: NASA FIRMS (LANCE) · Active Fire NRT · Chart.js · API Proxy CODEMA-Solola</div>
+  </div>
+</footer>
+
+<!-- CANVAS ocultos para graficar y exportar imagenes al informe -->
+<canvas id="cvDaily" style="display:none" width="600" height="220"></canvas>
+<canvas id="cvSensors" style="display:none" width="400" height="220"></canvas>
+<canvas id="cvZones" style="display:none" width="400" height="220"></canvas>
+<canvas id="cvConf" style="display:none" width="400" height="220"></canvas>
+
+<script>
+(function(){
+"use strict";
+
+/* =============================================
+   CONFIG
+   ============================================= */
+const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
+const LOGO_LEFT  = "../../assets/img/BOSQUE.png";
+const LOGO_RIGHT = "../../assets/img/CODEMA%20(2).png";
+
+const INSTITUTION_LOGOS = [
+  { src:"../../marn.png",    alt:"MARN"        },
+  { src:"../../maga.png",    alt:"MAGA"        },
+  { src:"../../inab.png",    alt:"INAB"        },
+  { src:"../../conap.png",   alt:"CONAP"       },
+  { src:"../../amsclae.png", alt:"AMSCLAE"     },
+  { src:"../../conred.png",  alt:"CONRED"      },
+  { src:"../../cea.png",     alt:"CEA-UVG"     },
+  { src:"../../aala_logo.png",alt:"AALA"       },
+  { src:"../../vivamos.png", alt:"Vivamos Mejor"},
+  { src:"../../aires.png",   alt:"AIRES"       }
+];
+
+const $ = id => document.getElementById(id);
+const els = {
+  desde:$("desde"), hasta:$("hasta"), zona:$("zona"), zonaItem:$("zonaItem"),
+  diasRef:$("diasRef"), tipoInforme:$("tipoInforme"), nivelAlerta:$("nivelAlerta"),
+  firmante:$("firmante"), destinatario:$("destinatario"), notaTecnica:$("notaTecnica"),
+  secResumen:$("secResumen"), secContexto:$("secContexto"), secTemporal:$("secTemporal"),
+  secSensores:$("secSensores"), secEspacial:$("secEspacial"), secGeoestadistica:$("secGeoestadistica"),
+  secRiesgo:$("secRiesgo"), secTabla:$("secTabla"),
+  btnGenerar:$("btnGenerar"), btnGenerar2:$("btnGenerar2"),
+  btnPrint:$("btnPrint"), btnPrint2:$("btnPrint2"),
+  btnCSV:$("btnCSV"), btnJSON:$("btnJSON"),
+  pages:$("pages"), chipData:$("chipData"), warnBox:$("warnBox"),
+  mini_n:$("mini_n"), mini_hi:$("mini_hi"), mini_frp:$("mini_frp"), mini_zonas:$("mini_zonas"),
+  mini_periodo:$("mini_periodo")
+};
+
+/* =============================================
+   STATE
+   ============================================= */
+const state = {
+  rows: [],          // detecciones filtradas actuales
+  lastFiltered: [],
+  generating: false
+};
+
+/* =============================================
+   UTILS
+   ============================================= */
+function fmt(v, d=0){
+  const n = Number(v);
+  if (!Number.isFinite(n)) return "—";
+  return new Intl.NumberFormat("es-GT",{maximumFractionDigits:d,minimumFractionDigits:d}).format(n);
+}
+function fmtDate(s){
+  if (!s) return "—";
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  return new Intl.DateTimeFormat("es-GT",{year:"numeric",month:"long",day:"2-digit"}).format(d);
+}
+function fmtDateShort(s){
+  if (!s) return "—";
+  const d = new Date(s);
+  if (isNaN(d)) return s;
+  return new Intl.DateTimeFormat("es-GT",{year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+}
+function esc(s){ return String(s??"")//.replace(/&/g,"&amp;")
+  .replace(/</g,"&lt;").replace(/>/g,"&gt;") }
+function confClass(c){
+  const s=String(c??"").trim().toLowerCase(), n=Number(s);
+  if (!isNaN(n)){ if(n>=80)return"high"; if(n>=30)return"nominal"; return"low"; }
+  if(["h","high"].includes(s))return"high";
+  if(["n","nominal","m","medium"].includes(s))return"nominal";
+  if(["l","low"].includes(s))return"low";
+  return"unknown";
+}
+function setWarning(msg){
+  if(!msg){els.warnBox.style.display="none";return;}
+  els.warnBox.style.display="";els.warnBox.textContent=msg;
+}
+
+/* =============================================
+   FETCH DATA
+   ============================================= */
+async function fetchData(){
+  const days = Number(els.diasRef.value)||30;
+  const sensors = "VIIRS_SNPP_NRT,VIIRS_NOAA20_NRT,VIIRS_NOAA21_NRT,MODIS_NRT";
+  const bbox = "-91.586608,14.495833,-91.040503,14.992742"; // Solola departamento
+  const url = `${PROXY_BASE}/api/firms?bbox=${encodeURIComponent(bbox)}&days=${days}&sensors=${encodeURIComponent(sensors)}&limit=50000`;
+  els.chipData.textContent = "Consultando FIRMS NASA...";
+  try{
+    const r = await fetch(url);
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error||"Error API");
+    return (j.rows||[]).filter(r=>Number.isFinite(r.lat)&&Number.isFinite(r.lon));
+  }catch(e){
+    setWarning("No se pudo conectar con la API FIRMS: "+e.message+". Se genera informe con datos de demostracion.");
+    return generateDemoData(days);
+  }
+}
+
+function generateDemoData(days){
+  // Datos representativos de Solola para demostrar la estructura del informe
+  const sensors = ["VIIRS_SNPP_NRT","VIIRS_NOAA20_NRT","VIIRS_NOAA21_NRT","MODIS_NRT"];
+  const munis = ["Solola","Panajachel","San Pedro La Laguna","Santiago Atitlan","Nahuala","Santa Catarina Ixtahuacan","San Lucas Toliman","San Juan La Laguna"];
+  const rows = [];
+  const now = Date.now();
+  const n = Math.round(15 + Math.random()*30);
+  for(let i=0;i<n;i++){
+    const dAgo = Math.random()*days;
+    const dt = new Date(now - dAgo*86400000);
+    rows.push({
+      id: "demo_"+i,
+      lat: 14.495833 + Math.random()*(14.992742-14.495833),
+      lon: -91.586608 + Math.random()*(-91.040503+91.586608),
+      acq_date: dt.toISOString().slice(0,10),
+      acq_time: String(Math.floor(Math.random()*2400)).padStart(4,"0"),
+      datetime_utc: dt.toISOString().slice(0,16).replace("T"," ")+" UTC",
+      source: sensors[Math.floor(Math.random()*sensors.length)],
+      confidence: [35,55,65,80,90,95][Math.floor(Math.random()*6)],
+      frp: +(1+Math.random()*25).toFixed(2),
+      satellite: "Suomi-NPP",
+      instrument: "VIIRS",
+      zone_name: munis[Math.floor(Math.random()*munis.length)],
+      zone_type: "Municipios (Solola)",
+      _demo: true
+    });
+  }
+  return rows;
+}
+
+/* =============================================
+   FILTER
+   ============================================= */
+function applyFilters(rows){
+  let out = rows.slice();
+  const desde = els.desde.value ? new Date(els.desde.value+"T00:00:00") : null;
+  const hasta  = els.hasta.value  ? new Date(els.hasta.value+"T23:59:59")  : null;
+  if(desde) out = out.filter(r=>{ const d=new Date(r.acq_date); return !isNaN(d)&&d>=desde; });
+  if(hasta)  out = out.filter(r=>{ const d=new Date(r.acq_date); return !isNaN(d)&&d<=hasta;  });
+  const zona  = els.zona.value;
+  const zonaV = els.zonaItem.value;
+  if(zona!=="all"&&zonaV) out = out.filter(r=>(r.zone_name||"")=== zonaV);
+  return out;
+}
+
+/* =============================================
+   AGGREGATE
+   ============================================= */
+function aggregate(rows){
+  const n = rows.length;
+  const frpSum = rows.reduce((s,r)=>s+(Number.isFinite(r.frp)?r.frp:0),0);
+  const hi     = rows.filter(r=>confClass(r.confidence)==="high").length;
+  const nom    = rows.filter(r=>confClass(r.confidence)==="nominal").length;
+  const lo     = rows.filter(r=>confClass(r.confidence)==="low"||confClass(r.confidence)==="unknown").length;
+  const frpArr = rows.filter(r=>Number.isFinite(r.frp)).map(r=>r.frp);
+  const frpMean= frpArr.length ? frpArr.reduce((s,v)=>s+v,0)/frpArr.length : 0;
+  const frpMax = frpArr.length ? Math.max(...frpArr) : 0;
+  const frpMin = frpArr.length ? Math.min(...frpArr) : 0;
+
+  // Dates
+  const fechas = rows.map(r=>r.acq_date).filter(Boolean).sort();
+  const dMin = fechas[0]||null;
+  const dMax = fechas[fechas.length-1]||null;
+
+  // Daily series
+  const byDate = new Map();
+  const byDateFrp = new Map();
+  for(const r of rows){
+    const d = r.acq_date||null;
+    if(!d) continue;
+    byDate.set(d,(byDate.get(d)||0)+1);
+    byDateFrp.set(d,(byDateFrp.get(d)||0)+(Number.isFinite(r.frp)?r.frp:0));
+  }
+  const dates = Array.from(byDate.keys()).sort();
+  const counts = dates.map(d=>byDate.get(d)||0);
+  const frpSeries = dates.map(d=>+(byDateFrp.get(d)||0).toFixed(2));
+
+  // By sensor
+  const bySensor = new Map();
+  for(const r of rows){ const s=r.source||"Desconocido"; bySensor.set(s,(bySensor.get(s)||0)+1); }
+
+  // By zone
+  const byZone = new Map();
+  for(const r of rows){ const z=r.zone_name||"Sin zona"; byZone.set(z,(byZone.get(z)||0)+1); }
+  const zones = [...byZone.entries()].sort((a,b)=>b[1]-a[1]);
+
+  // NNI simple
+  const nni = computeNNI(rows);
+  // GLM Poisson trend
+  const glm = poissonGLM(counts);
+  // Variogram FRP
+  const vario = computeVariogram(rows);
+
+  // FRP std
+  const frpStd = frpArr.length>=2 ? Math.sqrt(frpArr.reduce((s,v)=>s+(v-frpMean)**2,0)/(frpArr.length-1)) : 0;
+
+  // Days coverage
+  const daysCoverage = dates.length;
+  const intensidadMedia = 3296.0 > 0 ? (n/3296.0) : null; // area Solola ~3296 km2
+
+  // Demo flag
+  const isDemo = rows.some(r=>r._demo);
+
+  return {
+    n, frpSum, hi, nom, lo, frpMean, frpMax, frpMin, frpStd,
+    dMin, dMax, dates, counts, frpSeries, daysCoverage,
+    bySensor:[...bySensor.entries()].sort((a,b)=>b[1]-a[1]),
+    zones, nni, glm, vario, intensidadMedia, isDemo
+  };
+}
+
+/* =============================================
+   GEOESTADISTICA
+   ============================================= */
+function computeNNI(rows){
+  const pts = rows.filter(r=>Number.isFinite(r.lat)&&Number.isFinite(r.lon));
+  const n = pts.length;
+  if(n<4) return null;
+  const sample = pts.length>400 ? pts.sort(()=>Math.random()-.5).slice(0,400) : pts;
+  const nn=[];
+  for(let i=0;i<sample.length;i++){
+    let best=Infinity;
+    for(let j=0;j<sample.length;j++){
+      if(i===j) continue;
+      const dx=(sample[i].lon-sample[j].lon)*111.32*Math.cos(sample[i].lat*Math.PI/180);
+      const dy=(sample[i].lat-sample[j].lat)*110.574;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<best)best=d;
+    }
+    if(Number.isFinite(best))nn.push(best);
+  }
+  const rObs=nn.reduce((s,v)=>s+v,0)/nn.length;
+  const A=3296; // km2 Solola
+  const lam=n/A;
+  const rExp=0.5/Math.sqrt(lam);
+  const se=0.26136/Math.sqrt(n*lam);
+  const z=se>0?(rObs-rExp)/se:null;
+  const nni=rObs/rExp;
+  let p=null;
+  if(z!==null){
+    const az=Math.abs(z)/Math.sqrt(2);
+    const t=1/(1+0.3275911*az);
+    const erf=1-(((((1.061405429*t-1.453152027)*t+1.421413741)*t-0.284496736)*t+0.254829592)*t)*Math.exp(-az*az);
+    p=2*(1-0.5*(1+(z<0?-1:1)*erf));
+  }
+  return {nni,rObs,rExp,z,p,n:sample.length,lam,A};
+}
+
+function poissonGLM(counts){
+  if(counts.length<3)return null;
+  const n=counts.length, eps=1e-9;
+  let a=Math.log((counts.reduce((s,v)=>s+v,0)/n)+eps), b=0;
+  for(let it=0;it<15;it++){
+    let S00=0,S01=0,S11=0,B0=0,B1=0;
+    for(let t=0;t<n;t++){
+      const eta=a+b*t, mu=Math.exp(eta), w=Math.max(mu,eps), z2=eta+(counts[t]-mu)/w;
+      S00+=w;S01+=w*t;S11+=w*t*t;B0+=w*z2;B1+=w*z2*t;
+    }
+    const det=S00*S11-S01*S01;
+    if(Math.abs(det)<1e-12)break;
+    const na=(B0*S11-B1*S01)/det, nb=(-B0*S01+B1*S00)/det;
+    if(!Number.isFinite(na)||!Number.isFinite(nb))break;
+    if(Math.abs(na-a)<1e-7&&Math.abs(nb-b)<1e-7){a=na;b=nb;break;}
+    a=na;b=nb;
+  }
+  const muHat=counts.map((_,t)=>Math.exp(a+b*t));
+  const meanY=counts.reduce((s,v)=>s+v,0)/n;
+  let ssTot=0,ssRes=0;
+  for(let i=0;i<n;i++){ssTot+=(counts[i]-meanY)**2;ssRes+=(counts[i]-muHat[i])**2;}
+  const r2=ssTot>0?Math.max(0,1-ssRes/ssTot):0;
+  const pct=100*(Math.exp(b)-1);
+  return{a,b,r2,pct,muHat};
+}
+
+function computeVariogram(rows){
+  const pts=rows.filter(r=>Number.isFinite(r.frp)&&Number.isFinite(r.lat)&&Number.isFinite(r.lon));
+  if(pts.length<6)return null;
+  const sample=pts.length>150?pts.sort(()=>Math.random()-.5).slice(0,150):pts;
+  const bins=10, maxH=30; // km
+  const hBins=Array.from({length:bins},(_,i)=>(i+0.5)*(maxH/bins));
+  const gamBins=Array.from({length:bins},()=>({sum:0,n:0}));
+  for(let i=0;i<sample.length;i++){
+    for(let j=i+1;j<sample.length;j++){
+      const dx=(sample[i].lon-sample[j].lon)*111.32*Math.cos(sample[i].lat*Math.PI/180);
+      const dy=(sample[i].lat-sample[j].lat)*110.574;
+      const h=Math.sqrt(dx*dx+dy*dy);
+      const gam=0.5*(sample[i].frp-sample[j].frp)**2;
+      const k=Math.floor(h/(maxH/bins));
+      if(k>=0&&k<bins)gamBins[k].sum+=gam,gamBins[k].n++;
+    }
+  }
+  const hs=hBins.filter((_,i)=>gamBins[i].n>0);
+  const gammas=hBins.map((h,i)=>gamBins[i].n>0?gamBins[i].sum/gamBins[i].n:null).filter(v=>v!==null);
+  const nugget=gammas[0]??0;
+  const sill=Math.max(...gammas);
+  const range=hs.find((h,i)=>gammas[i]>=0.95*sill)||maxH*0.6;
+  return{hs,gammas,nugget,sill,range};
+}
+
+/* =============================================
+   DETERMINE ALERT LEVEL
+   ============================================= */
+function determineAlert(agg){
+  const forced=els.nivelAlerta.value;
+  if(forced!=="auto")return forced;
+  if(!agg.n)return"sin_datos";
+  const densidad=agg.n/agg.daysCoverage;
+  const frpMean=agg.frpMean;
+  const hiPct=agg.n>0?agg.hi/agg.n:0;
+  if(densidad>=5&&frpMean>=15&&hiPct>=0.5)return"muy_alto";
+  if(densidad>=3||frpMean>=10||hiPct>=0.35)return"alto";
+  if(densidad>=1.5||frpMean>=5)return"moderado";
+  return"bajo";
+}
+
+function alertLabel(level){
+  const map={bajo:"Bajo",moderado:"Moderado",alto:"Alto",muy_alto:"Muy Alto",sin_datos:"Sin datos"};
+  return map[level]||level;
+}
+function alertColor(level){
+  const map={bajo:"#16a34a",moderado:"#f59e0b",alto:"#ea580c",muy_alto:"#dc2626",sin_datos:"#94a3b8"};
+  return map[level]||"#555";
+}
+
+/* =============================================
+   NARRATIVE BUILDER
+   ============================================= */
+function buildNarrative(rows, agg){
+  const tipo = els.tipoInforme.value;
+  const alert = determineAlert(agg);
+  const periodo = agg.dMin&&agg.dMax ? `del ${fmtDate(agg.dMin)} al ${fmtDate(agg.dMax)}` : `de los ultimos ${els.diasRef.value} dias`;
+  const topZone = agg.zones[0];
+  const topSensor = agg.bySensor[0];
+  const glm = agg.glm;
+  const nni = agg.nni;
+  const vario = agg.vario;
+
+  const resumen = [
+    `Con base en el analisis de datos FIRMS NRT (Fire Information for Resource Management System, NASA/LANCE) correspondientes al periodo ${periodo}, se identificaron ${fmt(agg.n)} detecciones de anomalias termicas activas en el ambito territorial del departamento de Solola, Guatemala. De estas detecciones, ${fmt(agg.hi)} (${fmt(agg.n>0?100*agg.hi/agg.n:0,1)} %) presentaron clasificacion de alta confianza segun el algoritmo de deteccion del sensor.`,
+    `La potencia radiativa del fuego (Fire Radiative Power, FRP) acumulada para el periodo fue de ${fmt(agg.frpSum,2)} MW, con un promedio por deteccion de ${fmt(agg.frpMean,2)} MW (desviacion estandar: ${fmt(agg.frpStd,2)} MW), valor maximo de ${fmt(agg.frpMax,2)} MW y minimo de ${fmt(agg.frpMin,2)} MW. ${topZone?`La zona con mayor concentracion de detecciones fue ${topZone[0]} con ${fmt(topZone[1])} eventos.`:""} El nivel de alerta para el periodo evaluado se clasifica como <strong>${alertLabel(alert)}</strong>.`,
+    tipo==="ejecutivo"?`Se recomienda mantener monitoreo activo y coordinar con las instituciones del Eje de Bosques de CODEMA-Solola, especialmente en los municipios con mayor concentracion de focos, para activacion oportuna de protocolos de respuesta segun nivel de alerta establecido por CONRED y el Plan Departamental de Manejo del Fuego.`:
+    `La distribucion espacio-temporal de las detecciones sugiere ${nni&&nni.nni<1?"un patron de agregacion espacial significativo, indicando posible concentracion de focos en areas especificas del departamento, lo cual es consistente con la presencia de frentes de fuego o multiples igniciones en zonas de alta carga de combustible.":"una distribucion espacialmente aleatoria o regular, consistente con igniciones dispersas sin aparente nucleacion territorial."}`
+  ];
+
+  const contexto = [
+    `El sistema FIRMS (Fire Information for Resource Management System) de la NASA opera en modalidad NRT (Near Real-Time), proporcionando datos de anomalias termicas activas derivadas de sensores de observacion terrestre satelital. Los sensores empleados en esta consulta incluyen: VIIRS (Visible Infrared Imaging Radiometer Suite) a bordo de los satelites Suomi-NPP, NOAA-20 (JPSS-1) y NOAA-21 (JPSS-2) con resolucion espacial de ~375 metros, y MODIS (Moderate Resolution Imaging Spectroradiometer) a bordo de Terra y Aqua con resolucion de ~1 km.`,
+    `La variable FRP (Fire Radiative Power) cuantifica la energia liberada por el fuego por unidad de tiempo (expresada en megavatios, MW), siendo un indicador de la intensidad energetica del evento y no del area quemada. Su determinacion se basa en la diferencia termica entre el pixel afectado y los pixeles de referencia del entorno, aplicando el algoritmo contextual de deteccion de anomalias termicas (Giglio et al., 2016; Schroeder et al., 2014). La confianza del algoritmo refleja la probabilidad de que la deteccion corresponda a fuego activo real y no a artefacto o reflectancia espuria.`,
+    `Es importante subrayar que una deteccion FIRMS representa un pixel con anomalia termica al momento del paso del satelite; no equivale a un incendio delimitable en perimetro ni a superficie quemada efectiva. La nubosidad, humo denso y la hora de sobrevuelo orbital pueden enmascarar focos existentes, por lo que la ausencia de detecciones no implica necesariamente ausencia de fuego activo.`
+  ];
+
+  const temporal = [];
+  if(glm){
+    const tendencia = glm.b>0.01?"creciente":glm.b<-0.01?"decreciente":"estacionaria";
+    const cambio = Math.abs(glm.pct);
+    temporal.push(
+      `El analisis de la serie temporal diaria de detecciones para el periodo evaluado, mediante regresion de Poisson con enlace logaritmico (GLM Poisson), muestra una tendencia ${tendencia} con un cambio diario promedio estimado de ${fmt(cambio,2)} % (α = ${glm.a.toFixed(4)}, β = ${glm.b.toFixed(4)}, R² ajustado ≈ ${fmt(glm.r2,3)}). Este modelo, expresado como log(μ_t) = α + β·t, permite proyectar la actividad esperada bajo condiciones de continuidad del patron observado.`,
+      `La distribucion de detecciones por dia muestra variabilidad intraperiodica asociada a factores meteorologicos como velocidad del viento, temperatura y humedad relativa, asi como al ritmo de paso orbital de los satelites. El maximo de detecciones diarias registrado en el periodo fue de ${fmt(Math.max(...agg.counts))} eventos.`
+    );
+  } else {
+    temporal.push("La serie temporal no cuenta con datos suficientes para calcular tendencia estadistica. Se requieren al menos 3 dias de detecciones para el analisis de regresion Poisson.");
+  }
+
+  const sensores = [
+    `La distribucion de detecciones por sensor revela el patron de cobertura temporal del sistema FIRMS en la region. ${agg.bySensor.map(([s,c])=>`${s.replace("_NRT","")}: ${fmt(c)} detecciones (${fmt(100*c/agg.n,1)} %)`).join("; ")}. La combinacion de VIIRS y MODIS permite cobertura complementaria dado que los satelites que los portan tienen distintos horarios de sobrevuelo ecuatorial (MODIS Terra ~10:30 h loc., MODIS Aqua ~13:30 h loc., Suomi-NPP ~13:30 h loc., NOAA-20 ~13:30 h loc., NOAA-21 ~13:30 h loc.), reduciendo la ventana de no-observacion.`,
+    `La clase de confianza alta (n=${fmt(agg.hi)}, ${fmt(agg.n>0?100*agg.hi/agg.n:0,1)} %) agrupa detecciones con umbral de confianza del algoritmo ≥80 %, consideradas las de mayor fiabilidad para incendios activos confirmados. Las detecciones de confianza nominal/media (n=${fmt(agg.nom)}) y baja (n=${fmt(agg.lo)}) deben interpretarse con precaucion y requieren verificacion en campo o con imagenes de alta resolucion.`
+  ];
+
+  const espacial = [];
+  if(agg.zones.length){
+    const top5 = agg.zones.slice(0,5);
+    espacial.push(
+      `La distribucion territorial de las detecciones por zona indica las siguientes concentraciones principales (Top 5): ${top5.map(([z,c])=>`${z} con ${fmt(c)} eventos (${fmt(100*c/agg.n,1)} %)`).join("; ")}. La concentracion en zonas especificas puede indicar factores de riesgo locales como uso del suelo, tipo de vegetacion, pendiente, accesibilidad o practicas de manejo del territorio.`,
+      `La intensidad media de detecciones en el departamento de Solola (area de referencia ≈ 3,296 km²) fue de ${fmt(agg.intensidadMedia,4)} detecciones/km² para el periodo evaluado. Este indicador permite comparacion entre periodos y cuantificar la presion de anomalias termicas sobre el territorio.`
+    );
+  } else {
+    espacial.push("No se dispone de informacion de zona asignada para las detecciones del periodo. Se recomienda ejecutar la consulta con recorte espacial activado desde el modulo Geoportal.");
+  }
+
+  const geoestadistica = [];
+  if(nni){
+    const patron = nni.nni<0.8?"agregado (cluster)":(nni.nni>1.2?"regular (espaciado)":"aleatorio (CSR)");
+    const sig = nni.p!==null&&nni.p<0.05?`estadisticamente significativo (z = ${fmt(nni.z,3)}, p = ${nni.p.toExponential(2)})`:
+                                           `no significativo al nivel α = 0.05 (z = ${nni.z?fmt(nni.z,3):"—"}, p = ${nni.p?nni.p.toExponential(2):"—"})`;
+    geoestadistica.push(
+      `El Indice del Vecino Mas Cercano (Nearest Neighbor Index, NNI) calculado sobre la muestra de detecciones (n = ${fmt(nni.n)}) es de ${fmt(nni.nni,4)}, con distancia media observada de ${fmt(nni.rObs,4)} km frente a la distancia esperada bajo hipotesis de aleatoriedad espacial completa (CSR) de ${fmt(nni.rExp,4)} km. Este resultado es ${sig}, lo que sugiere un patron de distribucion espacial ${patron}.`,
+      `La intensidad estimada del proceso puntual es λ = ${fmt(nni.lam,4)} puntos/km², calculada sobre un area de referencia de ${fmt(nni.A)} km². Un patron agregado (NNI < 1) es consistente con la dinamica de propagacion de incendios, donde el fuego tiende a expandirse desde nucleos, generando conglomerados de detecciones adyacentes.`
+    );
+    if(vario){
+      geoestadistica.push(
+        `El variograma experimental de la variable FRP muestra un nugget (discontinuidad en el origen) de ${fmt(vario.nugget,2)} MW², indicando variabilidad a escala subpixel o error de medicion. El sill (umbral de varianza) estimado es de ${fmt(vario.sill,2)} MW² con un rango de dependencia espacial de aproximadamente ${fmt(vario.range,2)} km, que representa la distancia maxima a la cual dos detecciones muestran autocorrelacion positiva en sus valores de FRP.`
+      );
+    }
+  } else {
+    geoestadistica.push("La muestra de detecciones es insuficiente para el calculo de estadisticos espaciales (se requieren al menos 4 puntos con coordenadas validas).");
+  }
+
+  const riesgo = [];
+  const alert2 = determineAlert(agg);
+  const factoresRiesgo = [];
+  if(agg.frpMean>=10) factoresRiesgo.push("alta intensidad media del fuego (FRP > 10 MW)");
+  if(agg.hi/Math.max(agg.n,1)>=0.4) factoresRiesgo.push("elevada proporcion de detecciones de alta confianza");
+  if(glm&&glm.b>0.01) factoresRiesgo.push("tendencia temporal creciente en el numero de detecciones");
+  if(nni&&nni.nni<0.8) factoresRiesgo.push("patron de agregacion espacial significativa");
+
+  riesgo.push(
+    `La evaluacion integrada de los indicadores analizados clasifica el nivel de alerta del periodo como <strong>${alertLabel(alert2)}</strong>. ${factoresRiesgo.length?`Los factores de riesgo determinantes fueron: ${factoresRiesgo.join("; ")}.`:"No se identificaron factores de riesgo criticos para el periodo."}`,
+    `Se recomienda: (1) mantener monitoreo continuo de la plataforma FIRMS y del sistema de alerta temprana departamental; (2) verificar en campo las detecciones de alta confianza en zonas accesibles, especialmente en municipios con mayor densidad de eventos; (3) coordinar con CONRED, SIPECIF, CONAP e INAB para activacion de protocolos de respuesta segun protocolo del Plan Departamental de Manejo del Fuego vigente; (4) actualizar la cartografia de riesgo de incendio con la informacion del presente periodo.`,
+    `Las fuentes de datos FIRMS NRT estan sujetas a latencia de 3-12 horas desde la adquisicion satelital. Para emergencias activas en curso, se recomienda complementar con el sistema EFFIS (European Forest Fire Information System) y la RED de observadores terrestres de CODEMA-Solola.`
+  );
+
+  return {resumen,contexto,temporal,sensores,espacial,geoestadistica,riesgo};
+}
+
+/* =============================================
+   CHART IMAGE BUILDERS
+   ============================================= */
+async function buildChartImage(canvasId, config){
+  return new Promise(resolve=>{
+    const canvas = $(canvasId);
+    if(!canvas||!window.Chart){ resolve(""); return; }
+    // Destroy existing
+    const existing = Chart.getChart(canvas);
+    if(existing) existing.destroy();
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#fff";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    const c = new Chart(ctx, config);
+    setTimeout(()=>{ resolve(canvas.toDataURL("image/png",1.0)); c.destroy(); },400);
+  });
+}
+
+const FIRE_COLORS = ["#dc2626","#ea580c","#f97316","#fbbf24","#16a34a","#0ea5e9","#7c3aed","#db2777","#059669","#6366f1"];
+
+async function buildChartDaily(agg){
+  if(!agg.dates.length) return "";
+  const glm = agg.glm;
+  const datasets = [
+    {label:"Detecciones/dia",data:agg.counts,type:"bar",backgroundColor:"rgba(220,38,38,.65)",borderColor:"#dc2626",borderWidth:1}
+  ];
+  if(glm) datasets.push({label:"Tendencia Poisson",data:glm.muHat.map(v=>+v.toFixed(2)),type:"line",tension:.3,pointRadius:0,borderColor:"#ea580c",borderWidth:2,fill:false,borderDash:[5,3]});
+  datasets.push({label:"FRP acum. (MW)",data:agg.frpSeries,type:"line",tension:.3,pointRadius:3,borderColor:"#fbbf24",borderWidth:2,yAxisID:"y1",backgroundColor:"rgba(251,191,36,.12)",fill:true});
+  return buildChartImage("cvDaily",{type:"bar",data:{labels:agg.dates,datasets},options:{
+    responsive:false,animation:false,
+    plugins:{legend:{position:"bottom",labels:{font:{size:10}}},title:{display:true,text:"Serie temporal diaria de detecciones y FRP",font:{size:11,weight:"bold"}}},
+    scales:{
+      x:{ticks:{font:{size:8},maxRotation:45}},
+      y:{beginAtZero:true,title:{display:true,text:"Detecciones",font:{size:9}}},
+      y1:{type:"linear",position:"right",title:{display:true,text:"FRP total (MW)",font:{size:9}},grid:{drawOnChartArea:false}}
+    }
+  }});
+}
+
+async function buildChartSensors(agg){
+  if(!agg.bySensor.length) return "";
+  const labels = agg.bySensor.map(([s])=>s.replace("_NRT",""));
+  const data   = agg.bySensor.map(([,c])=>c);
+  return buildChartImage("cvSensors",{type:"doughnut",data:{labels,datasets:[{data,backgroundColor:FIRE_COLORS,borderWidth:2,borderColor:"#fff"}]},options:{
+    responsive:false,animation:false,
+    plugins:{legend:{position:"right",labels:{font:{size:10}}},title:{display:true,text:"Distribucion por sensor",font:{size:11,weight:"bold"}}}
+  }});
+}
+
+async function buildChartZones(agg){
+  if(!agg.zones.length) return "";
+  const top = agg.zones.slice(0,8);
+  return buildChartImage("cvZones",{type:"bar",data:{
+    labels:top.map(([z])=>z.length>18?z.slice(0,17)+"…":z),
+    datasets:[{label:"Detecciones",data:top.map(([,c])=>c),backgroundColor:FIRE_COLORS,borderRadius:4}]
+  },options:{
+    responsive:false,animation:false,indexAxis:"y",
+    plugins:{legend:{display:false},title:{display:true,text:"Top zonas por numero de detecciones",font:{size:11,weight:"bold"}}},
+    scales:{x:{beginAtZero:true,ticks:{font:{size:9}}},y:{ticks:{font:{size:9}}}}
+  }});
+}
+
+async function buildChartConf(agg){
+  return buildChartImage("cvConf",{type:"pie",data:{
+    labels:["Alta confianza","Nominal/Media","Baja"],
+    datasets:[{data:[agg.hi,agg.nom,agg.lo],backgroundColor:["#dc2626","#f59e0b","#94a3b8"],borderWidth:2,borderColor:"#fff"}]
+  },options:{
+    responsive:false,animation:false,
+    plugins:{legend:{position:"bottom",labels:{font:{size:10}}},title:{display:true,text:"Distribucion por clase de confianza",font:{size:11,weight:"bold"}}}
+  }});
+}
+
+/* =============================================
+   HTML BUILDERS
+   ============================================= */
+function logoHTML(which){
+  const url = which==="left"?LOGO_LEFT:LOGO_RIGHT;
+  const fb  = which==="left"?"LOGO\nBOSQUES":"LOGO\nCODEMA";
+  return `<div class="logo-box"><img src="${url}" alt="Logo institucional" onerror="this.replaceWith((()=>{const d=document.createElement('div');d.className='logo-box';d.innerHTML='<div class=\\'logo-fallback\\'>${fb.replace(/\n/g,"<br>")}</div>';return d;})())"></div>`;
+}
+
+function buildHeader(meta){
+  return `
+  <div class="report-header">
+    ${logoHTML("left")}
+    <div class="head-text">
+      <div class="line">Laboratorio SIG - Eje de Bosques de CODEMA-Solola</div>
+      <div class="line">Modulo de Incendios Forestales · Centro de Informes</div>
+      <div class="line sm">Informe generado automaticamente a partir de datos FIRMS NRT (NASA/LANCE)</div>
+    </div>
+    ${logoHTML("right")}
+  </div>
+  <div class="meta-grid">
+    <div class="meta-item"><span class="k">Tipo de informe</span><span class="v">${esc(meta.tipo)}</span></div>
+    <div class="meta-item"><span class="k">Periodo analizado</span><span class="v">${esc(meta.periodo)}</span></div>
+    <div class="meta-item"><span class="k">Fecha de emision</span><span class="v">${esc(meta.fechaEmision)}</span></div>
+    <div class="meta-item"><span class="k">Detecciones consideradas</span><span class="v">${esc(meta.n)}</span></div>
+    <div class="meta-item"><span class="k">Dirigido a</span><span class="v">${esc(meta.destinatario||"No especificado")}</span></div>
+    <div class="meta-item"><span class="k">Elaboro</span><span class="v">${esc(meta.firmante)}</span></div>
+  </div>`;
+}
+
+function pageFooter(num){
+  return `<div class="footer-line"><span>Laboratorio SIG · Eje de Bosques · CODEMA-Solola 2026</span><span>Pagina ${num}</span></div>`;
+}
+
+function footerLogos(){
+  const imgs = INSTITUTION_LOGOS.map(l=>`<img src="${l.src}" alt="${l.alt}" onerror="this.style.display='none'">`).join("");
+  return `<div class="footer-logos-rpt">${imgs}</div>`;
+}
+
+function buildKpiTable(agg){
+  const rows = [
+    ["Detecciones totales", fmt(agg.n)],
+    ["Alta confianza (≥80 %)", `${fmt(agg.hi)} (${fmt(agg.n>0?100*agg.hi/agg.n:0,1)} %)`],
+    ["Confianza nominal/media", `${fmt(agg.nom)} (${fmt(agg.n>0?100*agg.nom/agg.n:0,1)} %)`],
+    ["FRP acumulado (MW)", fmt(agg.frpSum,2)],
+    ["FRP promedio por deteccion (MW)", fmt(agg.frpMean,2)],
+    ["FRP maximo registrado (MW)", fmt(agg.frpMax,2)],
+    ["Desviacion estandar FRP (MW)", fmt(agg.frpStd,2)],
+    ["Dias con detecciones", fmt(agg.daysCoverage)],
+    ["Zonas con detecciones", fmt(agg.zones.length)],
+    ["Intensidad media (det./km²)", fmt(agg.intensidadMedia,4)],
+    ["Indice Vecino Mas Cercano (NNI)", agg.nni?fmt(agg.nni.nni,4):"—"],
+    ["Patron espacial (NNI)", agg.nni?(agg.nni.nni<0.8?"Agregado (cluster)":agg.nni.nni>1.2?"Regular":"Aleatorio (CSR)"):"—"]
+  ];
+  return `<table class="kpi-table">
+    <tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="right">${esc(r[1])}</td></tr>`).join("")}</tbody>
+  </table>`;
+}
+
+function buildTopTable(title,cols,rows){
+  return `<p class="section-title">${esc(title)}</p>
+  <table><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join("")}</tr></thead>
+  <tbody>${rows.length?rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join(""):
+  `<tr><td colspan="${cols.length}" class="center">Sin datos</td></tr>`}</tbody></table>`;
+}
+
+function buildDeteccionesTable(rows){
+  const cols=["No.","UTC","Zona","Sensor","Conf.","Lat","Lon","FRP (MW)"];
+  const trows=rows.slice(0,100).map((r,i)=>[
+    String(i+1),
+    r.datetime_utc||r.acq_date||"—",
+    r.zone_name||"—",
+    (r.source||"—").replace("_NRT",""),
+    r.confidence||"—",
+    Number.isFinite(r.lat)?r.lat.toFixed(4):"—",
+    Number.isFinite(r.lon)?r.lon.toFixed(4):"—",
+    Number.isFinite(r.frp)?fmt(r.frp,2):"—"
+  ]);
+  return buildTopTable(`Anexo de detecciones filtradas (${rows.length<=100?rows.length:"primeros 100 de "+rows.length+" registros"})`,cols,trows);
+}
+
+/* =============================================
+   BUILD PAGES HTML
+   ============================================= */
+async function buildPages(rows, agg, texts){
+  const alert = determineAlert(agg);
+  const alertC = alertColor(alert);
+  const alertL = alertLabel(alert);
+  const periodo = agg.dMin&&agg.dMax?`Del ${fmtDate(agg.dMin)} al ${fmtDate(agg.dMax)}`:`Ultimos ${els.diasRef.value} dias`;
+  const nota = (els.notaTecnica.value||"").trim();
+  const isDemoNote = agg.isDemo?'<strong>NOTA: Informe generado con datos de demostracion. La API FIRMS no estuvo disponible durante la generacion. Datos reales seran visibles cuando el proxy institucional responda.</strong> ':""
+
+  const meta = {
+    tipo: {tecnico:"Tecnico-cientifico",ejecutivo:"Ejecutivo",operativo:"Operativo de campo"}[els.tipoInforme.value]||els.tipoInforme.value,
+    periodo, n: fmt(agg.n),
+    fechaEmision: new Intl.DateTimeFormat("es-GT",{year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}).format(new Date()),
+    destinatario: (els.destinatario.value||"").trim(),
+    firmante: (els.firmante.value||"Laboratorio SIG · Eje de Bosques · CODEMA-Solola").trim()
+  };
+
+  // Build chart images in parallel
+  const [imgDaily, imgSensors, imgZones, imgConf] = await Promise.all([
+    buildChartDaily(agg), buildChartSensors(agg), buildChartZones(agg), buildChartConf(agg)
+  ]);
+
+  const pages = [];
+  let p = 1;
+
+  // ─── PAGE 1: PORTADA ───
+  pages.push(`
+  <div class="page page-break">
+    <div class="report">
+      ${buildHeader(meta)}
+      <div class="cover-box">
+        <p class="section-title center">Informe de Anomalias Termicas Activas (FIRMS NRT)</p>
+        ${isDemoNote?`<p><strong>${isDemoNote}</strong></p>`:""}
+        <p><strong>Periodo:</strong> ${esc(periodo)}.</p>
+        <p><strong>Alcance:</strong> Informe generado automaticamente a partir de datos FIRMS NRT de NASA/LANCE, procesados mediante el proxy institucional de CODEMA-Solola. Incluye analisis estadistico, geoestadistico, graficas y texto cientifico derivado de los datos del periodo seleccionado.</p>
+        ${nota?`<p><strong>Nota de alcance:</strong> ${esc(nota)}</p>`:""}
+        <p>Este documento presenta una sintesis tecnica de detecciones de anomalias termicas activas (hotspots) en el departamento de Solola, Guatemala, con caracterizacion temporal, espacial y de intensidad energetica del fuego. La estructura esta disenada para apoyar la toma de decisiones del Eje de Bosques, la Comision Departamental de Medio Ambiente (CODEMA) y las instituciones del sector forestal.</p>
+        <p><strong>Nivel de alerta del periodo:</strong> <span style="color:${alertC};font-weight:700;font-size:11pt">${alertL}</span></p>
+      </div>
+      <p class="section-title">Resumen de indicadores</p>
+      ${buildKpiTable(agg)}
+      <p class="small muted">Fuente primaria: NASA/LANCE FIRMS Active Fire NRT. Sensor de referencia: VIIRS (375 m) y MODIS (1 km). Datos procesados via proxy institucional CODEMA-Solola.</p>
+      ${footerLogos()}
+      ${pageFooter(p++)}
+    </div>
+  </div>`);
+
+  // ─── PAGE 2: RESUMEN + CONTEXTO ───
+  let body2 = "";
+  if(els.secResumen.checked) body2 += `<p class="section-title">1. Resumen ejecutivo y nivel de alerta</p>${texts.resumen.map(t=>`<p>${t}</p>`).join("")}`;
+  if(els.secContexto.checked) body2 += `<p class="section-title">2. Contexto cientifico</p>${texts.contexto.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+  pages.push(`
+  <div class="page page-break">
+    <div class="report">
+      ${buildHeader(meta)}
+      ${body2}
+      ${footerLogos()}
+      ${pageFooter(p++)}
+    </div>
+  </div>`);
+
+  // ─── PAGE 3: GRAFICAS TEMPORALES ───
+  let body3 = "";
+  if(els.secTemporal.checked){
+    body3 += `<p class="section-title">3. Analisis temporal</p>${texts.temporal.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+    if(imgDaily) body3 += `<div class="chart-container"><div class="chart-title-rpt">Figura 1. Serie temporal diaria de detecciones y FRP acumulado con tendencia Poisson (GLM)</div><img src="${imgDaily}" style="width:100%;max-height:70mm" alt="Grafica temporal"><div class="chart-note">La linea naranja discontinua representa la tendencia estimada mediante un Modelo Lineal Generalizado Poisson (GLM Poisson con enlace logaritmico). Las barras rojas corresponden al numero de detecciones diarias. La linea amarilla muestra el FRP acumulado diario (eje derecho). Fuente: NASA FIRMS NRT, procesamiento propio.</div></div>`;
+  }
+  if(els.secSensores.checked){
+    body3 += `<p class="section-title">4. Analisis por sensor y confianza</p>${texts.sensores.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+    const imgRow = [imgSensors,imgConf].filter(Boolean).map(img=>`<img src="${img}" style="width:48%;max-height:60mm" alt="Grafica sensor">`).join(" ");
+    if(imgRow) body3 += `<div class="chart-container"><div class="chart-title-rpt">Figuras 2 y 3. Distribucion por sensor y clase de confianza del algoritmo de deteccion</div><div style="display:flex;gap:2%;align-items:center">${imgRow}</div><div class="chart-note">Izquierda: proporcion de detecciones por sensor NRT. Derecha: clasificacion por confianza del algoritmo (alta ≥80 %; nominal 30-79 %; baja <30 %). Fuente: NASA FIRMS NRT.</div></div>`;
+  }
+  pages.push(`
+  <div class="page page-break">
+    <div class="report">
+      ${buildHeader(meta)}
+      ${body3}
+      ${footerLogos()}
+      ${pageFooter(p++)}
+    </div>
+  </div>`);
+
+  // ─── PAGE 4: ESPACIAL + GEOESTADISTICA ───
+  let body4 = "";
+  if(els.secEspacial.checked){
+    body4 += `<p class="section-title">5. Analisis espacial por zona</p>${texts.espacial.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+    const zoneRows = agg.zones.slice(0,10).map(([z,c])=>[z,fmt(c),fmt(100*c/agg.n,1)+"%"]);
+    body4 += buildTopTable("Cuadro 1. Distribucion de detecciones por zona (Top 10)",["Zona","Detecciones","% del total"],zoneRows);
+    if(imgZones) body4 += `<div class="chart-container"><div class="chart-title-rpt">Figura 4. Numero de detecciones por zona geografica (Top 8)</div><img src="${imgZones}" style="width:100%;max-height:65mm" alt="Grafica zonas"><div class="chart-note">Barras horizontales que representan el numero de detecciones FIRMS NRT por unidad territorial para el periodo evaluado. Fuente: NASA FIRMS NRT, capa de municipios de Solola.</div></div>`;
+  }
+  if(els.secGeoestadistica.checked){
+    body4 += `<p class="section-title">6. Geoestadistica (NNI, CSR, variograma FRP)</p>${texts.geoestadistica.map(t=>`<p>${esc(t)}</p>`).join("")}`;
+    if(agg.nni){
+      body4 += buildTopTable("Cuadro 2. Estadisticos espaciales del proceso de puntos",
+        ["Parametro","Valor","Interpretacion"],
+        [
+          ["Muestra (n puntos)",fmt(agg.nni.n),"Detecciones con coordenadas validas"],
+          ["Intensidad λ (det./km²)",fmt(agg.nni.lam,4),"Densidad puntual en area de estudio"],
+          ["Distancia observada robs (km)",fmt(agg.nni.rObs,4),"Media de distancias al vecino mas cercano"],
+          ["Distancia esperada CSR rexp (km)",fmt(agg.nni.rExp,4),"Esperada bajo distribucion aleatoria"],
+          ["NNI = robs/rexp",fmt(agg.nni.nni,4),agg.nni.nni<0.8?"Patron agregado":agg.nni.nni>1.2?"Patron regular":"Patron aleatorio"],
+          ["Estadistico z",agg.nni.z?fmt(agg.nni.z,3):"—","Significacion estadistica"],
+          ["p-valor bilateral",agg.nni.p?agg.nni.p.toExponential(2):"—","H0: CSR (aleatoriedad)"]
+        ]);
+    }
+    if(agg.vario){
+      body4 += buildTopTable("Cuadro 3. Parametros del variograma experimental de FRP",
+        ["Parametro","Valor (MW²)","Descripcion"],
+        [
+          ["Nugget (C0)",fmt(agg.vario.nugget,2),"Varianza a distancia cero (microscopica)"],
+          ["Sill (C0+C)",fmt(agg.vario.sill,2),"Varianza total asintota"],
+          ["Rango (km)",fmt(agg.vario.range,2),"Distancia de dependencia espacial FRP"]
+        ]);
+    }
+  }
+  pages.push(`
+  <div class="page page-break">
+    <div class="report">
+      ${buildHeader(meta)}
+      ${body4}
+      ${footerLogos()}
+      ${pageFooter(p++)}
+    </div>
+  </div>`);
+
+  // ─── PAGE 5: RIESGO ───
+  if(els.secRiesgo.checked){
+    const sensorRows = agg.bySensor.map(([s,c])=>[s.replace("_NRT",""),fmt(c),fmt(100*c/agg.n,1)+"%",s.includes("VIIRS")?"375 m":"~1 km"]);
+    pages.push(`
+    <div class="page ${els.secTabla.checked?"page-break":""}">
+      <div class="report">
+        ${buildHeader(meta)}
+        <p class="section-title">7. Evaluacion de riesgo y recomendaciones</p>
+        ${texts.riesgo.map(t=>`<p>${t}</p>`).join("")}
+        ${buildTopTable("Cuadro 4. Detalle por sensor NRT",["Sensor","Detecciones","% total","Resolucion"],sensorRows)}
+        <p class="small muted">Nota metodologica: Las recomendaciones de este informe se basan exclusivamente en el analisis de anomalias termicas satelitales y deben complementarse con informacion de campo, imagenes de alta resolucion y el criterio profesional del personal tecnico. La deteccion satelital NRT no sustituye la verificacion terrestre ni los sistemas de alerta temprana de primera respuesta.</p>
+        ${footerLogos()}
+        ${pageFooter(p++)}
+      </div>
+    </div>`);
+  }
+
+  // ─── PAGE 6+: TABLA ANEXO ───
+  if(els.secTabla.checked){
+    const chunkSize=22;
+    for(let i=0;i<Math.max(rows.length,1);i+=chunkSize){
+      const chunk=rows.slice(i,i+chunkSize);
+      const isLast=(i+chunkSize)>=rows.length;
+      const titleExtra=rows.length?` (registros ${i+1} a ${Math.min(i+chunkSize,rows.length)} de ${rows.length})`:"";
+      const tableHtml=rows.length?buildDeteccionesTable(chunk).replace("Anexo de detecciones filtradas","Anexo de detecciones filtradas"+titleExtra):
+        `<p class="section-title">Anexo de detecciones</p><p>No se encontraron detecciones para los filtros seleccionados.</p>`;
+      pages.push(`
+      <div class="page ${!isLast?"page-break":""}">
+        <div class="report">
+          ${buildHeader(meta)}
+          ${tableHtml}
+          ${footerLogos()}
+          ${pageFooter(p++)}
+        </div>
+      </div>`);
+      if(!rows.length) break;
+    }
+  }
+
+  return pages.join("");
+}
+
+/* =============================================
+   MINI STATS
+   ============================================= */
+function updateMini(rows, agg){
+  els.mini_n.textContent   = fmt(agg.n);
+  els.mini_hi.textContent  = fmt(agg.hi);
+  els.mini_frp.textContent = fmt(agg.frpSum,1);
+  els.mini_zonas.textContent = fmt(agg.zones.length);
+  const periodo = agg.dMin&&agg.dMax?`Del ${fmtDateShort(agg.dMin)} al ${fmtDateShort(agg.dMax)}`:`Ultimos ${els.diasRef.value} dias`;
+  els.mini_periodo.textContent = "Periodo: "+periodo;
+}
+
+/* =============================================
+   GENERATE PREVIEW
+   ============================================= */
+async function generatePreview(){
+  if(state.generating) return;
+  state.generating = true;
+  els.btnGenerar.disabled = els.btnGenerar2.disabled = true;
+  els.chipData.textContent = "Generando...";
+  setWarning("");
+
+  try{
+    const rawRows = await fetchData();
+    state.rows = rawRows;
+    const filtered = applyFilters(rawRows);
+    state.lastFiltered = filtered;
+    const agg = aggregate(filtered);
+    updateMini(filtered, agg);
+
+    if(!filtered.length){
+      setWarning("No se encontraron detecciones para el periodo y filtros seleccionados.");
+      els.pages.innerHTML = `<div class="preview-empty"><div><strong>Sin detecciones en el periodo seleccionado.</strong><br/>Amplia el rango de fechas o cambia los parametros de filtro.</div></div>`;
+      els.chipData.textContent = "0 detecciones";
+      return;
+    }
+
+    const texts = buildNarrative(filtered, agg);
+    const html = await buildPages(filtered, agg, texts);
+    els.pages.innerHTML = html;
+
+    const isDemoWarn = agg.isDemo?" (datos de demostracion)":"";
+    els.chipData.textContent = `${fmt(filtered.length)} deteccion(es)${isDemoWarn}`;
+  }catch(e){
+    console.error(e);
+    setWarning("Error al generar el informe: "+e.message);
+    els.chipData.textContent = "Error";
+  }finally{
+    state.generating = false;
+    els.btnGenerar.disabled = els.btnGenerar2.disabled = false;
+  }
+}
+
+/* =============================================
+   EXPORTS
+   ============================================= */
+function csvEscape(v){ const s=String(v??""); return /[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; }
+function dlBlob(filename,text,type){
+  const b=new Blob([text],{type}), u=URL.createObjectURL(b), a=document.createElement("a");
+  a.href=u;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),500);
+}
+function exportCSV(){
+  const rows=state.lastFiltered.length?state.lastFiltered:state.rows;
+  if(!rows.length){alert("Genera el informe primero.");return;}
+  const cols=["datetime_utc","zone_name","source","confidence","lat","lon","frp","satellite","instrument","acq_date"];
+  dlBlob("incendios_detecciones_"+new Date().toISOString().slice(0,10)+".csv",
+    [cols.join(";"),...rows.map(r=>cols.map(c=>csvEscape(r[c]??(""))).join(";"))].join("\n"),
+    "text/csv;charset=utf-8");
+}
+function exportJSON(){
+  const rows=state.lastFiltered.length?state.lastFiltered:state.rows;
+  if(!rows.length){alert("Genera el informe primero.");return;}
+  dlBlob("incendios_detecciones_"+new Date().toISOString().slice(0,10)+".json",
+    JSON.stringify({meta:{generado:new Date().toISOString(),n:rows.length},detecciones:rows},null,2),
+    "application/json;charset=utf-8");
+}
+
+/* =============================================
+   INIT
+   ============================================= */
+// Seed dates: default to last 30 days
+(function seedDates(){
+  const now = new Date();
+  const d30 = new Date(now); d30.setDate(d30.getDate()-30);
+  if(!els.desde.value) els.desde.value = d30.toISOString().slice(0,10);
+  if(!els.hasta.value) els.hasta.value = now.toISOString().slice(0,10);
+})();
+
+// Events
+[els.btnGenerar,els.btnGenerar2].forEach(b=>b.addEventListener("click",generatePreview));
+[els.btnPrint,els.btnPrint2].forEach(b=>b.addEventListener("click",()=>{generatePreview().then(()=>window.print());window.print();}));
+els.btnCSV.addEventListener("click",exportCSV);
+els.btnJSON.addEventListener("click",exportJSON);
+
+})();
+</script>
+</body>
+</html>
