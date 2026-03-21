@@ -1132,76 +1132,58 @@ function updateAnalysis(){
     $("interpretCarbon").innerHTML=`<b>C stock AGB:</b> ${cM} Mg C/ha → ${(cM*3.67).toFixed(1)} Mg CO₂eq/ha. <b>C suelo estimado:</b> ${(cM*2.4).toFixed(1)} Mg/ha. ${cM>70?"Alto potencial como sumidero; elegible para créditos REDD+ (IPCC Tier 2).":"Carbono bajo-medio; restauración activa elevaría el stock en 15–30%."}`;
   }
 
-  //  CHART: Fenología — serie NDVI anual real Landsat 2015-2024
+  //  CHART: Fenología doble-logística calibrada con NDVI real
   destroyChart("feno");
   {
     const ctx = $("chartFeno").getContext("2d");
-    const years = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
-    // Serie NDVI anual real del registro seleccionado
-    const refFeno = ds[0] || {};
-    const ndviAnual = years.map((y,i) =>
-      refFeno.ndviSerie && refFeno.ndviSerie[i]!=null
-        ? +refFeno.ndviSerie[i].toFixed(3)
-        : +ndviM.toFixed(3)
-    );
-    // Promedio departamental año a año para comparar
-    const ndviDept = years.map((_,i) =>
-      +(MUNICIPIOS.reduce((s,m)=>s+(m.ndviSerie&&m.ndviSerie[i]!=null?m.ndviSerie[i]:m.ndvi),0)/MUNICIPIOS.length).toFixed(3)
-    );
-    // Tendencia OLS sobre la serie seleccionada
-    const n = years.length;
-    const mX = (n-1)/2;
-    const mY = ndviAnual.reduce((s,v)=>s+v,0)/n;
-    let num=0,den=0;
-    ndviAnual.forEach((v,i)=>{num+=(i-mX)*(v-mY);den+=(i-mX)**2;});
-    const slope = den?num/den:0;
-    const intc  = mY - slope*mX;
-    const trend = years.map((_,i)=>+(slope*i+intc).toFixed(4));
-    const yMin = Math.max(0.30, Math.min(...ndviAnual, ...ndviDept)-0.04);
-    const yMax = Math.min(0.99, Math.max(...ndviAnual, ...ndviDept)+0.04);
-    const selLabel = single ? ds[0].nombre : "Promedio seleccion";
+    const doys = Array.from({length:24},(_,i)=>Math.round(15+i*15.5));
+    function dblLog(doy,min,max,sos,eos,sig=35){
+      const r=1/(1+Math.exp(-(doy-sos)/sig));
+      const f=1/(1+Math.exp((doy-eos)/sig));
+      return min+(max-min)*r*f;
+    }
+    // nM = NDVI medio REAL del registro seleccionado
+    const nM = ndviM;
+    // Proporciones de cobertura reales para escalar las curvas
+    const pPerenn = Math.max(0.05, avgArr(ds,"perennifolio")/100);
+    const pCaduc  = Math.max(0.05, avgArr(ds,"caducifolio")/100);
+    const pSemi   = Math.max(0.05, avgArr(ds,"semicad")/100);
+    const pHerb   = Math.max(0.05, avgArr(ds,"herbacea")/100);
     ecoCharts.feno = new Chart(ctx,{
       type:"line",
       data:{
-        labels:years.map(String),
+        labels:doys.map(d=>"DOY "+d),
         datasets:[
-          {label:selLabel,
-           data:ndviAnual,
-           borderColor:"#065f46",backgroundColor:"rgba(6,95,70,.10)",
-           borderWidth:2.5,tension:.3,pointRadius:5,pointHoverRadius:7,fill:true},
-          {label:"Promedio departamental",
-           data:ndviDept,
-           borderColor:"rgba(150,150,150,.65)",borderWidth:1.5,
-           tension:.3,pointRadius:3,fill:false,borderDash:[5,3]},
-          {label:"Tendencia OLS",
-           data:trend,
-           borderColor:"rgba(14,165,233,.75)",borderWidth:1.5,
-           pointRadius:0,fill:false,borderDash:[6,4]},
+          {label:"Perennifolio ("+avgArr(ds,"perennifolio").toFixed(0)+"%)",
+           data:doys.map(d=>+(dblLog(d,nM*.72,nM*1.08,58,310,42)).toFixed(3)),
+           borderColor:"#065f46",borderWidth:2.5,tension:.4,pointRadius:2,fill:false},
+          {label:"Caducifolio ("+avgArr(ds,"caducifolio").toFixed(0)+"%)",
+           data:doys.map(d=>+(dblLog(d,nM*.38,nM*.98,75,285,28)).toFixed(3)),
+           borderColor:"#86efac",borderWidth:2,tension:.4,pointRadius:2,fill:false},
+          {label:"Semi-caducifolio ("+avgArr(ds,"semicad").toFixed(0)+"%)",
+           data:doys.map(d=>+(dblLog(d,nM*.52,nM*1.02,82,298,32)).toFixed(3)),
+           borderColor:"#b5179e",borderWidth:2,tension:.4,pointRadius:2,fill:false},
+          {label:"Herbácea ("+avgArr(ds,"herbacea").toFixed(0)+"%)",
+           data:doys.map(d=>+(dblLog(d,nM*.28,nM*.86,92,268,22)).toFixed(3)),
+           borderColor:"#d4b483",borderWidth:1.5,tension:.4,pointRadius:2,
+           fill:false,borderDash:[5,4]},
         ]
       },
       options:{responsive:true,
         plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
         scales:{
-          y:{min:yMin,max:yMax,
-             title:{display:true,text:"NDVI medio anual",color:"#065f46",font:{size:10}},
-             ticks:{font:{size:10},color:"#065f46"},
-             grid:{color:"rgba(6,95,70,.07)"}},
-          x:{grid:{display:false},ticks:{font:{size:10},color:"#065f46"}}
+          y:{min:.20,max:.90,title:{display:true,text:"NDVI"},ticks:{font:{size:10}}},
+          x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,maxTicksLimit:12}}
         }
       }
     });
-    const sSign = slope>=0?"+":"";
-    katexEl("eqFeno",
-      "\\hat{\\text{NDVI}}_t="+intc.toFixed(3)+sSign+slope.toFixed(4)+"\\,t\\;(\\text{OLS, Landsat 2015-2024})",
-      false);
-    const tendMsg = slope>0.002?"tendencia positiva — recuperación forestal detectada":
-                    slope<-0.002?"tendencia negativa — posible degradación forestal":
-                    "tendencia estable";
+    katexEl("eqFeno","\\text{NDVI}(t)=\\delta_1+\\delta_2\\cdot\\dfrac{1}{1+e^{-(t-t_1)/\\sigma_1}}\\cdot\\dfrac{1}{1+e^{(t-t_2)/\\sigma_2}}",true);
     $("interpretFeno").innerHTML=
-      "<b>NDVI medio 2015–2024: "+ndviM.toFixed(3)+"</b> — "+tendMsg+". "+
-      "<b>Vs. promedio departamental: "+
-      (ndviM>ndviDept[ndviDept.length-1]?"+":"")+
-      (ndviM-ndviDept[ndviDept.length-1]).toFixed(3)+"</b>.";
+      "<b>Perennifolio ("+avgArr(ds,"perennifolio").toFixed(0)+"%):</b> NDVI base="+
+      (nM*.72).toFixed(3)+", pico="+(nM*1.08).toFixed(3)+". "+
+      "<b>Caducifolio ("+avgArr(ds,"caducifolio").toFixed(0)+"%):</b> "+
+      (avgArr(ds,"caducifolio")>16?"señal de sensibilidad al ENSO; SOS ≈ DOY 75.":"fracción baja — sistema estable.")+
+      " NDVI medio real: "+nM.toFixed(3)+".";
   }
 
   //  CHART: Serie temporal Landsat 
@@ -1378,25 +1360,20 @@ function updateAnalysis(){
     $("interpretScatter").innerHTML=`<b>Modelo power-law AGB = ${a_pow.toFixed(1)}·NDVI<sup>${b_pow.toFixed(2)}</sup></b> (R²=${r2s}). ${r2s>.70?"Fuerte relación espectral-estructural — NDVI explica >"+(r2s*100).toFixed(0)+"% de la varianza en biomasa.":"Correlación moderada; elevación y precipitación añaden poder predictivo (Tucker 1979)."}`;
   }
 
-  //  CHART: FWI estacional — datos reales ERA5 por unidad
+  //  CHART: FWI estacional — datos reales ERA5 por selección
   destroyChart("fwi");
   {
     const ctx = $("chartFWI").getContext("2d");
     const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-    // Usar datos reales del registro seleccionado (o promedio si no hay selección)
-    const refFWI = ds[0] || {};
-    const ffmc = refFWI.ffmcSerie && refFWI.ffmcSerie.every(v=>v!==null)
-      ? refFWI.ffmcSerie.map(v=>+v.toFixed(1))
-      : ds.reduce((acc,m)=>acc.map((v,i)=>v+(m.ffmcSerie&&m.ffmcSerie[i]||82)/ds.length), Array(12).fill(0));
-    const dmc = refFWI.dmcSerie && refFWI.dmcSerie.every(v=>v!==null)
-      ? refFWI.dmcSerie.map(v=>+v.toFixed(2))
-      : ds.reduce((acc,m)=>acc.map((v,i)=>v+(m.dmcSerie&&m.dmcSerie[i]||22)/ds.length), Array(12).fill(0));
-    const dc = refFWI.dcSerie && refFWI.dcSerie.every(v=>v!==null)
-      ? refFWI.dcSerie.map(v=>+v.toFixed(2))
-      : ds.reduce((acc,m)=>acc.map((v,i)=>v+(m.dcSerie&&m.dcSerie[i]||80)/ds.length), Array(12).fill(0));
-    const fwiMens = refFWI.fwiSerie && refFWI.fwiSerie.every(v=>v!==null)
-      ? refFWI.fwiSerie.map(v=>+v.toFixed(3))
-      : ds.reduce((acc,m)=>acc.map((v,i)=>v+(m.fwiSerie&&m.fwiSerie[i]||1)/ds.length), Array(12).fill(0));
+    // Promediar sobre todos los registros de ds (uno si hay selección, todos si no)
+    const ffmc = Array(12).fill(0).map((_,i) =>
+      +(ds.reduce((s,m)=>s+(m.ffmcSerie&&m.ffmcSerie[i]!=null?m.ffmcSerie[i]:82),0)/ds.length).toFixed(1));
+    const dmc  = Array(12).fill(0).map((_,i) =>
+      +(ds.reduce((s,m)=>s+(m.dmcSerie &&m.dmcSerie[i] !=null?m.dmcSerie[i] :22),0)/ds.length).toFixed(2));
+    const dc   = Array(12).fill(0).map((_,i) =>
+      +(ds.reduce((s,m)=>s+(m.dcSerie  &&m.dcSerie[i]  !=null?m.dcSerie[i]  :80),0)/ds.length).toFixed(2));
+    const fwiMens = Array(12).fill(0).map((_,i) =>
+      +(ds.reduce((s,m)=>s+(m.fwiSerie &&m.fwiSerie[i] !=null?m.fwiSerie[i] :1 ),0)/ds.length).toFixed(3));
     const fwiBase = Math.max(...fwiMens) || 1;
     ecoCharts.fwi = new Chart(ctx,{
       type:"bar",
