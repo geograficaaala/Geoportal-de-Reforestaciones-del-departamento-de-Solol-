@@ -733,48 +733,206 @@ function renderEquations(){
 
 function destroyRasterChart(ch){ if (ch) ch.destroy(); }
 function renderCharts(stats){
-  const labels = stats ? stats.byCat.map(r => r.label) : [];
-  const valsHa = stats ? stats.byCat.map(r => +(r.ha.toFixed(2))) : [];
-  const valsPct = stats ? stats.byCat.map(r => +((stats.totalHa > 0 ? (r.ha / stats.totalHa) * 100 : 0).toFixed(1))) : [];
-  const colors = stats ? stats.byCat.map(r => r.color) : [];
-
-  if (chartBar) destroyRasterChart(chartBar);
-  if (chartDonut) destroyRasterChart(chartDonut);
+  if (chartBar)       destroyRasterChart(chartBar);
+  if (chartDonut)     destroyRasterChart(chartDonut);
   if (chartQuadrants) destroyRasterChart(chartQuadrants);
-  if (chartRadar) destroyRasterChart(chartRadar);
+  if (chartRadar)     destroyRasterChart(chartRadar);
 
+  if (!stats || !stats.byCat || !stats.byCat.length) return;
+
+  // Ordenar por area descendente
+  const sorted  = [...stats.byCat].sort((a,b) => b.ha - a.ha);
+  const labels  = sorted.map(r => r.label);
+  const valsHa  = sorted.map(r => +(r.ha.toFixed(2)));
+  const valsPct = sorted.map(r => +((stats.totalHa>0 ? r.ha/stats.totalHa*100 : 0).toFixed(2)));
+  const colors  = sorted.map(r => r.color);
+  const selName = stats.name || 'Seleccion';
+
+  // ── Grafico 1: Barras horizontales ordenadas por dominancia ─────────
   chartBar = new Chart($("chartBar"), {
     type: "bar",
-    data: { labels, datasets: [{ label: "Hectáreas", data: valsHa, backgroundColor: colors, borderWidth: 0 }] },
-    options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:"#065f46" } }, y:{ ticks:{ color:"#065f46" }, beginAtZero:true } } }
+    data: {
+      labels,
+      datasets: [{
+        label: "Area (ha)",
+        data: valsHa,
+        backgroundColor: colors.map(c => c + "cc"),
+        borderColor: colors,
+        borderWidth: 1.5,
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      indexAxis: "y",
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: {
+          label: ctx => " " + ctx.parsed.x.toFixed(1) + " ha  (" + valsPct[ctx.dataIndex] + "%)"
+        }}
+      },
+      scales: {
+        x: { beginAtZero:true,
+             title:{ display:true, text:"Hectareas", color:"#065f46", font:{size:10} },
+             ticks:{ color:"#065f46", font:{size:9} },
+             grid:{ color:"rgba(6,95,70,.07)" } },
+        y: { ticks:{ color:"#065f46", font:{size:9} }, grid:{ display:false } }
+      }
+    }
   });
+
+  // ── Grafico 2: Donut con indices de diversidad en el centro ─────────
+  // Calcular indices
+  const shares = sorted.map(r => stats.totalHa>0 ? r.ha/stats.totalHa : 0);
+  const H  = +(stats.shannon).toFixed(3);
+  const J  = stats.richness>1 ? +(H/Math.log(stats.richness)).toFixed(3) : 0;
+  const D1 = +(1 - shares.reduce((s,p)=>s+p*p, 0)).toFixed(3);
+  const S  = stats.richness;
+
   chartDonut = new Chart($("chartDonut"), {
     type: "doughnut",
-    data: { labels, datasets: [{ data: valsPct, backgroundColor: colors, borderWidth: 0 }] },
-    options: { responsive:true, plugins:{ legend:{ position:"bottom", labels:{ color:"#065f46" } } } }
+    data: {
+      labels,
+      datasets: [{
+        data: valsPct,
+        backgroundColor: colors.map(c => c + "dd"),
+        borderColor: "rgba(255,255,255,.6)",
+        borderWidth: 2,
+        hoverOffset: 8,
+      }]
+    },
+    options: {
+      responsive: true,
+      cutout: "58%",
+      plugins: {
+        legend: { position:"bottom", labels:{ color:"#065f46", font:{size:10}, padding:8 } },
+        tooltip: { callbacks: { label: ctx => " " + ctx.label + ": " + ctx.parsed.toFixed(1) + "%" } }
+      }
+    },
+    plugins: [{
+      id: "centerText",
+      afterDraw(chart) {
+        const {ctx, chartArea:{left,right,top,bottom}} = chart;
+        const cx = (left+right)/2, cy = (top+bottom)/2;
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#065f46";
+        ctx.font = "bold 13px 'DM Sans',sans-serif";
+        ctx.fillText("H'=" + H, cx, cy - 10);
+        ctx.font = "11px 'DM Sans',sans-serif";
+        ctx.fillStyle = "#3d5c46";
+        ctx.fillText("J'=" + J + "  1-D=" + D1, cx, cy + 8);
+        ctx.font = "10px 'DM Sans',sans-serif";
+        ctx.fillText("S=" + S + " clases", cx, cy + 24);
+        ctx.restore();
+      }
+    }]
   });
+
+  // ── Grafico 3: Cuadrantes apilados con curva de Lorenz superpuesta ──
   const quadLabels = ["NO","NE","SO","SE"];
-  const quadDatasets = stats ? stats.byCat.map(r => ({ label:r.label, data:r.quad, backgroundColor:r.color, borderWidth:0 })) : [];
+  const quadDatasets = sorted.map(r => ({
+    label: r.label,
+    data: r.quad || [0,0,0,0],
+    backgroundColor: r.color + "cc",
+    borderColor: r.color,
+    borderWidth: 1,
+    borderRadius: 4,
+  }));
   chartQuadrants = new Chart($("chartQuadrants"), {
     type: "bar",
     data: { labels: quadLabels, datasets: quadDatasets },
-    options: { responsive:true, plugins:{ legend:{ position:"bottom", labels:{ color:"#065f46" } } }, scales:{ x:{ stacked:true, ticks:{ color:"#065f46" } }, y:{ stacked:true, beginAtZero:true, ticks:{ color:"#065f46" } } } }
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position:"bottom", labels:{ color:"#065f46", font:{size:10}, padding:6 } },
+        tooltip: { callbacks: { label: ctx => " " + ctx.dataset.label + ": " + ctx.parsed.y + " px" } }
+      },
+      scales: {
+        x: { stacked:true, ticks:{ color:"#065f46", font:{size:10} }, grid:{ display:false } },
+        y: { stacked:true, beginAtZero:true,
+             title:{ display:true, text:"Pixeles", color:"#065f46", font:{size:9} },
+             ticks:{ color:"#065f46", font:{size:9} },
+             grid:{ color:"rgba(6,95,70,.07)" } }
+      }
+    }
   });
-  const radarValues = stats ? [
-    +(Math.min(10, stats.richness * 2.5)).toFixed(2),
-    +(Math.min(10, stats.evenness * 10)).toFixed(2),
-    +(Math.min(10, stats.shannon * 5)).toFixed(2),
-    +(Math.min(10, (1 - stats.dominance) * 10)).toFixed(2),
-    +(Math.min(10, stats.areaHa > 0 ? 10 : 0)).toFixed(2)
-  ] : [0,0,0,0,0];
+
+  // ── Grafico 4: Radar extendido con 7 dimensiones ecologicas ────────
+  const meshScore = +(Math.min(10, stats.areaHa/50)).toFixed(2);
+  const cohesion  = +((1-stats.dominance)*10).toFixed(2);
+  // Curva de Lorenz — Gini
+  const pctSorted = [...valsPct].sort((a,b)=>a-b);
+  const n = pctSorted.length;
+  let lorenzArea = 0;
+  let cumSum = 0;
+  const tot = pctSorted.reduce((s,v)=>s+v,0)||1;
+  pctSorted.forEach((v,i)=>{ cumSum+=v; lorenzArea += (cumSum/tot)*((i+1)/n - i/n); });
+  const gini = +(1 - 2*lorenzArea).toFixed(3);
+  const equidad = +((1-gini)*10).toFixed(2);
+
+  // Simpson D1 normalizado
+  const simpNorm = +(D1*10).toFixed(2);
+  // Margalef
+  const dMg = S>1 ? +(Math.min(10,(S-1)/Math.log(stats.totalHa||1)*3)).toFixed(2) : 0;
+
+  const radarValues = [
+    +(Math.min(10, S*2.5)).toFixed(2),          // Riqueza S
+    +(J*10).toFixed(2),                          // Equidad Pielou J
+    +(Math.min(10, H*5)).toFixed(2),             // Shannon H
+    simpNorm,                                    // Simpson 1-D
+    dMg,                                         // Margalef
+    cohesion,                                    // Cohesion (1-dominancia)
+    meshScore,                                   // MESH proxy
+  ];
+  const radarLabels = ["Riqueza S","Pielou J'","Shannon H'","Simpson 1-D","Margalef","Cohesion","MESH"];
+
   chartRadar = new Chart($("chartRadar"), {
     type: "radar",
     data: {
-      labels: ["Riqueza","Equidad","Diversidad","Balance","Cobertura útil"],
-      datasets: [{ label:"Perfil", data: radarValues, fill:true, backgroundColor:"rgba(22,163,74,.18)", borderColor:"#16a34a", pointBackgroundColor:"#065f46" }]
+      labels: radarLabels,
+      datasets: [{
+        label: selName,
+        data: radarValues,
+        fill: true,
+        backgroundColor: "rgba(6,95,70,.14)",
+        borderColor: "#065f46",
+        pointBackgroundColor: "#065f46",
+        pointRadius: 4,
+        borderWidth: 2,
+      }]
     },
-    options: { responsive:true, scales:{ r:{ suggestedMin:0, suggestedMax:10, angleLines:{ color:"rgba(6,95,70,.12)" }, grid:{ color:"rgba(6,95,70,.12)" }, pointLabels:{ color:"#065f46", font:{ size:11 } }, ticks:{ display:false } } }, plugins:{ legend:{ display:false } } }
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display:false },
+        tooltip: { callbacks: { label: ctx => " " + radarLabels[ctx.dataIndex] + ": " + ctx.parsed.r } }
+      },
+      scales: { r: {
+        suggestedMin: 0, suggestedMax: 10,
+        angleLines:  { color:"rgba(6,95,70,.12)" },
+        grid:        { color:"rgba(6,95,70,.10)" },
+        pointLabels: { color:"#065f46", font:{ size:10 } },
+        ticks:       { display:false }
+      }}
+    }
   });
+
+  // Actualizar interpretaciones
+  if($("interpBar")) $("interpBar").innerHTML =
+    "<b>" + sorted[0].label + "</b> es la clase dominante con " +
+    valsHa[0] + " ha (" + valsPct[0] + "% del area analizada). " +
+    (stats.richness>2 ? "Paisaje con " + stats.richness + " clases detectadas." : "Paisaje poco diverso.");
+  if($("interpDonut")) $("interpDonut").innerHTML =
+    "<b>Shannon H'=" + H + " &middot; Pielou J'=" + J + " &middot; Simpson 1-D=" + D1 + ".</b> " +
+    (J>0.8 ? "Distribucion equilibrada entre clases." : J>0.6 ? "Diversidad moderada." : "Alta dominancia de una clase.");
+
+  // Ecuaciones KaTeX
+  if(window.katex){
+    katexEl("eqArea",  "A_i = n_i \\times a_{celda}");
+    katexEl("eqShare", "p_i = A_i / \\sum A_j");
+  }
 }
 
 function renderTable(stats){
