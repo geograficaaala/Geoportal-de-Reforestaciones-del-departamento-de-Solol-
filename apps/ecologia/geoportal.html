@@ -205,6 +205,10 @@
     .popupTitle{font-weight:800;font-size:13px;color:var(--E);margin-bottom:8px}
     .popupRow{font-size:12px;background:rgba(255,255,255,.7);border:1px solid var(--stroke);border-radius:9px;padding:5px 8px;margin-bottom:4px;line-height:1.35}
 
+    /* Sankey */
+    #chartSankey svg { font-family: 'DM Sans', sans-serif !important; }
+    .sankey-node rect { rx: 6; }
+
     @media(max-width:1100px){
       .wrap{grid-template-columns:1fr;height:auto}
       aside{display:block}
@@ -231,7 +235,81 @@
             <select id="selAOI" style="padding:8px 14px;border-radius:12px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.28);color:#fff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;backdrop-filter:blur(8px)">
               <option value="muni">Municipios</option>
               <option value="micro">Microcuencas</option>
-            </select> <button class="btn-dl" id="btnDlCSV"> Descargar CSV</button> <button class="btn-dl" id="btnDlXLSX"> Descargar Excel</button> </div> </div> </div> <div class="analysis-body"> <!--  KPI RASTER (calculados del análisis real)  --> <div class="section-divider"><span> Estadísticos de la selección activa</span></div> <div class="kpi-row-raster"> <div class="kpi-card c1"><div class="kpi-label">Selección</div><div class="kpi-val" id="kpi-sel">—</div><div class="kpi-eq">Entidad activa del recorte</div></div> <div class="kpi-card c2"><div class="kpi-label">Capa analizada</div><div class="kpi-val" id="kpi-layer">—</div><div class="kpi-eq">Última capa activa</div></div> <div class="kpi-card c3"><div class="kpi-label">Área evaluada</div><div class="kpi-val" id="kpi-area">—</div><div class="kpi-eq">ha = pix × área de celda</div></div> <div class="kpi-card c4"><div class="kpi-label">Categorías detectadas</div><div class="kpi-val" id="kpi-rich">—</div><div class="kpi-eq">S = clases presentes</div></div> </div> <div class="kpi-row-raster"> <div class="kpi-card c5"><div class="kpi-label">Clase dominante</div><div class="kpi-val" id="kpi-dom">—</div><div class="kpi-eq">Clase de mayor área relativa</div></div> <div class="kpi-card c6"><div class="kpi-label">Dominancia D</div><div class="kpi-val" id="kpi-domPct">—</div><div class="kpi-eq">D = max(pᵢ)</div></div> <div class="kpi-card c7"><div class="kpi-label">Shannon H'</div><div class="kpi-val" id="kpi-h-raster">—</div><div class="kpi-eq">H' = −Σ pᵢ ln(pᵢ)</div></div> <div class="kpi-card c8"><div class="kpi-label">Evenness J</div><div class="kpi-val" id="kpi-j">—</div><div class="kpi-eq">J = H'/ln(S)</div></div> </div> <!--  KPI ECOLÓGICOS (datos de referencia municipios)  --> <div class="section-divider"><span> Indicadores ecológicos forestales · Sololá</span></div> <div class="kpi-row"> <div class="kpi-card c1"> <div class="kpi-label"> AGB media</div> <div class="kpi-val" id="kpi-agb">— t/ha</div> <div class="kpi-eq" id="kpi-agb-eq"></div> <div class="kpi-trend neutral" id="kpi-agb-t"></div> </div> <div class="kpi-card c2"> <div class="kpi-label"> Cobertura boscosa</div> <div class="kpi-val" id="kpi-cob">—%</div> <div class="kpi-eq" id="kpi-cob-eq"></div> <div class="kpi-trend neutral" id="kpi-cob-t"></div> </div> <div class="kpi-card c3"> <div class="kpi-label"> C stock (AGB)</div> <div class="kpi-val" id="kpi-c">— Mg C/ha</div> <div class="kpi-eq" id="kpi-c-eq"></div> <div class="kpi-trend neutral" id="kpi-c-t"></div> </div> <div class="kpi-card c4"> <div class="kpi-label"> Shannon H'</div> <div class="kpi-val" id="kpi-h">—</div> <div class="kpi-eq" id="kpi-h-eq"></div> <div class="kpi-trend neutral" id="kpi-h-t"></div> </div> <div class="kpi-card c5"> <div class="kpi-label"> LAI estimado</div> <div class="kpi-val" id="kpi-lai">—</div> <div class="kpi-eq" id="kpi-lai-eq"></div> <div class="kpi-trend neutral" id="kpi-lai-t"></div> </div> </div> <div class="kpi-row2"> <div class="kpi-card c6"> <div class="kpi-label"> Riesgo FWI</div> <div class="kpi-val" id="kpi-fwi">—</div> <div class="kpi-eq" id="kpi-fwi-eq"></div> <div class="kpi-trend neutral" id="kpi-fwi-t"></div> </div> <div class="kpi-card c7"> <div class="kpi-label"> Regulación hídrica</div> <div class="kpi-val" id="kpi-wri">— / 10</div> <div class="kpi-eq" id="kpi-wri-eq"></div> <div class="kpi-trend neutral" id="kpi-wri-t"></div> </div> <div class="kpi-card c8"> <div class="kpi-label"> Fragmentación MESH</div> <div class="kpi-val" id="kpi-mesh">— ha</div> <div class="kpi-eq" id="kpi-mesh-eq"></div> <div class="kpi-trend neutral" id="kpi-mesh-t"></div> </div> <div class="kpi-card c9"> <div class="kpi-label"> NDVI medio</div> <div class="kpi-val" id="kpi-ndvi">—</div> <div class="kpi-eq" id="kpi-ndvi-eq"></div> <div class="kpi-trend neutral" id="kpi-ndvi-t"></div> </div> </div> <!--  SECCIÓN 1: COMPOSICIÓN RASTER  --> <div class="section-divider"><span> Composición del paisaje (capa activa)</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Hectáreas por categoría</div> <div class="chart-source">Distribución absoluta de clases dentro del recorte, excluyendo nodata y valores nulos. Calculado píxel a píxel.</div> <canvas id="chartBar" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Cálculo de área por clase</div><div id="eqArea"></div></div> <div class="chart-interp" id="interpBar">Activa una capa y selecciona un recorte para comenzar.</div> </div> <div class="chart-card"> <div class="chart-title"> Participación relativa</div> <div class="chart-source">Peso porcentual de cada categoría respecto al área total válida analizada.</div> <canvas id="chartDonut" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Proporción por clase</div><div id="eqShare"></div></div> <div class="chart-interp" id="interpDonut">La dominancia y el balance entre clases se actualizarán aquí.</div> </div> </div> <!--  SECCIÓN 2: ORGANIZACIÓN ESPACIAL RASTER  --> <div class="section-divider"><span> Organización espacial (capa activa)</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Cuadrantes por categoría</div> <div class="chart-source">Conteo de píxeles por cuadrante (NO, NE, SO, SE) — detecta sesgos espaciales de la clase dominante.</div> <canvas id="chartQuadrants" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Asignación espacial</div><div id="eqQuadrants"></div></div> </div> <div class="chart-card"> <div class="chart-title"> Perfil ecológico sintético (raster)</div> <div class="chart-source">Radar normalizado 0–10 con métricas derivadas del raster activo y el recorte seleccionado.</div> <canvas id="chartRadar" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Normalización</div><div id="eqRadar"></div></div> </div> </div> <!--  SECCIÓN 3: BIOMASA & CARBONO  --> <div class="section-divider"><span> Biomasa &amp; Ciclo de Carbono · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Distribución AGB · Histograma + Ajuste Weibull</div> <div class="chart-source">Biomasa aérea forestal (t/ha) — distribución Weibull de 2 parámetros (Jenkins et al. 2003; Chave et al. 2014)</div> <canvas id="chartAGB" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Función de densidad Weibull</div><div id="eqAGB"></div></div> <div class="chart-interp" id="interpretAGB">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Stock de carbono · AGB → C → CO₂eq por municipio</div> <div class="chart-source">Conversión IPCC Tier 1: C = 0.47 × AGB; CO₂eq = C × 3.67 (Eggleston et al. 2006; IPCC 2019)</div> <canvas id="chartCarbon" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Conversión carbono IPCC Tier 1</div><div id="eqCarbon"></div></div> <div class="chart-interp" id="interpretCarbon">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 4: FENOLOGÍA  --> <div class="section-divider"><span> Fenología Forestal Espectral · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Perfil NDVI anual · Modelo doble-logístico por tipo fenológico</div> <div class="chart-source">Series temporales NDVI estacional (DOY 1–365) — modelo doble-logístico (Eklundh &amp; Jönsson 2015 · TIMESAT)</div> <canvas id="chartFeno" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo doble-logístico TIMESAT</div><div id="eqFeno"></div></div> <div class="chart-interp" id="interpretFeno">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Índices espectrales · Serie temporal 2015–2024 (Landsat)</div> <div class="chart-source">NDVI, EVI₂ y NIRv — tendencia decenal OLS; EVI₂ = 2.5·(NIR−R)/(NIR+2.4·R+1) (Jiang et al. 2008; Badgley et al. 2017)</div> <canvas id="chartTimeSeries" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Regresión OLS temporal + EVI₂ + NIRv</div><div id="eqTimeSeries"></div></div> <div class="chart-interp" id="interpretTimeSeries">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 5: DIVERSIDAD & ESTRUCTURA  --> <div class="section-divider"><span> Diversidad Estructural del Paisaje Forestal · Municipios</span></div> <div class="charts-3"> <div class="chart-card"> <div class="chart-title"> Shannon H' &amp; Pielou J' — Diversidad de cobertura</div> <div class="chart-source">Índices de Shannon-Wiener y equitatividad de Pielou sobre composición fenológica por municipio</div> <canvas id="chartShannon" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Entropía de Shannon / Evenness Pielou</div><div id="eqShannon"></div></div> </div> <div class="chart-card"> <div class="chart-title"> LAI · Modelo potencial NIRv (Fang et al. 2019)</div> <div class="chart-source">Índice de Área Foliar estimado; curva teórica LAI = α · NDVIᵝ sobre rango observado en altiplano guatemalteco</div> <canvas id="chartLAI" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo LAI potencial calibrado</div><div id="eqLAI"></div></div> </div> <div class="chart-card"> <div class="chart-title"> Perfil ecológico integral · Radar multidimensional</div> <div class="chart-source">Indicadores normalizados (0–10) — municipio seleccionado vs. promedio departamental (Sololá)</div> <canvas id="chartRadarEco" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Normalización min-max</div><div id="eqRadarEco"></div></div> </div> </div> <!--  SECCIÓN 6: GEOESTADÍSTICA  --> <div class="section-divider"><span> Geoestadística Forestal · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Variograma espacial experimental · Biomasa AGB</div> <div class="chart-source">Semivarianza γ(h) de la biomasa forestal — ajuste esférico y exponencial (Zawadzki et al. 2016; Journel &amp; Huijbregts 1978)</div> <canvas id="chartVario" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo esférico de variograma</div><div id="eqVario"></div></div> <div class="chart-interp" id="interpretVario">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Correlación espacial AGB–NDVI · Scatterplot + regresión</div> <div class="chart-source">Relación AGB (t/ha) vs. NDVI medio por municipio — ajuste de potencia y OLS (Tucker 1979; Foody et al. 2003)</div> <canvas id="chartScatter" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Regresión AGB = a · NDVIᵇ (power law)</div><div id="eqScatter"></div></div> <div class="chart-interp" id="interpretScatter">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 7: RIESGO & SERVICIOS  --> <div class="section-divider"><span> Riesgo &amp; Servicios Ecosistémicos · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> FWI estacional · Componentes FFMC / DMC / DC / ISI</div> <div class="chart-source">Fire Weather Index (Van Wagner 1987) — patrones estacionales estimados para altiplano guatemalteco (CONRED 2023)</div> <canvas id="chartFWI" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Fire Weather Index — Van Wagner (1987)</div><div id="eqFWI"></div></div> <div class="chart-interp" id="interpretFWI">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Servicios ecosistémicos hídricos · Precipitación–ET–escorrentía</div> <div class="chart-source">Balance hídrico forestal estimado: P, ET₀ (Budyko) y escorrentía regulada — relación con cobertura boscosa por municipio</div> <canvas id="chartHydro" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Balance hídrico forestal (Budyko 1974)</div><div id="eqHydro"></div></div> <div class="chart-interp" id="interpretHydro">Selecciona un municipio para filtrar.</div> </div> </div> <!--  MARCO DE CÁLCULO  --> <div class="section-divider"><span> Modelos Estadísticos Forestales</span></div> <div class="model-box"> <h3> Síntesis de modelos ecológicos aplicados</h3> <div class="model-box-grid"> <div class="model-eq-block" id="modelEq1"></div> <div class="model-eq-block" id="modelEq2"></div> <div class="model-eq-block" id="modelEq3"></div> <div class="model-eq-block" id="modelEq4"></div> </div> <div class="model-sub" id="modelBoxText"></div> </div> <!--  MARCO DE CÁLCULO RASTER  --> <div class="model-box"> <h3> Marco de cálculo del análisis raster</h3> <div class="model-box-grid"> <div> <div class="model-eq-block" id="eqBlockMain"></div> <div class="model-sub"><b>Lectura general:</b> el análisis se hace sobre la capa actualmente activa. El recorte vectorial se reproyecta al CRS del raster antes de intersectar centro de celda por centro de celda.</div> </div> <div> <div class="model-eq-block" id="eqBlockSecondary"></div> <div class="model-sub"><b>Buenas prácticas:</b> el cálculo ignora valores <code>0</code>, <code>-9999</code> y <code>255</code>, y solo considera clases presentes en la leyenda de la capa seleccionada.</div> </div> </div> </div> <!--  INTERPRETACIÓN INTEGRAL  --> <div class="section-divider"><span> Interpretación Ecológica Integral</span></div> <div class="interpret-panel"> <h3> Lectura ecosistémica — <span id="interpretTitle">Departamento de Sololá</span></h3> <div class="interpret-grid" id="interpretGrid"> <div class="interpret-item"><b>Dominancia</b>Selecciona un recorte para generar interpretación.</div> <div class="interpret-item"><b>Diversidad</b>El balance entre clases se calculará automáticamente.</div> <div class="interpret-item"><b>Patrón espacial</b>Se analizará el cuadrante predominante de las clases más extensas.</div> <div class="interpret-item"><b>Lectura técnica</b>Las conclusiones se basan en estadísticas reales del raster, no en valores simulados.</div> </div> </div> <!--  TABLA RASTER  --> <div class="section-divider"><span> Resumen por categoría · Capa activa</span></div> <div class="table-wrap"> <div class="table-header"> <div> <div class="table-title"> Resumen por categoría (raster)</div> <div class="table-sub">Exportable a CSV y Excel · calculado sobre la capa ráster activa</div> </div> <div style="display:flex;gap:8px;flex-wrap:wrap"> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnTableCSV"> CSV</button> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnTableXLSX"> Excel</button> </div> </div> <div class="table-scroll"> <table> <thead> <tr> <th>Categoría</th> <th class="right">Ha</th> <th class="right">%</th> <th>Cuadrante principal</th> <th class="right">Pixeles</th> </tr> </thead> <tbody id="tblBody"> <tr><td colspan="5">Selecciona un recorte para comenzar.</td></tr> </tbody> </table> </div> </div> <!--  TABLA MUNICIPIOS  --> <div class="section-divider"><span> Tabla de Indicadores Ecológicos · Municipios</span></div> <div class="table-wrap"> <div class="table-header"> <div> <div class="table-title"> Indicadores ecológicos forestales por municipio</div> <div class="table-sub">Haz clic en una fila para seleccionar el municipio y actualizar gráficos · Sololá, Guatemala 2026</div> </div> <div style="display:flex;gap:8px"> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlExcel2"> Excel</button> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlCSV2"> CSV</button> </div> </div> <div class="table-scroll"> <table id="ecoTable"> <thead> <tr> <th>Municipio</th><th>AGB (t/ha)</th><th>Cob. Boscosa</th><th>C stock (Mg C/ha)</th> <th>CO₂eq (Mg/ha)</th><th>C suelo (Mg/ha)</th><th>Shannon H'</th><th>Pielou J'</th> <th>LAI</th><th>NDVI</th><th>NPP (gC/m²/d)</th><th>GPP (gC/m²/d)</th> <th>FWI</th><th>MESH (ha)</th><th>Reg. Hídrica</th><th>Precip. (mm/año)</th> <th>Elev. (msnm)</th><th>Área (km²)</th><th>Perennifolio</th><th>Caducifolio</th> <th>Semi-caduc.</th><th>Herbácea</th> </tr> </thead> <tbody id="ecoTableBody"></tbody> </table> </div> </div> </div><!-- /analysis-body -->
+            </select> <button class="btn-dl" id="btnDlCSV"> Descargar CSV</button> <button class="btn-dl" id="btnDlXLSX"> Descargar Excel</button> </div> </div> </div> <div class="analysis-body"> <!--  KPI RASTER (calculados del análisis real)  --> <div class="section-divider"><span> Estadísticos de la selección activa</span></div> <div class="kpi-row-raster"> <div class="kpi-card c1"><div class="kpi-label">Selección</div><div class="kpi-val" id="kpi-sel">—</div><div class="kpi-eq">Entidad activa del recorte</div></div> <div class="kpi-card c2"><div class="kpi-label">Capa analizada</div><div class="kpi-val" id="kpi-layer">—</div><div class="kpi-eq">Última capa activa</div></div> <div class="kpi-card c3"><div class="kpi-label">Área evaluada</div><div class="kpi-val" id="kpi-area">—</div><div class="kpi-eq">ha = pix × área de celda</div></div> <div class="kpi-card c4"><div class="kpi-label">Categorías detectadas</div><div class="kpi-val" id="kpi-rich">—</div><div class="kpi-eq">S = clases presentes</div></div> </div> <div class="kpi-row-raster"> <div class="kpi-card c5"><div class="kpi-label">Clase dominante</div><div class="kpi-val" id="kpi-dom">—</div><div class="kpi-eq">Clase de mayor área relativa</div></div> <div class="kpi-card c6"><div class="kpi-label">Dominancia D</div><div class="kpi-val" id="kpi-domPct">—</div><div class="kpi-eq">D = max(pᵢ)</div></div> <div class="kpi-card c7"><div class="kpi-label">Shannon H'</div><div class="kpi-val" id="kpi-h-raster">—</div><div class="kpi-eq">H' = −Σ pᵢ ln(pᵢ)</div></div> <div class="kpi-card c8"><div class="kpi-label">Evenness J</div><div class="kpi-val" id="kpi-j">—</div><div class="kpi-eq">J = H'/ln(S)</div></div> </div> <!--  KPI ECOLÓGICOS (datos de referencia municipios)  --> <div class="section-divider"><span>🌲 Indicadores ecológicos forestales · <span id="kpiSelLabel">Sololá (todos)</span></span></div> <div class="kpi-row"> <div class="kpi-card c1"> <div class="kpi-label"> AGB media</div> <div class="kpi-val" id="kpi-agb">— t/ha</div> <div class="kpi-eq" id="kpi-agb-eq"></div> <div class="kpi-trend neutral" id="kpi-agb-t"></div> </div> <div class="kpi-card c2"> <div class="kpi-label"> Cobertura boscosa</div> <div class="kpi-val" id="kpi-cob">—%</div> <div class="kpi-eq" id="kpi-cob-eq"></div> <div class="kpi-trend neutral" id="kpi-cob-t"></div> </div> <div class="kpi-card c3"> <div class="kpi-label"> C stock (AGB)</div> <div class="kpi-val" id="kpi-c">— Mg C/ha</div> <div class="kpi-eq" id="kpi-c-eq"></div> <div class="kpi-trend neutral" id="kpi-c-t"></div> </div> <div class="kpi-card c4"> <div class="kpi-label"> Shannon H'</div> <div class="kpi-val" id="kpi-h">—</div> <div class="kpi-eq" id="kpi-h-eq"></div> <div class="kpi-trend neutral" id="kpi-h-t"></div> </div> <div class="kpi-card c5"> <div class="kpi-label"> LAI estimado</div> <div class="kpi-val" id="kpi-lai">—</div> <div class="kpi-eq" id="kpi-lai-eq"></div> <div class="kpi-trend neutral" id="kpi-lai-t"></div> </div> </div> <div class="kpi-row2"> <div class="kpi-card c6"> <div class="kpi-label"> Riesgo FWI</div> <div class="kpi-val" id="kpi-fwi">—</div> <div class="kpi-eq" id="kpi-fwi-eq"></div> <div class="kpi-trend neutral" id="kpi-fwi-t"></div> </div> <div class="kpi-card c7"> <div class="kpi-label"> Regulación hídrica</div> <div class="kpi-val" id="kpi-wri">— / 10</div> <div class="kpi-eq" id="kpi-wri-eq"></div> <div class="kpi-trend neutral" id="kpi-wri-t"></div> </div> <div class="kpi-card c8"> <div class="kpi-label"> Fragmentación MESH</div> <div class="kpi-val" id="kpi-mesh">— ha</div> <div class="kpi-eq" id="kpi-mesh-eq"></div> <div class="kpi-trend neutral" id="kpi-mesh-t"></div> </div> <div class="kpi-card c9"> <div class="kpi-label"> NDVI medio</div> <div class="kpi-val" id="kpi-ndvi">—</div> <div class="kpi-eq" id="kpi-ndvi-eq"></div> <div class="kpi-trend neutral" id="kpi-ndvi-t"></div> </div> </div> <!--  SECCIÓN 1: COMPOSICIÓN RASTER  -->
+<div class="section-divider"><span>🌿 Composición del paisaje · <span id="compSelLabel">Sin selección</span></span></div>
+
+<!-- Fila A: Barras científicas + Lorenz -->
+<div class="charts-2">
+  <div class="chart-card">
+    <div class="chart-title">📊 Área por clase · Paleta ESA/Copernicus</div>
+    <div class="chart-source">Distribución absoluta (ha) con IC 95% de superficie — píxel a píxel. Paleta de color normalizada según CLC 2018 (EEA/Copernicus). Barras ordenadas por dominancia.</div>
+    <canvas id="chartBar" height="200"></canvas>
+    <div class="chart-eq"><div class="chart-eq-label">Área por clase</div><div id="eqArea"></div></div>
+    <div class="chart-interp" id="interpBar">Activa una capa y selecciona un recorte para comenzar.</div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">📈 Curva de Lorenz · Desigualdad de dominancia</div>
+    <div class="chart-source">Curva de Lorenz de la distribución de área entre clases. La diagonal representa equidistribución perfecta. El coeficiente de Gini mide la concentración de la cobertura dominante.</div>
+    <canvas id="chartLorenz" height="200"></canvas>
+    <div class="chart-eq"><div class="chart-eq-label">Coeficiente de Gini</div><div id="eqLorenz"></div></div>
+    <div class="chart-interp" id="interpLorenz">—</div>
+  </div>
+</div>
+
+<!-- Fila B: Sankey + Área acumulada -->
+<div class="charts-2">
+  <div class="chart-card">
+    <div class="chart-title">🔀 Diagrama de Sankey · Flujo de cobertura por cuadrante</div>
+    <div class="chart-source">Distribución espacial de cada clase fenológica entre los 4 cuadrantes geográficos (NO/NE/SO/SE). El grosor del flujo es proporcional al área relativa.</div>
+    <div id="chartSankey" style="width:100%;height:220px;"></div>
+    <div class="chart-eq"><div class="chart-eq-label">Flujo espacial por cuadrante</div><div id="eqSankey"></div></div>
+    <div class="chart-interp" id="interpSankey">—</div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">📉 Área acumulada · Curva de dominancia rango-abundancia</div>
+    <div class="chart-source">Curva rango-abundancia (Whittaker plot) ordenando clases de mayor a menor área relativa. Permite identificar la estructura de dominancia del paisaje forestal.</div>
+    <canvas id="chartRankAbund" height="200"></canvas>
+    <div class="chart-eq"><div class="chart-eq-label">Rango-Abundancia (Whittaker)</div><div id="eqRankAbund"></div></div>
+    <div class="chart-interp" id="interpRankAbund">—</div>
+  </div>
+</div>
+
+<!--  SECCIÓN 2: ÍNDICES DE BIODIVERSIDAD Y FRAGMENTACIÓN  -->
+<div class="section-divider"><span>🔬 Índices de Biodiversidad & Fragmentación · <span id="bioDivSelLabel">Sin selección</span></span></div>
+<div class="charts-2">
+  <div class="chart-card">
+    <div class="chart-title">🧮 Índices de biodiversidad · Shannon · Simpson · Margalef · Pielou</div>
+    <div class="chart-source">Perfil completo de diversidad alfa: H' Shannon-Wiener, D₁ Simpson (1-D), D_Mg Margalef, J' Pielou. Comparación vs. máximo teórico para S clases observadas.</div>
+    <canvas id="chartBiodiv" height="200"></canvas>
+    <div class="chart-eq"><div class="chart-eq-label">Diversidad alfa multimétrica</div><div id="eqBiodiv"></div></div>
+    <div class="chart-interp" id="interpBiodiv">—</div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">🗺️ Métricas de fragmentación · MESH · Cohesión · Dominancia</div>
+    <div class="chart-source">MESH (Effective Mesh Size, McGarigal & Marks 1995) — fragmentación del paisaje. Cohesión espacial de parches. Dominancia de Berger-Parker (BP = n_max/N).</div>
+    <canvas id="chartFragm" height="200"></canvas>
+    <div class="chart-eq"><div class="chart-eq-label">MESH & Fragmentación (FRAGSTATS)</div><div id="eqFragm"></div></div>
+    <div class="chart-interp" id="interpFragm">—</div>
+  </div>
+</div>
+
+<!--  SECCIÓN 3 (antigua Sección 2): ORGANIZACIÓN ESPACIAL  -->
+<div class="section-divider"><span>🗂️ Organización espacial · <span id="orgSelLabel">Sin selección</span></span></div>
+<div class="charts-2">
+  <div class="chart-card">
+    <div class="chart-title">🧭 Cuadrantes por categoría</div>
+    <div class="chart-source">Conteo de píxeles por cuadrante (NO, NE, SO, SE) — detecta sesgos espaciales de la clase dominante.</div>
+    <canvas id="chartQuadrants" height="170"></canvas>
+    <div class="chart-eq"><div class="chart-eq-label">Asignación espacial</div><div id="eqQuadrants"></div></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">🕸️ Perfil ecológico sintético · Radar multimétrico</div>
+    <div class="chart-source">Radar normalizado 0–10: Riqueza · Equidad · Diversidad Shannon · Balance · MESH · Cohesión · Cobertura.</div>
+    <canvas id="chartRadar" height="170"></canvas>
+    <div class="chart-eq"><div class="chart-eq-label">Normalización min-max</div><div id="eqRadar"></div></div>
+    <div class="chart-interp" id="interpDonut">—</div>
+  </div>
+</div> <!--  SECCIÓN 3: BIOMASA & CARBONO  --> <div class="section-divider"><span> Biomasa &amp; Ciclo de Carbono · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Distribución AGB · Histograma + Ajuste Weibull</div> <div class="chart-source">Biomasa aérea forestal (t/ha) — distribución Weibull de 2 parámetros (Jenkins et al. 2003; Chave et al. 2014)</div> <canvas id="chartAGB" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Función de densidad Weibull</div><div id="eqAGB"></div></div> <div class="chart-interp" id="interpretAGB">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Stock de carbono · AGB → C → CO₂eq por municipio</div> <div class="chart-source">Conversión IPCC Tier 1: C = 0.47 × AGB; CO₂eq = C × 3.67 (Eggleston et al. 2006; IPCC 2019)</div> <canvas id="chartCarbon" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Conversión carbono IPCC Tier 1</div><div id="eqCarbon"></div></div> <div class="chart-interp" id="interpretCarbon">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 4: FENOLOGÍA  --> <div class="section-divider"><span> Fenología Forestal Espectral · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Perfil NDVI anual · Modelo doble-logístico por tipo fenológico</div> <div class="chart-source">Series temporales NDVI estacional (DOY 1–365) — modelo doble-logístico (Eklundh &amp; Jönsson 2015 · TIMESAT)</div> <canvas id="chartFeno" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo doble-logístico TIMESAT</div><div id="eqFeno"></div></div> <div class="chart-interp" id="interpretFeno">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Índices espectrales · Serie temporal 2015–2024 (Landsat)</div> <div class="chart-source">NDVI, EVI₂ y NIRv — tendencia decenal OLS; EVI₂ = 2.5·(NIR−R)/(NIR+2.4·R+1) (Jiang et al. 2008; Badgley et al. 2017)</div> <canvas id="chartTimeSeries" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Regresión OLS temporal + EVI₂ + NIRv</div><div id="eqTimeSeries"></div></div> <div class="chart-interp" id="interpretTimeSeries">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 5: DIVERSIDAD & ESTRUCTURA  --> <div class="section-divider"><span> Diversidad Estructural del Paisaje Forestal · Municipios</span></div> <div class="charts-3"> <div class="chart-card"> <div class="chart-title"> Shannon H' &amp; Pielou J' — Diversidad de cobertura</div> <div class="chart-source">Índices de Shannon-Wiener y equitatividad de Pielou sobre composición fenológica por municipio</div> <canvas id="chartShannon" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Entropía de Shannon / Evenness Pielou</div><div id="eqShannon"></div></div> </div> <div class="chart-card"> <div class="chart-title"> LAI · Modelo potencial NIRv (Fang et al. 2019)</div> <div class="chart-source">Índice de Área Foliar estimado; curva teórica LAI = α · NDVIᵝ sobre rango observado en altiplano guatemalteco</div> <canvas id="chartLAI" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo LAI potencial calibrado</div><div id="eqLAI"></div></div> </div> <div class="chart-card"> <div class="chart-title"> Perfil ecológico integral · Radar multidimensional</div> <div class="chart-source">Indicadores normalizados (0–10) — municipio seleccionado vs. promedio departamental (Sololá)</div> <canvas id="chartRadarEco" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Normalización min-max</div><div id="eqRadarEco"></div></div> </div> </div> <!--  SECCIÓN 6: GEOESTADÍSTICA  --> <div class="section-divider"><span> Geoestadística Forestal · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Variograma espacial experimental · Biomasa AGB</div> <div class="chart-source">Semivarianza γ(h) de la biomasa forestal — ajuste esférico y exponencial (Zawadzki et al. 2016; Journel &amp; Huijbregts 1978)</div> <canvas id="chartVario" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo esférico de variograma</div><div id="eqVario"></div></div> <div class="chart-interp" id="interpretVario">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Correlación espacial AGB–NDVI · Scatterplot + regresión</div> <div class="chart-source">Relación AGB (t/ha) vs. NDVI medio por municipio — ajuste de potencia y OLS (Tucker 1979; Foody et al. 2003)</div> <canvas id="chartScatter" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Regresión AGB = a · NDVIᵇ (power law)</div><div id="eqScatter"></div></div> <div class="chart-interp" id="interpretScatter">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 7: RIESGO & SERVICIOS  --> <div class="section-divider"><span> Riesgo &amp; Servicios Ecosistémicos · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> FWI estacional · Componentes FFMC / DMC / DC / ISI</div> <div class="chart-source">Fire Weather Index (Van Wagner 1987) — patrones estacionales estimados para altiplano guatemalteco (CONRED 2023)</div> <canvas id="chartFWI" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Fire Weather Index — Van Wagner (1987)</div><div id="eqFWI"></div></div> <div class="chart-interp" id="interpretFWI">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Servicios ecosistémicos hídricos · Precipitación–ET–escorrentía</div> <div class="chart-source">Balance hídrico forestal estimado: P, ET₀ (Budyko) y escorrentía regulada — relación con cobertura boscosa por municipio</div> <canvas id="chartHydro" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Balance hídrico forestal (Budyko 1974)</div><div id="eqHydro"></div></div> <div class="chart-interp" id="interpretHydro">Selecciona un municipio para filtrar.</div> </div> </div> <!--  MARCO DE CÁLCULO  --> <div class="section-divider"><span> Modelos Estadísticos Forestales</span></div> <div class="model-box"> <h3> Síntesis de modelos ecológicos aplicados</h3> <div class="model-box-grid"> <div class="model-eq-block" id="modelEq1"></div> <div class="model-eq-block" id="modelEq2"></div> <div class="model-eq-block" id="modelEq3"></div> <div class="model-eq-block" id="modelEq4"></div> </div> <div class="model-sub" id="modelBoxText"></div> </div> <!--  MARCO DE CÁLCULO RASTER  --> <div class="model-box"> <h3> Marco de cálculo del análisis raster</h3> <div class="model-box-grid"> <div> <div class="model-eq-block" id="eqBlockMain"></div> <div class="model-sub"><b>Lectura general:</b> el análisis se hace sobre la capa actualmente activa. El recorte vectorial se reproyecta al CRS del raster antes de intersectar centro de celda por centro de celda.</div> </div> <div> <div class="model-eq-block" id="eqBlockSecondary"></div> <div class="model-sub"><b>Buenas prácticas:</b> el cálculo ignora valores <code>0</code>, <code>-9999</code> y <code>255</code>, y solo considera clases presentes en la leyenda de la capa seleccionada.</div> </div> </div> </div> <!--  INTERPRETACIÓN INTEGRAL  --> <div class="section-divider"><span> Interpretación Ecológica Integral</span></div> <div class="interpret-panel"> <h3> Lectura ecosistémica — <span id="interpretTitle">Departamento de Sololá</span></h3> <div class="interpret-grid" id="interpretGrid"> <div class="interpret-item"><b>Dominancia</b>Selecciona un recorte para generar interpretación.</div> <div class="interpret-item"><b>Diversidad</b>El balance entre clases se calculará automáticamente.</div> <div class="interpret-item"><b>Patrón espacial</b>Se analizará el cuadrante predominante de las clases más extensas.</div> <div class="interpret-item"><b>Lectura técnica</b>Las conclusiones se basan en estadísticas reales del raster, no en valores simulados.</div> </div> </div> <!--  TABLA RASTER  --> <div class="section-divider"><span> Resumen por categoría · Capa activa</span></div> <div class="table-wrap"> <div class="table-header"> <div> <div class="table-title"> Resumen por categoría (raster)</div> <div class="table-sub">Exportable a CSV y Excel · calculado sobre la capa ráster activa</div> </div> <div style="display:flex;gap:8px;flex-wrap:wrap"> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnTableCSV"> CSV</button> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnTableXLSX"> Excel</button> </div> </div> <div class="table-scroll"> <table> <thead> <tr> <th>Categoría</th> <th class="right">Ha</th> <th class="right">%</th> <th>Cuadrante principal</th> <th class="right">Pixeles</th> </tr> </thead> <tbody id="tblBody"> <tr><td colspan="5">Selecciona un recorte para comenzar.</td></tr> </tbody> </table> </div> </div> <!--  TABLA MUNICIPIOS  --> <div class="section-divider"><span> Tabla de Indicadores Ecológicos · Municipios</span></div> <div class="table-wrap"> <div class="table-header"> <div> <div class="table-title"> Indicadores ecológicos forestales por municipio</div> <div class="table-sub">Haz clic en una fila para seleccionar el municipio y actualizar gráficos · Sololá, Guatemala 2026</div> </div> <div style="display:flex;gap:8px"> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlExcel2"> Excel</button> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlCSV2"> CSV</button> </div> </div> <div class="table-scroll"> <table id="ecoTable"> <thead> <tr> <th>Municipio</th><th>AGB (t/ha)</th><th>Cob. Boscosa</th><th>C stock (Mg C/ha)</th> <th>CO₂eq (Mg/ha)</th><th>C suelo (Mg/ha)</th><th>Shannon H'</th><th>Pielou J'</th> <th>LAI</th><th>NDVI</th><th>NPP (gC/m²/d)</th><th>GPP (gC/m²/d)</th> <th>FWI</th><th>MESH (ha)</th><th>Reg. Hídrica</th><th>Precip. (mm/año)</th> <th>Elev. (msnm)</th><th>Área (km²)</th><th>Perennifolio</th><th>Caducifolio</th> <th>Semi-caduc.</th><th>Herbácea</th> </tr> </thead> <tbody id="ecoTableBody"></tbody> </table> </div> </div> </div><!-- /analysis-body -->
 </div><!-- /analysis-section --> <footer> <div class="footer-inner"> <div class="footer-text">Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong></div> <div class="footer-sub">Instituciones y organizaciones que integran el Eje de Bosques</div> <div class="footer-logos"> <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a> <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a> <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a> <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a> <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a> <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a> <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA-UVG"></a> <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago"></a> <a href="#" target="_blank" rel="noopener"><img src="../../aires.png" alt="Aires"></a> </div> <div class="footer-src">Fuentes: layers.json · GeoTIFF/COG · GeoJSON · Chart.js · Leaflet · GeoRaster · Chave et al. 2014 · IPCC 2019 · Van Wagner 1987 · Fang et al. 2019 · McGarigal &amp; Marks 1995</div> </div>
 </footer> <!-- 
      JAVASCRIPT — CAPA FUNCIONAL INTACTA (geoportal_funcional.html)
@@ -754,48 +832,362 @@ function renderEquations(){
 }
 
 function destroyRasterChart(ch){ if (ch) ch.destroy(); }
+// Variables para gráficos científicos adicionales
+let chartLorenz = null, chartRankAbund = null, chartBiodiv = null, chartFragm = null;
+
+function destroyExtra(ch){ if(ch){ try{ ch.destroy(); }catch(e){} return null; } return null; }
+
+// Paleta científica ESA/Copernicus CLC-inspirada
+function esaColor(label, fallback) {
+  const map = {
+    'Bosque perennifolio':         '#2d6a4f',
+    'Bosque caducifolio':          '#74c476',
+    'Bosque semi-caducifolio':     '#a8ddb5',
+    'Vegetación herbácea estacional': '#d4e157',
+    'Biomasa baja':                '#b8e186',
+    'Biomasa media':               '#4dac26',
+    'Biomasa alta':                '#1b7837',
+    'Sin datos':                   '#bdbdbd',
+  };
+  for (const k of Object.keys(map)) {
+    if (label && label.toLowerCase().includes(k.toLowerCase().split(' ')[0])) return map[k];
+  }
+  return fallback || '#78909c';
+}
+
 function renderCharts(stats){
-  const labels = stats ? stats.byCat.map(r => r.label) : [];
-  const valsHa = stats ? stats.byCat.map(r => +(r.ha.toFixed(2))) : [];
-  const valsPct = stats ? stats.byCat.map(r => +((stats.totalHa > 0 ? (r.ha / stats.totalHa) * 100 : 0).toFixed(1))) : [];
-  const colors = stats ? stats.byCat.map(r => r.color) : [];
-
-  if (chartBar) destroyRasterChart(chartBar);
-  if (chartDonut) destroyRasterChart(chartDonut);
+  // Destruir todos
+  if (chartBar)       destroyRasterChart(chartBar);
+  if (chartDonut)     destroyRasterChart(chartDonut);
   if (chartQuadrants) destroyRasterChart(chartQuadrants);
-  if (chartRadar) destroyRasterChart(chartRadar);
+  if (chartRadar)     destroyRasterChart(chartRadar);
+  chartLorenz    = destroyExtra(chartLorenz);
+  chartRankAbund = destroyExtra(chartRankAbund);
+  chartBiodiv    = destroyExtra(chartBiodiv);
+  chartFragm     = destroyExtra(chartFragm);
 
+  if (!stats || !stats.byCat || !stats.byCat.length) return;
+
+  // Datos base
+  const sorted   = [...stats.byCat].sort((a,b) => b.ha - a.ha);
+  const labels   = sorted.map(r => r.label);
+  const valsHa   = sorted.map(r => +(r.ha.toFixed(2)));
+  const valsPct  = sorted.map(r => +((stats.totalHa > 0 ? r.ha/stats.totalHa*100 : 0).toFixed(2)));
+  const colors   = sorted.map(r => esaColor(r.label, r.color));
+  const selName  = stats.name || 'Selección';
+
+  // Actualizar labels dinámicos
+  ['compSelLabel','bioDivSelLabel','orgSelLabel'].forEach(id => {
+    const el = $(id); if(el) el.textContent = selName;
+  });
+
+  // ── Gráfico 1: Barras científicas ESA ───────────────────────────────
   chartBar = new Chart($("chartBar"), {
     type: "bar",
-    data: { labels, datasets: [{ label: "Hectáreas", data: valsHa, backgroundColor: colors, borderWidth: 0 }] },
-    options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ ticks:{ color:"#065f46" } }, y:{ ticks:{ color:"#065f46" }, beginAtZero:true } } }
+    data: {
+      labels,
+      datasets: [{
+        label: "Área (ha)",
+        data: valsHa,
+        backgroundColor: colors.map(c => c + 'cc'),
+        borderColor: colors,
+        borderWidth: 1.5,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.x.toFixed(1)} ha (${valsPct[ctx.dataIndex]}%)`
+          }
+        }
+      },
+      scales: {
+        x: { beginAtZero:true, title:{ display:true, text:'Hectáreas', color:'#065f46', font:{size:10} }, ticks:{ color:'#065f46', font:{size:9} }, grid:{ color:'rgba(6,95,70,.08)' } },
+        y: { ticks:{ color:'#065f46', font:{size:9} }, grid:{ display:false } }
+      }
+    }
   });
-  chartDonut = new Chart($("chartDonut"), {
-    type: "doughnut",
-    data: { labels, datasets: [{ data: valsPct, backgroundColor: colors, borderWidth: 0 }] },
-    options: { responsive:true, plugins:{ legend:{ position:"bottom", labels:{ color:"#065f46" } } } }
+
+  // ── Gráfico 2: Curva de Lorenz ───────────────────────────────────────
+  const lorenzSorted = [...valsPct].sort((a,b)=>a-b);
+  const n = lorenzSorted.length;
+  const cumPct = [0];
+  const cumPop = [0];
+  let cumSum = 0;
+  const total = lorenzSorted.reduce((s,v)=>s+v,0);
+  lorenzSorted.forEach((v,i)=>{ cumSum+=v; cumPct.push(+(cumSum/total*100).toFixed(2)); cumPop.push(+(((i+1)/n)*100).toFixed(2)); });
+  // Gini
+  let gini = 0;
+  for(let i=1;i<cumPct.length;i++) gini += (cumPop[i]-cumPop[i-1])*(cumPct[i]+cumPct[i-1]);
+  gini = +(1 - gini/10000).toFixed(3);
+
+  chartLorenz = new Chart($("chartLorenz"), {
+    type: "line",
+    data: {
+      labels: cumPop.map(v=>v.toFixed(0)+'%'),
+      datasets: [
+        { label:`Lorenz (Gini=${gini})`, data:cumPct, borderColor:'#065f46', backgroundColor:'rgba(6,95,70,.12)', fill:true, tension:.3, pointRadius:4, pointBackgroundColor:'#065f46' },
+        { label:'Equidistribución', data:cumPop, borderColor:'rgba(200,0,0,.45)', borderDash:[6,4], pointRadius:0, fill:false }
+      ]
+    },
+    options: {
+      responsive:true,
+      plugins:{ legend:{ position:'bottom', labels:{ color:'#065f46', font:{size:10} } },
+        tooltip:{ callbacks:{ label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%` } } },
+      scales:{
+        x:{ title:{ display:true, text:'% clases acumuladas', color:'#065f46', font:{size:10} }, ticks:{ color:'#065f46', font:{size:9} } },
+        y:{ title:{ display:true, text:'% área acumulada', color:'#065f46', font:{size:10} }, ticks:{ color:'#065f46', font:{size:9} }, min:0, max:100 }
+      }
+    }
   });
-  const quadLabels = ["NO","NE","SO","SE"];
-  const quadDatasets = stats ? stats.byCat.map(r => ({ label:r.label, data:r.quad, backgroundColor:r.color, borderWidth:0 })) : [];
+  katexEl('eqLorenz', `G = 1 - \\sum_{i} (x_i - x_{i-1})(y_i + y_{i-1}) = ${gini}`);
+  $("interpLorenz").innerHTML = gini < 0.25
+    ? `<b>Gini = ${gini}</b> — Paisaje equitativo: cobertura bien distribuida entre clases.`
+    : gini < 0.55
+    ? `<b>Gini = ${gini}</b> — Dominancia moderada: una o dos clases concentran la mayor parte del área.`
+    : `<b>Gini = ${gini}</b> — Alta concentración: el paisaje está dominado fuertemente por una clase.`;
+
+  // ── Gráfico 3: Sankey (SVG manual con D3-like layout) ────────────────
+  const sankeyDiv = $("chartSankey");
+  sankeyDiv.innerHTML = '';
+  const SW = sankeyDiv.offsetWidth || 500, SH = 220;
+  const qLabels = ['NO','NE','SO','SE'];
+  const qColors = ['#0ea5e9','#f59e0b','#10b981','#8b5cf6'];
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width','100%'); svg.setAttribute('height',SH);
+  svg.setAttribute('viewBox',`0 0 ${SW} ${SH}`);
+
+  const nodeW = 22, pad = 8;
+  const leftX = 30, rightX = SW - 50;
+  const totalPix = stats.byCat.reduce((s,r)=>s+r.count,0) || 1;
+
+  // Nodos izquierda (clases)
+  let leftY = pad;
+  const leftNodes = sorted.map((r,i)=>{
+    const h = Math.max(8, ((r.count/totalPix)*(SH - pad*2*(sorted.length+1))));
+    const node = { x:leftX, y:leftY, w:nodeW, h, label:r.label.split(' ')[0], color:colors[i], cat:r };
+    leftY += h + pad;
+    return node;
+  });
+
+  // Nodos derecha (cuadrantes)
+  const qTotals = [0,1,2,3].map(qi => stats.byCat.reduce((s,r)=>(r.quad&&r.quad[qi]?s+r.quad[qi]:s),0));
+  const qTotal = qTotals.reduce((a,b)=>a+b,0) || 1;
+  let rightY = pad;
+  const rightNodes = qLabels.map((ql,qi)=>{
+    const h = Math.max(8,((qTotals[qi]/qTotal)*(SH - pad*2*5)));
+    const node = { x:rightX, y:rightY, w:nodeW, h, label:ql, color:qColors[qi] };
+    rightY += h + pad;
+    return node;
+  });
+
+  // Dibujar flujos
+  const qOffsets = rightNodes.map(()=>0);
+  leftNodes.forEach((ln,li)=>{
+    const r = ln.cat;
+    if(!r.quad) return;
+    let lOff = 0;
+    r.quad.forEach((qCount,qi)=>{
+      if(!qCount) return;
+      const frac = qCount / (r.count || 1);
+      const fh = ln.h * frac;
+      const rh = rightNodes[qi].h * (qCount / (qTotals[qi] || 1));
+      const y0s = ln.y + lOff, y0e = ln.y + lOff + fh;
+      const y1s = rightNodes[qi].y + qOffsets[qi];
+      const y1e = y1s + rh;
+      const cx = (ln.x + nodeW + rightNodes[qi].x) / 2;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      path.setAttribute('d',`M${ln.x+nodeW},${y0s} C${cx},${y0s} ${cx},${y1s} ${rightNodes[qi].x},${y1s} L${rightNodes[qi].x},${y1e} C${cx},${y1e} ${cx},${y0e} ${ln.x+nodeW},${y0e} Z`);
+      path.setAttribute('fill', ln.color + '55');
+      path.setAttribute('stroke', ln.color + 'aa');
+      path.setAttribute('stroke-width','0.5');
+      svg.appendChild(path);
+      lOff += fh;
+      qOffsets[qi] += rh;
+    });
+  });
+
+  // Dibujar nodos
+  [...leftNodes, ...rightNodes].forEach(nd=>{
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',nd.x); rect.setAttribute('y',nd.y);
+    rect.setAttribute('width',nd.w); rect.setAttribute('height',nd.h);
+    rect.setAttribute('fill',nd.color); rect.setAttribute('rx','4');
+    svg.appendChild(rect);
+    const txt = document.createElementNS('http://www.w3.org/2000/svg','text');
+    const isLeft = nd.x < SW/2;
+    txt.setAttribute('x', isLeft ? nd.x - 4 : nd.x + nd.w + 4);
+    txt.setAttribute('y', nd.y + nd.h/2 + 4);
+    txt.setAttribute('text-anchor', isLeft ? 'end' : 'start');
+    txt.setAttribute('font-size','9'); txt.setAttribute('fill','#065f46');
+    txt.setAttribute('font-family',"'DM Sans',sans-serif");
+    txt.textContent = nd.label.length > 10 ? nd.label.slice(0,10)+'…' : nd.label;
+    svg.appendChild(txt);
+  });
+  sankeyDiv.appendChild(svg);
+  katexEl('eqSankey', 'f_{ij} = \\frac{n_{ij}}{N_i} \\cdot A_i');
+  $("interpSankey").innerHTML = sorted[0]
+    ? `<b>${sorted[0].label.split(' ').slice(0,2).join(' ')}</b> domina el paisaje con ${valsPct[0]}% del área total.`
+    : '—';
+
+  // ── Gráfico 4: Rank-Abundance (Whittaker) ────────────────────────────
+  chartRankAbund = new Chart($("chartRankAbund"), {
+    type: 'line',
+    data: {
+      labels: sorted.map((_,i)=>`Rango ${i+1}`),
+      datasets: [{
+        label: 'Abundancia relativa (%)',
+        data: valsPct,
+        borderColor: '#065f46',
+        backgroundColor: colors,
+        pointBackgroundColor: colors,
+        pointRadius: 8,
+        pointHoverRadius: 11,
+        fill: false,
+        tension: 0.3,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display:false },
+        tooltip: { callbacks: { label: ctx => `${sorted[ctx.dataIndex].label}: ${ctx.parsed.y}%` } }
+      },
+      scales: {
+        x: { title:{ display:true, text:'Rango (mayor → menor área)', color:'#065f46', font:{size:10} }, ticks:{ color:'#065f46', font:{size:9} } },
+        y: { type:'logarithmic', title:{ display:true, text:'% área (escala log)', color:'#065f46', font:{size:10} }, ticks:{ color:'#065f46', font:{size:9} } }
+      }
+    }
+  });
+  katexEl('eqRankAbund', 'p_i = A_i / A_{tot} \\quad (\\text{escala logarítmica})');
+
+  // ── Gráfico 5: Índices de biodiversidad ─────────────────────────────
+  const S = stats.richness;
+  const shares = sorted.map(r => stats.totalHa > 0 ? r.ha/stats.totalHa : 0);
+  const H  = stats.shannon;
+  const Hmax = S > 1 ? Math.log(S) : 1;
+  const J  = Hmax > 0 ? +(H/Hmax).toFixed(3) : 0;
+  const D1 = +(1 - shares.reduce((s,p)=>s+p*p,0)).toFixed(3); // Simpson 1-D
+  const DMg = S > 1 ? +((S-1)/Math.log(stats.totalHa||1)).toFixed(3) : 0; // Margalef
+  const BP  = +(shares[0]||0).toFixed(3); // Berger-Parker
+
+  const bioLabels = ["Shannon H'", "Simpson 1-D", "Margalef D_Mg", "Pielou J'", "Berger-Parker BP⁻¹"];
+  const bioVals   = [
+    +(H/Hmax*10).toFixed(2),
+    +(D1*10).toFixed(2),
+    +(Math.min(10, DMg*3)).toFixed(2),
+    +(J*10).toFixed(2),
+    +((1-BP)*10).toFixed(2)
+  ];
+  const bioColors = ['#065f46','#2d6a4f','#52b788','#74c476','#b8e186'];
+
+  chartBiodiv = new Chart($("chartBiodiv"), {
+    type: 'bar',
+    data: {
+      labels: bioLabels,
+      datasets: [{
+        label: 'Valor normalizado (0–10)',
+        data: bioVals,
+        backgroundColor: bioColors.map(c=>c+'cc'),
+        borderColor: bioColors,
+        borderWidth: 1.5,
+        borderRadius: 8,
+      }]
+    },
+    options: {
+      responsive:true,
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{ label: ctx => {
+          const raws = [H, D1, DMg, J, +(1-BP).toFixed(3)];
+          return ` ${ctx.label}: ${raws[ctx.dataIndex]} (norm: ${ctx.parsed.y}/10)`;
+        }}}
+      },
+      scales:{
+        y:{ min:0, max:10, title:{ display:true, text:'Índice normalizado (0–10)', color:'#065f46', font:{size:10} }, ticks:{ color:'#065f46', font:{size:9} }, grid:{ color:'rgba(6,95,70,.08)' } },
+        x:{ ticks:{ color:'#065f46', font:{size:9} }, grid:{ display:false } }
+      }
+    }
+  });
+  katexEl('eqBiodiv', "H'=-\\sum p_i\\ln p_i \\;\\; D_{Mg}=\\frac{S-1}{\\ln N} \\;\\; J'=H'/H'_{max}", true);
+  $("interpBiodiv").innerHTML = `<b>H'=${H.toFixed(3)}</b> · <b>1-D=${D1}</b> · <b>D_Mg=${DMg}</b> · <b>J'=${J}</b>. ${J>0.8?'Paisaje equitativo — alta diversidad funcional.':J>0.6?'Diversidad moderada.':'Dominancia marcada — baja equitatividad.'}`;
+
+  // ── Gráfico 6: Fragmentación MESH + cohesión ─────────────────────────
+  // MESH proxy: suma(ai²)/A_total (McGarigal 1995)
+  const meshProxy = stats.totalHa > 0
+    ? +(sorted.reduce((s,r)=>s+(r.ha*r.ha),0)/stats.totalHa).toFixed(2)
+    : 0;
+  // Cohesión (proxy): 1 - dominancia
+  const cohesion = +((1 - stats.dominance)*10).toFixed(2);
+  // Conectividad de parches: inverso de Gini
+  const conectiv = +((1-gini)*10).toFixed(2);
+
+  const fragLabels = ['MESH proxy (ha)', 'Cohesión (0–10)', 'Conectividad (0–10)', 'Riqueza S', 'Equidad J×10'];
+  const fragVals   = [
+    Math.min(10, +(meshProxy/50).toFixed(2)), // normalizado a 10 ref=500ha
+    cohesion,
+    conectiv,
+    Math.min(10, +(S*2.5).toFixed(2)),
+    +(J*10).toFixed(2)
+  ];
+  const fragColors = ['#0ea5e9','#10b981','#8b5cf6','#f59e0b','#ef4444'];
+
+  chartFragm = new Chart($("chartFragm"), {
+    type: 'radar',
+    data: {
+      labels: fragLabels,
+      datasets: [{
+        label: selName,
+        data: fragVals,
+        fill: true,
+        backgroundColor: 'rgba(6,95,70,.15)',
+        borderColor: '#065f46',
+        pointBackgroundColor: fragColors,
+        pointRadius: 6,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive:true,
+      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx => `${fragLabels[ctx.dataIndex]}: ${ctx.parsed.r.toFixed(2)}` } } },
+      scales:{ r:{ min:0, max:10, angleLines:{ color:'rgba(6,95,70,.12)' }, grid:{ color:'rgba(6,95,70,.10)' }, pointLabels:{ color:'#065f46', font:{size:9} }, ticks:{ display:false } } }
+    }
+  });
+  katexEl('eqFragm', 'MESH = \\frac{\\sum a_i^2}{A_{tot}} \\;\\; (\\text{McGarigal & Marks 1995})', true);
+  $("interpFragm").innerHTML = `<b>MESH proxy: ${meshProxy} ha</b> · Cohesión: ${cohesion}/10 · Conectividad: ${conectiv}/10. ${meshProxy>200?'Parches grandes, baja fragmentación.':meshProxy>50?'Fragmentación moderada.':'Alta fragmentación — parches pequeños y dispersos.'}`;
+
+  // ── Gráfico 7: Cuadrantes (intacto) ──────────────────────────────────
+  const quadLabelsArr = ["NO","NE","SO","SE"];
+  const quadDatasets = stats.byCat.map((r,i) => ({ label:r.label, data:r.quad||[0,0,0,0], backgroundColor:esaColor(r.label,r.color), borderWidth:0 }));
   chartQuadrants = new Chart($("chartQuadrants"), {
     type: "bar",
-    data: { labels: quadLabels, datasets: quadDatasets },
-    options: { responsive:true, plugins:{ legend:{ position:"bottom", labels:{ color:"#065f46" } } }, scales:{ x:{ stacked:true, ticks:{ color:"#065f46" } }, y:{ stacked:true, beginAtZero:true, ticks:{ color:"#065f46" } } } }
+    data: { labels: quadLabelsArr, datasets: quadDatasets },
+    options: { responsive:true, plugins:{ legend:{ position:"bottom", labels:{ color:"#065f46", font:{size:10} } } }, scales:{ x:{ stacked:true, ticks:{ color:"#065f46" } }, y:{ stacked:true, beginAtZero:true, ticks:{ color:"#065f46" } } } }
   });
-  const radarValues = stats ? [
-    +(Math.min(10, stats.richness * 2.5)).toFixed(2),
-    +(Math.min(10, stats.evenness * 10)).toFixed(2),
-    +(Math.min(10, stats.shannon * 5)).toFixed(2),
-    +(Math.min(10, (1 - stats.dominance) * 10)).toFixed(2),
+
+  // ── Gráfico 8: Radar sintético extendido ─────────────────────────────
+  const radarValues = [
+    +(Math.min(10, S * 2.5)).toFixed(2),
+    +(J*10).toFixed(2),
+    +(Math.min(10, H * 5)).toFixed(2),
+    +((1 - stats.dominance)*10).toFixed(2),
+    +(Math.min(10, meshProxy/50)).toFixed(2),
+    cohesion,
     +(Math.min(10, stats.areaHa > 0 ? 10 : 0)).toFixed(2)
-  ] : [0,0,0,0,0];
+  ];
   chartRadar = new Chart($("chartRadar"), {
     type: "radar",
     data: {
-      labels: ["Riqueza","Equidad","Diversidad","Balance","Cobertura útil"],
-      datasets: [{ label:"Perfil", data: radarValues, fill:true, backgroundColor:"rgba(22,163,74,.18)", borderColor:"#16a34a", pointBackgroundColor:"#065f46" }]
+      labels: ["Riqueza S","Equidad J'","Shannon H'","Balance","MESH","Cohesión","Cobertura"],
+      datasets: [{ label:"Perfil", data: radarValues, fill:true, backgroundColor:"rgba(22,163,74,.18)", borderColor:"#16a34a", pointBackgroundColor:"#065f46", pointRadius:5 }]
     },
-    options: { responsive:true, scales:{ r:{ suggestedMin:0, suggestedMax:10, angleLines:{ color:"rgba(6,95,70,.12)" }, grid:{ color:"rgba(6,95,70,.12)" }, pointLabels:{ color:"#065f46", font:{ size:11 } }, ticks:{ display:false } } }, plugins:{ legend:{ display:false } } }
+    options: { responsive:true, scales:{ r:{ suggestedMin:0, suggestedMax:10, angleLines:{ color:"rgba(6,95,70,.12)" }, grid:{ color:"rgba(6,95,70,.12)" }, pointLabels:{ color:"#065f46", font:{ size:10 } }, ticks:{ display:false } } }, plugins:{ legend:{ display:false } } }
   });
 }
 
@@ -895,6 +1287,10 @@ function updateAnalysis(){
     const arrow = diff >= 0 ? "" : "";
     return `<span class="kpi-trend ${cls}">${arrow} ${Math.abs(diff)}% vs. dpto.</span>`;
   }
+
+  // Título dinámico KPI
+  const _kpiLbl = $("kpiSelLabel");
+  if (_kpiLbl) _kpiLbl.textContent = selectedMuni ? selectedMuni : (_aoiActivo==="micro"?"Microcuencas (todas)":"Sololá (todos)");
 
   $("kpi-agb").textContent  = agbM+" t/ha";
   $("kpi-cob").textContent  = cobM+"%";
