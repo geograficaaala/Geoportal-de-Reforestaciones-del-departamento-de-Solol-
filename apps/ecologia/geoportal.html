@@ -1132,36 +1132,76 @@ function updateAnalysis(){
     $("interpretCarbon").innerHTML=`<b>C stock AGB:</b> ${cM} Mg C/ha → ${(cM*3.67).toFixed(1)} Mg CO₂eq/ha. <b>C suelo estimado:</b> ${(cM*2.4).toFixed(1)} Mg/ha. ${cM>70?"Alto potencial como sumidero; elegible para créditos REDD+ (IPCC Tier 2).":"Carbono bajo-medio; restauración activa elevaría el stock en 15–30%."}`;
   }
 
-  //  CHART: Fenología — perfil DOY real Landsat por unidad
+  //  CHART: Fenología — serie NDVI anual real Landsat 2015-2024
   destroyChart("feno");
   {
     const ctx = $("chartFeno").getContext("2d");
-    const doys = Array.from({length:24},(_,i)=>Math.round(15+i*15.5));
-    // Usar doySerie real del registro. Si hay selección → ese registro. Si no → promedio de todos
+    const years = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+    // Serie NDVI anual real del registro seleccionado
     const refFeno = ds[0] || {};
-    const doySerie = refFeno.doySerie && refFeno.doySerie.filter(v=>v!=null).length>4
-      ? refFeno.doySerie
-      : Array.from({length:24},(_,i)=>+(ds.reduce((s,m)=>s+(m.doySerie&&m.doySerie[i]||ndviM),0)/ds.length).toFixed(3));
-    // Línea de promedio departamental para comparar
-    const doyDept = Array.from({length:24},(_,i)=>+(MUNICIPIOS.reduce((s,m)=>s+(m.doySerie&&m.doySerie[i]||m.ndvi),0)/MUNICIPIOS.length).toFixed(3));
-    const yMin = Math.max(0.15, Math.min(...doySerie.filter(v=>v!=null)) - 0.05);
-    const yMax = Math.min(0.99, Math.max(...doySerie.filter(v=>v!=null)) + 0.05);
+    const ndviAnual = years.map((y,i) =>
+      refFeno.ndviSerie && refFeno.ndviSerie[i]!=null
+        ? +refFeno.ndviSerie[i].toFixed(3)
+        : +ndviM.toFixed(3)
+    );
+    // Promedio departamental año a año para comparar
+    const ndviDept = years.map((_,i) =>
+      +(MUNICIPIOS.reduce((s,m)=>s+(m.ndviSerie&&m.ndviSerie[i]!=null?m.ndviSerie[i]:m.ndvi),0)/MUNICIPIOS.length).toFixed(3)
+    );
+    // Tendencia OLS sobre la serie seleccionada
+    const n = years.length;
+    const mX = (n-1)/2;
+    const mY = ndviAnual.reduce((s,v)=>s+v,0)/n;
+    let num=0,den=0;
+    ndviAnual.forEach((v,i)=>{num+=(i-mX)*(v-mY);den+=(i-mX)**2;});
+    const slope = den?num/den:0;
+    const intc  = mY - slope*mX;
+    const trend = years.map((_,i)=>+(slope*i+intc).toFixed(4));
+    const yMin = Math.max(0.30, Math.min(...ndviAnual, ...ndviDept)-0.04);
+    const yMax = Math.min(0.99, Math.max(...ndviAnual, ...ndviDept)+0.04);
+    const selLabel = single ? ds[0].nombre : "Promedio seleccion";
     ecoCharts.feno = new Chart(ctx,{
       type:"line",
       data:{
-        labels:doys.map(d=>"DOY "+d),
+        labels:years.map(String),
         datasets:[
-          {label: single ? ds[0].nombre : "Promedio seleccion",
-           data:doySerie.map(v=>v!=null?+v.toFixed(3):null),
-           borderColor:"#065f46",backgroundColor:"rgba(6,95,70,.09)",borderWidth:2.5,tension:.4,pointRadius:3,fill:true,spanGaps:true},
-          {label:"Promedio departamental",data:doyDept,borderColor:"rgba(180,180,180,.70)",borderWidth:1.5,tension:.4,pointRadius:0,fill:false,borderDash:[5,3]},
+          {label:selLabel,
+           data:ndviAnual,
+           borderColor:"#065f46",backgroundColor:"rgba(6,95,70,.10)",
+           borderWidth:2.5,tension:.3,pointRadius:5,pointHoverRadius:7,fill:true},
+          {label:"Promedio departamental",
+           data:ndviDept,
+           borderColor:"rgba(150,150,150,.65)",borderWidth:1.5,
+           tension:.3,pointRadius:3,fill:false,borderDash:[5,3]},
+          {label:"Tendencia OLS",
+           data:trend,
+           borderColor:"rgba(14,165,233,.75)",borderWidth:1.5,
+           pointRadius:0,fill:false,borderDash:[6,4]},
         ]
       },
-      options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
-        scales:{y:{min:yMin,max:yMax,title:{display:true,text:"NDVI"},ticks:{font:{size:10}}},x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,maxTicksLimit:12}}}}
+      options:{responsive:true,
+        plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
+        scales:{
+          y:{min:yMin,max:yMax,
+             title:{display:true,text:"NDVI medio anual",color:"#065f46",font:{size:10}},
+             ticks:{font:{size:10},color:"#065f46"},
+             grid:{color:"rgba(6,95,70,.07)"}},
+          x:{grid:{display:false},ticks:{font:{size:10},color:"#065f46"}}
+        }
+      }
     });
-    katexEl("eqFeno","\\text{NDVI}(t)=\\delta_1+\\delta_2\\cdot\\dfrac{1}{1+e^{-(t-t_1)/\\sigma_1}}\\cdot\\dfrac{1}{1+e^{(t-t_2)/\\sigma_2}}",true);
-    $("interpretFeno").innerHTML=`<b>Bosque perennifolio (${avgArr(ds,"perennifolio").toFixed(0)}%):</b> NDVI estable alto. <b>Caducifolio (${avgArr(ds,"caducifolio").toFixed(0)}%):</b> ${avgArr(ds,"caducifolio")>16?"señal de sensibilidad al ENSO; SOS ≈ DOY 75.":"fracción baja — sistema estable."} Temporada vegetativa: ~230 días.`;
+    const sSign = slope>=0?"+":"";
+    katexEl("eqFeno",
+      "\\hat{\\text{NDVI}}_t="+intc.toFixed(3)+sSign+slope.toFixed(4)+"\\,t\\;(\\text{OLS, Landsat 2015-2024})",
+      false);
+    const tendMsg = slope>0.002?"tendencia positiva — recuperación forestal detectada":
+                    slope<-0.002?"tendencia negativa — posible degradación forestal":
+                    "tendencia estable";
+    $("interpretFeno").innerHTML=
+      "<b>NDVI medio 2015–2024: "+ndviM.toFixed(3)+"</b> — "+tendMsg+". "+
+      "<b>Vs. promedio departamental: "+
+      (ndviM>ndviDept[ndviDept.length-1]?"+":"")+
+      (ndviM-ndviDept[ndviDept.length-1]).toFixed(3)+"</b>.";
   }
 
   //  CHART: Serie temporal Landsat 
