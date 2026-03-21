@@ -32,6 +32,7 @@
     .brand-logos a,.footer-logos a{display:flex}
     .brand-logos img{
       height:52px;width:auto;transition:transform .15s;
+      background:#fff;border-radius:8px;padding:4px 6px;
       filter:drop-shadow(0 2px 8px rgba(0,0,0,.28));
     }
     .brand-logos img:hover,.footer-logos img:hover{transform:scale(1.04)}
@@ -48,7 +49,7 @@
     .btn.primary{background:linear-gradient(135deg,rgba(190,242,100,.30),rgba(110,231,183,.28));border-color:rgba(190,242,100,.40);font-weight:700}
 
     /*  MAP LAYOUT  */
-    .wrap{height:calc(100vh - 74px);display:grid;grid-template-columns:330px 1fr}
+    .wrap{height:65vh;min-height:480px;display:grid;grid-template-columns:330px 1fr}
     aside{background:var(--panel);border-right:1px solid var(--stroke);backdrop-filter:blur(12px);padding:12px;overflow-y:auto;overflow-x:hidden}
     #mapFrame{position:relative;width:100%;height:100%}
     #map{position:absolute;inset:0}
@@ -227,7 +228,7 @@
      ANÁLISIS ECOLÓGICO FORESTAL AVANZADO
  -->
 <div class="analysis-section" id="analisis"> <!-- Hero --> <div class="analysis-hero"> <div class="analysis-hero-inner"> <div class="analysis-hero-left"> <h2> Análisis Ecológico Forestal Avanzado</h2> <p>Indicadores de vanguardia: Chave et al. (2014) · Eklundh &amp; Jönsson (2015) · Fang et al. (2019) · Van Wagner (1987) · IPCC Tier 1/2 · McGarigal &amp; Marks (1995). Los estadísticos de raster se calculan en tiempo real sobre las capas activas y el recorte seleccionado en el mapa.</p> </div> <div class="analysis-hero-right"> <div class="muni-badge"><div class="dot"></div><span id="heroSelection">Sin selección activa</span></div> <button class="btn-dl" id="btnDlCSV"> Descargar CSV</button> <button class="btn-dl" id="btnDlXLSX"> Descargar Excel</button> </div> </div> </div> <div class="analysis-body"> <!--  KPI RASTER (calculados del análisis real)  --> <div class="section-divider"><span> Estadísticos de la selección activa</span></div> <div class="kpi-row-raster"> <div class="kpi-card c1"><div class="kpi-label">Selección</div><div class="kpi-val" id="kpi-sel">—</div><div class="kpi-eq">Entidad activa del recorte</div></div> <div class="kpi-card c2"><div class="kpi-label">Capa analizada</div><div class="kpi-val" id="kpi-layer">—</div><div class="kpi-eq">Última capa activa</div></div> <div class="kpi-card c3"><div class="kpi-label">Área evaluada</div><div class="kpi-val" id="kpi-area">—</div><div class="kpi-eq">ha = pix × área de celda</div></div> <div class="kpi-card c4"><div class="kpi-label">Categorías detectadas</div><div class="kpi-val" id="kpi-rich">—</div><div class="kpi-eq">S = clases presentes</div></div> </div> <div class="kpi-row-raster"> <div class="kpi-card c5"><div class="kpi-label">Clase dominante</div><div class="kpi-val" id="kpi-dom">—</div><div class="kpi-eq">Clase de mayor área relativa</div></div> <div class="kpi-card c6"><div class="kpi-label">Dominancia D</div><div class="kpi-val" id="kpi-domPct">—</div><div class="kpi-eq">D = max(pᵢ)</div></div> <div class="kpi-card c7"><div class="kpi-label">Shannon H'</div><div class="kpi-val" id="kpi-h-raster">—</div><div class="kpi-eq">H' = −Σ pᵢ ln(pᵢ)</div></div> <div class="kpi-card c8"><div class="kpi-label">Evenness J</div><div class="kpi-val" id="kpi-j">—</div><div class="kpi-eq">J = H'/ln(S)</div></div> </div> <!--  KPI ECOLÓGICOS (datos de referencia municipios)  --> <div class="section-divider"><span> Indicadores ecológicos forestales · Sololá</span></div> <div class="kpi-row"> <div class="kpi-card c1"> <div class="kpi-label"> AGB media</div> <div class="kpi-val" id="kpi-agb">— t/ha</div> <div class="kpi-eq" id="kpi-agb-eq"></div> <div class="kpi-trend neutral" id="kpi-agb-t"></div> </div> <div class="kpi-card c2"> <div class="kpi-label"> Cobertura boscosa</div> <div class="kpi-val" id="kpi-cob">—%</div> <div class="kpi-eq" id="kpi-cob-eq"></div> <div class="kpi-trend neutral" id="kpi-cob-t"></div> </div> <div class="kpi-card c3"> <div class="kpi-label"> C stock (AGB)</div> <div class="kpi-val" id="kpi-c">— Mg C/ha</div> <div class="kpi-eq" id="kpi-c-eq"></div> <div class="kpi-trend neutral" id="kpi-c-t"></div> </div> <div class="kpi-card c4"> <div class="kpi-label"> Shannon H'</div> <div class="kpi-val" id="kpi-h">—</div> <div class="kpi-eq" id="kpi-h-eq"></div> <div class="kpi-trend neutral" id="kpi-h-t"></div> </div> <div class="kpi-card c5"> <div class="kpi-label"> LAI estimado</div> <div class="kpi-val" id="kpi-lai">—</div> <div class="kpi-eq" id="kpi-lai-eq"></div> <div class="kpi-trend neutral" id="kpi-lai-t"></div> </div> </div> <div class="kpi-row2"> <div class="kpi-card c6"> <div class="kpi-label"> Riesgo FWI</div> <div class="kpi-val" id="kpi-fwi">—</div> <div class="kpi-eq" id="kpi-fwi-eq"></div> <div class="kpi-trend neutral" id="kpi-fwi-t"></div> </div> <div class="kpi-card c7"> <div class="kpi-label"> Regulación hídrica</div> <div class="kpi-val" id="kpi-wri">— / 10</div> <div class="kpi-eq" id="kpi-wri-eq"></div> <div class="kpi-trend neutral" id="kpi-wri-t"></div> </div> <div class="kpi-card c8"> <div class="kpi-label"> Fragmentación MESH</div> <div class="kpi-val" id="kpi-mesh">— ha</div> <div class="kpi-eq" id="kpi-mesh-eq"></div> <div class="kpi-trend neutral" id="kpi-mesh-t"></div> </div> <div class="kpi-card c9"> <div class="kpi-label"> NDVI medio</div> <div class="kpi-val" id="kpi-ndvi">—</div> <div class="kpi-eq" id="kpi-ndvi-eq"></div> <div class="kpi-trend neutral" id="kpi-ndvi-t"></div> </div> </div> <!--  SECCIÓN 1: COMPOSICIÓN RASTER  --> <div class="section-divider"><span> Composición del paisaje (capa activa)</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Hectáreas por categoría</div> <div class="chart-source">Distribución absoluta de clases dentro del recorte, excluyendo nodata y valores nulos. Calculado píxel a píxel.</div> <canvas id="chartBar" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Cálculo de área por clase</div><div id="eqArea"></div></div> <div class="chart-interp" id="interpBar">Activa una capa y selecciona un recorte para comenzar.</div> </div> <div class="chart-card"> <div class="chart-title"> Participación relativa</div> <div class="chart-source">Peso porcentual de cada categoría respecto al área total válida analizada.</div> <canvas id="chartDonut" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Proporción por clase</div><div id="eqShare"></div></div> <div class="chart-interp" id="interpDonut">La dominancia y el balance entre clases se actualizarán aquí.</div> </div> </div> <!--  SECCIÓN 2: ORGANIZACIÓN ESPACIAL RASTER  --> <div class="section-divider"><span> Organización espacial (capa activa)</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Cuadrantes por categoría</div> <div class="chart-source">Conteo de píxeles por cuadrante (NO, NE, SO, SE) — detecta sesgos espaciales de la clase dominante.</div> <canvas id="chartQuadrants" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Asignación espacial</div><div id="eqQuadrants"></div></div> </div> <div class="chart-card"> <div class="chart-title"> Perfil ecológico sintético (raster)</div> <div class="chart-source">Radar normalizado 0–10 con métricas derivadas del raster activo y el recorte seleccionado.</div> <canvas id="chartRadar" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Normalización</div><div id="eqRadar"></div></div> </div> </div> <!--  SECCIÓN 3: BIOMASA & CARBONO  --> <div class="section-divider"><span> Biomasa &amp; Ciclo de Carbono · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Distribución AGB · Histograma + Ajuste Weibull</div> <div class="chart-source">Biomasa aérea forestal (t/ha) — distribución Weibull de 2 parámetros (Jenkins et al. 2003; Chave et al. 2014)</div> <canvas id="chartAGB" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Función de densidad Weibull</div><div id="eqAGB"></div></div> <div class="chart-interp" id="interpretAGB">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Stock de carbono · AGB → C → CO₂eq por municipio</div> <div class="chart-source">Conversión IPCC Tier 1: C = 0.47 × AGB; CO₂eq = C × 3.67 (Eggleston et al. 2006; IPCC 2019)</div> <canvas id="chartCarbon" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Conversión carbono IPCC Tier 1</div><div id="eqCarbon"></div></div> <div class="chart-interp" id="interpretCarbon">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 4: FENOLOGÍA  --> <div class="section-divider"><span> Fenología Forestal Espectral · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Perfil NDVI anual · Modelo doble-logístico por tipo fenológico</div> <div class="chart-source">Series temporales NDVI estacional (DOY 1–365) — modelo doble-logístico (Eklundh &amp; Jönsson 2015 · TIMESAT)</div> <canvas id="chartFeno" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo doble-logístico TIMESAT</div><div id="eqFeno"></div></div> <div class="chart-interp" id="interpretFeno">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Índices espectrales · Serie temporal 2015–2024 (Landsat)</div> <div class="chart-source">NDVI, EVI₂ y NIRv — tendencia decenal OLS; EVI₂ = 2.5·(NIR−R)/(NIR+2.4·R+1) (Jiang et al. 2008; Badgley et al. 2017)</div> <canvas id="chartTimeSeries" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Regresión OLS temporal + EVI₂ + NIRv</div><div id="eqTimeSeries"></div></div> <div class="chart-interp" id="interpretTimeSeries">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 5: DIVERSIDAD & ESTRUCTURA  --> <div class="section-divider"><span> Diversidad Estructural del Paisaje Forestal · Municipios</span></div> <div class="charts-3"> <div class="chart-card"> <div class="chart-title"> Shannon H' &amp; Pielou J' — Diversidad de cobertura</div> <div class="chart-source">Índices de Shannon-Wiener y equitatividad de Pielou sobre composición fenológica por municipio</div> <canvas id="chartShannon" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Entropía de Shannon / Evenness Pielou</div><div id="eqShannon"></div></div> </div> <div class="chart-card"> <div class="chart-title"> LAI · Modelo potencial NIRv (Fang et al. 2019)</div> <div class="chart-source">Índice de Área Foliar estimado; curva teórica LAI = α · NDVIᵝ sobre rango observado en altiplano guatemalteco</div> <canvas id="chartLAI" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo LAI potencial calibrado</div><div id="eqLAI"></div></div> </div> <div class="chart-card"> <div class="chart-title"> Perfil ecológico integral · Radar multidimensional</div> <div class="chart-source">Indicadores normalizados (0–10) — municipio seleccionado vs. promedio departamental (Sololá)</div> <canvas id="chartRadarEco" height="160"></canvas> <div class="chart-eq"><div class="chart-eq-label">Normalización min-max</div><div id="eqRadarEco"></div></div> </div> </div> <!--  SECCIÓN 6: GEOESTADÍSTICA  --> <div class="section-divider"><span> Geoestadística Forestal · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> Variograma espacial experimental · Biomasa AGB</div> <div class="chart-source">Semivarianza γ(h) de la biomasa forestal — ajuste esférico y exponencial (Zawadzki et al. 2016; Journel &amp; Huijbregts 1978)</div> <canvas id="chartVario" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Modelo esférico de variograma</div><div id="eqVario"></div></div> <div class="chart-interp" id="interpretVario">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Correlación espacial AGB–NDVI · Scatterplot + regresión</div> <div class="chart-source">Relación AGB (t/ha) vs. NDVI medio por municipio — ajuste de potencia y OLS (Tucker 1979; Foody et al. 2003)</div> <canvas id="chartScatter" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Regresión AGB = a · NDVIᵇ (power law)</div><div id="eqScatter"></div></div> <div class="chart-interp" id="interpretScatter">Selecciona un municipio para filtrar.</div> </div> </div> <!--  SECCIÓN 7: RIESGO & SERVICIOS  --> <div class="section-divider"><span> Riesgo &amp; Servicios Ecosistémicos · Municipios</span></div> <div class="charts-2"> <div class="chart-card"> <div class="chart-title"> FWI estacional · Componentes FFMC / DMC / DC / ISI</div> <div class="chart-source">Fire Weather Index (Van Wagner 1987) — patrones estacionales estimados para altiplano guatemalteco (CONRED 2023)</div> <canvas id="chartFWI" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Fire Weather Index — Van Wagner (1987)</div><div id="eqFWI"></div></div> <div class="chart-interp" id="interpretFWI">Selecciona un municipio para filtrar.</div> </div> <div class="chart-card"> <div class="chart-title"> Servicios ecosistémicos hídricos · Precipitación–ET–escorrentía</div> <div class="chart-source">Balance hídrico forestal estimado: P, ET₀ (Budyko) y escorrentía regulada — relación con cobertura boscosa por municipio</div> <canvas id="chartHydro" height="170"></canvas> <div class="chart-eq"><div class="chart-eq-label">Balance hídrico forestal (Budyko 1974)</div><div id="eqHydro"></div></div> <div class="chart-interp" id="interpretHydro">Selecciona un municipio para filtrar.</div> </div> </div> <!--  MARCO DE CÁLCULO  --> <div class="section-divider"><span> Modelos Estadísticos Forestales</span></div> <div class="model-box"> <h3> Síntesis de modelos ecológicos aplicados</h3> <div class="model-box-grid"> <div class="model-eq-block" id="modelEq1"></div> <div class="model-eq-block" id="modelEq2"></div> <div class="model-eq-block" id="modelEq3"></div> <div class="model-eq-block" id="modelEq4"></div> </div> <div class="model-sub" id="modelBoxText"></div> </div> <!--  MARCO DE CÁLCULO RASTER  --> <div class="model-box"> <h3> Marco de cálculo del análisis raster</h3> <div class="model-box-grid"> <div> <div class="model-eq-block" id="eqBlockMain"></div> <div class="model-sub"><b>Lectura general:</b> el análisis se hace sobre la capa actualmente activa. El recorte vectorial se reproyecta al CRS del raster antes de intersectar centro de celda por centro de celda.</div> </div> <div> <div class="model-eq-block" id="eqBlockSecondary"></div> <div class="model-sub"><b>Buenas prácticas:</b> el cálculo ignora valores <code>0</code>, <code>-9999</code> y <code>255</code>, y solo considera clases presentes en la leyenda de la capa seleccionada.</div> </div> </div> </div> <!--  INTERPRETACIÓN INTEGRAL  --> <div class="section-divider"><span> Interpretación Ecológica Integral</span></div> <div class="interpret-panel"> <h3> Lectura ecosistémica — <span id="interpretTitle">Departamento de Sololá</span></h3> <div class="interpret-grid" id="interpretGrid"> <div class="interpret-item"><b>Dominancia</b>Selecciona un recorte para generar interpretación.</div> <div class="interpret-item"><b>Diversidad</b>El balance entre clases se calculará automáticamente.</div> <div class="interpret-item"><b>Patrón espacial</b>Se analizará el cuadrante predominante de las clases más extensas.</div> <div class="interpret-item"><b>Lectura técnica</b>Las conclusiones se basan en estadísticas reales del raster, no en valores simulados.</div> </div> </div> <!--  TABLA RASTER  --> <div class="section-divider"><span> Resumen por categoría · Capa activa</span></div> <div class="table-wrap"> <div class="table-header"> <div> <div class="table-title"> Resumen por categoría (raster)</div> <div class="table-sub">Exportable a CSV y Excel · calculado sobre la capa ráster activa</div> </div> <div style="display:flex;gap:8px;flex-wrap:wrap"> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnTableCSV"> CSV</button> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnTableXLSX"> Excel</button> </div> </div> <div class="table-scroll"> <table> <thead> <tr> <th>Categoría</th> <th class="right">Ha</th> <th class="right">%</th> <th>Cuadrante principal</th> <th class="right">Pixeles</th> </tr> </thead> <tbody id="tblBody"> <tr><td colspan="5">Selecciona un recorte para comenzar.</td></tr> </tbody> </table> </div> </div> <!--  TABLA MUNICIPIOS  --> <div class="section-divider"><span> Tabla de Indicadores Ecológicos · Municipios</span></div> <div class="table-wrap"> <div class="table-header"> <div> <div class="table-title"> Indicadores ecológicos forestales por municipio</div> <div class="table-sub">Haz clic en una fila para seleccionar el municipio y actualizar gráficos · Sololá, Guatemala 2026</div> </div> <div style="display:flex;gap:8px"> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlExcel2"> Excel</button> <button class="btn-dl" style="color:var(--E);background:rgba(6,95,70,.10);border-color:rgba(6,95,70,.22)" id="btnDlCSV2"> CSV</button> </div> </div> <div class="table-scroll"> <table id="ecoTable"> <thead> <tr> <th>Municipio</th><th>AGB (t/ha)</th><th>Cob. Boscosa</th><th>C stock (Mg C/ha)</th> <th>CO₂eq (Mg/ha)</th><th>C suelo (Mg/ha)</th><th>Shannon H'</th><th>Pielou J'</th> <th>LAI</th><th>NDVI</th><th>NPP (gC/m²/d)</th><th>GPP (gC/m²/d)</th> <th>FWI</th><th>MESH (ha)</th><th>Reg. Hídrica</th><th>Precip. (mm/año)</th> <th>Elev. (msnm)</th><th>Área (km²)</th><th>Perennifolio</th><th>Caducifolio</th> <th>Semi-caduc.</th><th>Herbácea</th> </tr> </thead> <tbody id="ecoTableBody"></tbody> </table> </div> </div> </div><!-- /analysis-body -->
-</div><!-- /analysis-section --> <footer> <div class="footer-inner"> <div class="footer-text">Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong></div> <div class="footer-sub">Instituciones y organizaciones que integran el Eje de Bosques</div> <div class="footer-logos"> <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a> <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a> <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a> <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a> <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a> <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a> <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA-UVG"></a> <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago"></a> </div> <div class="footer-src">Fuentes: layers.json · GeoTIFF/COG · GeoJSON · Chart.js · Leaflet · GeoRaster · Chave et al. 2014 · IPCC 2019 · Van Wagner 1987 · Fang et al. 2019 · McGarigal &amp; Marks 1995</div> </div>
+</div><!-- /analysis-section --> <footer> <div class="footer-inner"> <div class="footer-text">Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong></div> <div class="footer-sub">Instituciones y organizaciones que integran el Eje de Bosques</div> <div class="footer-logos"> <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a> <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a> <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a> <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a> <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a> <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a> <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA-UVG"></a> <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago"></a> <a href="#" target="_blank" rel="noopener"><img src="../../aires.png" alt="Aires"></a> </div> <div class="footer-src">Fuentes: layers.json · GeoTIFF/COG · GeoJSON · Chart.js · Leaflet · GeoRaster · Chave et al. 2014 · IPCC 2019 · Van Wagner 1987 · Fang et al. 2019 · McGarigal &amp; Marks 1995</div> </div>
 </footer> <!-- 
      JAVASCRIPT — CAPA FUNCIONAL INTACTA (geoportal_funcional.html)
      + ANALYTICS ENGINE (geoportal_referencia_de_estilo_y_analisis.html)
@@ -237,49 +238,130 @@
 // DATOS ECOLÓGICOS — Municipios de Sololá, Guatemala
 // (de geoportal_referencia_de_estilo_y_analisis.html)
 // 
-const MUNICIPIOS_RAW = [
-  { nombre:"Sololá",                  agb:128, cobBos:62, ndvi:.680, fwi:5.2, mesh:310, wri:7.4, perennifolio:44, caducifolio:18, semicad:12, herbacea:26, elev:2113, precip:1420, area_km2:94.8  },
-  { nombre:"Panajachel",              agb:95,  cobBos:48, ndvi:.610, fwi:4.8, mesh:180, wri:6.8, perennifolio:32, caducifolio:16, semicad:10, herbacea:42, elev:1562, precip:1180, area_km2:26.0  },
-  { nombre:"Santa Catarina Palopó",   agb:102, cobBos:55, ndvi:.640, fwi:5.0, mesh:210, wri:7.0, perennifolio:38, caducifolio:17, semicad:11, herbacea:34, elev:1590, precip:1240, area_km2:11.0  },
-  { nombre:"San Antonio Palopó",      agb:118, cobBos:58, ndvi:.660, fwi:4.9, mesh:255, wri:7.2, perennifolio:42, caducifolio:16, semicad:13, herbacea:29, elev:1630, precip:1280, area_km2:34.0  },
-  { nombre:"San Andrés Semetabaj",    agb:145, cobBos:70, ndvi:.720, fwi:4.5, mesh:380, wri:7.8, perennifolio:50, caducifolio:20, semicad:14, herbacea:16, elev:1820, precip:1540, area_km2:60.0  },
-  { nombre:"Santiago Atitlán",        agb:138, cobBos:66, ndvi:.700, fwi:5.6, mesh:345, wri:7.6, perennifolio:47, caducifolio:19, semicad:13, herbacea:21, elev:1592, precip:1610, area_km2:136.0 },
-  { nombre:"San Lucas Tolimán",       agb:122, cobBos:60, ndvi:.670, fwi:5.3, mesh:285, wri:7.3, perennifolio:43, caducifolio:17, semicad:12, herbacea:28, elev:1636, precip:1390, area_km2:121.0 },
-  { nombre:"Nahualá",                 agb:155, cobBos:75, ndvi:.740, fwi:4.2, mesh:430, wri:8.1, perennifolio:55, caducifolio:20, semicad:15, herbacea:10, elev:2452, precip:1780, area_km2:234.0 },
-  { nombre:"Santa Catarina Ixtahuacán",agb:148,cobBos:72, ndvi:.730,fwi:4.4, mesh:400, wri:7.9, perennifolio:52, caducifolio:20, semicad:14, herbacea:14, elev:2228, precip:1690, area_km2:168.0 },
-  { nombre:"Santa Lucía Utatlán",     agb:142, cobBos:68, ndvi:.710, fwi:4.6, mesh:370, wri:7.7, perennifolio:49, caducifolio:19, semicad:13, herbacea:19, elev:2060, precip:1560, area_km2:76.0  },
-  { nombre:"San Juan La Laguna",      agb:110, cobBos:54, ndvi:.630, fwi:5.1, mesh:240, wri:7.0, perennifolio:36, caducifolio:18, semicad:11, herbacea:35, elev:1610, precip:1300, area_km2:52.0  },
-  { nombre:"San Pedro La Laguna",     agb:108, cobBos:52, ndvi:.620, fwi:5.0, mesh:225, wri:6.9, perennifolio:35, caducifolio:17, semicad:10, herbacea:38, elev:1612, precip:1260, area_km2:19.0  },
-  { nombre:"San Pablo La Laguna",     agb:98,  cobBos:50, ndvi:.610, fwi:5.2, mesh:195, wri:6.7, perennifolio:33, caducifolio:17, semicad:10, herbacea:40, elev:1620, precip:1220, area_km2:15.0  },
-  { nombre:"San Marcos La Laguna",    agb:105, cobBos:53, ndvi:.630, fwi:5.1, mesh:220, wri:6.9, perennifolio:36, caducifolio:17, semicad:11, herbacea:36, elev:1635, precip:1250, area_km2:12.0  },
-  { nombre:"Santa Cruz La Laguna",    agb:132, cobBos:64, ndvi:.690, fwi:4.8, mesh:325, wri:7.5, perennifolio:45, caducifolio:19, semicad:13, herbacea:23, elev:1692, precip:1460, area_km2:23.0  },
-  { nombre:"San José Chacayá",        agb:120, cobBos:59, ndvi:.660, fwi:4.9, mesh:270, wri:7.2, perennifolio:42, caducifolio:17, semicad:12, herbacea:29, elev:1840, precip:1350, area_km2:47.0  },
-  { nombre:"Santa Clara La Laguna",   agb:135, cobBos:65, ndvi:.700, fwi:4.7, mesh:340, wri:7.5, perennifolio:46, caducifolio:19, semicad:13, herbacea:22, elev:1980, precip:1480, area_km2:38.0  },
-  { nombre:"Santa María Visitación",  agb:160, cobBos:78, ndvi:.760, fwi:4.0, mesh:460, wri:8.3, perennifolio:58, caducifolio:20, semicad:16, herbacea:6,  elev:2520, precip:1880, area_km2:28.0  },
-  { nombre:"Concepción",              agb:152, cobBos:74, ndvi:.730, fwi:4.3, mesh:415, wri:8.0, perennifolio:54, caducifolio:20, semicad:14, herbacea:12, elev:2190, precip:1740, area_km2:34.0  },
-];
+// =============================================================================
+// DATOS ECOLÓGICOS REALES — cargados desde JSON (GEE + Python pipeline)
+// Municipios de Sololá · Microcuencas de Atitlán
+// =============================================================================
+let MUNICIPIOS_RAW = [];
+let MUNICIPIOS = [];
+let SERIES_DATA = { municipios: {}, microcuencas: {} };
 
-const MUNICIPIOS = MUNICIPIOS_RAW.map(m => {
-  const props = [m.perennifolio, m.caducifolio, m.semicad, m.herbacea].map(v=>v/100).filter(v=>v>0);
-  const S = props.length;
-  const H = -props.reduce((s,p)=>s+p*Math.log(p),0);
-  const npp = +(3.8 + m.ndvi*5.2 + (m.elev-1600)*0.0008).toFixed(2);
-  const et  = +(m.precip*0.62).toFixed(0);
+// Mapa de campos JSON → campos internos esperados por el dashboard
+function mapRecord(r, tipo) {
+  const fwi_mensual = SERIES_DATA[tipo]?.fwi_mensual || [];
+  const nombre = r.nombre || r.Nombre || '';
+  const fwiMes = fwi_mensual.filter(row => (row.unidad||row.nombre||'') === nombre);
+  const fwiPico = fwiMes.length ? Math.max(...fwiMes.map(x => +x.fwi||0)) : null;
+  const fwiMesPico = fwiMes.length ? fwiMes.reduce((a,b) => (+a.fwi||0) > (+b.fwi||0) ? a : b, fwiMes[0]) : null;
+
+  // Serie NDVI anual — extraer de campos ndvi_2015..ndvi_2024
+  const ndviSerie = {};
+  for (let y = 2015; y <= 2024; y++) {
+    if (r['ndvi_'+y] != null) ndviSerie[y] = +r['ndvi_'+y];
+  }
+  const evi2Serie = {};
+  for (let y = 2015; y <= 2024; y++) {
+    if (r['evi2_'+y] != null) evi2Serie[y] = +r['evi2_'+y];
+  }
+  const nirvSerie = {};
+  for (let y = 2015; y <= 2024; y++) {
+    if (r['nirv_'+y] != null) nirvSerie[y] = +r['nirv_'+y];
+  }
+  // Perfil fenológico DOY
+  const doySerie = [];
+  for (let b = 0; b < 24; b++) {
+    const pad = b < 10 ? '0'+b : ''+b;
+    const v = r['ndvi_doy'+pad+'_mean'];
+    doySerie.push(v != null ? +v : null);
+  }
+
   return {
-    ...m,
-    cStockMg: +(m.agb*0.47).toFixed(2),
-    co2eq:    +(m.agb*0.47*3.67).toFixed(2),
-    soilC:    +(m.agb*0.47*2.4).toFixed(1),
-    shannon:  +H.toFixed(3),
-    pielou:   +(H/Math.log(S)).toFixed(3),
-    lai:      +(0.57*Math.pow(m.ndvi,1.84)).toFixed(2),
-    wriLabel: m.wri>=8?"Alta":m.wri>=7?"Media-alta":"Media",
-    npp,
-    gpp:      +(npp*1.9).toFixed(2),
-    et,
-    escorrentia: +(m.precip - et - (m.cobBos*0.8)).toFixed(0),
+    nombre:       nombre,
+    area_km2:     r.area_ha != null ? +(r.area_ha/100).toFixed(2) : null,
+    area_ha:      r.area_ha != null ? +r.area_ha : null,
+    // Índices espectrales
+    ndvi:         r.ndvi_mean != null ? +r.ndvi_mean : null,
+    evi2:         r.evi2_mean != null ? +r.evi2_mean : null,
+    nirv:         r.nirv_mean != null ? +r.nirv_mean : null,
+    ndwi:         r.ndwi_mean != null ? +r.ndwi_mean : null,
+    nbr:          r.nbr_mean  != null ? +r.nbr_mean  : null,
+    ndviSlope:    r.ndvi_slope_mean != null ? +r.ndvi_slope_mean : null,
+    // Biomasa y carbono
+    agb:          r.agb_mean   != null ? +r.agb_mean   : null,
+    cStockMg:     r.cStockMg   != null ? +r.cStockMg   : (r.agb_mean != null ? +(r.agb_mean*0.47).toFixed(2) : null),
+    co2eq:        r.co2eq      != null ? +r.co2eq      : null,
+    soilC:        r.soilC      != null ? +r.soilC      : null,
+    cobBos:       r.cobBos     != null ? +r.cobBos     : null,
+    mesh:         r.mesh_mean  != null ? +r.mesh_mean  : null,
+    // LAI / productividad
+    lai:          r.lai_mean   != null ? +r.lai_mean   : null,
+    npp:          r.npp_gC_m2_d != null ? +r.npp_gC_m2_d : null,
+    gpp:          r.gpp_gC_m2_d != null ? +r.gpp_gC_m2_d : null,
+    fpar:         r.fpar_mean  != null ? +r.fpar_mean  : null,
+    // FWI
+    fwi:          fwiPico != null ? +fwiPico.toFixed(2) : null,
+    fwiMesPico:   fwiMesPico ? +fwiMesPico.mes : null,
+    fwiMensual:   fwiMes,
+    // Hidrología
+    precip:       r.precip_mean_mm != null ? +r.precip_mean_mm : null,
+    et:           r.et_mean_mm     != null ? +r.et_mean_mm     : null,
+    escorrentia:  r.escorrentia_mm != null ? +r.escorrentia_mm : null,
+    wri:          r.wri_score      != null ? +r.wri_score      : null,
+    wriLabel:     r.wri_score != null ? (+r.wri_score >= 7 ? 'Alta' : +r.wri_score >= 5 ? 'Media-alta' : 'Media') : '—',
+    // Diversidad
+    shannon:      r.shannon_H  != null ? +r.shannon_H  : null,
+    pielou:       r.pielou_J   != null ? +r.pielou_J   : null,
+    // Fenología (compatibilidad con gráficos existentes)
+    perennifolio: r.cls1 != null ? +(r.cls1*100).toFixed(1) : 0,
+    caducifolio:  r.cls2 != null ? +(r.cls2*100).toFixed(1) : 0,
+    semicad:      r.cls3 != null ? +(r.cls3*100).toFixed(1) : 0,
+    herbacea:     r.cls0 != null ? +(r.cls0*100).toFixed(1) : 0,
+    // Series temporales
+    ndviSerie,
+    evi2Serie,
+    nirvSerie,
+    doySerie,
+    // Campos legacy (para compatibilidad con análisis existentes)
+    elev:         null,
   };
-});
+}
+
+async function loadEcoData(tipo) {
+  const prefix = tipo === 'municipios' ? 'municipios' : 'microcuencas';
+  const base = './data/';
+  try {
+    const [rawJson, fwiCsv] = await Promise.all([
+      fetch(base + prefix + '_MUNICIPIOS_RAW.json').then(r => r.json()),
+      fetch(base + prefix + '_fwi_mensual.csv').then(r => r.text()),
+    ]);
+    // Parsear FWI mensual CSV
+    const fwiLines = fwiCsv.trim().split('\n');
+    const fwiHeaders = fwiLines[0].split(',').map(h => h.trim().replace(/"/g,''));
+    const fwiRows = fwiLines.slice(1).map(line => {
+      const vals = line.split(',');
+      const obj = {};
+      fwiHeaders.forEach((h, i) => { obj[h] = vals[i] ? vals[i].trim().replace(/"/g,'') : null; });
+      return obj;
+    });
+    SERIES_DATA[tipo] = { fwi_mensual: fwiRows };
+    const mapped = rawJson.map(r => mapRecord(r, tipo));
+    return mapped;
+  } catch(e) {
+    console.error('Error cargando datos', tipo, e);
+    return [];
+  }
+}
+
+// AOI activo: municipios o microcuencas
+let AOI_ACTIVO = 'municipios';
+
+async function initEcoData() {
+  const data = await loadEcoData(AOI_ACTIVO);
+  MUNICIPIOS_RAW = data;
+  MUNICIPIOS = data;
+  updateAnalysis();
+  buildEcoTable();
+}
 
 //  GLOBALS 
 const LAYERS_URL = "./config/layers.json";
@@ -299,7 +381,7 @@ const $ = (id) => document.getElementById(id);
 // Eco analytics state
 let selectedMuni = null;
 let ecoCharts = {};
-const deptAvg = key => +(MUNICIPIOS.reduce((s,m)=>s+m[key],0)/MUNICIPIOS.length).toFixed(3);
+const deptAvg = key => { if(!MUNICIPIOS.length) return 0; const vals = MUNICIPIOS.map(m=>m[key]).filter(v=>v!=null); return vals.length ? +(vals.reduce((s,v)=>s+v,0)/vals.length).toFixed(3) : 0; };
 function avgArr(arr, key){ return +(arr.reduce((s,m)=>s+m[key],0)/arr.length).toFixed(3) }
 function maxArr(arr, key){ return Math.max(...arr.map(m=>m[key])) }
 function getDS(){ return selectedMuni ? MUNICIPIOS.filter(m=>m.nombre===selectedMuni) : MUNICIPIOS }
@@ -328,8 +410,9 @@ const map = L.map("map", { zoomControl: true, preferCanvas: true });
 const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 20, attribution: "&copy; OpenStreetMap" });
 const topo = L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", { maxZoom: 17, attribution: "&copy; OpenTopoMap" });
 const sat = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 20, attribution: "Tiles &copy; Esri" });
-osm.addTo(map);
+sat.addTo(map);
 map.setView([14.65, -91.2], 10);
+baseKey = "sat";
 L.control.layers({ "OSM": osm, "Topo": topo, "Satélite": sat }, null, { collapsed: true }).addTo(map);
 
 let baseKey = "osm";
@@ -397,6 +480,7 @@ function setBasemap(key){
 $("bmOsm").onclick = () => setBasemap("osm");
 $("bmTopo").onclick = () => setBasemap("topo");
 $("bmSat").onclick = () => setBasemap("sat");
+$("bmSat").classList.add("active"); $("bmOsm").classList.remove("active");
 
 function updateMetaLabels(){
   $("metaSelection").textContent = selectedFeature ? humanizeFeatureName(selectedFeature.properties || {}) : "Sin selección";
@@ -903,17 +987,17 @@ function updateAnalysis(){
   {
     const ctx = $("chartFeno").getContext("2d");
     const doys = Array.from({length:24},(_,i)=>Math.round(15+i*15.5));
-    function dblLog(doy,min,max,sos,eos,sig=35){ const r=1/(1+Math.exp(-(doy-sos)/sig)); const f=1/(1+Math.exp((doy-eos)/sig)); return min+(max-min)*r*f; }
-    const nM = ndviM;
+    // Perfil NDVI real por bin DOY (GEE · Landsat 2015–2024)
+    const refFeno = ds[0] || {};
+    const doySerie = refFeno.doySerie && refFeno.doySerie.filter(v=>v!=null).length > 4
+      ? refFeno.doySerie
+      : Array(24).fill(ndviM);
     ecoCharts.feno = new Chart(ctx,{
       type:"line",
       data:{
         labels:doys.map(d=>"DOY "+d),
         datasets:[
-          {label:"Perennifolio",data:doys.map(d=>+(dblLog(d,nM*.72,nM*1.08,58,310,42)).toFixed(3)),borderColor:"#065f46",borderWidth:2.5,tension:.4,pointRadius:2,fill:false},
-          {label:"Caducifolio", data:doys.map(d=>+(dblLog(d,nM*.38,nM*.98,75,285,28)).toFixed(3)),borderColor:"#86efac",borderWidth:2,tension:.4,pointRadius:2,fill:false},
-          {label:"Semi-caducifolio",data:doys.map(d=>+(dblLog(d,nM*.52,nM*1.02,82,298,32)).toFixed(3)),borderColor:"#b5179e",borderWidth:2,tension:.4,pointRadius:2,fill:false},
-          {label:"Herbácea",data:doys.map(d=>+(dblLog(d,nM*.28,nM*.86,92,268,22)).toFixed(3)),borderColor:"#d4b483",borderWidth:1.5,tension:.4,pointRadius:2,fill:false,borderDash:[5,4]},
+          {label:"NDVI real (GEE)",data:doySerie.map((v,i)=>v!=null?+v.toFixed(3):ndviM),borderColor:"#065f46",borderWidth:2.5,tension:.4,pointRadius:3,fill:true,backgroundColor:"rgba(6,95,70,.08)"},
         ]
       },
       options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:11}}}},
@@ -929,11 +1013,11 @@ function updateAnalysis(){
     const ctx = $("chartTimeSeries").getContext("2d");
     const years = [2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
     const n = years.length;
-    const seed = single ? ds[0].nombre.charCodeAt(0) : 83;
-    const rng2 = (i,a) => a*(Math.sin(i*1.3+seed*.06)*.45+Math.cos(i*.75+seed*.09)*.45);
-    const ndviS = years.map((_,i)=>+(ndviM+rng2(i,.038)+(i*.0025)).toFixed(3));
-    const eviS  = years.map((_,i)=>+(ndviM*.86+rng2(i,.028)+(i*.0018)).toFixed(3));
-    const nirvS = years.map((_,i)=>+(ndviM*ndviM+rng2(i,.007)+(i*.0009)).toFixed(4));
+    // Datos reales de serie temporal Landsat (GEE)
+    const refRec = ds[0] || {};
+    const ndviS = years.map(y => refRec.ndviSerie && refRec.ndviSerie[y] != null ? +refRec.ndviSerie[y].toFixed(3) : ndviM);
+    const eviS  = years.map(y => refRec.evi2Serie && refRec.evi2Serie[y] != null ? +refRec.evi2Serie[y].toFixed(3) : +(ndviM*0.86).toFixed(3));
+    const nirvS = years.map(y => refRec.nirvSerie && refRec.nirvSerie[y] != null ? +refRec.nirvSerie[y].toFixed(4) : +(ndviM*ndviM).toFixed(4));
     const xs2 = Array.from({length:n},(_,i)=>i);
     const mX=xs2.reduce((a,b)=>a+b,0)/n, mY=ndviS.reduce((a,b)=>a+b,0)/n;
     let num=0,den=0; for(let i=0;i<n;i++){num+=(xs2[i]-mX)*(ndviS[i]-mY);den+=(xs2[i]-mX)*(xs2[i]-mX)}
@@ -1096,11 +1180,13 @@ function updateAnalysis(){
   {
     const ctx = $("chartFWI").getContext("2d");
     const meses = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
-    const ffmc = [82,86,89,88,74,64,67,69,65,66,71,77];
-    const dmc  = [22,30,38,42,30,18,20,22,16,14,13,17];
-    const dc   = [80,115,152,168,125,68,72,78,58,52,48,62];
-    const fwiBase = fwiM;
-    const fwiMens = meses.map((_,i)=>{ const isi=Math.exp(.05039*ffmc[i])*(1/(1+0.01998*dmc[i])); const bui=0.8*dmc[i]*dc[i]/(dmc[i]+0.4*dc[i]); const bb=0.1*(isi*(0.626*Math.pow(bui,.809)+2)); return +(bb*fwiBase*.82).toFixed(1); });
+    // Datos FWI reales mensuales (GEE · ERA5-Land 2015–2024)
+    const refFWI = ds[0] || {};
+    const fwiMensData = refFWI.fwiMensual && refFWI.fwiMensual.length === 12 ? refFWI.fwiMensual : null;
+    const ffmc = fwiMensData ? fwiMensData.map(r=>+(+r.ffmc||82).toFixed(1)) : [82,86,89,88,74,64,67,69,65,66,71,77];
+    const dmc  = fwiMensData ? fwiMensData.map(r=>+(+r.dmc||22).toFixed(1))  : [22,30,38,42,30,18,20,22,16,14,13,17];
+    const dc   = fwiMensData ? fwiMensData.map(r=>+(+r.dc||80).toFixed(1))   : [80,115,152,168,125,68,72,78,58,52,48,62];
+    const fwiMens = fwiMensData ? fwiMensData.map(r=>+(+r.fwi||0).toFixed(2)) : meses.map((_,i)=>{ const isi=Math.exp(.05039*ffmc[i])*(1/(1+0.01998*dmc[i])); const bui=0.8*dmc[i]*dc[i]/(dmc[i]+0.4*dc[i]); const bb=0.1*(isi*(0.626*Math.pow(bui,.809)+2)); return +(bb*fwiM*.82).toFixed(1); });
     ecoCharts.fwi = new Chart(ctx,{
       type:"bar",
       data:{labels:meses,datasets:[
@@ -1122,15 +1208,15 @@ function updateAnalysis(){
   destroyChart("hydro");
   {
     const ctx = $("chartHydro").getContext("2d");
-    const sorted = [...MUNICIPIOS].sort((a,b)=>b.precip-a.precip);
+    const sorted = [...MUNICIPIOS].sort((a,b)=>(b.precip||0)-(a.precip||0));
     const hl = single ? ds[0].nombre : null;
     ecoCharts.hydro = new Chart(ctx,{
       type:"bar",
       data:{labels:sorted.map(m=>m.nombre.length>12?m.nombre.slice(0,12)+"…":m.nombre),
         datasets:[
-          {label:"Precipitación (mm/año)",data:sorted.map(m=>m.precip),backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(14,165,233,.90)":"rgba(14,165,233,.40)"),borderRadius:5,borderWidth:0,yAxisID:"y"},
-          {label:"ET₀ estimada (mm)",data:sorted.map(m=>m.et),backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(6,95,70,.85)":"rgba(6,95,70,.38)"),borderRadius:5,borderWidth:0,yAxisID:"y"},
-          {label:"Escorrentía reg. (mm)",data:sorted.map(m=>Math.max(0,m.escorrentia)),type:"line",borderColor:"rgba(190,242,100,.85)",tension:.4,pointRadius:3,fill:false,yAxisID:"y"},
+          {label:"Precipitación CHIRPS (mm/año)",data:sorted.map(m=>m.precip),backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(14,165,233,.90)":"rgba(14,165,233,.40)"),borderRadius:5,borderWidth:0,yAxisID:"y"},
+          {label:"ET MODIS (mm/año)",data:sorted.map(m=>m.et),backgroundColor:sorted.map(m=>hl&&m.nombre===hl?"rgba(6,95,70,.85)":"rgba(6,95,70,.38)"),borderRadius:5,borderWidth:0,yAxisID:"y"},
+          {label:"Escorrentía Budyko (mm)",data:sorted.map(m=>Math.max(0,m.escorrentia||0)),type:"line",borderColor:"rgba(190,242,100,.85)",tension:.4,pointRadius:3,fill:false,yAxisID:"y"},
         ]
       },
       options:{responsive:true,plugins:{legend:{position:"bottom",labels:{font:{size:10}}}},
@@ -1287,9 +1373,9 @@ selRecorteEl.addEventListener("change", async (e) => {
 (async () => {
   try {
     renderEquations();
-    updateAnalysis();
     await loadLayersConfig();
     await loadRecorte(recorteKey);
+    await initEcoData();
     updateMetaLabels();
     setStatus("Listo. Activa una capa y selecciona un recorte.", "ok");
   } catch (e) {
