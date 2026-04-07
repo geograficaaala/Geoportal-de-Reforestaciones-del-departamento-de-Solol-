@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Informes · Anomalias Termicas · Solola</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -191,7 +193,7 @@
       <a class="navbtn" href="../../index.html">Volver a Inicio</a>
       <a class="navbtn" href="./index.html">Volver al Modulo</a>
       <a class="navbtn navbtn-primary" href="./informes.html" aria-current="page">Informes</a>
-      <a class="navbtn" href="./geoportal_incendios.html">Geoportal</a>
+      <a class="navbtn" href="./geoportal.html">Geoportal</a>
     </div>
   </div>
 </header>
@@ -306,14 +308,15 @@
       <h3>Acciones</h3>
       <div class="btns-row">
         <button class="btn btn-primary" id="btnGenerar">Generar vista previa</button>
-        <button class="btn btn-outline" id="btnPrint">Imprimir / Guardar PDF</button>
+        <button class="btn btn-outline" id="btnPDF">Descargar PDF</button>
       </div>
       <div class="btns-row" style="margin-top:6px">
+        <button class="btn btn-ghost" id="btnWORD">Descargar Word</button>
         <button class="btn btn-ghost" id="btnCSV">Exportar CSV</button>
         <button class="btn btn-ghost" id="btnJSON">Exportar JSON</button>
       </div>
       <div class="hint" style="margin-top:8px">
-        Para guardar el PDF: <strong>Ctrl+P</strong>, selecciona <em>Guardar como PDF</em>, desactiva encabezados/pies del navegador.
+        El PDF se descarga directamente desde el navegador en formato A4, sin abrir la ventana de impresion.
       </div>
     </div>
 
@@ -338,7 +341,8 @@
       </div>
       <div class="btns-row">
         <button class="btn btn-primary" id="btnGenerar2">Generar vista previa</button>
-        <button class="btn btn-outline" id="btnPrint2">Imprimir / PDF</button>
+        <button class="btn btn-outline" id="btnPDF2">Descargar PDF</button>
+        <button class="btn btn-ghost" id="btnWORD2">Descargar Word</button>
       </div>
     </div>
 
@@ -413,7 +417,8 @@ const els = {
   secSensores:$("secSensores"), secEspacial:$("secEspacial"), secGeoestadistica:$("secGeoestadistica"),
   secRiesgo:$("secRiesgo"), secTabla:$("secTabla"),
   btnGenerar:$("btnGenerar"), btnGenerar2:$("btnGenerar2"),
-  btnPrint:$("btnPrint"), btnPrint2:$("btnPrint2"),
+  btnPDF:$("btnPDF"), btnPDF2:$("btnPDF2"),
+  btnWORD:$("btnWORD"), btnWORD2:$("btnWORD2"),
   btnCSV:$("btnCSV"), btnJSON:$("btnJSON"),
   pages:$("pages"), chipData:$("chipData"), warnBox:$("warnBox"),
   mini_n:$("mini_n"), mini_hi:$("mini_hi"), mini_frp:$("mini_frp"), mini_zonas:$("mini_zonas"),
@@ -426,7 +431,9 @@ const els = {
 const state = {
   rows: [],          // detecciones filtradas actuales
   lastFiltered: [],
-  generating: false
+  generating: false,
+  exportingPDF: false,
+  exportingWord: false
 };
 
 /* =============================================
@@ -462,6 +469,53 @@ function confClass(c){
 function setWarning(msg){
   if(!msg){els.warnBox.style.display="none";return;}
   els.warnBox.style.display="";els.warnBox.textContent=msg;
+}
+
+function fileSafeName(s){
+  return String(s||"informe")
+    .normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/[^a-zA-Z0-9_-]+/g,"_")
+    .replace(/^_+|_+$/g,"")
+    .toLowerCase() || "informe";
+}
+function buildReportBaseName(){
+  const tipo = ({tecnico:"tecnico",ejecutivo:"ejecutivo",operativo:"operativo"}[els.tipoInforme.value]||"tecnico");
+  const zona = fileSafeName(els.zonaItem.value || els.zona.options[els.zona.selectedIndex]?.text || "solola");
+  const desde = els.desde.value || new Date().toISOString().slice(0,10);
+  const hasta = els.hasta.value || desde;
+  return `informe_incendios_${tipo}_${zona}_${desde}_a_${hasta}`;
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+async function ensurePreviewReady(){
+  if(state.generating){
+    while(state.generating) await sleep(120);
+    if(state.lastFiltered.length) return true;
+  }
+  await generatePreview();
+  return state.lastFiltered.length > 0;
+}
+function waitForImages(container){
+  const imgs = Array.from(container.querySelectorAll('img'));
+  return Promise.all(imgs.map(img => {
+    if(img.complete) return Promise.resolve();
+    return new Promise(resolve => {
+      img.addEventListener('load', resolve, {once:true});
+      img.addEventListener('error', resolve, {once:true});
+    });
+  }));
+}
+function withBusy(buttons, working, label){
+  buttons.forEach(btn => {
+    if(!btn) return;
+    if(working){
+      if(!btn.dataset.originalLabel) btn.dataset.originalLabel = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = label;
+    }else{
+      btn.disabled = false;
+      if(btn.dataset.originalLabel) btn.textContent = btn.dataset.originalLabel;
+    }
+  });
 }
 
 /* =============================================
@@ -1278,6 +1332,123 @@ function exportJSON(){
     "application/json;charset=utf-8");
 }
 
+async function exportPDF(){
+  if(state.exportingPDF) return;
+  state.exportingPDF = true;
+  const btns = [els.btnPDF, els.btnPDF2];
+  withBusy(btns, true, 'Descargando PDF...');
+  try{
+    const ok = await ensurePreviewReady();
+    if(!ok){ alert('No hay detecciones para exportar con los filtros actuales.'); return; }
+    const pages = Array.from(document.querySelectorAll('#pages .page'));
+    if(!pages.length){ alert('Genera la vista previa primero.'); return; }
+    await waitForImages(els.pages);
+    await sleep(350);
+    const { jsPDF } = window.jspdf || {};
+    if(!jsPDF || !window.html2canvas) throw new Error('No se pudo cargar la libreria de exportacion PDF.');
+    const pdf = new jsPDF({orientation:'p', unit:'mm', format:'a4', compress:true, putOnlyUsedFonts:true});
+    for(let i=0;i<pages.length;i++){
+      const page = pages[i];
+      const canvas = await window.html2canvas(page, {
+        scale: 2.2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        imageTimeout: 0,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight
+      });
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      if(i>0) pdf.addPage('a4','p');
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+    }
+    pdf.save(buildReportBaseName()+'.pdf');
+  }catch(e){
+    console.error(e);
+    alert('No se pudo descargar el PDF: ' + e.message);
+  }finally{
+    state.exportingPDF = false;
+    withBusy(btns, false);
+  }
+}
+
+function buildWordHTML(){
+  const pagesHTML = els.pages.innerHTML;
+  return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>${buildReportBaseName()}</title>
+<style>
+  @page { size: A4; margin: 10mm; }
+  body { font-family: "Times New Roman", Times, serif; margin: 0; color: #000; }
+  .pages { display: block; }
+  .page { width: auto !important; min-height: auto !important; border: none !important; box-shadow: none !important; margin: 0 0 12mm 0 !important; padding: 0 !important; page-break-after: always; break-after: page; }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .report { font-family: "Times New Roman", Times, serif; font-size: 10pt; line-height: 1.55; color: #000; }
+  .report p { margin: 0 0 7pt; text-align: justify; }
+  .report ul { margin: 0 0 7pt 17pt; padding: 0; }
+  .report li { margin: 0 0 3pt; text-align: justify; }
+  .report table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 0 0 8pt; }
+  .report th, .report td { border: 1px solid #000; padding: 4px 5px; vertical-align: top; }
+  .report th { font-weight: 700; text-align: center; background: #f5f5f5; }
+  .report .small { font-size: 9pt; line-height: 1.35; }
+  .report .muted { color: #333; }
+  .report .center { text-align: center; }
+  .report .right { text-align: right; }
+  .report .section-title { font-weight: 700; text-transform: uppercase; margin: 0 0 5pt; letter-spacing: .02em; font-size: 10pt; border-bottom: 1px solid #000; padding-bottom: 2pt; }
+  .report .subsection { font-weight: 700; margin: 0 0 4pt; font-size: 10pt; }
+  .report-header { display: grid; grid-template-columns: 22mm 1fr 22mm; gap: 5mm; align-items: center; margin-bottom: 8pt; border-bottom: 1.5px solid #000; padding-bottom: 5pt; }
+  .logo-box { width: 22mm; height: 22mm; display: grid; place-items: center; border: 1px solid #ccc; overflow: hidden; background: #fff; }
+  .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+  .logo-fallback { font-size: 7.5pt; text-align: center; line-height: 1.1; padding: 2mm; color: #555; }
+  .head-text { text-align: center; line-height: 1.25; }
+  .head-text .line { font-weight: 700; font-size: 10pt; text-transform: uppercase; }
+  .head-text .line.sm { font-weight: 400; text-transform: none; font-size: 9.5pt; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6pt; margin-bottom: 7pt; }
+  .meta-item { border: 1px solid #000; padding: 4pt 5pt; }
+  .meta-item .k { font-weight: 700; display: block; font-size: 9.5pt; }
+  .meta-item .v { font-size: 9.5pt; }
+  .cover-box { border: 1px solid #000; padding: 9pt 11pt; margin-top: 9pt; margin-bottom: 6pt; }
+  .kpi-table td:nth-child(1) { width: 55%; font-weight: 700; }
+  .kpi-table td:nth-child(2) { text-align: right; }
+  .chart-container { margin: 6pt 0 8pt; border: 1px solid #ccc; padding: 8pt; background: #fff; page-break-inside: avoid; }
+  .chart-title-rpt { font-weight: 700; font-size: 9.5pt; text-align: center; margin-bottom: 4pt; color: #333; }
+  .chart-note { font-size: 8.5pt; color: #555; line-height: 1.3; margin-top: 4pt; text-align: justify; }
+  .footer-line { margin-top: 8pt; border-top: 1px solid #000; padding-top: 3pt; display: flex; justify-content: space-between; gap: 8pt; font-size: 8.5pt; color: #000; }
+  .footer-logos-rpt { display: flex; flex-wrap: wrap; gap: 3mm; align-items: center; justify-content: center; margin-top: 6pt; padding-top: 5pt; border-top: 1px solid #ccc; }
+  .footer-logos-rpt img { max-height: 10mm; width: auto; object-fit: contain; }
+  canvas { max-width: 100% !important; height: auto !important; }
+</style>
+</head>
+<body>
+<div class="pages">${pagesHTML}</div>
+</body>
+</html>`;
+}
+
+async function exportWord(){
+  if(state.exportingWord) return;
+  state.exportingWord = true;
+  const btns = [els.btnWORD, els.btnWORD2];
+  withBusy(btns, true, 'Descargando Word...');
+  try{
+    const ok = await ensurePreviewReady();
+    if(!ok){ alert('No hay detecciones para exportar con los filtros actuales.'); return; }
+    await waitForImages(els.pages);
+    const html = buildWordHTML();
+    dlBlob(buildReportBaseName()+'.doc', html, 'application/msword;charset=utf-8');
+  }catch(e){
+    console.error(e);
+    alert('No se pudo descargar el archivo Word: ' + e.message);
+  }finally{
+    state.exportingWord = false;
+    withBusy(btns, false);
+  }
+}
+
 /* =============================================
    INIT
    ============================================= */
@@ -1304,7 +1475,8 @@ els.zona.addEventListener("change", async ()=>{
 
 // Events
 [els.btnGenerar,els.btnGenerar2].forEach(b=>b.addEventListener("click",generatePreview));
-[els.btnPrint,els.btnPrint2].forEach(b=>b.addEventListener("click",()=>{generatePreview().then(()=>window.print());window.print();}));
+[els.btnPDF,els.btnPDF2].forEach(b=>b.addEventListener("click",exportPDF));
+[els.btnWORD,els.btnWORD2].forEach(b=>b.addEventListener("click",exportWord));
 els.btnCSV.addEventListener("click",exportCSV);
 els.btnJSON.addEventListener("click",exportJSON);
 
