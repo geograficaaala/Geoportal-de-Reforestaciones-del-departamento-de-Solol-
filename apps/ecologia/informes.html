@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Informes · Ecología Forestal · Sololá</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+  <style>
+    :root{
+      --g1:#0f4c35; --g2:#1a6b48; --g3:#2e9b6a; --g4:#4ec991; --g5:#a8f0cc;
+      --amber:#d97706; --sky:#0ea5e9;
+      --ink:#0a2416; --muted:#3d6652; --faint:#8fb89e;
+      --bg:#f0faf4; --card:rgba(255,255,255,.88);
+      --line:rgba(15,76,53,.10); --line2:rgba(15,76,53,.06);
+      --shadow:0 8px 28px rgba(15,76,53,.10);
+      --shadow-sm:0 4px 14px rgba(15,76,53,.07);
+      --r:18px; --r-sm:12px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:'DM Sans',system-ui,sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(ellipse 900px 600px at -5% -10%, rgba(78,201,145,.15) 0%, transparent 60%),
+        radial-gradient(ellipse 700px 500px at 105% 5%, rgba(14,165,233,.10) 0%, transparent 55%),
+        radial-gradient(ellipse 600px 800px at 50% 110%, rgba(46,155,106,.08) 0%, transparent 60%),
+        linear-gradient(160deg,#e8f8ef 0%,#f0faf4 45%,#eaf6ff 100%);
+      min-height:100vh;
+    }
+    .topbar{
+      position:sticky;top:0;left:0;right:0;z-index:200;
+      background:rgba(13,79,60,.97);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(255,255,255,.07);
+      padding:.75rem 1.25rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      box-shadow:0 2px 20px rgba(0,0,0,.20);
+    }
+    .topbar-left{display:flex;align-items:center;gap:.875rem;min-width:0}
+    .brand-logos{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+    .brand-logos img{
+      height:36px;width:auto;object-fit:contain;
+      background:#fff;border-radius:.375rem;padding:3px 6px;
+      box-shadow:0 1px 5px rgba(0,0,0,.15);
+    }
+    .topbar-title{font-family:'DM Serif Display',serif;font-size:.95rem;color:rgba(255,255,255,.92)}
+    .topbar-title strong{font-weight:700;color:#fff}
+    .nav-btns{display:flex;align-items:center;gap:.375rem;flex-shrink:0;flex-wrap:wrap}
+    .nav-btn{
+      font-size:.75rem;font-weight:500;
+      color:rgba(255,255,255,.75);background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);border-radius:.35rem;
+      padding:.35rem .75rem;cursor:pointer;
+      display:inline-flex;align-items:center;gap:.35rem;
+      text-decoration:none;transition:all .14s;white-space:nowrap;
+    }
+    .nav-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+    .nav-btn.primary{background:#1a7a58;border-color:#2ca58d;color:#fff}
+    .nav-btn.primary:hover{background:#2ca58d}
+
+    .wrap{width:min(1500px,calc(100% - 24px));margin:14px auto 20px;display:grid;grid-template-columns:440px 1fr;gap:14px;align-items:start}
+    .panel{position:sticky;top:76px;background:var(--card);border:1px solid rgba(255,255,255,.9);border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(10px);padding:16px;display:grid;gap:10px}
+    .ctrl-title{font-family:'Lora',serif;font-size:15px;font-weight:700;color:var(--g1);display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .ctrl-badge{font-family:'DM Sans',sans-serif;font-size:9.5px;font-weight:700;background:linear-gradient(135deg,var(--g3),var(--g2));color:#fff;padding:3px 8px;border-radius:999px;letter-spacing:.04em}
+    .card{background:rgba(255,255,255,.72);border:1px solid var(--line2);border-radius:14px;padding:11px 12px;box-shadow:var(--shadow-sm)}
+    .card h3{font-size:12.5px;font-weight:700;color:var(--g1);margin-bottom:7px;letter-spacing:-.01em}
+    .card p{font-size:11.5px;color:var(--muted);line-height:1.4}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .field{display:grid;gap:4px}
+    .field label{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.01em}
+    .field input,.field select,.field textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:7px 10px;font:inherit;font-size:11.5px;color:var(--ink);outline:none;transition:.15s}
+    .field select[multiple]{min-height:180px;padding:6px 7px}
+    .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--g3);box-shadow:0 0 0 3px rgba(46,155,106,.12)}
+    .checks{display:grid;gap:6px}
+    .checks label{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:var(--ink);line-height:1.3;cursor:pointer}
+    .checks input[type=checkbox]{margin-top:2px;accent-color:var(--g3)}
+    .stat-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+    .mini{background:#fff;border:1px solid var(--line2);border-radius:11px;padding:8px 10px}
+    .mini .t{font-size:9.5px;color:var(--muted);margin-bottom:3px;font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+    .mini .v{font-size:16px;font-weight:800;line-height:1;color:var(--g1);letter-spacing:-.02em}
+    .btn{appearance:none;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:.46rem .82rem;border-radius:.35rem;font-weight:600;font-size:.72rem;transition:all .13s;white-space:nowrap;text-decoration:none;border:1px solid rgba(13,79,60,.10);background:#f8faf9;color:#3a5248}
+    .btn:hover{transform:translateY(-1px)}
+    .btns-row{display:flex;gap:7px;flex-wrap:wrap}
+    .btn-primary{background:#1a7a58;color:#fff;border:1px solid #1a7a58;box-shadow:none}
+    .btn-primary:hover{background:#0d4f3c;border-color:#0d4f3c}
+    .btn-outline{background:#fff;color:#3a5248;border:1px solid rgba(13,79,60,.10);box-shadow:none}
+    .btn-outline:hover{background:#e6f5f0;border-color:#1a7a58;color:#0d4f3c}
+    .btn-soft{background:#f8faf9;border:1px solid rgba(13,79,60,.10);color:#3a5248}
+    .btn-soft:hover{background:#e6f5f0;border-color:#1a7a58;color:#0d4f3c}
+    .hint{font-size:10.5px;color:var(--muted);background:rgba(255,255,255,.62);border:1px dashed var(--line);border-radius:10px;padding:9px 10px;line-height:1.4}
+    .filter-summary{font-size:10.5px;color:var(--muted);background:#f8faf9;border:1px solid var(--line2);border-radius:10px;padding:8px 10px;line-height:1.4}
+    .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:5px 11px;font-size:10.5px;font-weight:600}
+    .chip .led{width:7px;height:7px;border-radius:50%;background:#2fd08f;box-shadow:0 0 0 3px rgba(47,208,143,.18)}
+    .alert-box{font-size:11px;color:#7a4a00;background:#fff8e6;border:1px solid #e8d080;border-radius:10px;padding:8px 11px;line-height:1.35}
+    .preview-shell{background:var(--card);border:1px solid rgba(255,255,255,.9);border-radius:var(--r);box-shadow:var(--shadow);backdrop-filter:blur(10px);padding:12px;display:grid;gap:10px}
+    .preview-toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:2px 2px 4px}
+    .pages{display:grid;gap:12px;justify-content:center}
+    .preview-empty{width:210mm;min-height:110mm;border:1.5px dashed rgba(46,155,106,.25);border-radius:14px;background:rgba(255,255,255,.7);display:grid;place-items:center;color:var(--muted);text-align:center;padding:20px}
+    .page{width:210mm;min-height:297mm;background:#fff;border:1px solid #d5e5da;box-shadow:0 12px 28px rgba(15,76,53,.10);padding:12mm 13mm 14mm;position:relative;overflow:visible}
+    .page-break{page-break-after:always}
+    .report{font-family:'Times New Roman',Times,serif;font-size:10pt;line-height:1.5;color:#000}
+    .report p{margin:0 0 7pt;text-align:justify}
+    .report table{width:100%;border-collapse:collapse;font-family:'Times New Roman',Times,serif;font-size:9.5pt;margin:0 0 8pt}
+    .report th,.report td{border:1px solid #444;padding:3.5px 5px;vertical-align:top}
+    .report th{font-weight:700;text-align:center;background:#f0f7f3}
+    .report .small{font-size:9pt;line-height:1.35}
+    .report .muted{color:#333}
+    .report .center{text-align:center}
+    .report .right{text-align:right}
+    .report .section-title{font-weight:700;text-transform:uppercase;text-align:left;margin:0 0 6pt;letter-spacing:.02em;font-size:10pt;border-bottom:1px solid #aaa;padding-bottom:2pt}
+    .kpi-table td:nth-child(1){width:56%;font-weight:700}
+    .kpi-table td:nth-child(2){text-align:right}
+    .list-tight td,.list-tight th{font-size:9pt}
+    .report-header{display:grid;grid-template-columns:24mm 1fr 24mm;gap:5mm;align-items:center;margin-bottom:7pt;border-bottom:2px solid #1a6b48;padding-bottom:6pt}
+    .logo-box{width:24mm;height:24mm;display:grid;place-items:center;overflow:hidden}
+    .logo-box img{width:100%;height:100%;object-fit:contain;display:block}
+    .logo-fallback{font-family:'Times New Roman',Times,serif;font-size:7pt;text-align:center;line-height:1.1;padding:2mm;color:#555}
+    .head-text{text-align:center;line-height:1.2}
+    .head-text .line{font-weight:700;font-size:10pt;text-transform:uppercase;color:#0f4c35}
+    .head-text .line.sub{font-weight:400;text-transform:none;font-size:9.5pt;color:#333;margin-top:2pt}
+    .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:6pt;margin-bottom:8pt}
+    .meta-item{border:1px solid #c8d7cf;padding:5pt 6pt;border-radius:5pt;background:#f9fcfa}
+    .meta-item .k{display:block;font-size:8pt;color:#466155;text-transform:uppercase;font-weight:700;margin-bottom:2pt}
+    .meta-item .v{display:block;font-size:9.5pt}
+    .cover-box{border:1px solid #c8d7cf;border-radius:7pt;padding:8pt 9pt;background:#fbfffc;margin-bottom:8pt}
+    .footer-line{display:flex;justify-content:space-between;align-items:center;gap:8pt;margin-top:8pt;padding-top:4pt;border-top:1px solid #c8d7cf;font-size:8.5pt;color:#555}
+    .chart-rpt{border:1px solid #d8e5de;border-radius:8pt;padding:8pt;margin:0 0 10pt;background:#fcfffd;break-inside:avoid-page}
+    .fig-title{font-weight:700;font-size:9.5pt;margin-bottom:4pt;text-align:center}
+    .fig-note{font-size:8.5pt;color:#444;margin-top:4pt;text-align:center}
+    .table-note{font-size:8.5pt;color:#444;margin:4pt 0 8pt}
+    .multi-hint{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.35}
+    .legend-inline{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .legend-inline span{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--muted)}
+    .legend-inline i{width:10px;height:10px;border-radius:50%;display:inline-block}
+    @media (max-width:1180px){.wrap{grid-template-columns:1fr}.panel{position:static}}
+    @media (max-width:820px){.grid2,.stat-strip{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.preview-empty,.page{width:100%;min-width:0}}
+  </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand-logos">
+      <img src="../../BOSQUE.png" alt="Eje de Bosques" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='../../assets/img/BOSQUE.png';}else{this.style.display='none';}">
+      <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='../../assets/img/CODEMA%20(2).png';}else{this.style.display='none';}">
+    </div>
+    <div class="topbar-title"><strong>Centro de Informes</strong> · Ecología Forestal Sololá</div>
+  </div>
+  <nav class="nav-btns">
+    <a class="nav-btn" href="./index.html"><i class="bi bi-arrow-left"></i> Módulo</a>
+    <a class="nav-btn" href="../../index.html"><i class="bi bi-house"></i> Inicio</a>
+    <a class="nav-btn" href="./geoportal.html"><i class="bi bi-map"></i> Geoportal</a>
+    <a class="nav-btn" href="./informes.html"><i class="bi bi-journal-text"></i> Informes</a>
+    <button class="nav-btn primary" id="refreshBtn" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+  </nav>
+</header>
+
+<div class="wrap">
+  <aside class="panel" aria-label="Panel de control">
+    <div class="ctrl-title">Centro de Informes <span class="ctrl-badge">ECOLOGÍA</span></div>
+
+    <div class="card">
+      <h3>¿Qué hace este módulo?</h3>
+      <p>Genera informes técnicos del módulo de ecología forestal a partir de indicadores ecológicos, series multianuales, riesgo FWI y pérdida de bosque por municipio o microcuenca.</p>
+    </div>
+
+    <div class="card">
+      <h3>Ámbito territorial y filtros</h3>
+      <div class="grid2">
+        <div class="field">
+          <label>Nivel territorial</label>
+          <select id="nivel">
+            <option value="municipios">Municipios</option>
+            <option value="microcuencas">Microcuencas</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tipo de informe</label>
+          <select id="tipoInforme">
+            <option value="tecnico">Técnico integral</option>
+            <option value="ejecutivo">Ejecutivo</option>
+            <option value="comparativo">Comparativo</option>
+          </select>
+        </div>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Entidad(es)</label>
+        <select id="entidad" multiple size="10"></select>
+        <div class="multi-hint" id="entityHint">Puedes seleccionar una o varias entidades; la primera opción resume todo el nivel territorial.</div>
+      </div>
+      <div class="grid2" style="margin-top:8px">
+        <div class="field">
+          <label>Serie ecológica</label>
+          <select id="seriePrincipal">
+            <option value="ndvi">NDVI</option>
+            <option value="evi2">EVI2</option>
+            <option value="nirv">NIRv</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Orden del anexo</label>
+          <select id="ordenTabla">
+            <option value="nombre_asc">Nombre (A → Z)</option>
+            <option value="agb_desc">AGB (mayor → menor)</option>
+            <option value="cob_desc">Cobertura boscosa (mayor → menor)</option>
+            <option value="fwi_desc">FWI (mayor → menor)</option>
+            <option value="area_desc">Área (mayor → menor)</option>
+          </select>
+        </div>
+      </div>
+      <div class="btns-row" style="margin-top:10px">
+        <button class="btn btn-primary" id="btnAplicarFiltros" type="button">Aplicar filtros</button>
+        <button class="btn btn-outline" id="btnLimpiarFiltros" type="button">Limpiar filtros</button>
+      </div>
+      <div class="filter-summary" id="filterSummary" style="margin-top:8px">Sin filtros activos.</div>
+    </div>
+
+    <div class="card">
+      <h3>Secciones del informe</h3>
+      <div class="checks">
+        <label><input type="checkbox" id="secResumen" checked/> Resumen ejecutivo / síntesis ecológica</label>
+        <label><input type="checkbox" id="secMetodologia" checked/> Metodología y fuentes</label>
+        <label><input type="checkbox" id="secIndicadores" checked/> Indicadores ecológicos integrados</label>
+        <label><input type="checkbox" id="secGraficas" checked/> Gráficas ecológicas</label>
+        <label><input type="checkbox" id="secTabla" checked/> Anexo tabular de entidades</label>
+      </div>
+      <div class="grid2" style="margin-top:10px">
+        <div class="field">
+          <label>Firmante / elaboró</label>
+          <input type="text" id="firmante" value="Laboratorio SIG · Eje de Bosques · CODEMA-Sololá"/>
+        </div>
+        <div class="field">
+          <label>Dirigido a</label>
+          <input type="text" id="destinatario" placeholder="Ej. Coordinación técnica"/>
+        </div>
+      </div>
+      <div class="field" style="margin-top:8px">
+        <label>Nota / alcance del informe</label>
+        <textarea id="notaTecnica" rows="2" placeholder="Ej. Informe ecológico preliminar para revisión técnica..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Indicadores de la selección actual</h3>
+      <div class="stat-strip">
+        <div class="mini"><div class="t">Entidades</div><div class="v" id="mini_n">—</div></div>
+        <div class="mini"><div class="t">Área (ha)</div><div class="v" id="mini_area">—</div></div>
+        <div class="mini"><div class="t">Cob. boscosa</div><div class="v" id="mini_cob">—</div></div>
+        <div class="mini"><div class="t">AGB media</div><div class="v" id="mini_agb">—</div></div>
+      </div>
+      <div class="hint" style="margin-top:8px" id="mini_periodo">Series 2015–2024 · pérdida de bosque 2001–2023 · FWI mensual</div>
+    </div>
+
+    <div class="card">
+      <h3>Acciones</h3>
+      <div class="btns-row">
+        <button class="btn btn-primary" id="btnGenerar">Generar vista previa</button>
+        <button class="btn btn-outline" id="btnPDF">Descargar PDF</button>
+      </div>
+      <div class="btns-row" style="margin-top:7px">
+        <button class="btn btn-soft" id="btnCSV">Exportar CSV</button>
+        <button class="btn btn-soft" id="btnJSON">Exportar JSON</button>
+        <button class="btn btn-soft" id="btnRecargar" type="button">Recargar datos</button>
+      </div>
+      <div class="hint" style="margin-top:8px">El informe se descarga directamente en <strong>PDF</strong> con texto seleccionable y gráficas embebidas.</div>
+    </div>
+  </aside>
+
+  <section class="preview-shell" aria-label="Vista previa">
+    <div class="preview-toolbar">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="chip"><span class="led"></span> Vista previa A4</span>
+        <span class="chip" id="chipData">Cargando datos…</span>
+      </div>
+      <div class="btns-row">
+        <button class="btn btn-primary" id="btnGenerar2">Generar vista previa</button>
+        <button class="btn btn-outline" id="btnPDF2">Descargar PDF</button>
+      </div>
+    </div>
+    <div id="warnBox" class="alert-box" style="display:none"></div>
+    <div id="pages" class="pages" aria-live="polite">
+      <div class="preview-empty"><div><strong>Preparando centro de informes ecológicos</strong><br/><br/>Cargando series, indicadores y capas consolidadas del módulo de ecología forestal…</div></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const LOGO_LEFT = '../../BOSQUE.png';
+const LOGO_RIGHT = '../../CODEMA%20%282%29.png';
+const INSTITUTION_LOGOS = [];
+const GREEN_COLORS = ['#0f4c35','#1a6b48','#2e9b6a','#4ec991','#7adfb1','#a8f0cc','#d4f8e8','#0ea5e9','#f59e0b','#8b5cf6'];
+const ECO_CLASS_COLORS = {herbacea:'#d4b483', perennifolio:'#2bb673', caducifolio:'#95d5b2', semicad:'#b5179e', otros:'#cbd5e1'};
+const ECO_CLASS_LABELS = {herbacea:'Vegetación herbácea estacional', perennifolio:'Bosque perennifolio', caducifolio:'Bosque caducifolio', semicad:'Bosque semi-caducifolio', otros:'Otras coberturas'};
+
+const els = {
+  nivel: document.getElementById('nivel'),
+  tipoInforme: document.getElementById('tipoInforme'),
+  entidad: document.getElementById('entidad'),
+  seriePrincipal: document.getElementById('seriePrincipal'),
+  ordenTabla: document.getElementById('ordenTabla'),
+  firmante: document.getElementById('firmante'),
+  destinatario: document.getElementById('destinatario'),
+  notaTecnica: document.getElementById('notaTecnica'),
+  secResumen: document.getElementById('secResumen'),
+  secMetodologia: document.getElementById('secMetodologia'),
+  secIndicadores: document.getElementById('secIndicadores'),
+  secGraficas: document.getElementById('secGraficas'),
+  secTabla: document.getElementById('secTabla'),
+  mini_n: document.getElementById('mini_n'),
+  mini_area: document.getElementById('mini_area'),
+  mini_cob: document.getElementById('mini_cob'),
+  mini_agb: document.getElementById('mini_agb'),
+  mini_periodo: document.getElementById('mini_periodo'),
+  filterSummary: document.getElementById('filterSummary'),
+  entityHint: document.getElementById('entityHint'),
+  pages: document.getElementById('pages'),
+  chipData: document.getElementById('chipData'),
+  warnBox: document.getElementById('warnBox'),
+  btnGenerar: document.getElementById('btnGenerar'),
+  btnGenerar2: document.getElementById('btnGenerar2'),
+  btnPDF: document.getElementById('btnPDF'),
+  btnPDF2: document.getElementById('btnPDF2'),
+  btnCSV: document.getElementById('btnCSV'),
+  btnJSON: document.getElementById('btnJSON'),
+  btnRecargar: document.getElementById('btnRecargar'),
+  btnAplicarFiltros: document.getElementById('btnAplicarFiltros'),
+  btnLimpiarFiltros: document.getElementById('btnLimpiarFiltros'),
+  refreshBtn: document.getElementById('refreshBtn')
+};
+
+const state = {
+  data: {
+    municipios: { master: [], series: [], fwi: [], loss: [] },
+    microcuencas: { master: [], series: [], fwi: [], loss: [] }
+  },
+  ready: false,
+  lastFiltered: [],
+  pendingCharts: [],
+  lastAgg: null
+};
+
+const DATA_FILES = {
+  municipios: {
+    master: ['data/municipios_master.csv','./data/municipios_master.csv','../ecologia/data/municipios_master.csv','../../apps/ecologia/data/municipios_master.csv'],
+    series: ['data/municipios_serie_indices.csv','./data/municipios_serie_indices.csv','../ecologia/data/municipios_serie_indices.csv','../../apps/ecologia/data/municipios_serie_indices.csv'],
+    fwi: ['data/municipios_fwi_mensual.csv','./data/municipios_fwi_mensual.csv','../ecologia/data/municipios_fwi_mensual.csv','../../apps/ecologia/data/municipios_fwi_mensual.csv'],
+    loss: ['data/municipios_loss_bosque.csv','./data/municipios_loss_bosque.csv','../ecologia/data/municipios_loss_bosque.csv','../../apps/ecologia/data/municipios_loss_bosque.csv']
+  },
+  microcuencas: {
+    master: ['data/microcuencas_master.csv','./data/microcuencas_master.csv','../ecologia/data/microcuencas_master.csv','../../apps/ecologia/data/microcuencas_master.csv'],
+    series: ['data/microcuencas_serie_indices.csv','./data/microcuencas_serie_indices.csv','../ecologia/data/microcuencas_serie_indices.csv','../../apps/ecologia/data/microcuencas_serie_indices.csv'],
+    fwi: ['data/microcuencas_fwi_mensual.csv','./data/microcuencas_fwi_mensual.csv','../ecologia/data/microcuencas_fwi_mensual.csv','../../apps/ecologia/data/microcuencas_fwi_mensual.csv'],
+    loss: ['data/microcuencas_loss_bosque.csv','./data/microcuencas_loss_bosque.csv','../ecologia/data/microcuencas_loss_bosque.csv','../../apps/ecologia/data/microcuencas_loss_bosque.csv']
+  }
+};
+
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function slugify(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''); }
+function cleanText(s){ return String(s||'').replace(/\s+/g,' ').trim(); }
+function normalizeName(s){ return cleanText(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function num(v){ const n = Number(v); return Number.isFinite(n) ? n : 0; }
+function fmtNum(v,d=0){ const n=Number(v); if(!Number.isFinite(n)) return '—'; return n.toLocaleString('es-GT',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function fmtDateTime(d){ return new Intl.DateTimeFormat('es-GT',{dateStyle:'long',timeStyle:'short'}).format(d); }
+function avg(arr){ return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function sum(arr){ return arr.reduce((a,b)=>a+b,0); }
+function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function nextFrame(){ return new Promise(resolve=>requestAnimationFrame(()=>resolve())); }
+function shortLabel(s,max=48){ const t=String(s||''); return t.length>max ? t.slice(0,max-1)+'…' : t; }
+function setWarning(msg){ if(!msg){ els.warnBox.style.display='none'; els.warnBox.textContent=''; return; } els.warnBox.style.display=''; els.warnBox.textContent=msg; }
+function setButtonsBusy(buttons,busy,label){ (buttons||[]).filter(Boolean).forEach(btn=>{ if(busy){ btn.dataset.prevText=btn.textContent; btn.disabled=true; if(label) btn.textContent=label; } else { btn.disabled=false; if(btn.dataset.prevText) btn.textContent=btn.dataset.prevText; delete btn.dataset.prevText; } }); }
+function selectedValues(select){ return [...select.selectedOptions].map(o=>o.value); }
+function parseMaybeNumber(value){ if(value==null) return ''; const trimmed=String(value).trim(); if(trimmed==='') return ''; const n=Number(trimmed); return Number.isFinite(n) ? n : trimmed; }
+function csvToRows(text){
+  const rows=[]; let row=[], cur='', q=false;
+  for(let i=0;i<text.length;i++){
+    const ch=text[i], nx=text[i+1];
+    if(ch==='"'){
+      if(q && nx==='"'){ cur+='"'; i++; }
+      else q=!q;
+    }else if(ch===',' && !q){ row.push(cur); cur=''; }
+    else if((ch==='\n' || ch==='\r') && !q){
+      if(ch==='\r' && nx==='\n') i++;
+      row.push(cur); rows.push(row); row=[]; cur='';
+    }else cur+=ch;
+  }
+  if(cur.length || row.length){ row.push(cur); rows.push(row); }
+  const clean=rows.filter(r=>r.some(c=>String(c).trim()!==''));
+  if(!clean.length) return [];
+  const headers=clean[0].map(h=>String(h).trim());
+  return clean.slice(1).map(r=>{
+    const obj={};
+    headers.forEach((h,idx)=>{ obj[h]=parseMaybeNumber(r[idx] ?? ''); });
+    return obj;
+  });
+}
+async function fetchFirst(paths, as='text'){
+  let lastErr = null;
+  for(const p of paths){
+    try{
+      const res = await fetch(p, {cache:'no-store'});
+      if(!res.ok) throw new Error(String(res.status));
+      return as==='json' ? await res.json() : await res.text();
+    }catch(err){ lastErr = err; }
+  }
+  throw lastErr || new Error('No se pudo cargar el recurso.');
+}
+async function loadCSV(paths){ return csvToRows(await fetchFirst(paths,'text')); }
+
+function logoHTML(side){
+  const src = side==='left' ? LOGO_LEFT : LOGO_RIGHT;
+  const alt = side==='left' ? 'Eje de Bosques' : 'CODEMA Sololá';
+  return `<div class="logo-box"><img src="${src}" alt="${alt}" onerror="this.outerHTML='<div class=&quot;logo-fallback&quot;>${esc(alt)}</div>'"></div>`;
+}
+function footerLogos(){ return ''; }
+function pageFooter(n){ return `<div class="footer-line"><span>Laboratorio SIG · Eje de Bosques · CODEMA-Sololá 2026</span><span>Página ${n}</span></div>`; }
+
+function levelLabel(level){ return level==='microcuencas' ? 'Microcuencas' : 'Municipios'; }
+function levelLabelSingular(level){ return level==='microcuencas' ? 'microcuenca' : 'municipio'; }
+function levelAllLabel(level){ return level==='microcuencas' ? 'Todas las microcuencas' : 'Todos los municipios'; }
+function levelHint(level){ return level==='microcuencas' ? 'Selección territorial a partir de microcuencas ecológicas del módulo.' : 'Selección territorial a nivel municipal del departamento de Sololá.'; }
+
+function weightedMean(rows, key){
+  const total = sum(rows.map(r=>Math.max(0,num(r.area_ha))));
+  if(!total) return avg(rows.map(r=>num(r[key])));
+  return sum(rows.map(r=>num(r[key])*Math.max(0,num(r.area_ha)))) / total;
+}
+function uniqueSorted(arr){ return [...new Set(arr)].sort((a,b)=>String(a).localeCompare(String(b),'es',{sensitivity:'base'})); }
+
+async function loadAllData(){
+  const out = { municipios:{}, microcuencas:{} };
+  for(const level of ['municipios','microcuencas']){
+    out[level].master = await loadCSV(DATA_FILES[level].master);
+    out[level].series = await loadCSV(DATA_FILES[level].series);
+    out[level].fwi = await loadCSV(DATA_FILES[level].fwi);
+    out[level].loss = await loadCSV(DATA_FILES[level].loss);
+  }
+  for(const level of ['municipios','microcuencas']){
+    out[level].master.forEach(r=>{ r._name = cleanText(r.nombre); r._norm = normalizeName(r.nombre); });
+    out[level].series.forEach(r=>{ r._norm = normalizeName(r.nombre); r.year = Number(r.year); });
+    out[level].fwi.forEach(r=>{ r._norm = normalizeName(r.nombre); r.mes = Number(r.mes); });
+    out[level].loss.forEach(r=>{ r._norm = normalizeName(r.nombre); r.year = Number(r.year); });
+  }
+  state.data = out;
+  state.ready = true;
+}
+
+function populateEntities(){
+  const level = els.nivel.value;
+  const rows = state.data[level].master || [];
+  const names = uniqueSorted(rows.map(r=>r._name || r.nombre).filter(Boolean));
+  const allOption = levelAllLabel(level);
+  els.entidad.innerHTML = [`<option value="__all__">${esc(allOption)}</option>`, ...names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`)].join('');
+  els.entidad.options[0].selected = true;
+  els.entityHint.textContent = levelHint(level) + ' La primera opción resume todo el ámbito.';
+}
+
+function getSelectedNames(){
+  const vals = selectedValues(els.entidad);
+  if(!vals.length || vals.includes('__all__')) return [];
+  return vals.map(cleanText);
+}
+
+function filteredMasterRows(){
+  const level = els.nivel.value;
+  const rows = state.data[level].master || [];
+  const names = getSelectedNames();
+  if(!names.length) return rows.slice();
+  const norms = new Set(names.map(normalizeName));
+  return rows.filter(r=>norms.has(r._norm));
+}
+
+function sortRows(rows){
+  const key = els.ordenTabla.value;
+  const copy = rows.slice();
+  const cmpName = (a,b)=>String(a._name||a.nombre).localeCompare(String(b._name||b.nombre),'es',{sensitivity:'base'});
+  if(key==='nombre_asc') copy.sort(cmpName);
+  if(key==='agb_desc') copy.sort((a,b)=>num(b.agb_mean)-num(a.agb_mean) || cmpName(a,b));
+  if(key==='cob_desc') copy.sort((a,b)=>num(b.cobBos)-num(a.cobBos) || cmpName(a,b));
+  if(key==='fwi_desc') copy.sort((a,b)=>num(b.fwi_anual_mean)-num(a.fwi_anual_mean) || cmpName(a,b));
+  if(key==='area_desc') copy.sort((a,b)=>num(b.area_ha)-num(a.area_ha) || cmpName(a,b));
+  return copy;
+}
+
+function aggregateRows(rows){
+  const level = els.nivel.value;
+  const allRows = state.data[level].master || [];
+  const areaHa = sum(rows.map(r=>num(r.area_ha)));
+  const comp = {
+    herbacea: weightedMean(rows.map(r=>({...r, area_ha:num(r.area_ha), value:num(r.cls0)*100 })), 'value'),
+    perennifolio: weightedMean(rows.map(r=>({...r, area_ha:num(r.area_ha), value:num(r.cls2)*100 })), 'value'),
+    caducifolio: weightedMean(rows.map(r=>({...r, area_ha:num(r.area_ha), value:num(r.cls3)*100 })), 'value'),
+    semicad: weightedMean(rows.map(r=>({...r, area_ha:num(r.area_ha), value:num(r.cls4)*100 })), 'value')
+  };
+  const compSum = comp.herbacea + comp.perennifolio + comp.caducifolio + comp.semicad;
+  comp.otros = Math.max(0, 100 - compSum);
+  const agg = {
+    level,
+    n: rows.length,
+    areaHa,
+    areaKm2: areaHa/100,
+    agb: weightedMean(rows,'agb_mean'),
+    cobBos: weightedMean(rows,'cobBos'),
+    cStock: weightedMean(rows,'cStockMg_mean') || weightedMean(rows,'cStockMg'),
+    co2eq: weightedMean(rows,'co2eq_mean') || weightedMean(rows,'co2eq'),
+    soilC: weightedMean(rows,'soilC_mean') || weightedMean(rows,'soilC'),
+    ndvi: weightedMean(rows,'ndvi_mean'),
+    evi2: weightedMean(rows,'evi2_mean'),
+    nirv: weightedMean(rows,'nirv_mean'),
+    lai: weightedMean(rows,'lai_mean'),
+    npp: weightedMean(rows,'npp_gC_m2_d'),
+    gpp: weightedMean(rows,'gpp_gC_m2_d'),
+    fwi: weightedMean(rows,'fwi_anual_mean'),
+    precip: weightedMean(rows,'precip_mean_mm'),
+    et: weightedMean(rows,'et_mean_mm'),
+    escorrentia: weightedMean(rows,'escorrentia_mm'),
+    shannon: weightedMean(rows,'shannon_H'),
+    pielou: weightedMean(rows,'pielou_J'),
+    mesh: weightedMean(rows,'mesh_mean'),
+    wri: weightedMean(rows,'wri_score'),
+    comp,
+    names: rows.map(r=>r._name||r.nombre)
+  };
+  const dept = {
+    agb: weightedMean(allRows,'agb_mean'),
+    cobBos: weightedMean(allRows,'cobBos'),
+    fwi: weightedMean(allRows,'fwi_anual_mean'),
+    ndvi: weightedMean(allRows,'ndvi_mean'),
+    lai: weightedMean(allRows,'lai_mean')
+  };
+  agg.dept = dept;
+  agg.topAGB = sortRows(rows).slice().sort((a,b)=>num(b.agb_mean)-num(a.agb_mean))[0] || null;
+  agg.topCob = sortRows(rows).slice().sort((a,b)=>num(b.cobBos)-num(a.cobBos))[0] || null;
+  agg.topRisk = sortRows(rows).slice().sort((a,b)=>num(b.fwi_anual_mean)-num(a.fwi_anual_mean))[0] || null;
+  agg.series = buildAggregateSeries(rows);
+  agg.loss = buildAggregateLoss(rows);
+  agg.fwiMonthly = buildAggregateFWI(rows);
+  return agg;
+}
+
+function buildAggregateSeries(rows){
+  const level = els.nivel.value;
+  const seriesRows = state.data[level].series || [];
+  const weights = new Map(rows.map(r=>[r._norm, Math.max(0.0001, num(r.area_ha)||1)]));
+  const allow = new Set(rows.map(r=>r._norm));
+  const grouped = new Map();
+  seriesRows.forEach(r=>{
+    if(!allow.has(r._norm)) return;
+    const y = Number(r.year);
+    if(!grouped.has(y)) grouped.set(y, []);
+    grouped.get(y).push(r);
+  });
+  const years = [...grouped.keys()].sort((a,b)=>a-b);
+  return {
+    years,
+    ndvi: years.map(y=>weightedBySet(grouped.get(y), weights, 'ndvi')),
+    evi2: years.map(y=>weightedBySet(grouped.get(y), weights, 'evi2')),
+    nirv: years.map(y=>weightedBySet(grouped.get(y), weights, 'nirv'))
+  };
+}
+function buildAggregateLoss(rows){
+  const level = els.nivel.value;
+  const lossRows = state.data[level].loss || [];
+  const allow = new Set(rows.map(r=>r._norm));
+  const grouped = new Map();
+  lossRows.forEach(r=>{
+    if(!allow.has(r._norm)) return;
+    const y = Number(r.year);
+    grouped.set(y, (grouped.get(y)||0) + num(r.loss_ha));
+  });
+  const years = [...grouped.keys()].sort((a,b)=>a-b);
+  return { years, values: years.map(y=>grouped.get(y)||0), total: sum(years.map(y=>grouped.get(y)||0)) };
+}
+function buildAggregateFWI(rows){
+  const level = els.nivel.value;
+  const fwiRows = state.data[level].fwi || [];
+  const weights = new Map(rows.map(r=>[r._norm, Math.max(0.0001, num(r.area_ha)||1)]));
+  const allow = new Set(rows.map(r=>r._norm));
+  const grouped = new Map();
+  fwiRows.forEach(r=>{
+    if(!allow.has(r._norm)) return;
+    const m = Number(r.mes);
+    if(!grouped.has(m)) grouped.set(m, []);
+    grouped.get(m).push(r);
+  });
+  const months = Array.from({length:12},(_,i)=>i+1).filter(m=>grouped.has(m));
+  const monthNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return {
+    months,
+    labels: months.map(m=>monthNames[m-1]),
+    fwi: months.map(m=>weightedBySet(grouped.get(m),weights,'fwi')),
+    ffmc: months.map(m=>weightedBySet(grouped.get(m),weights,'ffmc')),
+    dmc: months.map(m=>weightedBySet(grouped.get(m),weights,'dmc')),
+    dc: months.map(m=>weightedBySet(grouped.get(m),weights,'dc'))
+  };
+}
+function weightedBySet(rows, weightMap, key){
+  if(!rows || !rows.length) return 0;
+  let s=0, w=0;
+  rows.forEach(r=>{ const ww=weightMap.get(r._norm) || 1; s += num(r[key]) * ww; w += ww; });
+  return w ? s/w : 0;
+}
+
+function trendPct(value, reference){ if(!reference) return 0; return ((value-reference)/reference)*100; }
+function summarizeSelection(rows){
+  const level = els.nivel.value;
+  const names = getSelectedNames();
+  if(!names.length) return `${levelAllLabel(level)} · ${rows.length} ${level}.`;
+  if(names.length===1) return `${levelLabelSingular(level)} seleccionado: ${names[0]}.`;
+  return `${names.length} ${level} seleccionados: ${names.slice(0,4).join(', ')}${names.length>4?'…':''}.`;
+}
+function updateFilterSummary(rows,agg){
+  const level = els.nivel.value;
+  const sel = getSelectedNames();
+  const target = !sel.length ? levelAllLabel(level) : `${sel.length} ${level}`;
+  els.filterSummary.textContent = `${target}. Área total: ${fmtNum(agg.areaHa,1)} ha · Cobertura boscosa media: ${fmtNum(agg.cobBos,1)}% · AGB: ${fmtNum(agg.agb,1)} t/ha.`;
+}
+function updateMiniStats(rows,agg){
+  els.mini_n.textContent = fmtNum(rows.length);
+  els.mini_area.textContent = fmtNum(agg.areaHa,1);
+  els.mini_cob.textContent = fmtNum(agg.cobBos,1)+'%';
+  els.mini_agb.textContent = fmtNum(agg.agb,1)+' t/ha';
+  els.mini_periodo.textContent = `${levelLabel(els.nivel.value)} · Series 2015–2024 · pérdida 2001–2023 · FWI mensual`;
+}
+
+function buildNarrative(rows,agg){
+  const level = els.nivel.value;
+  const selectionLabel = summarizeSelection(rows);
+  const serieKey = els.seriePrincipal.value;
+  const serieLabel = serieKey.toUpperCase();
+  const series = agg.series[serieKey] || [];
+  const years = agg.series.years || [];
+  const first = series[0] || 0, last = series[series.length-1] || 0;
+  const delta = last - first;
+  const maxLoss = agg.loss.values.length ? Math.max(...agg.loss.values) : 0;
+  const maxLossYear = agg.loss.years[agg.loss.values.indexOf(maxLoss)] || '—';
+  const maxFwi = agg.fwiMonthly.fwi.length ? Math.max(...agg.fwiMonthly.fwi) : 0;
+  const maxFwiMonth = agg.fwiMonthly.labels[agg.fwiMonthly.fwi.indexOf(maxFwi)] || '—';
+  const res = {
+    resumen: [
+      `La selección activa corresponde a ${selectionLabel.toLowerCase()} La superficie acumulada analizada asciende a ${fmtNum(agg.areaHa,1)} ha (${fmtNum(agg.areaKm2,2)} km²), con una cobertura boscosa media ponderada de ${fmtNum(agg.cobBos,1)}% y una biomasa aérea promedio de ${fmtNum(agg.agb,1)} t/ha.`,
+      `En términos de condición ecológica, el índice ${serieLabel} medio se sitúa en ${fmtNum(agg[serieKey],3)}, el LAI estimado en ${fmtNum(agg.lai,3)} y la diversidad de Shannon en ${fmtNum(agg.shannon,3)}. El índice anual FWI promedio es ${fmtNum(agg.fwi,2)}, mientras que la precipitación media alcanza ${fmtNum(agg.precip,0)} mm/año.`
+    ],
+    metodologia: [
+      `El informe se construye a partir de tablas consolidadas del módulo de ecología forestal para Sololá. Se integran cuatro fuentes por nivel territorial: indicadores maestros (${level==='microcuencas'?'microcuencas_master.csv':'municipios_master.csv'}), series multianuales de vegetación (2015–2024), FWI mensual y pérdida de bosque anual (2001–2023).`,
+      `Los promedios del informe se calculan de forma ponderada por área territorial (ha). La pérdida de bosque se agrega por suma anual, mientras que los perfiles mensuales FWI y las series ${serieLabel} se agregan mediante media ponderada de las entidades seleccionadas.`
+    ],
+    indicadores: [
+      `Comparado con el promedio del conjunto ${level}, la selección presenta una variación de ${fmtNum(trendPct(agg.agb,agg.dept.agb),1)}% en AGB, ${fmtNum(trendPct(agg.cobBos,agg.dept.cobBos),1)}% en cobertura boscosa y ${fmtNum(trendPct(agg.fwi,agg.dept.fwi),1)}% en riesgo FWI anual.`,
+      `La composición ecológica promedio muestra ${fmtNum(agg.comp.perennifolio,1)}% de bosque perennifolio, ${fmtNum(agg.comp.caducifolio,1)}% de bosque caducifolio, ${fmtNum(agg.comp.semicad,1)}% de bosque semi-caducifolio y ${fmtNum(agg.comp.herbacea,1)}% de vegetación herbácea estacional.`,
+      `${agg.topAGB ? `La entidad con mayor AGB dentro de la selección es ${agg.topAGB._name || agg.topAGB.nombre} (${fmtNum(agg.topAGB.agb_mean,1)} t/ha).` : ''} ${agg.topRisk ? `La mayor exposición relativa a FWI anual se observa en ${agg.topRisk._name || agg.topRisk.nombre} (${fmtNum(agg.topRisk.fwi_anual_mean,2)}).` : ''}`
+    ],
+    graficas: [
+      `La serie ${serieLabel} ${years.length ? `entre ${years[0]} y ${years[years.length-1]}` : ''} presenta un cambio acumulado de ${fmtNum(delta,3)} unidades. La pérdida de bosque agregada del periodo suma ${fmtNum(agg.loss.total,2)} ha, con el máximo anual en ${maxLossYear} (${fmtNum(maxLoss,2)} ha).`,
+      `El riesgo meteorológico de incendios (FWI) presenta su pico estacional en ${maxFwiMonth}, con un valor promedio de ${fmtNum(maxFwi,2)}. Este comportamiento es útil para priorizar vigilancia y manejo preventivo en los meses secos.`
+    ]
+  };
+  return res;
+}
+
+function buildHeader(meta){
+  return `<div class="report-header">${logoHTML('left')}<div class="head-text"><div class="line">Laboratorio SIG - Eje de Bosques de CODEMA-Sololá</div><div class="line">Módulo de Ecología Forestal · Centro de Informes</div><div class="line sub">Informe generado automáticamente a partir de indicadores ecológicos y series del geoportal</div></div>${logoHTML('right')}</div><div class="meta-grid"><div class="meta-item"><span class="k">Tipo de informe</span><span class="v">${esc(meta.tipo)}</span></div><div class="meta-item"><span class="k">Nivel territorial</span><span class="v">${esc(meta.nivel)}</span></div><div class="meta-item"><span class="k">Selección</span><span class="v">${esc(meta.seleccion)}</span></div><div class="meta-item"><span class="k">Fecha de emisión</span><span class="v">${esc(meta.fechaEmision)}</span></div><div class="meta-item"><span class="k">Periodo de series</span><span class="v">${esc(meta.periodo)}</span></div><div class="meta-item"><span class="k">Dirigido a</span><span class="v">${esc(meta.destinatario || 'No especificado')}</span></div><div class="meta-item"><span class="k">Elaboró</span><span class="v">${esc(meta.firmante)}</span></div><div class="meta-item"><span class="k">Entidades consideradas</span><span class="v">${esc(String(meta.registros))}</span></div></div>`;
+}
+function buildTopTable(title,cols,rows){
+  return `<p class="section-title">${esc(title)}</p><table class="list-tight"><thead><tr>${cols.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${rows.length ? rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${cols.length}" class="center">Sin registros</td></tr>`}</tbody></table>`;
+}
+function buildKpiTable(agg){
+  const rows = [
+    ['Entidades agregadas', fmtNum(agg.n)],
+    ['Área total (ha)', fmtNum(agg.areaHa,1)],
+    ['Área total (km²)', fmtNum(agg.areaKm2,2)],
+    ['AGB media (t/ha)', fmtNum(agg.agb,1)],
+    ['Cobertura boscosa (%)', fmtNum(agg.cobBos,1)],
+    ['C stock (Mg C/ha)', fmtNum(agg.cStock,2)],
+    ['CO₂eq (Mg/ha)', fmtNum(agg.co2eq,2)],
+    ['C suelo (Mg/ha)', fmtNum(agg.soilC,2)],
+    ['NDVI medio', fmtNum(agg.ndvi,3)],
+    ['LAI medio', fmtNum(agg.lai,3)],
+    ['NPP (gC/m²/d)', fmtNum(agg.npp,2)],
+    ['FWI anual medio', fmtNum(agg.fwi,2)],
+    ['Pérdida de bosque acumulada 2001–2023 (ha)', fmtNum(agg.loss.total,2)],
+    ['Precipitación media (mm/año)', fmtNum(agg.precip,0)],
+    ['ET media (mm/año)', fmtNum(agg.et,0)],
+    ['Índice de Shannon H\'', fmtNum(agg.shannon,3)],
+    ['Índice de Pielou J', fmtNum(agg.pielou,3)],
+    ['MESH media (ha)', fmtNum(agg.mesh,2)]
+  ];
+  return `<table class="kpi-table"><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="right">${esc(r[1])}</td></tr>`).join('')}</tbody></table>`;
+}
+function buildEntitiesTable(rows){
+  const cols = [levelLabelSingular(els.nivel.value).replace(/^./,c=>c.toUpperCase()),'Área (ha)','AGB','Cob. bosq.','NDVI','LAI','FWI','Pérdida (ha)','C stock','CO₂eq'];
+  const trows = sortRows(rows).map(r=>[
+    r._name || r.nombre,
+    fmtNum(num(r.area_ha),1),
+    fmtNum(num(r.agb_mean),1),
+    fmtNum(num(r.cobBos),1)+'%',
+    fmtNum(num(r.ndvi_mean),3),
+    fmtNum(num(r.lai_mean),3),
+    fmtNum(num(r.fwi_anual_mean),2),
+    fmtNum(sumLossFor(r._norm),2),
+    fmtNum(num(r.cStockMg_mean)||num(r.cStockMg),2),
+    fmtNum(num(r.co2eq_mean)||num(r.co2eq),2)
+  ]);
+  return buildTopTable('Anexo de entidades filtradas', cols, trows);
+}
+function sumLossFor(norm){
+  const level = els.nivel.value;
+  return sum((state.data[level].loss||[]).filter(r=>r._norm===norm).map(r=>num(r.loss_ha)));
+}
+
+function registerChart(id, config){ state.pendingCharts.push({id, config}); }
+function destroyExistingCharts(){ if(window._ecoCharts){ window._ecoCharts.forEach(ch=>{ try{ ch.destroy(); }catch(_){ } }); } window._ecoCharts=[]; }
+function initPendingCharts(){
+  destroyExistingCharts();
+  state.pendingCharts.forEach(item=>{
+    const canvas = document.getElementById(item.id);
+    if(!canvas) return;
+    const chart = new Chart(canvas.getContext('2d'), item.config);
+    window._ecoCharts.push(chart);
+  });
+}
+
+function buildPagesHTML(rows,agg,texts){
+  const sel = getSelectedNames();
+  const meta = {
+    tipo: ({tecnico:'Técnico integral', ejecutivo:'Ejecutivo', comparativo:'Comparativo'}[els.tipoInforme.value] || els.tipoInforme.value),
+    nivel: levelLabel(els.nivel.value),
+    seleccion: sel.length ? sel.join(', ') : levelAllLabel(els.nivel.value),
+    fechaEmision: fmtDateTime(new Date()),
+    periodo: 'Series 2015–2024 · pérdida de bosque 2001–2023 · FWI mensual',
+    destinatario: cleanText(els.destinatario.value),
+    firmante: cleanText(els.firmante.value) || 'Laboratorio SIG · Eje de Bosques · CODEMA-Sololá',
+    registros: rows.length
+  };
+  const nota = cleanText(els.notaTecnica.value);
+  const pages=[]; let p=1;
+
+  pages.push(`<div class="page page-break"><div class="report">${buildHeader(meta)}<div class="cover-box"><p class="section-title center">Informe de Ecología Forestal · ${esc(levelLabel(els.nivel.value))} · Sololá</p><p><strong>Selección:</strong> ${esc(meta.seleccion)}.</p><p><strong>Alcance:</strong> Informe automático del módulo de ecología forestal del geoportal, construido con indicadores territoriales agregados, series de vegetación, FWI mensual y pérdida de bosque.</p>${nota ? `<p><strong>Nota de alcance:</strong> ${esc(nota)}</p>` : ''}<p>Este documento resume el estado ecológico forestal de la selección activa, con énfasis en biomasa aérea, cobertura boscosa, carbono, vigor de vegetación, riesgo meteorológico de incendios y dinámica de pérdida de bosque. Está diseñado para apoyar seguimiento técnico, comunicación institucional y priorización territorial.</p></div><p class="section-title" style="margin-top:8pt">Resumen de indicadores clave</p>${buildKpiTable(agg)}<p class="small muted">Fuentes: tablas consolidadas del módulo de ecología forestal del geoportal de Sololá. Los promedios de la selección se calculan en forma ponderada por área (ha) y las pérdidas de bosque se suman a nivel anual.</p>${footerLogos()}${pageFooter(p++)}</div></div>`);
+
+  let body2 = '';
+  if(els.secResumen.checked) body2 += `<p class="section-title">1. Resumen ejecutivo</p>${texts.resumen.map(t=>`<p>${esc(t)}</p>`).join('')}`;
+  if(els.secMetodologia.checked) body2 += `<p class="section-title">2. Metodología y fuentes</p>${texts.metodologia.map(t=>`<p>${esc(t)}</p>`).join('')}`;
+  if(els.secIndicadores.checked) body2 += `<p class="section-title">3. Indicadores integrados</p>${texts.indicadores.map(t=>`<p>${esc(t)}</p>`).join('')}`;
+
+  const compRows = [
+    ['Bosque perennifolio', fmtNum(agg.comp.perennifolio,1)+'%'],
+    ['Bosque caducifolio', fmtNum(agg.comp.caducifolio,1)+'%'],
+    ['Bosque semi-caducifolio', fmtNum(agg.comp.semicad,1)+'%'],
+    ['Vegetación herbácea estacional', fmtNum(agg.comp.herbacea,1)+'%'],
+    ['Otras coberturas', fmtNum(agg.comp.otros,1)+'%']
+  ];
+  body2 += buildTopTable('Cuadro 1. Composición ecológica promedio de la selección', ['Cobertura','Participación'], compRows);
+
+  const topRows = sortRows(rows).slice(0,10).map(r=>[
+    r._name || r.nombre,
+    fmtNum(num(r.area_ha),1),
+    fmtNum(num(r.agb_mean),1),
+    fmtNum(num(r.cobBos),1)+'%',
+    fmtNum(num(r.ndvi_mean),3),
+    fmtNum(num(r.fwi_anual_mean),2)
+  ]);
+  body2 += buildTopTable(`Cuadro 2. ${levelLabel(els.nivel.value)} destacados`, [levelLabelSingular(els.nivel.value).replace(/^./,c=>c.toUpperCase()),'Área (ha)','AGB','Cob. bosq.','NDVI','FWI'], topRows);
+
+  pages.push(`<div class="page page-break"><div class="report">${buildHeader(meta)}${body2}${footerLogos()}${pageFooter(p++)}</div></div>`);
+
+  if(els.secGraficas.checked){
+    let body3 = `<p class="section-title">4. Análisis gráfico</p>${texts.graficas.map(t=>`<p>${esc(t)}</p>`).join('')}`;
+
+    if(agg.series.years.length){
+      const cid1 = 'eco_series_' + Date.now();
+      registerChart(cid1,{type:'line',data:{labels:agg.series.years,datasets:[{label:'NDVI',data:agg.series.ndvi,borderColor:'#0f4c35',backgroundColor:'rgba(15,76,53,.12)',tension:.25,pointRadius:3,fill:false},{label:'EVI2',data:agg.series.evi2,borderColor:'#2e9b6a',backgroundColor:'rgba(46,155,106,.12)',tension:.25,pointRadius:3,fill:false},{label:'NIRv',data:agg.series.nirv,borderColor:'#0ea5e9',backgroundColor:'rgba(14,165,233,.12)',tension:.25,pointRadius:3,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{x:{grid:{color:'rgba(0,0,0,.05)'}},y:{beginAtZero:false,grid:{color:'rgba(0,0,0,.05)'}}}}});
+      body3 += `<div class="chart-rpt"><div class="fig-title">Figura 1. Series multianuales de vegetación (2015–2024)</div><div style="position:relative;height:210px;width:100%"><canvas id="${cid1}"></canvas></div><div class="fig-note">Promedios ponderados por área para NDVI, EVI2 y NIRv. La selección activa puede incluir una o varias ${esc(levelLabelSingular(els.nivel.value))}s.</div></div>`;
+    }
+
+    if(agg.loss.years.length){
+      const cid2 = 'eco_loss_' + (Date.now()+1);
+      registerChart(cid2,{type:'bar',data:{labels:agg.loss.years,datasets:[{label:'Pérdida de bosque (ha)',data:agg.loss.values,backgroundColor:'rgba(217,119,6,.78)',borderColor:'#d97706',borderWidth:1,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:8}}},y:{beginAtZero:true,title:{display:true,text:'ha'},grid:{color:'rgba(0,0,0,.05)'}}}}});
+      body3 += `<div class="chart-rpt"><div class="fig-title">Figura 2. Pérdida anual de bosque (2001–2023)</div><div style="position:relative;height:210px;width:100%"><canvas id="${cid2}"></canvas></div><div class="fig-note">Suma anual de pérdida de bosque para la selección activa. Útil para identificar años críticos y priorizar vigilancia o restauración.</div></div>`;
+    }
+
+    if(agg.fwiMonthly.labels.length){
+      const cid3 = 'eco_fwi_' + (Date.now()+2);
+      registerChart(cid3,{data:{labels:agg.fwiMonthly.labels,datasets:[{label:'FWI',type:'bar',data:agg.fwiMonthly.fwi,backgroundColor:'rgba(14,165,233,.70)',borderColor:'#0ea5e9',borderWidth:1,order:2},{label:'FFMC',type:'line',data:agg.fwiMonthly.ffmc,borderColor:'#0f4c35',backgroundColor:'rgba(15,76,53,.10)',tension:.28,pointRadius:3,fill:false,yAxisID:'y1',order:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:9}}}},scales:{y:{beginAtZero:true,title:{display:true,text:'FWI'},grid:{color:'rgba(0,0,0,.05)'}},y1:{beginAtZero:false,position:'right',grid:{display:false},title:{display:true,text:'FFMC'}}}}});
+      body3 += `<div class="chart-rpt"><div class="fig-title">Figura 3. Perfil mensual de riesgo meteorológico de incendios</div><div style="position:relative;height:210px;width:100%"><canvas id="${cid3}"></canvas></div><div class="fig-note">Barras: FWI promedio mensual. Línea: FFMC promedio mensual. Los máximos marcan la ventana de mayor sensibilidad meteorológica al fuego.</div></div>`;
+    }
+
+    const cid4 = 'eco_comp_' + (Date.now()+3);
+    registerChart(cid4,{type:'doughnut',data:{labels:[`Perennifolio (${fmtNum(agg.comp.perennifolio,1)}%)`,`Caducifolio (${fmtNum(agg.comp.caducifolio,1)}%)`,`Semi-caducifolio (${fmtNum(agg.comp.semicad,1)}%)`,`Herbácea (${fmtNum(agg.comp.herbacea,1)}%)`,`Otras (${fmtNum(agg.comp.otros,1)}%)`],datasets:[{data:[agg.comp.perennifolio,agg.comp.caducifolio,agg.comp.semicad,agg.comp.herbacea,agg.comp.otros],backgroundColor:[ECO_CLASS_COLORS.perennifolio,ECO_CLASS_COLORS.caducifolio,ECO_CLASS_COLORS.semicad,ECO_CLASS_COLORS.herbacea,ECO_CLASS_COLORS.otros],borderColor:'#fff',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:9},boxWidth:10}}}}});
+    body3 += `<div class="chart-rpt"><div class="fig-title">Figura 4. Composición ecológica promedio de la selección</div><div style="position:relative;height:220px;width:100%"><canvas id="${cid4}"></canvas></div><div class="fig-note">Composición promedio basada en categorías ecológicas derivadas de la tabla maestra. La porción “otras” resume coberturas no incluidas en las cuatro clases principales.</div></div>`;
+
+    pages.push(`<div class="page page-break"><div class="report">${buildHeader(meta)}${body3}${footerLogos()}${pageFooter(p++)}</div></div>`);
+  }
+
+  if(els.secTabla.checked){
+    const sorted = sortRows(rows);
+    const chunkSize = 18;
+    for(let i=0;i<sorted.length || i===0;i+=chunkSize){
+      const chunk = sorted.slice(i,i+chunkSize);
+      const table = sorted.length ? buildEntitiesTable(chunk).replace('Anexo de entidades filtradas', `Anexo de entidades filtradas${sorted.length>chunkSize ? ` (${i+1}–${Math.min(i+chunkSize,sorted.length)} de ${sorted.length})` : ''}`) : `<p class="section-title">Anexo de entidades filtradas</p><p>No se encontraron entidades para la selección actual.</p>`;
+      pages.push(`<div class="page ${i+chunkSize<sorted.length?'page-break':''}"><div class="report">${buildHeader(meta)}${table}<p class="table-note">El anexo resume variables clave por entidad: superficie, biomasa, cobertura boscosa, vigor de vegetación, riesgo FWI y carbono equivalente.</p>${footerLogos()}${pageFooter(p++)}</div></div>`);
+      if(!sorted.length) break;
+    }
+  }
+  return pages.join('');
+}
+
+function generatePreview(){
+  if(!state.ready) return;
+  const rows = filteredMasterRows();
+  state.lastFiltered = rows.slice();
+  const agg = aggregateRows(rows);
+  state.lastAgg = agg;
+  updateMiniStats(rows,agg);
+  updateFilterSummary(rows,agg);
+  setWarning(rows.length ? '' : 'No hay entidades que coincidan con la selección actual.');
+  state.pendingCharts = [];
+  const texts = buildNarrative(rows,agg);
+  const html = buildPagesHTML(rows,agg,texts);
+  els.pages.innerHTML = html;
+  initPendingCharts();
+  els.chipData.textContent = rows.length ? `${rows.length} entidad(es) filtradas` : '0 entidades filtradas';
+}
+
+function buildReportBaseName(){
+  const today = new Date().toISOString().slice(0,10);
+  const level = els.nivel.value==='microcuencas' ? 'microcuencas' : 'municipios';
+  const sel = getSelectedNames();
+  const suffix = sel.length===1 ? '_' + slugify(sel[0]).slice(0,36) : '';
+  return `informe_ecologia_${level}_${today}${suffix}`.replace(/_+/g,'_');
+}
+
+function downloadBlob(filename, data, type){
+  const blob = data instanceof Blob ? data : new Blob([data], {type});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1200);
+}
+function exportCSV(){
+  const rows = sortRows(state.lastFiltered.length ? state.lastFiltered : filteredMasterRows());
+  const headers = ['nombre','area_ha','agb_mean','cobBos','ndvi_mean','lai_mean','fwi_anual_mean','cStockMg_mean','co2eq_mean','soilC_mean','precip_mean_mm','et_mean_mm','shannon_H','pielou_J'];
+  const lines = [headers.join(',')];
+  rows.forEach(r=>lines.push(headers.map(h=>JSON.stringify(r[h] ?? '')).join(',')));
+  downloadBlob(buildReportBaseName()+'.csv', '\ufeff'+lines.join('\n'), 'text/csv;charset=utf-8');
+}
+function exportJSON(){
+  const rows = sortRows(state.lastFiltered.length ? state.lastFiltered : filteredMasterRows());
+  downloadBlob(buildReportBaseName()+'.json', JSON.stringify(rows, null, 2), 'application/json;charset=utf-8');
+}
+
+async function waitForImages(root){
+  const imgs=[...(root?.querySelectorAll?.('img')||[])].filter(img=>!img.complete);
+  if(!imgs.length) return;
+  await Promise.all(imgs.map(img=>new Promise(resolve=>{ img.addEventListener('load',resolve,{once:true}); img.addEventListener('error',resolve,{once:true}); })));
+}
+const EXPORT_IMAGE_CACHE = new Map();
+function toAbsoluteUrl(url){ try{return new URL(url,window.location.href).href;}catch(_){return url;} }
+function blobToDataURL(blob){ return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=()=>resolve(reader.result); reader.onerror=reject; reader.readAsDataURL(blob); }); }
+async function fetchImageAsDataURL(url){
+  const abs=toAbsoluteUrl(url);
+  if(EXPORT_IMAGE_CACHE.has(abs)) return EXPORT_IMAGE_CACHE.get(abs);
+  const pending=fetch(abs).then(r=>{ if(!r.ok) throw new Error(`No se pudo cargar ${abs}`); return r.blob(); }).then(blobToDataURL).catch(()=>null);
+  EXPORT_IMAGE_CACHE.set(abs,pending);
+  return pending;
+}
+async function preloadExportImages(){ const urls=[LOGO_LEFT,LOGO_RIGHT,...INSTITUTION_LOGOS.map(item=>item.src)]; await Promise.all(urls.map(fetchImageAsDataURL)); }
+function replaceCanvasesWithImages(root){ [...(root?.querySelectorAll?.('canvas')||[])].forEach((canvas,idx)=>{ try{ const img=document.createElement('img'); img.src=canvas.toDataURL('image/png'); img.alt=canvas.getAttribute('aria-label')||`Gráfica ${idx+1}`; img.style.display='block'; img.style.width='100%'; img.style.maxWidth='100%'; img.style.height='auto'; canvas.replaceWith(img);}catch(_){ } }); }
+async function inlineImages(root){ const imgs=[...(root?.querySelectorAll?.('img')||[])]; await Promise.all(imgs.map(async img=>{ const src=img.getAttribute('src')||img.currentSrc; if(!src || String(src).startsWith('data:')) return; const dataUrl=await fetchImageAsDataURL(src); if(dataUrl) img.setAttribute('src',dataUrl); })); }
+async function settleForExport(ms=280){ await wait(ms); await nextFrame(); await nextFrame(); }
+async function buildExportSnapshot(){ generatePreview(); await settleForExport(420); await waitForImages(els.pages); const wrapper=document.createElement('div'); wrapper.className='pages'; wrapper.innerHTML=els.pages.innerHTML; replaceCanvasesWithImages(wrapper); await preloadExportImages(); await inlineImages(wrapper); return wrapper; }
+
+function pdfTextContent(el){
+  if(!el) return '';
+  const clone=el.cloneNode(true);
+  clone.querySelectorAll('script,style').forEach(n=>n.remove());
+  return cleanText(clone.textContent || '');
+}
+function pdfParseMetaGrid(el, accentColor){
+  const items=[...el.querySelectorAll('.meta-item')].map(node=>{
+    const k=pdfTextContent(node.querySelector('.k'));
+    const v=pdfTextContent(node.querySelector('.v'));
+    return { stack:[{text:k,style:'metaLabel',color:accentColor},{text:v,style:'metaValue'}], margin:[0,0,0,4], fillColor:'#f8fbf9' };
+  });
+  return { columns:[{width:'*',stack:items.filter((_,i)=>i%2===0)},{width:12,text:''},{width:'*',stack:items.filter((_,i)=>i%2===1)}], margin:[0,0,0,8] };
+}
+function pdfParseTable(tableEl, accentColor){
+  const rows=[...tableEl.querySelectorAll('tr')].map(tr=>[...tr.children].map(cell=>({text:pdfTextContent(cell),style:tr.parentElement.tagName==='THEAD'?'tableHeader':'tableCell'})));
+  const body = rows.length ? rows : [[{text:'Sin datos',style:'tableCell'}]];
+  const widths = body[0].map(()=>'*');
+  return { table:{headerRows:1,widths,body}, layout:{fillColor:(rowIndex)=>rowIndex===0?'#edf7f1':null,hLineColor:()=> '#b6c8bd',vLineColor:()=> '#b6c8bd'}, margin:[0,2,0,8] };
+}
+function pdfImageBlock(img, fit){ const src=img?.getAttribute?.('src') || img?.src; if(!src) return null; return {image:src, fit:fit||[510,240], alignment:'center', margin:[0,2,0,4]}; }
+function pdfParseChart(el){
+  const out=[];
+  const title=pdfTextContent(el.querySelector('.fig-title'));
+  const note=pdfTextContent(el.querySelector('.fig-note'));
+  const imgs=[...el.querySelectorAll('img')].map(img=>pdfImageBlock(img,[510,220])).filter(Boolean);
+  if(title) out.push({text:title, style:'figureTitle'});
+  if(imgs.length===1) out.push(imgs[0]);
+  if(imgs.length===2){ out.push({columns:[{width:'*',...imgs[0]},{width:12,text:''},{width:'*',...imgs[1]}],columnGap:12,margin:[0,2,0,2]}); }
+  if(imgs.length>2){ imgs.forEach(img=>out.push(img)); }
+  if(note) out.push({text:note, style:'figureNote'});
+  return out;
+}
+function pdfParseNodeList(parent, opts){
+  const out=[]; const children=[...parent.children];
+  for(const child of children){
+    if(child.classList?.contains('report-header')) continue;
+    if(child.classList?.contains('footer-line')) continue;
+    if(child.classList?.contains('footer-logos-rpt')) continue;
+    if(child.classList?.contains('meta-grid')){ if(opts.includeMeta){ out.push(pdfParseMetaGrid(child, opts.accentColor)); opts.includeMeta=false; } continue; }
+    if(child.classList?.contains('chart-rpt')){ out.push(...pdfParseChart(child)); continue; }
+    if(child.tagName==='TABLE'){ out.push(pdfParseTable(child, opts.accentColor)); continue; }
+    if(child.classList?.contains('cover-box')){ const stack=pdfParseNodeList(child,{includeMeta:false,accentColor:opts.accentColor}); if(stack.length) out.push({stack,style:'box'}); continue; }
+    if(child.tagName==='P'){
+      const text=pdfTextContent(child); if(!text) continue;
+      if(child.classList.contains('section-title')) out.push({text, style:child.classList.contains('center')?'sectionTitleCenter':'sectionTitle'});
+      else if(child.classList.contains('small') || child.classList.contains('muted') || child.classList.contains('table-note')) out.push({text, style:'smallText'});
+      else out.push({text, style:'paragraph'});
+      continue;
+    }
+    if(child.children?.length){ const nested=pdfParseNodeList(child,{includeMeta:false,accentColor:opts.accentColor}); if(nested.length) out.push(...nested); else { const text=pdfTextContent(child); if(text) out.push({text, style:'paragraph'}); } continue; }
+    const text=pdfTextContent(child); if(text) out.push({text, style:'paragraph'});
+  }
+  return out;
+}
+
+async function exportPdfFromPreview(opts){
+  const snapshot = await buildExportSnapshot();
+  if(!snapshot) throw new Error('No hay contenido listo para exportar.');
+  const pages=[...snapshot.querySelectorAll('.page')];
+  if(!pages.length) throw new Error('No se pudo preparar la vista previa del informe.');
+  if(!window.pdfMake) throw new Error('La librería de exportación PDF no está disponible.');
+
+  const firstHeader=pages[0].querySelector('.report-header');
+  const headerImgs=[...firstHeader?.querySelectorAll('img')||[]];
+  const headLines=[...firstHeader?.querySelectorAll('.line')||[]].map(pdfTextContent).filter(Boolean);
+  const leftLogo=headerImgs[0]?.getAttribute('src') || headerImgs[0]?.src || null;
+  const rightLogo=headerImgs[1]?.getAttribute('src') || headerImgs[1]?.src || null;
+  const footerLabel=pdfTextContent(snapshot.querySelector('.footer-line span')) || opts.footerLabel || '';
+  const content=[];
+  pages.forEach((page,pageIndex)=>{ if(pageIndex>0) content.push({text:'',pageBreak:'before',margin:[0,0,0,0]}); const report=page.querySelector('.report') || page; content.push(...pdfParseNodeList(report,{includeMeta:pageIndex===0,accentColor:opts.accentColor})); });
+
+  const docDefinition={
+    pageSize:'A4',
+    pageMargins:[34,74,34,40],
+    info:{title:opts.fileName, author:'OpenAI', subject:opts.title, creator:'OpenAI'},
+    defaultStyle:{font:'Roboto', fontSize:9.5, lineHeight:1.24, color:'#1f2937'},
+    styles:{
+      headerLine:{fontSize:10.5,bold:true,alignment:'center',color:opts.accentColor},
+      headerSub:{fontSize:8.6,alignment:'center',color:'#4b5563'},
+      sectionTitle:{fontSize:11.5,bold:true,color:opts.accentColor,margin:[0,8,0,4]},
+      sectionTitleCenter:{fontSize:13,bold:true,color:opts.accentColor,alignment:'center',margin:[0,8,0,6]},
+      paragraph:{fontSize:9.4,lineHeight:1.28,margin:[0,0,0,6],alignment:'justify'},
+      smallText:{fontSize:7.8,color:'#59636e',margin:[0,0,0,5]},
+      metaLabel:{fontSize:7.7,bold:true},
+      metaValue:{fontSize:9.3,color:'#111827'},
+      tableHeader:{fontSize:7.8,bold:true},
+      tableCell:{fontSize:7.3},
+      figureTitle:{fontSize:9,bold:true,italics:true,alignment:'center',margin:[0,6,0,4]},
+      figureNote:{fontSize:7.6,italics:true,color:'#59636e',margin:[0,3,0,8],alignment:'center'},
+      box:{margin:[0,4,0,10],fillColor:'#f8fbf9'}
+    },
+    header:function(){ return { margin:[34,16,34,6], columns:[ leftLogo ? {image:leftLogo, fit:[54,28], margin:[0,0,6,0]} : {text:''}, {width:'*', stack: headLines.map((line,idx)=>({text:line,style:idx<2?'headerLine':'headerSub'}))}, rightLogo ? {image:rightLogo, fit:[54,28], alignment:'right', margin:[6,0,0,0]} : {text:''} ] }; },
+    footer:function(currentPage,pageCount){ return { margin:[34,8,34,10], columns:[ {text:footerLabel, fontSize:7.4, color:'#6b7280'}, {text:`Página ${currentPage} de ${pageCount}`, alignment:'right', fontSize:7.4, color:'#6b7280'} ] }; },
+    content
+  };
+  window.pdfMake.createPdf(docDefinition).download(opts.fileName + '.pdf');
+}
+async function exportPDF(){
+  const btns=[els.btnPDF,els.btnPDF2];
+  setButtonsBusy(btns,true,'Descargando PDF...');
+  const prev = els.warnBox.textContent;
+  setWarning('Preparando PDF para descarga...');
+  try{
+    await exportPdfFromPreview({fileName:buildReportBaseName(), title:'Informe de ecología forestal', accentColor:'#0f4c35', footerLabel:'Laboratorio SIG · Eje de Bosques · CODEMA-Sololá'});
+    setWarning(prev||'');
+  }catch(err){
+    console.error(err);
+    setWarning('No se pudo descargar el PDF. Recarga la página, vuelve a generar la vista previa e inténtalo de nuevo.');
+  }finally{ setButtonsBusy(btns,false); }
+}
+
+function attachEntitySelectBehavior(){
+  els.entidad.addEventListener('change',()=>{
+    const vals = selectedValues(els.entidad);
+    if(vals.includes('__all__') && vals.length>1){ [...els.entidad.options].forEach((opt,idx)=>opt.selected = idx===0); }
+    else if(!vals.includes('__all__') && vals.length){ els.entidad.options[0].selected = false; }
+    else if(!vals.length){ els.entidad.options[0].selected = true; }
+  });
+}
+
+async function initialize(){
+  try{
+    await loadAllData();
+    populateEntities();
+    generatePreview();
+  }catch(err){
+    console.error(err);
+    els.pages.innerHTML = '<div class="preview-empty"><div><strong>No se pudieron cargar los datos ecológicos.</strong><br/><br/>Verifica que este archivo esté dentro de <code>apps/ecologia/</code> y que la carpeta <code>data/</code> esté disponible.</div></div>';
+    els.chipData.textContent = 'Error de carga';
+    setWarning('No se pudieron cargar los archivos del módulo de ecología.');
+  }
+}
+
+els.nivel.addEventListener('change',()=>{ populateEntities(); generatePreview(); });
+els.btnAplicarFiltros.addEventListener('click',generatePreview);
+els.btnLimpiarFiltros.addEventListener('click',()=>{ els.tipoInforme.value='tecnico'; els.seriePrincipal.value='ndvi'; els.ordenTabla.value='nombre_asc'; els.destinatario.value=''; els.notaTecnica.value=''; populateEntities(); generatePreview(); });
+els.btnGenerar.addEventListener('click',generatePreview);
+els.btnGenerar2.addEventListener('click',generatePreview);
+els.btnPDF.addEventListener('click',exportPDF);
+els.btnPDF2.addEventListener('click',exportPDF);
+els.btnCSV.addEventListener('click',exportCSV);
+els.btnJSON.addEventListener('click',exportJSON);
+els.btnRecargar.addEventListener('click',initialize);
+els.refreshBtn.addEventListener('click',initialize);
+['tipoInforme','seriePrincipal','ordenTabla','firmante','destinatario','notaTecnica'].forEach(key=>{ els[key].addEventListener('change',()=>generatePreview()); });
+['secResumen','secMetodologia','secIndicadores','secGraficas','secTabla'].forEach(key=>{ els[key].addEventListener('change',generatePreview); });
+attachEntitySelectBehavior();
+initialize();
+</script>
+</body>
+</html>
