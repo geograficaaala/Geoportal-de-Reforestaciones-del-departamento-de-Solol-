@@ -822,21 +822,32 @@ function buildFilterOptions(rows){
     r.instituciones.forEach(i=>insts.push(titleCase(i)));
     if(r.institucion_otra) insts.push(r.institucion_otra);
   });
+  // Always populate from layer names first (ensures full list even if data doesn't cover all zones)
   const muniLayerNames=state.layers.municipios.map(x=>x.name);
+  const microLayerNames=state.layers.microcuencas.map(x=>x.name);
   fillSelect(els.municipio,uniqueSorted([...muniLayerNames,...munis]),"Todos",true);
-  fillSelect(els.microcuenca,uniqueSorted(micros),"Todas",true);
+  fillSelect(els.microcuenca,uniqueSorted([...microLayerNames,...micros.filter(m=>m&&m!=="Fuera de microcuencas de Atitlán")]),"Todas",true);
   fillSelect(els.tenencia,uniqueSorted(tens),"Todas");
   fillSelect(els.institucion,uniqueSorted(insts),"Todas");
 }
 function buildYearChips(rows){
-  const years=uniqueSorted(rows.map(r=>r.yearStr).filter(Boolean));
+  const yearsFromData=uniqueSorted(rows.map(r=>r.yearStr).filter(Boolean));
+  // Siempre incluir 2025 y 2026
+  const FIXED_YEARS=["2025","2026"];
+  const allYears=uniqueSorted([...yearsFromData,...FIXED_YEARS]);
+  const currentYear=String(new Date().getFullYear());
   els.yearChips.innerHTML="";
-  [{label:"Todos los años",value:"all"},...years.map(y=>({label:y,value:y}))].forEach(item=>{
+  [{label:"Todos los años",value:"all"},...allYears.map(y=>({label:y,value:y}))].forEach(item=>{
     const btn=document.createElement("button");
     btn.type="button";
     btn.className="year-chip"+(state.activeYear===item.value?" active":"");
     btn.dataset.year=item.value;
     btn.textContent=item.label;
+    // Add count badge from data
+    if(item.value!=="all"){
+      const cnt=rows.filter(r=>r.yearStr===item.value).length;
+      if(cnt>0) btn.textContent=`${item.label} (${cnt})`;
+    }
     btn.addEventListener("click",()=>{
       state.activeYear=item.value;
       renderYearChips();
