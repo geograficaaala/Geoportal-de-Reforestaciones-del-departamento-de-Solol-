@@ -191,12 +191,38 @@ def extract_precision(row: Dict) -> Optional[float]:
                 return round(p, 1)
     return None
 
+# ── Carga de históricos existentes ────────────────────────────────────────────
+def load_existing_features() -> Dict[str, Any]:
+    """
+    Lee el puntos.geojson actual y retorna un dict {id → feature}.
+    Los registros marcados con fuente='historico' nunca se sobreescriben.
+    Los de fuente='kobo' sí se actualizan si KoBo trae una versión más nueva.
+    """
+    if not os.path.exists(OUT_GEOJSON):
+        return {}
+    try:
+        with open(OUT_GEOJSON, encoding="utf-8") as f:
+            gj = json.load(f)
+        return {
+            str(feat["properties"].get("id", "")): feat
+            for feat in gj.get("features", [])
+            if feat.get("properties", {}).get("id")
+        }
+    except Exception as e:
+        print(f"[WARN] No se pudo leer históricos: {e}")
+        return {}
+
+
 # ── Main ───────────────────────────────────────────────────────────────────────
 def main():
     sync_time = utc_now_iso()  # Hora real del sync — siempre
     hdrs = {"Authorization": f"Token {TOKEN}"}
 
-    # 1. Obtener CSV
+    # 1. Cargar históricos ya existentes en el repo
+    existing = load_existing_features()
+    print(f"[INFO] Históricos en repo: {len(existing)}")
+
+    # 2. Obtener CSV de KoBo
     text = fetch_csv_via_export_setting(hdrs)
     if not text:
         text = fetch_csv_direct(hdrs)
@@ -204,48 +230,30 @@ def main():
     os.makedirs("data", exist_ok=True)
 
     rows, fieldnames = parse_csv(text)
-    print(f"[INFO] {len(rows)} filas, {len(fieldnames)} columnas")
+    print(f"[INFO] Registros en KoBo: {len(rows)}")
 
-    if not rows:
-        geojson = {"type": "FeatureCollection", "features": []}
-        resumen = {
-            "ultima_actualizacion": sync_time,
-            "kpis": {"total_boletas": 0, "total_plantas": 0,
-                     "total_participantes": 0, "total_area_m2": 0}
-        }
-        with open(OUT_GEOJSON, "w", encoding="utf-8") as f:
-            json.dump(geojson, f, ensure_ascii=False, indent=2)
-        with open(OUT_RESUMEN, "w", encoding="utf-8") as f:
-            json.dump(resumen, f, ensure_ascii=False, indent=2)
-        return
+    # 3. Construir features desde KoBo
+    kobo_features: Dict[str, Any] = {}
+    kobo_boletas = len(rows)
 
-    features = []
-    # KPIs — se cuentan TODAS las boletas, no solo las que tienen geopoint
-    total_boletas     = len(rows)
-    total_plantas     = 0
-    total_part        = 0
-    total_area_m2     = 0
+    for i, row in enumerate(rows):
+        rid = str(row.get("_id") or row.get("_uuid") or
+                  row.get("meta/instanceID") or f"kobo-{i+1}")
 
-    for row in rows:
-        rid = (row.get("_id") or row.get("_uuid") or
-               row.get("meta/instanceID") or f"row-{len(features)+1}")
-
-        plantas      = to_int(row.get("total_plantas"))
+        plantas       = to_int(row.get("total_plantas"))
         participantes = to_int(row.get("total_participantes"))
-        area         = to_int(row.get("area_m2"))
+        area          = to_int(row.get("area_m2"))
 
-        total_plantas  += plantas
-        total_part     += participantes
-        total_area_m2  += area
-
-        # Solo se agrega al mapa si tiene coordenadas válidas
         coords = extract_coords(row)
         if not coords:
             print(f"  [SKIP mapa] ID {rid}: sin coordenadas válidas")
+            # Guardamos igual como feature sin geometría para el conteo
+            kobo_features[rid] = None
             continue
 
         props = {
-            "id":                    str(rid),
+            "id":                    rid,
+            "fuente":                "kobo",
             "fecha_actividad":       row.get("fecha_actividad") or "",
             "submission_time":       row.get("_submission_time") or "",
             "encuestador":           row.get("encuestador") or "",
@@ -271,20 +279,56 @@ def main():
             "observaciones":         row.get("observaciones") or "",
         }
 
-        features.append({
+        kobo_features[rid] = {
             "type": "Feature",
             "geometry": {"type": "Point", "coordinates": coords},
-            "properties": props
-        })
+            "properties": props,
+        }
 
-    geojson = {"type": "FeatureCollection", "features": features}
+    # 4. Fusionar: históricos + KoBo
+    #    - KoBo siempre gana sobre registros de fuente='kobo' (actualiza si cambian)
+    #    - Registros de fuente='historico' nunca se tocan
+    merged: Dict[str, Any] = {}
+
+    # Primero los históricos
+    for rid, feat in existing.items():
+        fuente = feat.get("properties", {}).get("fuente", "historico")
+        if fuente == "historico":
+            merged[rid] = feat  # intocable
+        # los de fuente='kobo' se dejan para que KoBo los sobreescriba abajo
+
+    # Luego KoBo sobreescribe/agrega los suyos
+    nuevos = 0
+    actualizados = 0
+    for rid, feat in kobo_features.items():
+        if feat is None:
+            continue  # sin coords, no va al mapa
+        if rid not in merged:
+            nuevos += 1
+        elif merged[rid].get("properties", {}).get("fuente") == "kobo":
+            actualizados += 1
+        merged[rid] = feat
+
+    print(f"[INFO] Nuevos de KoBo: {nuevos} | Actualizados: {actualizados} | "
+          f"Históricos intocables: {sum(1 for f in merged.values() if f.get('properties',{}).get('fuente')=='historico')}")
+
+    # 5. KPIs sobre el total fusionado
+    all_features = list(merged.values())
+    total_boletas     = len(existing) + kobo_boletas - sum(
+        1 for rid in kobo_features if rid in existing
+    )  # sin doble conteo
+    total_plantas     = sum(f["properties"].get("total_plantas", 0) for f in all_features)
+    total_part        = sum(f["properties"].get("total_participantes", 0) for f in all_features)
+    total_area_m2     = sum(f["properties"].get("area_m2", 0) for f in all_features)
+
+    geojson = {"type": "FeatureCollection", "features": all_features}
     resumen = {
-        "ultima_actualizacion": sync_time,          # hora real del sync
+        "ultima_actualizacion": sync_time,
         "kpis": {
-            "total_boletas":      total_boletas,    # todas, con o sin GPS
-            "total_plantas":      total_plantas,
+            "total_boletas":       total_boletas,
+            "total_plantas":       total_plantas,
             "total_participantes": total_part,
-            "total_area_m2":      total_area_m2,
+            "total_area_m2":       total_area_m2,
         }
     }
 
@@ -293,9 +337,8 @@ def main():
     with open(OUT_RESUMEN, "w", encoding="utf-8") as f:
         json.dump(resumen, f, ensure_ascii=False, indent=2)
 
-    print(f"[OK] {total_boletas} boletas | {len(features)} con GPS | "
-          f"{total_plantas} plantas | {total_part} participantes | "
-          f"{total_area_m2} m²")
+    print(f"[OK] Total en mapa: {len(all_features)} | Boletas: {total_boletas} | "
+          f"Plantas: {total_plantas} | Participantes: {total_part} | Área: {total_area_m2} m²")
     print(f"[OK] Sync: {sync_time}")
 
 if __name__ == "__main__":
