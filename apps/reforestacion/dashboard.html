@@ -279,7 +279,8 @@
     canvas { width: 100% !important; height: 100% !important; }
 
     /* ── MAP ── */
-    #dashMap { width: 100%; height: 360px; }
+    #dashMap { width: 100%; height: 360px; position: relative; z-index: 0; overflow: hidden; }
+    .leaflet-container { width: 100% !important; height: 100% !important; }
     .leaflet-container { background: #e8f4f0; font-family: 'Inter', sans-serif; }
     .leaflet-control-attribution { font-size: 9px !important; }
     .leaflet-popup-content-wrapper { border-radius: .5rem !important; box-shadow: 0 8px 24px rgba(0,0,0,.18) !important; }
@@ -1062,7 +1063,7 @@ function renderKPIs(d){
 // ── MAP — OSM, individual circleMarkers, no clustering ──
 function ensureMap(){
   if(state.map) return state.map;
-  const map=L.map('dashMap',{zoomControl:true,preferCanvas:true,attributionControl:true}).setView([14.70,-91.18],10);
+  const map=L.map('dashMap',{zoomControl:true,preferCanvas:false,attributionControl:true}).setView([14.70,-91.18],10);
   // OpenStreetMap — always works, no API key
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     maxZoom:19,
@@ -1117,7 +1118,11 @@ function renderMap(d){
   } else {
     map.setView([14.70,-91.18],10);
   }
-  setTimeout(()=>map.invalidateSize(),80);
+  // Force multiple redraws to ensure the map renders correctly in flex/grid containers
+  map.invalidateSize();
+  setTimeout(()=>{ map.invalidateSize(); }, 50);
+  setTimeout(()=>{ map.invalidateSize(); }, 200);
+  setTimeout(()=>{ map.invalidateSize(); }, 500);
 }
 
 // ── CHART DEFAULTS ──
@@ -1544,6 +1549,10 @@ function setupUI(){
 }
 
 setupUI();
+// Initialize map immediately so the div is measured correctly before data arrives
+requestAnimationFrame(()=>{
+  ensureMap();
+});
 loadData();
 window.refoDash={state,loadData,applyFilters,resetFilters};
 </script>
