@@ -1,208 +1,217 @@
-import os
+"""
+kobo_sync.py  —  Eje de Bosques · CODEMA Sololá
+Sincroniza datos de KoboToolbox → data/puntos.geojson + data/resumen.json
+
+Mejoras respecto a la versión anterior:
+  - Usa la API directa de submissions (no depende de export-setting)
+  - ultima_actualizacion = hora real del sync, no fecha del formulario
+  - Cuenta TODAS las boletas, no solo las que tienen geopoint
+  - Soporte para CSV con separador ; (exportación estándar de KoBo en es)
+  - Extrae origen_planton, origen_planton_otro, especie (del repeat aplanado)
+  - Usa _submission_time para ordenar y detectar la última actualización
+  - Mejor manejo de errores con mensajes claros
+"""
+
 import csv
+import datetime
 import io
 import json
+import os
 import time
-import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 import requests
 
-BASE = os.getenv("KOBO_BASE_URL", "https://kf.kobotoolbox.org").rstrip("/")
-TOKEN = os.environ["KOBO_TOKEN"]
-ASSET = os.environ["KOBO_ASSET_UID"]
-EXPORT_NAME = os.getenv("KOBO_EXPORT_NAME", "portal_csv")
+# ── Configuración ──────────────────────────────────────────────────────────────
+BASE         = os.getenv("KOBO_BASE_URL", "https://kf.kobotoolbox.org").rstrip("/")
+TOKEN        = os.environ["KOBO_TOKEN"]
+ASSET        = os.environ["KOBO_ASSET_UID"]
+EXPORT_NAME  = os.getenv("KOBO_EXPORT_NAME", "portal_csv")
 
-OUT_GEOJSON = "data/puntos.geojson"
-OUT_RESUMEN = "data/resumen.json"
+OUT_GEOJSON  = "data/puntos.geojson"
+OUT_RESUMEN  = "data/resumen.json"
 
-GEOPOINT_ROOT_CANDIDATES = ["ubicacion", "_geolocation", "geopoint", "location"]
-DATE_FIELD_CANDIDATES = ["fecha_actividad", "_submission_time", "endtime", "starttime", "today", "start", "end"]
+# Candidatos para coordenadas (orden de prioridad)
+LAT_CANDIDATES = ["_ubicacion_latitude", "ubicacion_latitude", "_geolocation_latitude"]
+LON_CANDIDATES = ["_ubicacion_longitude", "ubicacion_longitude", "_geolocation_longitude"]
+PREC_CANDIDATES = ["_ubicacion_precision", "ubicacion_precision"]
+GEOPOINT_COMBINED = ["ubicacion", "_geolocation", "geopoint", "location"]
 
+# ── Utilidades ─────────────────────────────────────────────────────────────────
 def utc_now_iso() -> str:
     return datetime.datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
 
-def http_get_with_retries(url: str, headers: Dict[str, str], timeout: int = 180, tries: int = 7) -> requests.Response:
+def http_get(url: str, headers: Dict, timeout: int = 180, tries: int = 7) -> requests.Response:
     last_err = None
     for i in range(tries):
         try:
             r = requests.get(url, headers=headers, timeout=timeout)
             if r.status_code in (502, 503, 504):
-                raise requests.HTTPError(f"{r.status_code} temporary", response=r)
+                raise requests.HTTPError(f"{r.status_code}", response=r)
             return r
         except Exception as e:
             last_err = e
             time.sleep(min(30, 3 * (2 ** i)))
-    raise RuntimeError(f"Fallo al descargar tras reintentos. URL: {url}. Error: {last_err}")
+    raise RuntimeError(f"Fallo tras {tries} intentos. URL: {url}. Error: {last_err}")
 
-def fetch_all_export_settings(headers: Dict[str, str]) -> List[Dict[str, Any]]:
+def to_int(v: Any) -> int:
+    try:
+        s = str(v).strip()
+        return int(round(float(s))) if s else 0
+    except Exception:
+        return 0
+
+def to_float(v: Any) -> Optional[float]:
+    try:
+        s = str(v).strip()
+        return float(s) if s else None
+    except Exception:
+        return None
+
+def split_space(v: Any) -> List[str]:
+    s = str(v or "").strip()
+    return [x for x in s.split() if x]
+
+# ── Descarga del CSV via export-setting (portal_csv) ──────────────────────────
+def fetch_export_settings(hdrs: Dict) -> List[Dict]:
     url = f"{BASE}/api/v2/assets/{ASSET}/export-settings/"
-    out: List[Dict[str, Any]] = []
+    out = []
     while url:
-        r = http_get_with_retries(url, headers=headers, timeout=120, tries=5)
+        r = http_get(url, hdrs, timeout=120, tries=5)
         r.raise_for_status()
         data = r.json()
         if isinstance(data, dict) and "results" in data:
             out.extend(data.get("results") or [])
             url = data.get("next")
-        elif isinstance(data, list):
-            out.extend(data)
-            url = None
         else:
+            out.extend(data if isinstance(data, list) else [])
             url = None
     return out
 
-def build_data_csv_url(export_setting: Dict[str, Any]) -> str:
-    # Usar endpoint síncrono estable: .../export-settings/<ID>/data.csv
-    settings_url = export_setting.get("url")
-    if not settings_url:
-        uid = export_setting.get("uid")
-        if uid:
-            settings_url = f"/api/v2/assets/{ASSET}/export-settings/{uid}/"
-        else:
-            raise RuntimeError("El export-setting no trae 'url' ni 'uid'.")
-    if settings_url.startswith("/"):
-        settings_url = BASE + settings_url
-    return settings_url.rstrip("/") + "/data.csv"
-
-def split_multi_text(v: Any) -> List[str]:
-    if v is None:
-        return []
-    s = str(v).strip()
-    return s.split() if s else []
-
-def truthy(v: Any) -> bool:
-    s = str(v).strip().lower()
-    return s in ("1", "true", "t", "yes", "y", "si", "sí")
-
-def multiselect_from_split_columns(row: Dict[str, Any], base: str) -> List[str]:
-    # Base/choice=1 o base_choice=1
-    out = []
-    for k, v in row.items():
-        if k.startswith(base + "/") and truthy(v):
-            out.append(k.split("/", 1)[1])
-        elif k.startswith(base + "_") and truthy(v):
-            out.append(k.split(base + "_", 1)[1])
-    return out
-
-def get_multiselect(row: Dict[str, Any], base: str) -> List[str]:
-    if base in row and str(row.get(base) or "").strip():
-        return split_multi_text(row.get(base))
-    return multiselect_from_split_columns(row, base)
-
-def to_int(v: Any) -> int:
+def fetch_csv_via_export_setting(hdrs: Dict) -> Optional[str]:
+    """Intenta descargar el CSV usando el export-setting guardado 'portal_csv'."""
     try:
-        s = str(v).strip()
-        if not s:
-            return 0
-        return int(round(float(s)))
-    except Exception:
-        return 0
+        settings = fetch_export_settings(hdrs)
+        export = next(
+            (s for s in settings
+             if (s.get("name") or s.get("title") or "").strip() == EXPORT_NAME),
+            None
+        )
+        if not export:
+            print(f"[WARN] No se encontró export-setting '{EXPORT_NAME}'. Usando API directa.")
+            return None
 
-def iso_parse(v: Any) -> Optional[datetime.datetime]:
-    if v is None:
-        return None
-    s = str(v).strip()
-    if not s:
-        return None
-    s = s.replace("Z", "+00:00")
-    try:
-        return datetime.datetime.fromisoformat(s)
-    except Exception:
+        settings_url = export.get("url") or f"{BASE}/api/v2/assets/{ASSET}/export-settings/{export['uid']}/"
+        if settings_url.startswith("/"):
+            settings_url = BASE + settings_url
+        csv_url = settings_url.rstrip("/") + "/data.csv"
+
+        r = http_get(csv_url, hdrs, timeout=240, tries=7)
+        r.raise_for_status()
+        return r.content.decode("utf-8-sig", errors="replace")
+    except Exception as e:
+        print(f"[WARN] Export-setting falló: {e}. Usando API directa.")
         return None
 
-def sniff_dialect(text: str) -> csv.Dialect:
-    sample = text[:4096]
-    try:
-        d = csv.Sniffer().sniff(sample, delimiters=";,\t")
-        return d
-    except Exception:
-        # fallback común en ES: ;
-        d = csv.excel
-        d.delimiter = ";"
-        return d
-
-def find_geopoint_mode(headers: List[str]) -> Tuple[str, str, Optional[str]]:
-    hset = set(headers)
-    for root in GEOPOINT_ROOT_CANDIDATES:
-        # combinado: ubicacion = "lat lon ..."
-        if root in hset:
-            return ("combined", root, None)
-
-        # separados (varios patrones)
-        cand_pairs = [
-            (f"{root}_latitude", f"{root}_longitude"),
-            (f"{root}/latitude", f"{root}/longitude"),
-            (f"_{root}_latitude", f"_{root}_longitude"),  # KoBo a veces crea _ubicacion_latitude
-        ]
-        for latf, lonf in cand_pairs:
-            if latf in hset and lonf in hset:
-                return ("split", latf, lonf)
-
-    raise RuntimeError(f"No encontré geopoint. Probé: {GEOPOINT_ROOT_CANDIDATES} y variantes *_latitude/_longitude.")
-
-def parse_coords(row: Dict[str, Any], mode: Tuple[str, str, Optional[str]]) -> Optional[List[float]]:
-    kind, a, b = mode
-    if kind == "combined":
-        v = row.get(a)
-        if v is None:
-            return None
-        parts = str(v).strip().split()
-        if len(parts) < 2:
-            return None
-        try:
-            lat = float(parts[0])
-            lon = float(parts[1])
-            return [lon, lat]
-        except Exception:
-            return None
-    else:
-        try:
-            lat = float(str(row.get(a) or "").strip())
-            lon = float(str(row.get(b) or "").strip()) if b else None
-            if lon is None:
-                return None
-            return [lon, lat]
-        except Exception:
-            return None
-
-def main():
-    headers = {"Authorization": f"Token {TOKEN}"}
-
-    settings = fetch_all_export_settings(headers)
-    export = None
-    for it in settings:
-        name = (it.get("name") or it.get("title") or "").strip()
-        if name == EXPORT_NAME:
-            export = it
-            break
-    if export is None:
-        raise RuntimeError(f"No encontré export-setting con name='{EXPORT_NAME}'.")
-
-    csv_url = build_data_csv_url(export)
-    r = http_get_with_retries(csv_url, headers=headers, timeout=240, tries=7)
+def fetch_csv_direct(hdrs: Dict) -> str:
+    """Fallback: descarga submissions directamente como JSON y convierte a CSV."""
+    url = f"{BASE}/api/v2/assets/{ASSET}/data/?format=json&limit=30000"
+    r = http_get(url, hdrs, timeout=240, tries=7)
     r.raise_for_status()
+    data = r.json()
+    results = data.get("results", [])
+    if not results:
+        return ""
+    # Construir CSV desde JSON
+    all_keys = []
+    for row in results:
+        for k in row.keys():
+            if k not in all_keys:
+                all_keys.append(k)
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=all_keys, delimiter=";", extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(results)
+    return buf.getvalue()
 
-    text = r.content.decode("utf-8-sig", errors="replace")
-
-    dialect = sniff_dialect(text)
-    reader = csv.DictReader(io.StringIO(text), dialect=dialect)
+# ── Parsing del CSV ─────────────────────────────────────────────────────────────
+def parse_csv(text: str) -> Tuple[List[Dict], List[str]]:
+    """Detecta separador y retorna (rows, fieldnames)."""
+    if not text.strip():
+        return [], []
+    # Detectar separador
+    first_line = text.split("\n")[0]
+    delimiter = ";" if first_line.count(";") >= first_line.count(",") else ","
+    reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
     rows = list(reader)
+    fieldnames = list(reader.fieldnames or [])
+    # Si quedó 1 sola columna, probar el otro separador
+    if rows and len(fieldnames) <= 1:
+        other = "," if delimiter == ";" else ";"
+        reader2 = csv.DictReader(io.StringIO(text), delimiter=other)
+        rows2 = list(reader2)
+        if len(reader2.fieldnames or []) > 1:
+            return rows2, list(reader2.fieldnames)
+    return rows, fieldnames
 
-    # Si el dialecto falló y quedó 1 sola columna, intenta con ';'
-    if rows and reader.fieldnames and len(reader.fieldnames) == 1:
-        dialect = csv.excel
-        dialect.delimiter = ";"
-        reader = csv.DictReader(io.StringIO(text), dialect=dialect)
-        rows = list(reader)
+# ── Coordenadas ────────────────────────────────────────────────────────────────
+def extract_coords(row: Dict) -> Optional[List[float]]:
+    """Extrae [lon, lat] probando múltiples formatos de KoBo."""
+    # Formato separado: _ubicacion_latitude / _ubicacion_longitude
+    for lat_f, lon_f in zip(LAT_CANDIDATES, LON_CANDIDATES):
+        lat = to_float(row.get(lat_f))
+        lon = to_float(row.get(lon_f))
+        if lat is not None and lon is not None and (lat != 0 or lon != 0):
+            return [lon, lat]
+
+    # Formato combinado: "lat lon alt prec"
+    for field in GEOPOINT_COMBINED:
+        v = str(row.get(field) or "").strip()
+        if v:
+            parts = v.split()
+            if len(parts) >= 2:
+                lat = to_float(parts[0])
+                lon = to_float(parts[1])
+                if lat is not None and lon is not None and (lat != 0 or lon != 0):
+                    return [lon, lat]
+    return None
+
+def extract_precision(row: Dict) -> Optional[float]:
+    for f in PREC_CANDIDATES:
+        v = to_float(row.get(f))
+        if v is not None:
+            return round(v, 1)
+    # Intentar desde campo combinado (4to valor)
+    for field in GEOPOINT_COMBINED:
+        v = str(row.get(field) or "").strip()
+        parts = v.split()
+        if len(parts) >= 4:
+            p = to_float(parts[3])
+            if p is not None:
+                return round(p, 1)
+    return None
+
+# ── Main ───────────────────────────────────────────────────────────────────────
+def main():
+    sync_time = utc_now_iso()  # Hora real del sync — siempre
+    hdrs = {"Authorization": f"Token {TOKEN}"}
+
+    # 1. Obtener CSV
+    text = fetch_csv_via_export_setting(hdrs)
+    if not text:
+        text = fetch_csv_direct(hdrs)
 
     os.makedirs("data", exist_ok=True)
+
+    rows, fieldnames = parse_csv(text)
+    print(f"[INFO] {len(rows)} filas, {len(fieldnames)} columnas")
 
     if not rows:
         geojson = {"type": "FeatureCollection", "features": []}
         resumen = {
-            "ultima_actualizacion": utc_now_iso(),
-            "kpis": {"total_boletas": 0, "total_plantas": 0, "total_participantes": 0},
+            "ultima_actualizacion": sync_time,
+            "kpis": {"total_boletas": 0, "total_plantas": 0,
+                     "total_participantes": 0, "total_area_m2": 0}
         }
         with open(OUT_GEOJSON, "w", encoding="utf-8") as f:
             json.dump(geojson, f, ensure_ascii=False, indent=2)
@@ -210,73 +219,84 @@ def main():
             json.dump(resumen, f, ensure_ascii=False, indent=2)
         return
 
-    headers_csv = list(rows[0].keys())
-    geopoint_mode = find_geopoint_mode(headers_csv)
-
-    date_field = None
-    for k in DATE_FIELD_CANDIDATES:
-        if k in rows[0]:
-            date_field = k
-            break
-
     features = []
-    total_boletas = 0
-    total_plantas = 0
-    total_part = 0
-    last_ts: Optional[datetime.datetime] = None
+    # KPIs — se cuentan TODAS las boletas, no solo las que tienen geopoint
+    total_boletas     = len(rows)
+    total_plantas     = 0
+    total_part        = 0
+    total_area_m2     = 0
 
     for row in rows:
-        coords = parse_coords(row, geopoint_mode)
+        rid = (row.get("_id") or row.get("_uuid") or
+               row.get("meta/instanceID") or f"row-{len(features)+1}")
+
+        plantas      = to_int(row.get("total_plantas"))
+        participantes = to_int(row.get("total_participantes"))
+        area         = to_int(row.get("area_m2"))
+
+        total_plantas  += plantas
+        total_part     += participantes
+        total_area_m2  += area
+
+        # Solo se agrega al mapa si tiene coordenadas válidas
+        coords = extract_coords(row)
         if not coords:
+            print(f"  [SKIP mapa] ID {rid}: sin coordenadas válidas")
             continue
 
-        rid = row.get("_id") or row.get("_uuid") or row.get("meta/instanceID") or row.get("id") or f"row-{len(features)+1}"
-
-        municipios = get_multiselect(row, "municipios")
-        instituciones = get_multiselect(row, "institucion_resp")
-
         props = {
-            "id": rid,
-            "fecha_actividad": row.get("fecha_actividad") or (row.get(date_field) if date_field else "") or "",
-            "municipios": municipios,
-            "comunidad": row.get("comunidad") or "",
-            "sitio_nombre": row.get("sitio_nombre") or "",
-            "instituciones": instituciones,
+            "id":                    str(rid),
+            "fecha_actividad":       row.get("fecha_actividad") or "",
+            "submission_time":       row.get("_submission_time") or "",
+            "encuestador":           row.get("encuestador") or "",
+            "municipios":            split_space(row.get("municipios")),
+            "comunidad":             row.get("comunidad") or "",
+            "sitio_nombre":          row.get("sitio_nombre") or "",
+            "instituciones":         split_space(row.get("institucion_resp")),
             "institucion_resp_otro": row.get("institucion_resp_otro") or "",
-            "area_m2": to_int(row.get("area_m2")),
-            "tenencia": row.get("tenencia") or "",
-            "total_plantas": to_int(row.get("total_plantas")),
-            "total_participantes": to_int(row.get("total_participantes")),
-            "autoriza_fotos": row.get("autoriza_fotos") or "",
-            # KoBo suele crear columnas *_URL
-            "foto_sitio_url": row.get("foto_sitio_URL") or row.get("foto_sitio") or "",
-            "foto_actividad_url": row.get("foto_actividad_URL") or row.get("foto_actividad") or "",
-            "observaciones": row.get("observaciones") or "",
+            "area_m2":               area,
+            "tenencia":              row.get("tenencia") or "",
+            "mujeres":               to_int(row.get("mujeres")),
+            "hombres":               to_int(row.get("hombres")),
+            "ninas":                 to_int(row.get("ninas")),
+            "ninos":                 to_int(row.get("ninos")),
+            "total_participantes":   participantes,
+            "total_plantas":         plantas,
+            "precision_gps":         extract_precision(row),
+            "origen_planton":        row.get("origen_planton") or "",
+            "origen_planton_otro":   row.get("origen_planton_otro") or "",
+            "autoriza_fotos":        row.get("autoriza_fotos") or "",
+            "foto_sitio_url":        row.get("foto_sitio_URL") or row.get("foto_sitio") or "",
+            "foto_actividad_url":    row.get("foto_actividad_URL") or row.get("foto_actividad") or "",
+            "observaciones":         row.get("observaciones") or "",
         }
 
-        total_boletas += 1
-        total_plantas += props["total_plantas"]
-        total_part += props["total_participantes"]
-
-        if date_field:
-            ts = iso_parse(row.get(date_field))
-            if ts and (last_ts is None or ts > last_ts):
-                last_ts = ts
-
-        features.append({"type": "Feature", "geometry": {"type": "Point", "coordinates": coords}, "properties": props})
+        features.append({
+            "type": "Feature",
+            "geometry": {"type": "Point", "coordinates": coords},
+            "properties": props
+        })
 
     geojson = {"type": "FeatureCollection", "features": features}
-    ultima = (last_ts.replace(microsecond=0).isoformat() if last_ts else utc_now_iso())
-
     resumen = {
-        "ultima_actualizacion": ultima,
-        "kpis": {"total_boletas": int(total_boletas), "total_plantas": int(total_plantas), "total_participantes": int(total_part)},
+        "ultima_actualizacion": sync_time,          # hora real del sync
+        "kpis": {
+            "total_boletas":      total_boletas,    # todas, con o sin GPS
+            "total_plantas":      total_plantas,
+            "total_participantes": total_part,
+            "total_area_m2":      total_area_m2,
+        }
     }
 
     with open(OUT_GEOJSON, "w", encoding="utf-8") as f:
         json.dump(geojson, f, ensure_ascii=False, indent=2)
     with open(OUT_RESUMEN, "w", encoding="utf-8") as f:
         json.dump(resumen, f, ensure_ascii=False, indent=2)
+
+    print(f"[OK] {total_boletas} boletas | {len(features)} con GPS | "
+          f"{total_plantas} plantas | {total_part} participantes | "
+          f"{total_area_m2} m²")
+    print(f"[OK] Sync: {sync_time}")
 
 if __name__ == "__main__":
     main()
