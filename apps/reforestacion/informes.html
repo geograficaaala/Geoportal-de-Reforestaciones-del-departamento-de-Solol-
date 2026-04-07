@@ -4,8 +4,12 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Informes · Reforestación · Sololá</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     :root{
       --g1:#0f4c35; --g2:#1a6b48; --g3:#2e9b6a; --g4:#4ec991; --g5:#a8f0cc;
@@ -30,61 +34,59 @@
       min-height:100vh;
     }
 
-    /* ── HEADER ── */
-    header{
-      background:linear-gradient(110deg,#0a2c1c 0%,#0f4c35 40%,#1a6b48 70%,#1e7a52 100%);
-      padding:0 28px;
-      display:flex;align-items:center;justify-content:space-between;gap:16px;
-      min-height:68px;
-      box-shadow:0 3px 18px rgba(10,44,28,.30);
-      position:relative;overflow:hidden;
+    /* ── TOPBAR ── */
+    .topbar{
+      position:sticky;top:0;left:0;right:0;z-index:200;
+      background:rgba(13,79,60,.97);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(255,255,255,.07);
+      padding:.75rem 1.25rem;
+      display:flex;align-items:center;justify-content:space-between;gap:1rem;
+      box-shadow:0 2px 20px rgba(0,0,0,.20);
     }
-    header::before{
-      content:"";position:absolute;inset:0;
-      background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    .topbar-left{display:flex;align-items:center;gap:.875rem;min-width:0}
+    .brand-logos{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+    .brand-logos img{
+      height:36px;width:auto;object-fit:contain;
+      background:#fff;border-radius:.375rem;padding:3px 6px;
+      box-shadow:0 1px 5px rgba(0,0,0,.15);
     }
-    .hdr-logos{display:flex;align-items:center;gap:10px;flex-shrink:0}
-    .hdr-logo{
-      height:44px;width:auto;max-width:54px;object-fit:contain;
-      filter:drop-shadow(0 2px 6px rgba(0,0,0,.30));
+    .topbar-title{
+      font-family:'DM Serif Display',serif;
+      font-size:.95rem;color:rgba(255,255,255,.92);
     }
-    .hdr-center{flex:1;text-align:center;color:#fff}
-    .hdr-title{font-family:'Lora',serif;font-size:15px;font-weight:700;letter-spacing:.01em;line-height:1.2;text-shadow:0 1px 4px rgba(0,0,0,.3)}
-    .hdr-sub{font-size:10.5px;font-weight:400;opacity:.78;margin-top:2px}
-    .hdr-btns{display:flex;gap:7px;flex-shrink:0;flex-wrap:wrap}
-    .hbtn{
-      font-size:.73rem;font-weight:600;
-      color:rgba(255,255,255,.78);
-      background:rgba(255,255,255,.10);
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:.35rem;
-      padding:.38rem .72rem;cursor:pointer;
+    .topbar-title strong{font-weight:700;color:#fff}
+    .nav-btns{display:flex;align-items:center;gap:.375rem;flex-shrink:0;flex-wrap:wrap}
+    .nav-btn{
+      font-size:.75rem;font-weight:500;
+      color:rgba(255,255,255,.75);background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);border-radius:.35rem;
+      padding:.35rem .75rem;cursor:pointer;
       display:inline-flex;align-items:center;gap:.35rem;
       text-decoration:none;transition:all .14s;white-space:nowrap;
     }
-    .hbtn:hover{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.28);transform:translateY(-1px)}
-    .hbtn-ghost{background:rgba(255,255,255,.10);color:rgba(255,255,255,.78);border:1px solid rgba(255,255,255,.14)}
-    .hbtn-solid{background:#1a7a58;border:1px solid #2ca58d;color:#fff;box-shadow:none}
-    .hbtn-solid:hover{background:#2ca58d;color:#fff}
+    .nav-btn:hover{background:rgba(255,255,255,.18);color:#fff}
+    .nav-btn.primary{background:#1a7a58;border-color:#2ca58d;color:#fff}
+    .nav-btn.primary:hover{background:#2ca58d}
 
     /* ── LAYOUT ── */
     .wrap{
-      width:min(1400px,calc(100% - 24px));
+      width:min(1500px,calc(100% - 24px));
       margin:14px auto 20px;
       display:grid;
-      grid-template-columns:370px 1fr;
+      grid-template-columns:440px 1fr;
       gap:14px;align-items:start;
     }
 
     /* ── PANEL ── */
     .panel{
-      position:sticky;top:10px;
+      position:sticky;top:76px;
       background:var(--card);
       border:1px solid rgba(255,255,255,.9);
       border-radius:var(--r);
       box-shadow:var(--shadow);
       backdrop-filter:blur(10px);
-      padding:14px;
+      padding:16px;
       display:grid;gap:10px;
     }
     .ctrl-title{
@@ -112,7 +114,7 @@
       border-radius:9px;padding:7px 10px;font:inherit;font-size:11.5px;
       color:var(--ink);outline:none;transition:.15s;
     }
-    .field select[multiple]{min-height:118px;padding:6px 7px}
+    .field select[multiple]{min-height:146px;padding:6px 7px}
     .field input:focus,.field select:focus,.field textarea:focus{
       border-color:var(--g3);box-shadow:0 0 0 3px rgba(46,155,106,.12);
     }
@@ -249,24 +251,24 @@
 </head>
 <body>
 
-<!-- ══ HEADER ══ -->
-<header>
-  <div class="hdr-logos" id="hdrLogosLeft">
-    <img class="hdr-logo" src="../../assets/img/BOSQUE.png" alt="Bosques" onerror="this.style.display='none'"/>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand-logos">
+      <img src="../../BOSQUE.png" alt="Eje de Bosques" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='../../assets/img/BOSQUE.png';}else{this.style.display='none';}">
+      <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá" onerror="if(!this.dataset.fallback){this.dataset.fallback='1';this.src='../../assets/img/CODEMA%20(2).png';}else{this.style.display='none';}">
+    </div>
+    <div class="topbar-title">
+      <strong>Centro de Informes</strong> · Reforestación Sololá
+    </div>
   </div>
-  <div class="hdr-center">
-    <div class="hdr-title">Laboratorio SIG · Eje de Bosques · CODEMA-Sololá</div>
-    <div class="hdr-sub">Módulo de Reforestación · Centro de Informes</div>
-  </div>
-  <div class="hdr-btns">
-    <a class="hbtn hbtn-ghost" href="../../index.html">← Inicio</a>
-    <a class="hbtn hbtn-ghost" href="./index.html">← Módulo</a>
-    <a class="hbtn hbtn-ghost" href="./geoportal.html">Geoportal</a>
-    <a class="hbtn hbtn-solid" href="#">Informes</a>
-  </div>
-  <div class="hdr-logos" id="hdrLogosRight">
-    <img class="hdr-logo" src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" onerror="this.style.display='none'"/>
-  </div>
+  <nav class="nav-btns">
+    <a class="nav-btn" href="./index.html"><i class="bi bi-arrow-left"></i> Módulo</a>
+    <a class="nav-btn" href="../../index.html"><i class="bi bi-house"></i> Inicio</a>
+    <a class="nav-btn" href="./geoportal.html"><i class="bi bi-map"></i> Geoportal</a>
+    <a class="nav-btn" href="./informes.html"><i class="bi bi-journal-text"></i> Informes</a>
+    <button class="nav-btn primary" id="refreshBtn" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+  </nav>
 </header>
 
 <!-- ══ MAIN ══ -->
@@ -297,12 +299,12 @@
       <div class="grid2" style="margin-top:8px">
         <div class="field">
           <label>Municipio(s)</label>
-          <select id="municipio" multiple size="6"></select>
+          <select id="municipio" multiple size="8"></select>
           <div class="multi-hint">Filtro territorial derivado de la capa de municipios de Sololá.</div>
         </div>
         <div class="field">
           <label>Microcuenca(s)</label>
-          <select id="microcuenca" multiple size="6"></select>
+          <select id="microcuenca" multiple size="8"></select>
           <div class="multi-hint">Filtro espacial usando la capa <em>microcuencas_atitlan.geojson</em>.</div>
         </div>
       </div>
@@ -395,7 +397,7 @@
       <h3>Acciones</h3>
       <div class="btns-row">
         <button class="btn btn-primary" id="btnGenerar">Generar vista previa</button>
-        <button class="btn btn-outline" id="btnPrint">Imprimir / PDF</button>
+        <button class="btn btn-outline" id="btnPrint">Descargar PDF</button>
       </div>
       <div class="btns-row" style="margin-top:7px">
         <button class="btn btn-soft" id="btnCSV">Exportar CSV</button>
@@ -417,7 +419,7 @@
       </div>
       <div class="btns-row">
         <button class="btn btn-primary" id="btnGenerar2">Generar vista previa</button>
-        <button class="btn btn-outline" id="btnPrint2">Imprimir / PDF</button>
+        <button class="btn btn-outline" id="btnPrint2">Descargar PDF</button>
       </div>
     </div>
     <div id="warnBox" class="alert-box" style="display:none"></div>
@@ -601,7 +603,33 @@ function median(nums){const a=nums.filter(Number.isFinite).slice().sort((x,y)=>x
 function stddev(nums){const a=nums.filter(Number.isFinite);if(a.length<2)return 0;const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)**2,0)/(a.length-1));}
 function pct(nums,p){const a=nums.filter(Number.isFinite).slice().sort((x,y)=>x-y);if(!a.length)return 0;const idx=(a.length-1)*p;const lo=Math.floor(idx),hi=Math.ceil(idx);return lo===hi?a[lo]:a[lo]+(a[hi]-a[lo])*(idx-lo);}
 function uniqueSorted(items){return[...new Set(items.filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),"es",{sensitivity:"base"}));}
-function getSelectedValues(sel){return[...sel.selectedOptions].map(o=>o.value).filter(Boolean);}
+const ALL_TOKEN="__all__";
+function getSelectedValues(sel,opts={}){
+  const includeAll=!!opts.includeAll;
+  return [...sel.selectedOptions].map(o=>o.value).filter(v=>includeAll ? true : (v && v!==ALL_TOKEN));
+}
+function bindAllOptionBehavior(sel){
+  if(!sel||!sel.multiple||sel.dataset.allBound==="1") return;
+  sel.dataset.allBound="1";
+  sel.addEventListener("change",()=>{
+    const allOpt=[...sel.options].find(o=>o.value===ALL_TOKEN);
+    if(!allOpt) return;
+    const realSelected=[...sel.options].filter(o=>o.value!==ALL_TOKEN && o.selected);
+    if(allOpt.selected && realSelected.length){
+      realSelected.forEach(o=>o.selected=false);
+    }else if(!allOpt.selected && !realSelected.length){
+      allOpt.selected=true;
+    }else if(realSelected.length){
+      allOpt.selected=false;
+    }
+  });
+}
+function resetMultiSelectToAll(sel){
+  if(!sel||!sel.multiple) return;
+  const allOpt=[...sel.options].find(o=>o.value===ALL_TOKEN);
+  [...sel.options].forEach(o=>o.selected=false);
+  if(allOpt) allOpt.selected=true;
+}
 function buildSearchBlob(r){return[r.id,r.fecha_actividad,r.municipio_principal,r.municipio_capa,...r.municipios,r.microcuenca,r.comunidad,r.sitio_nombre,r.institucion_principal,...r.instituciones,r.institucion_otra,r.tenencia,r.observaciones].join(" ").toLowerCase();}
 function groupBy(rows,keyFn,valFn){
   const map=new Map();
@@ -750,11 +778,18 @@ function normalizeFeature(f,i){
 }
 
 /* ══ FILTERS ══ */
-function fillSelect(sel,values,ph="Todos"){
-  const prevValues=new Set(getSelectedValues(sel));
+function fillSelect(sel,values,ph="Todos",addAllForMultiple=false){
+  const prevValues=new Set(getSelectedValues(sel,{includeAll:true}));
   const prevSingle=sel.value;
   if(sel.multiple){
     sel.innerHTML="";
+    if(addAllForMultiple){
+      const allOpt=document.createElement("option");
+      allOpt.value=ALL_TOKEN;
+      allOpt.textContent=ph;
+      allOpt.dataset.all="1";
+      sel.appendChild(allOpt);
+    }
   }else{
     sel.innerHTML=`<option value="">${ph}</option>`;
   }
@@ -764,7 +799,16 @@ function fillSelect(sel,values,ph="Todos"){
     if(sel.multiple&&prevValues.has(v)) o.selected=true;
     sel.appendChild(o);
   });
-  if(!sel.multiple&&[...sel.options].some(o=>o.value===prevSingle)) sel.value=prevSingle;
+  if(sel.multiple){
+    const allOpt=[...sel.options].find(o=>o.value===ALL_TOKEN);
+    const hasReal=[...sel.options].some(o=>o.value!==ALL_TOKEN && o.selected);
+    if(allOpt){
+      allOpt.selected=!hasReal || prevValues.has(ALL_TOKEN);
+      if(hasReal) allOpt.selected=false;
+    }
+  }else if([...sel.options].some(o=>o.value===prevSingle)){
+    sel.value=prevSingle;
+  }
 }
 function buildFilterOptions(rows){
   const munis=[],micros=[],tens=[],insts=[];
@@ -777,8 +821,8 @@ function buildFilterOptions(rows){
     if(r.institucion_otra) insts.push(r.institucion_otra);
   });
   const muniLayerNames=state.layers.municipios.map(x=>x.name);
-  fillSelect(els.municipio,uniqueSorted([...muniLayerNames,...munis]),"Todos");
-  fillSelect(els.microcuenca,uniqueSorted(micros),"Todas");
+  fillSelect(els.municipio,uniqueSorted([...muniLayerNames,...munis]),"Todos",true);
+  fillSelect(els.microcuenca,uniqueSorted(micros),"Todas",true);
   fillSelect(els.tenencia,uniqueSorted(tens),"Todas");
   fillSelect(els.institucion,uniqueSorted(insts),"Todas");
 }
@@ -807,8 +851,8 @@ function renderYearChips(){
 function resetFilters(){
   els.desde.value="";
   els.hasta.value="";
-  [...els.municipio.options].forEach(o=>o.selected=false);
-  [...els.microcuenca.options].forEach(o=>o.selected=false);
+  resetMultiSelectToAll(els.municipio);
+  resetMultiSelectToAll(els.microcuenca);
   [...els.institucion.options].forEach(o=>o.selected=false);
   els.tenencia.value="";
   els.texto.value="";
@@ -1178,6 +1222,32 @@ function exportJSON(){
   downloadBlob(`informe_reforestacion_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(payload,null,2),"application/json;charset=utf-8");
 }
 
+async function exportPDF(){
+  generatePreview();
+  if(typeof html2pdf!=="function"){
+    setWarning("No se pudo preparar la descarga del PDF porque la librería de exportación no está disponible en este navegador.");
+    return;
+  }
+  const filename=`informe_reforestacion_${new Date().toISOString().slice(0,10)}.pdf`;
+  const opt={
+    margin:[0,0,0,0],
+    filename,
+    image:{type:"jpeg",quality:0.98},
+    html2canvas:{scale:2,useCORS:true,allowTaint:true,backgroundColor:"#ffffff",scrollY:0},
+    jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},
+    pagebreak:{mode:["css","legacy"]}
+  };
+  const prevWarning=els.warnBox.textContent;
+  setWarning("Preparando PDF para descarga...");
+  try{
+    await html2pdf().set(opt).from(els.pages).save();
+    setWarning(prevWarning||"");
+  }catch(err){
+    console.error(err);
+    setWarning("No se pudo descargar el PDF. Verifica tu conexión o intenta recargar la página.");
+  }
+}
+
 /* ══ INIT ══ */
 function seedDates(rows){
   const fechas=rows.map(r=>r.fechaObj).filter(Boolean).sort((a,b)=>a-b);
@@ -1203,6 +1273,8 @@ async function init(){
       if(microcuencasRes.status==="fulfilled") state.layers.microcuencas=normalizeLayerCollection(microcuencasRes.value.data,"microcuencas");
       enrichRowsWithSpatialLayers(state.rawFeatures);
       buildFilterOptions(state.rawFeatures);
+      bindAllOptionBehavior(els.municipio);
+      bindAllOptionBehavior(els.microcuenca);
       buildYearChips(state.rawFeatures);
       seedDates(state.rawFeatures);
       updateFilterSummary();
@@ -1241,12 +1313,13 @@ async function init(){
 }
 
 [els.btnGenerar,els.btnGenerar2].forEach(b=>b.addEventListener("click",generatePreview));
-[els.btnPrint,els.btnPrint2].forEach(b=>b.addEventListener("click",()=>{generatePreview();window.print();}));
+[els.btnPrint,els.btnPrint2].forEach(b=>b.addEventListener("click",exportPDF));
 els.btnCSV.addEventListener("click",exportCSV);
 els.btnJSON.addEventListener("click",exportJSON);
 if(els.btnAplicarFiltros) els.btnAplicarFiltros.addEventListener("click",()=>{updateFilterSummary();generatePreview();});
 if(els.btnLimpiarFiltros) els.btnLimpiarFiltros.addEventListener("click",resetFilters);
 if($("btnRecargar")) $("btnRecargar").addEventListener("click",init);
+if($("refreshBtn")) $("refreshBtn").addEventListener("click",init);
 init();
 })();
 </script>
