@@ -7,239 +7,280 @@
 
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
   <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <style>
     :root{
-      --bg:#eaf7f6;
-      --panel:rgba(255,255,255,.82);
-      --card:rgba(255,255,255,.90);
-      --line:rgba(25,88,108,.14);
-      --ink:#0e3040;
-      --muted:#4a7a88;
-      --accent:#2fae78;
-      --accent2:#67c8d6;
-      --accent3:#8fe3c1;
-      --danger:#d95b5b;
-      --shadow:0 14px 36px rgba(15,62,72,.12);
-      --shadow-sm:0 8px 22px rgba(15,62,72,.08);
-      --r:16px;
+      --green-deep:#0d4f3c;
+      --green-mid:#1a7a58;
+      --green-light:#2ca58d;
+      --green-pale:#e6f5f0;
+      --surface:#f8faf9;
+      --white:#ffffff;
+      --text-dark:#0d1f1a;
+      --text-mid:#3a5248;
+      --text-soft:#6b8278;
+      --border:rgba(13,79,60,.10);
+      --border2:rgba(13,79,60,.06);
+      --shadow-sm:0 2px 12px rgba(0,0,0,.07);
+      --shadow-md:0 8px 28px rgba(0,0,0,.10);
+      --radius-lg:1.25rem;
+      --radius-md:.875rem;
+      --radius-sm:.5rem;
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{
-      font-family:'DM Sans',system-ui,sans-serif;
-      background:
-        radial-gradient(1100px 550px at 8% -8%, rgba(103,200,214,.30), transparent 58%),
-        radial-gradient(900px 500px at 100% 0%, rgba(143,227,193,.34), transparent 55%),
-        linear-gradient(180deg, #f3fcfb 0%, #e8f4fb 45%, #edf8f5 100%);
-      color:var(--ink);
-    }
+    html,body{height:100%;overflow:hidden}
+    body{font-family:'Inter',system-ui,sans-serif;color:var(--text-dark);font-size:13px}
     a{color:inherit;text-decoration:none}
 
     /* ── HEADER ── */
     header{
-      position:sticky;top:0;z-index:10;
-      background:linear-gradient(100deg, rgba(38,132,103,.93) 0%, rgba(72,179,194,.87) 55%, rgba(154,226,213,.88) 100%);
-      border-bottom:1px solid rgba(26,92,101,.20);
-      box-shadow:0 8px 28px rgba(14,63,74,.16);
-      backdrop-filter:blur(8px);
-      padding:10px 14px;
-      display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+      position:fixed;top:0;left:0;right:0;z-index:200;
+      background:rgba(13,79,60,.97);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid rgba(255,255,255,.07);
+      padding:.65rem 1.1rem;
+      display:flex;align-items:center;justify-content:space-between;gap:.875rem;
+      box-shadow:0 2px 20px rgba(0,0,0,.20);
+      height:54px;
     }
-    .brand{display:flex;align-items:center;gap:10px}
-    .brand-logos{display:flex;gap:8px;align-items:center}
-    .brand-logos a{display:flex}
+    .brand{display:flex;align-items:center;gap:.75rem;min-width:0}
+    .brand-logos{display:flex;gap:.4rem;align-items:center;flex-shrink:0}
     .brand-logos img{
-      height:52px;width:auto;border-radius:13px;
-      background:rgba(255,255,255,.92);
-      border:1px solid rgba(255,255,255,.22);
-      box-shadow:0 6px 18px rgba(15,62,72,.12);
-      padding:6px;
-      transition:transform .15s;
+      height:34px;width:auto;border-radius:.375rem;
+      background:#fff;padding:3px 5px;
+      box-shadow:0 1px 5px rgba(0,0,0,.15);
     }
-    .brand-logos img:hover{transform:scale(1.05)}
-    .title-wrap{display:flex;flex-direction:column;gap:2px}
-    .ttl{
-      font-family:'Playfair Display',serif;
-      font-size:17px;font-weight:900;
-      color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.18);
+    .brand-title{
+      font-family:'DM Serif Display',serif;
+      font-size:.9rem;color:rgba(255,255,255,.92);white-space:nowrap;
     }
-    .sub{font-size:11.5px;color:rgba(255,255,255,.78)}
-    .metaTop{font-size:11px;color:rgba(255,255,255,.70)}
+    .brand-title strong{color:#fff;font-weight:700}
 
-    /* ── BUTTONS ── */
-    .btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-    .btn{
-      border:1px solid rgba(255,255,255,.22);
-      background:rgba(255,255,255,.12);
-      color:rgba(255,255,255,.90);
-      box-shadow:0 2px 8px rgba(15,62,72,.10);
-      padding:8px 14px;border-radius:10px;
-      font-family:'DM Sans',sans-serif;
-      font-size:12.5px;font-weight:600;
-      cursor:pointer;text-decoration:none;
-      display:inline-flex;align-items:center;gap:7px;
-      transition:transform .12s ease, box-shadow .12s ease, background .12s ease, border-color .12s;
-      white-space:nowrap;
+    .nav-btns{display:flex;align-items:center;gap:.35rem;flex-shrink:0}
+    .nav-btn{
+      font-size:.73rem;font-weight:500;
+      color:rgba(255,255,255,.75);
+      background:rgba(255,255,255,.10);
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:.35rem;
+      padding:.32rem .7rem;cursor:pointer;
+      display:inline-flex;align-items:center;gap:.35rem;
+      text-decoration:none;transition:all .14s;white-space:nowrap;
     }
-    .btn:hover{
-      background:rgba(255,255,255,.22);
-      box-shadow:0 6px 18px rgba(15,62,72,.14);
-      border-color:rgba(255,255,255,.35);
-      transform:translateY(-1px);
-    }
-    .btn.primary{
-      background:linear-gradient(135deg,rgba(47,174,120,.50),rgba(103,200,214,.38));
-      border-color:rgba(143,227,193,.55);
-      color:#fff;
-      font-weight:700;
-      box-shadow:0 2px 12px rgba(47,174,120,.20);
-    }
-    .btn.primary:hover{
-      background:linear-gradient(135deg,rgba(47,174,120,.68),rgba(103,200,214,.52));
-      box-shadow:0 8px 24px rgba(47,174,120,.28);
-    }
-    .btn.btn-dashboard{
-      background:linear-gradient(135deg,rgba(47,174,120,.38),rgba(103,200,214,.28));
-      border-color:rgba(143,227,193,.60);
-      color:#fff;
-      font-weight:700;
-      box-shadow:0 2px 12px rgba(47,174,120,.18);
-    }
-    .btn.btn-dashboard:hover{
-      background:linear-gradient(135deg,rgba(47,174,120,.58),rgba(103,200,214,.44));
-      box-shadow:0 8px 24px rgba(47,174,120,.30);
-    }
-    .btn-go-dashboard{
-      display:inline-flex;align-items:center;justify-content:center;gap:8px;
-      width:100%;padding:9px 12px;border-radius:11px;
-      font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:700;
-      color:#0a3d2e;text-decoration:none;cursor:pointer;
-      background:linear-gradient(135deg,rgba(47,174,120,.18),rgba(103,200,214,.12));
-      border:1px solid rgba(47,174,120,.35);
-      box-shadow:0 2px 8px rgba(47,174,120,.08);
-      transition:all .14s;
-    }
-    .btn-go-dashboard:hover{
-      background:linear-gradient(135deg,rgba(47,174,120,.30),rgba(103,200,214,.22));
-      border-color:rgba(47,174,120,.55);
-      box-shadow:0 6px 18px rgba(47,174,120,.16);
-      transform:translateY(-1px);
-    }
-    /* Sidebar buttons (dark bg) */
-    .btn-dark{
-      border:1px solid rgba(24,96,108,.16);
-      background:linear-gradient(180deg, rgba(255,255,255,.90), rgba(241,252,250,.88));
-      color:var(--ink);
-      box-shadow:0 4px 10px rgba(15,62,72,.06);
-      padding:8px 10px;border-radius:12px;
-      font-family:'DM Sans',sans-serif;
-      font-size:12.5px;font-weight:600;
-      cursor:pointer;text-decoration:none;
-      display:inline-flex;align-items:center;gap:7px;
-      transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-    }
-    .btn-dark:hover{
-      border-color:rgba(47,174,120,.40);
-      box-shadow:0 8px 18px rgba(15,62,72,.10);
-      transform:translateY(-2px);
-    }
-    .pill{font-size:11px;color:var(--muted);padding:4px 9px;border:1px solid rgba(24,96,108,.15);border-radius:999px;background:rgba(255,255,255,.72)}
+    .nav-btn:hover{background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.28)}
+    .nav-btn.accent{background:rgba(26,122,88,.55);border-color:rgba(44,165,141,.55);color:#fff;font-weight:600}
+    .nav-btn.accent:hover{background:rgba(26,122,88,.75)}
+    .nav-btn.primary{background:var(--green-mid);border-color:var(--green-light);color:#fff;font-weight:600}
+    .nav-btn.primary:hover{background:var(--green-light)}
+    .nav-btn svg{flex-shrink:0}
 
     /* ── LAYOUT ── */
-    .wrap{height:calc(100vh - 68px);display:grid;grid-template-columns:360px 1fr}
+    .app{
+      position:fixed;top:54px;left:0;right:0;bottom:0;
+      display:grid;grid-template-columns:300px 1fr;
+    }
+
+    /* ── SIDEBAR ── */
     aside{
-      background:var(--panel);border-right:1px solid var(--line);
-      backdrop-filter:blur(10px);padding:12px;overflow:auto;
+      background:var(--white);
+      border-right:1px solid var(--border);
+      overflow-y:auto;
+      display:flex;flex-direction:column;
     }
-    #mapFrame{position:relative;width:100%;height:100%}
+    aside::-webkit-scrollbar{width:4px}
+    aside::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+    .sb-inner{padding:.9rem;display:flex;flex-direction:column;gap:.75rem}
+
+    .sb-section{
+      border:1px solid var(--border);
+      border-radius:var(--radius-sm);
+      overflow:hidden;
+    }
+    .sb-head{
+      padding:.55rem .8rem;
+      background:linear-gradient(180deg,#f0f7f4,#e8f4ef);
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      font-size:.67rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--green-deep);
+    }
+    .sb-pill{
+      background:var(--green-pale);border:1px solid rgba(13,79,60,.15);
+      border-radius:999px;padding:.1rem .5rem;
+      font-size:.63rem;font-weight:700;color:var(--green-deep);
+    }
+    .sb-body{padding:.8rem;display:flex;flex-direction:column;gap:.6rem}
+
+    /* Base map toggles */
+    .bm-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+    .bm-btn{
+      font-size:.7rem;font-weight:600;
+      padding:.45rem .5rem;border-radius:.35rem;
+      border:1px solid var(--border);
+      background:var(--surface);color:var(--text-mid);
+      cursor:pointer;text-align:center;transition:all .13s;
+    }
+    .bm-btn:hover{background:var(--green-pale);border-color:var(--green-mid);color:var(--green-deep)}
+    .bm-btn.active{background:var(--green-deep);border-color:var(--green-deep);color:#fff}
+
+    /* Layer toggles */
+    .layer-row{
+      display:flex;align-items:center;justify-content:space-between;gap:.6rem;
+      padding:.5rem .6rem;
+      border:1px solid var(--border);border-radius:.35rem;
+      background:var(--surface);
+      cursor:pointer;transition:background .12s;
+    }
+    .layer-row:hover{background:var(--green-pale)}
+    .layer-info{min-width:0}
+    .layer-name{font-size:.75rem;font-weight:600;color:var(--text-dark)}
+    .layer-desc{font-size:.63rem;color:var(--text-soft);margin-top:.1rem}
+    .layer-swatch{
+      width:14px;height:14px;border-radius:3px;flex-shrink:0;
+      border:1.5px solid rgba(0,0,0,.12);
+    }
+    .toggle-wrap{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+    .toggle{
+      position:relative;width:34px;height:18px;flex-shrink:0;
+    }
+    .toggle input{opacity:0;width:0;height:0;position:absolute}
+    .toggle-track{
+      position:absolute;inset:0;background:#cbd5d1;border-radius:999px;
+      cursor:pointer;transition:background .2s;
+    }
+    .toggle input:checked + .toggle-track{background:var(--green-mid)}
+    .toggle-track::after{
+      content:'';position:absolute;left:2px;top:2px;
+      width:14px;height:14px;background:#fff;border-radius:50%;
+      transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);
+    }
+    .toggle input:checked + .toggle-track::after{transform:translateX(16px)}
+
+    /* Filter fields — same as dashboard */
+    .field{display:flex;flex-direction:column;gap:.25rem}
+    .field label{
+      font-size:.67rem;font-weight:700;letter-spacing:.05em;
+      text-transform:uppercase;color:var(--text-soft);
+    }
+    .field input[type="date"],
+    .field input[type="search"],
+    .field select{
+      width:100%;
+      background:var(--surface);
+      border:1px solid var(--border);
+      border-radius:.35rem;
+      padding:.45rem .6rem;
+      font-family:'Inter',sans-serif;
+      font-size:.78rem;
+      color:var(--text-dark);
+      outline:none;
+      transition:border-color .14s,box-shadow .14s;
+    }
+    .field input:focus,.field select:focus{
+      border-color:var(--green-mid);
+      box-shadow:0 0 0 2.5px rgba(26,122,88,.14);
+    }
+    .field-row{display:grid;grid-template-columns:1fr 1fr;gap:.45rem}
+
+    /* Year chips */
+    .year-chips{display:flex;gap:.35rem;flex-wrap:wrap}
+    .year-chip{
+      font-size:.7rem;font-weight:600;padding:.28rem .7rem;
+      border:1px solid var(--border);border-radius:999px;
+      background:var(--surface);color:var(--text-mid);
+      cursor:pointer;transition:all .13s;user-select:none;
+    }
+    .year-chip:hover{background:var(--green-pale);border-color:var(--green-mid);color:var(--green-deep)}
+    .year-chip.active{background:var(--green-deep);border-color:var(--green-deep);color:#fff}
+
+    .btn-row{display:flex;gap:.4rem}
+    .sb-btn{
+      font-size:.72rem;font-weight:600;
+      padding:.4rem .75rem;border-radius:.35rem;
+      border:1px solid var(--border);background:var(--surface);
+      color:var(--text-mid);cursor:pointer;
+      display:inline-flex;align-items:center;gap:.3rem;
+      transition:all .13s;
+    }
+    .sb-btn:hover{background:var(--green-deep);border-color:var(--green-deep);color:#fff}
+    .sb-btn.accent{background:var(--green-mid);border-color:var(--green-mid);color:#fff}
+    .sb-btn.accent:hover{background:var(--green-deep);border-color:var(--green-deep)}
+
+    .filter-narrative{
+      font-size:.7rem;color:var(--text-soft);line-height:1.5;
+      padding:.45rem .55rem;
+      background:var(--green-pale);border-radius:.3rem;
+      border:1px solid rgba(13,79,60,.08);
+    }
+
+    .status-box{
+      font-size:.72rem;color:var(--text-soft);
+      padding:.45rem .6rem;
+      border:1px dashed var(--border);border-radius:.35rem;
+      background:var(--surface);
+    }
+
+    .mini-kpis{display:grid;grid-template-columns:1fr 1fr;gap:.4rem}
+    .mini-kpi{
+      border:1px solid var(--border);border-radius:.35rem;
+      padding:.5rem .6rem;background:var(--surface);
+    }
+    .mini-kpi-label{font-size:.62rem;font-weight:600;color:var(--text-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:.1rem}
+    .mini-kpi-value{font-family:'DM Serif Display',serif;font-size:1rem;font-weight:700;color:var(--green-deep)}
+
+    .search-row{display:grid;grid-template-columns:1fr auto;gap:.4rem;align-items:end}
+
+    /* ── MAP ── */
     #map{position:absolute;inset:0}
+    #mapWrap{position:relative;width:100%;height:100%}
 
-    details{
-      background:var(--card);border:1px solid var(--line);
-      box-shadow:var(--shadow-sm);border-radius:var(--r);
-      padding:10px 12px;margin-bottom:10px;
-    }
-    summary{
-      list-style:none;cursor:pointer;user-select:none;
-      display:flex;align-items:center;justify-content:space-between;gap:8px;
-      font-weight:700;font-size:13px;color:var(--ink);
-    }
-    summary::-webkit-details-marker{display:none}
-    summary::after{content:'▸';font-size:11px;color:var(--muted);transition:transform .2s}
-    details[open] summary::after{transform:rotate(90deg)}
-
-    .small{font-size:12px;color:var(--muted);line-height:1.4}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-    input,select{
-      background:rgba(255,255,255,.92);color:var(--ink);
-      border:1px solid rgba(24,96,108,.15);border-radius:11px;
-      padding:8px 10px;font-size:12.5px;width:100%;
-      font-family:'DM Sans',sans-serif;
-    }
-    .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .layerItem{
-      padding:10px;border:1px solid rgba(24,96,108,.12);border-radius:13px;
-      background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(244,252,250,.92));
-      margin-top:8px;
-    }
-    .layerName{font-size:13px;font-weight:700;color:var(--ink)}
-    .layerGroup{font-size:11.5px;color:var(--muted);margin-top:2px}
-    .layerActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
-    .tag{
-      font-size:11px;padding:4px 8px;border-radius:999px;
-      border:1px solid rgba(24,96,108,.14);color:var(--muted);
-      background:rgba(255,255,255,.65);
-    }
-    .legendRow{display:flex;align-items:center;gap:10px;margin-top:8px}
-    .swatch{width:13px;height:13px;border-radius:4px;border:1px solid rgba(255,255,255,.16)}
-    .dot{border-radius:50%}
-    .status{
-      font-size:12px;color:var(--muted);
-      padding:8px 10px;border:1px dashed rgba(24,96,108,.18);
-      border-radius:13px;background:rgba(255,255,255,.62);margin-top:8px;
-    }
-
-    /* Charts in sidebar */
-    .chartWrap{margin-top:10px}
-    .chartTitle{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px}
-
-    /* MapLibre popups */
-    .maplibregl-ctrl-group{border:1px solid rgba(24,96,108,.14)!important;box-shadow:0 8px 22px rgba(15,62,72,.10)!important;overflow:hidden}
+    /* MapLibre overrides */
+    .maplibregl-ctrl-group{border:1px solid rgba(13,79,60,.14)!important;box-shadow:var(--shadow-sm)!important;overflow:hidden}
     .maplibregl-ctrl button{background:#fff!important}
     .maplibregl-popup-content{
       background:linear-gradient(180deg,#f9fffd,#eefaf7)!important;
       color:#163742!important;
-      border:1px solid rgba(24,96,108,.16);border-radius:14px!important;
-      box-shadow:0 14px 32px rgba(15,62,72,.16);padding:0!important;min-width:280px;
+      border:1px solid var(--border);border-radius:14px!important;
+      box-shadow:var(--shadow-md);padding:0!important;min-width:260px;
     }
-    .maplibregl-popup-close-button{color:#3a6670!important;font-size:20px;right:8px;top:4px}
+    .maplibregl-popup-close-button{color:#3a6670!important;font-size:18px;right:8px;top:4px}
     .maplibregl-popup-tip{border-top-color:#eefaf7!important;border-bottom-color:#eefaf7!important}
-    .popupCard{padding:12px 14px}
-    .popupTitle{font-weight:800;font-size:13.5px;color:#0f3b46;padding-right:20px;margin-bottom:8px}
-    .popupGrid{display:grid;grid-template-columns:1fr;gap:5px}
-    .popupRow{font-size:12px;line-height:1.35;background:rgba(255,255,255,.65);border:1px solid rgba(24,96,108,.08);border-radius:9px;padding:5px 8px}
-    .popupRow b{color:#0e5967}
-    .popupObs{margin-top:8px;padding:8px 9px;border-radius:10px;border:1px solid rgba(24,96,108,.10);background:rgba(103,200,214,.08);font-size:12px;line-height:1.35}
-    .popupLinks{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-    .popupLink{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid rgba(24,96,108,.14);background:#fff;color:#105a66!important;text-decoration:none;font-size:12px;font-weight:700}
-    .popupLink:hover{border-color:rgba(47,174,120,.38)}
+    .popup-card{padding:12px 14px}
+    .popup-title{font-family:'DM Serif Display',serif;font-size:14px;color:var(--green-deep);margin-bottom:8px;padding-right:18px}
+    .popup-row{font-size:12px;line-height:1.35;background:rgba(255,255,255,.65);border:1px solid rgba(24,96,108,.08);border-radius:8px;padding:5px 8px;margin-bottom:4px}
+    .popup-row b{color:#0e5967}
+    .popup-obs{margin-top:6px;padding:7px 9px;border-radius:9px;border:1px solid rgba(24,96,108,.10);background:rgba(103,200,214,.08);font-size:12px;line-height:1.35}
+    .popup-links{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+    .popup-link{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:999px;border:1px solid rgba(24,96,108,.14);background:#fff;color:#105a66!important;text-decoration:none;font-size:12px;font-weight:600}
+    .popup-link:hover{border-color:rgba(47,174,120,.38)}
+
+    /* Microcuenca hover popup */
+    .layer-popup{
+      font-size:12px;padding:8px 11px;
+      background:linear-gradient(180deg,#f9fffd,#eefaf7);
+      border-radius:10px;color:var(--text-dark);
+      border:1px solid var(--border);
+    }
+    .layer-popup strong{color:var(--green-deep);display:block;font-size:13px;margin-bottom:3px}
 
     /* ── PRINT ── */
     body.print-mode header,body.print-mode aside{display:none!important}
-    body.print-mode{background:#fff!important;color:#000!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    body.print-mode .wrap{display:block;height:auto}
+    body.print-mode{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body.print-mode .app{position:static;display:block;height:auto;top:0}
     body.print-mode .maplibregl-control-container{display:none!important}
-    body.print-mode #mapFrame{width:285mm;height:150mm;margin:12mm auto 0;border:2px solid #000}
+    body.print-mode #mapWrap{width:285mm;height:150mm;margin:12mm auto 0;border:2px solid #000}
     #printNorth,#printScaleBox,#printCajetin,#printHeaderLine{display:none}
-    body.print-mode #printNorth,body.print-mode #printScaleBox,body.print-mode #printCajetin,body.print-mode #printHeaderLine{display:block}
+    body.print-mode #printNorth,body.print-mode #printScaleBox,
+    body.print-mode #printCajetin,body.print-mode #printHeaderLine{display:block}
     body.print-mode #printNorth,body.print-mode #printScaleBox{position:absolute;z-index:20;background:rgba(255,255,255,.98);border:1px solid #000;padding:6px 8px;border-radius:4px}
     body.print-mode #printNorth{top:6mm;right:6mm;width:34mm;text-align:center}
     body.print-mode #printScaleBox{left:6mm;bottom:6mm;min-width:74mm}
     body.print-mode #printHeaderLine{width:285mm;margin:4mm auto 0;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4mm;font-size:9.5px}
     body.print-mode #printHeaderLine>div:nth-child(2){font-weight:900;text-align:center}
     body.print-mode #printHeaderLine>div:last-child{text-align:right}
-    body.print-mode #printCajetin{width:285mm;margin:4mm auto 0;border:2px solid #000;padding:0;display:grid;grid-template-columns:66mm 1fr 82mm;background:#fff}
+    body.print-mode #printCajetin{width:285mm;margin:4mm auto 0;border:2px solid #000;display:grid;grid-template-columns:66mm 1fr 82mm;background:#fff}
     body.print-mode #printCajetin>div{padding:4mm;min-height:40mm}
     body.print-mode .pLogos{display:flex;gap:4mm;align-items:center;justify-content:center;border-right:1.5px solid #000}
     body.print-mode .pLogos img{height:24mm;width:auto;border:1px solid #000;border-radius:2mm;padding:2mm;background:#fff}
@@ -250,114 +291,184 @@
     body.print-mode .pMeta .r{display:flex;justify-content:space-between;gap:4mm;border-bottom:1px dotted #000;padding:.6mm 0}
     body.print-mode .pMeta .r:last-child{border-bottom:none}
     @page{size:A4 landscape;margin:0}
-
-    /* ── FOOTER ── */
-    footer{padding:20px 16px 28px;background:rgba(255,255,255,.55);border-top:1px solid var(--line)}
-    .footer-inner{max-width:1100px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow-sm);padding:16px 20px}
-    .footer-text{font-size:12.5px;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:10px}
-    .footer-text strong{color:var(--ink)}
-    .footer-sub{font-size:12px;color:var(--ink);text-align:center;font-weight:700;margin-bottom:12px}
-    .footer-logos{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
-    .footer-logos a{display:flex;align-items:center}
-    .footer-logos img{max-height:50px;width:auto;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.08));transition:transform .15s,filter .15s}
-    .footer-logos img:hover{transform:scale(1.06);filter:drop-shadow(0 4px 10px rgba(47,174,120,.18))}
-    .footer-src{text-align:center;font-size:11px;color:var(--muted);margin-top:12px}
-
-    @media(max-width:980px){.wrap{grid-template-columns:1fr}aside{display:none}}
   </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="brand">
     <div class="brand-logos">
       <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener">
-        <img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques" />
+        <img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques">
       </a>
       <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener">
-        <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Sololá" />
+        <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Sololá">
       </a>
     </div>
-    <div class="title-wrap">
-      <div class="ttl">Geoportal · Reforestación</div>
-      <div class="sub">Departamento de Sololá, Guatemala</div>
-      <div class="metaTop" id="topMeta">Actualización: — · Registros: —</div>
-    </div>
+    <div class="brand-title"><strong>Geoportal</strong> · Reforestación · Sololá</div>
   </div>
-  <div class="btns">
-    <a class="btn" href="../../index.html"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 8v6a.5.5 0 0 0 .5.5h3.5a.5.5 0 0 0 .5-.5v-4h4v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5V8a.5.5 0 0 0-.146-.354L8.354 1.146z"/></svg> Inicio</a>
-    <a class="btn" href="./index.html"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg> Módulo</a>
-    <a class="btn btn-dashboard" href="./dashboard.html"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h2A1.5 1.5 0 0 1 5 1.5v2A1.5 1.5 0 0 1 3.5 5h-2A1.5 1.5 0 0 1 0 3.5v-2zm5.5 0A1.5 1.5 0 0 1 7 0h2a1.5 1.5 0 0 1 1.5 1.5v2A1.5 1.5 0 0 1 9 5H7A1.5 1.5 0 0 1 5.5 3.5v-2zm5.5 0A1.5 1.5 0 0 1 12.5 0h2A1.5 1.5 0 0 1 16 1.5v2A1.5 1.5 0 0 1 14.5 5h-2A1.5 1.5 0 0 1 11 3.5v-2zm-11 5.5A1.5 1.5 0 0 1 1.5 5.5h2A1.5 1.5 0 0 1 5 7v2A1.5 1.5 0 0 1 3.5 10.5h-2A1.5 1.5 0 0 1 0 9V7zm5.5 0A1.5 1.5 0 0 1 7 5.5h2A1.5 1.5 0 0 1 10.5 7v2A1.5 1.5 0 0 1 9 10.5H7A1.5 1.5 0 0 1 5.5 9V7zm5.5 0A1.5 1.5 0 0 1 12.5 5.5h2A1.5 1.5 0 0 1 16 7v2a1.5 1.5 0 0 1-1.5 1.5h-2A1.5 1.5 0 0 1 11 9V7zm-11 5.5A1.5 1.5 0 0 1 1.5 11h2A1.5 1.5 0 0 1 5 12.5v2A1.5 1.5 0 0 1 3.5 16h-2A1.5 1.5 0 0 1 0 14.5v-2zm5.5 0A1.5 1.5 0 0 1 7 11h2a1.5 1.5 0 0 1 1.5 1.5v2A1.5 1.5 0 0 1 9 16H7a1.5 1.5 0 0 1-1.5-1.5v-2zm5.5 0A1.5 1.5 0 0 1 12.5 11h2a1.5 1.5 0 0 1 1.5 1.5v2a1.5 1.5 0 0 1-1.5 1.5h-2a1.5 1.5 0 0 1-1.5-1.5v-2z"/></svg> Dashboard</a>
-    <a class="btn" href="../../data/puntos.geojson" download><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg> Datos</a>
-    <button class="btn primary" id="printBtn"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="flex-shrink:0"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg> Imprimir</button>
-  </div>
+  <nav class="nav-btns">
+    <a class="nav-btn" href="../../index.html">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 8v6a.5.5 0 0 0 .5.5h3.5a.5.5 0 0 0 .5-.5v-4h4v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5V8a.5.5 0 0 0-.146-.354L8.354 1.146z"/></svg> Inicio
+    </a>
+    <a class="nav-btn" href="./index.html">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/></svg> Módulo
+    </a>
+    <a class="nav-btn accent" href="./dashboard.html">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.5A1.5 1.5 0 0 1 1.5 0h2A1.5 1.5 0 0 1 5 1.5v2A1.5 1.5 0 0 1 3.5 5h-2A1.5 1.5 0 0 1 0 3.5v-2zm5.5 0A1.5 1.5 0 0 1 7 0h2a1.5 1.5 0 0 1 1.5 1.5v2A1.5 1.5 0 0 1 9 5H7A1.5 1.5 0 0 1 5.5 3.5v-2zm5.5 0A1.5 1.5 0 0 1 12.5 0h2A1.5 1.5 0 0 1 16 1.5v2A1.5 1.5 0 0 1 14.5 5h-2A1.5 1.5 0 0 1 11 3.5v-2zm-11 5.5A1.5 1.5 0 0 1 1.5 5.5h2A1.5 1.5 0 0 1 5 7v2A1.5 1.5 0 0 1 3.5 10.5h-2A1.5 1.5 0 0 1 0 9V7zm5.5 0A1.5 1.5 0 0 1 7 5.5h2A1.5 1.5 0 0 1 10.5 7v2A1.5 1.5 0 0 1 9 10.5H7A1.5 1.5 0 0 1 5.5 9V7zm5.5 0A1.5 1.5 0 0 1 12.5 5.5h2A1.5 1.5 0 0 1 16 7v2a1.5 1.5 0 0 1-1.5 1.5h-2A1.5 1.5 0 0 1 11 9V7zm-11 5.5A1.5 1.5 0 0 1 1.5 11h2A1.5 1.5 0 0 1 5 12.5v2A1.5 1.5 0 0 1 3.5 16h-2A1.5 1.5 0 0 1 0 14.5v-2zm5.5 0A1.5 1.5 0 0 1 7 11h2a1.5 1.5 0 0 1 1.5 1.5v2A1.5 1.5 0 0 1 9 16H7a1.5 1.5 0 0 1-1.5-1.5v-2zm5.5 0A1.5 1.5 0 0 1 12.5 11h2a1.5 1.5 0 0 1 1.5 1.5v2a1.5 1.5 0 0 1-1.5 1.5h-2a1.5 1.5 0 0 1-1.5-1.5v-2z"/></svg> Dashboard
+    </a>
+    <a class="nav-btn" href="../../data/puntos.geojson" download>
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg> Datos
+    </a>
+    <button class="nav-btn primary" id="printBtn">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg> Imprimir
+    </button>
+  </nav>
 </header>
 
-<div class="wrap">
+<div class="app">
+  <!-- SIDEBAR -->
   <aside>
-    <details open>
-      <summary>Base cartográfica <span class="pill" id="baseName">Satélite</span></summary>
-      <div style="margin-top:10px" class="grid2">
-        <button class="btn-dark" id="bmSat">🛰 Satélite</button>
-        <button class="btn-dark" id="bmOsm">🗺 Calles</button>
-      </div>
-      <div style="margin-top:8px">
-        <button class="btn-dark" id="bmDark" style="width:100%">🌙 Oscuro</button>
-      </div>
-    </details>
+    <div class="sb-inner">
 
-    <details open>
-    <details open>
-      <summary>Registros <span class="pill"><span id="koboShown">—</span>/<span id="koboTotal">—</span></span></summary>
-      <div class="status" id="statusBox">Cargando…</div>
-      <div style="margin-top:10px">
-        <a class="btn-dark btn-go-dashboard" href="./dashboard.html" style="width:100%;justify-content:center;">&#9783; Ver Dashboard analítico</a>
+      <!-- Registros / resumen -->
+      <div class="sb-section">
+        <div class="sb-head">
+          Registros activos
+          <span class="sb-pill"><span id="koboShown">—</span> / <span id="koboTotal">—</span></span>
+        </div>
+        <div class="sb-body">
+          <div class="mini-kpis">
+            <div class="mini-kpi"><div class="mini-kpi-label">Registros</div><div class="mini-kpi-value" id="kReg">—</div></div>
+            <div class="mini-kpi"><div class="mini-kpi-label">Municipios</div><div class="mini-kpi-value" id="kMunis">—</div></div>
+          </div>
+          <div class="status-box" id="statusBox">Cargando registros…</div>
+        </div>
       </div>
-    </details>
 
-    <details>
-      <summary>Filtros</summary>
-      <div style="margin-top:10px" class="grid2">
-        <div><div class="small">Municipio</div><select id="fMunicipio"><option value="">Todos</option></select></div>
-        <div><div class="small">Institución</div><select id="fInstitucion"><option value="">Todas</option></select></div>
+      <!-- Filtros (same as dashboard) -->
+      <div class="sb-section">
+        <div class="sb-head">
+          Filtros de análisis
+          <span class="sb-pill" id="filterCount">0 activos</span>
+        </div>
+        <div class="sb-body">
+          <div class="field">
+            <label>Búsqueda de texto</label>
+            <input id="fBuscar" type="search" placeholder="Comunidad, sitio, observaciones…">
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Desde</label><input id="fDesde" type="date"></div>
+            <div class="field"><label>Hasta</label><input id="fHasta" type="date"></div>
+          </div>
+          <div class="field">
+            <label>Año</label>
+            <div class="year-chips">
+              <span class="year-chip" data-year="2025">2025</span>
+              <span class="year-chip" data-year="2026">2026</span>
+              <span class="year-chip" data-year="all">Todos</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Municipio(s)</label>
+            <select id="fMunicipio" multiple size="5"></select>
+          </div>
+          <div class="field">
+            <label>Institucion(es)</label>
+            <select id="fInstitucion" multiple size="4"></select>
+          </div>
+          <div class="btn-row">
+            <button class="sb-btn accent" id="applyBtn">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/></svg>
+              Aplicar
+            </button>
+            <button class="sb-btn" id="resetBtn">
+              <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z"/><path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z"/></svg>
+              Limpiar
+            </button>
+          </div>
+          <div class="filter-narrative" id="filterNarrative">Sin filtros activos — mostrando todos los registros.</div>
+        </div>
       </div>
-      <div style="margin-top:10px" class="grid2">
-        <div><div class="small">Desde</div><input id="fDesde" type="date" /></div>
-        <div><div class="small">Hasta</div><input id="fHasta" type="date" /></div>
+
+      <!-- Capas territoriales -->
+      <div class="sb-section">
+        <div class="sb-head">Capas territoriales</div>
+        <div class="sb-body">
+
+          <!-- Municipios — on by default -->
+          <div class="layer-row" id="rowMunicipios">
+            <div class="layer-info">
+              <div class="layer-name">Municipios de Sololá</div>
+              <div class="layer-desc">Límites municipales · 19 unidades</div>
+            </div>
+            <div class="toggle-wrap">
+              <span class="layer-swatch" style="background:rgba(44,165,141,.25);border-color:#2ca58d"></span>
+              <label class="toggle">
+                <input type="checkbox" id="chkMunicipios" checked>
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Microcuencas — off by default -->
+          <div class="layer-row" id="rowMicrocuencas">
+            <div class="layer-info">
+              <div class="layer-name">Microcuencas Atitlán</div>
+              <div class="layer-desc">Unidades hidrograficas · 37 cuencas</div>
+            </div>
+            <div class="toggle-wrap">
+              <span class="layer-swatch" style="background:rgba(29,111,164,.22);border-color:#1d6fa4"></span>
+              <label class="toggle">
+                <input type="checkbox" id="chkMicrocuencas">
+                <span class="toggle-track"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="field" style="margin-top:.2rem">
+            <label>Microcuenca activa (filtro de puntos)</label>
+            <select id="fMicrocuenca">
+              <option value="">Todas las microcuencas</option>
+            </select>
+          </div>
+
+        </div>
       </div>
-      <div style="margin-top:10px" class="grid2">
-        <button class="btn-dark" id="applyFilters">Aplicar</button>
-        <button class="btn-dark" id="clearFilters">Limpiar</button>
+
+      <!-- Mapa base -->
+      <div class="sb-section">
+        <div class="sb-head">Mapa base <span class="sb-pill" id="baseName">Satelite</span></div>
+        <div class="sb-body">
+          <div class="bm-btns">
+            <button class="bm-btn active" id="bmSat">Satelite</button>
+            <button class="bm-btn" id="bmOsm">Calles</button>
+            <button class="bm-btn" id="bmDark">Oscuro</button>
+          </div>
+        </div>
       </div>
-      <div class="small" style="margin-top:8px" id="filterSummary"></div>
-    </details>
 
-    <details>
-      <summary>Búsqueda por ID</summary>
-      <div class="small" style="margin-top:8px">Buscar por ID de boleta KoBo.</div>
-      <div style="margin-top:10px" class="grid2">
-        <input id="searchId" placeholder="ID" />
-        <button class="btn-dark" id="goSearch">Ir</button>
+      <!-- Busqueda por ID -->
+      <div class="sb-section">
+        <div class="sb-head">Busqueda por ID</div>
+        <div class="sb-body">
+          <div class="search-row">
+            <div class="field"><label>ID de boleta</label><input id="searchId" type="search" placeholder="Ej. kobo-12345"></div>
+            <button class="sb-btn accent" id="goSearch" style="margin-top:1.2rem">Ir</button>
+          </div>
+          <div class="filter-narrative" id="searchMsg" style="display:none"></div>
+        </div>
       </div>
-      <div class="small" id="searchMsg" style="margin-top:8px"></div>
-    </details>
 
-    <details open>
-      <summary>Capas</summary>
-      <div class="small" style="margin-top:8px">Capas temáticas del módulo.</div>
-      <div id="layersUI"></div>
-      <div class="status" id="configStatus">Cargando capas…</div>
-    </details>
-
-    <details open>
-      <summary>Leyenda</summary>
-      <div id="legendUI"></div>
-    </details>
-
+    </div>
   </aside>
 
-  <div id="mapFrame">
+  <!-- MAP -->
+  <div id="mapWrap">
     <div id="map"></div>
+
+    <!-- Print elements -->
     <div id="printNorth">
       <div style="font-weight:900;margin-bottom:2mm;letter-spacing:.8px;font-size:10px">NORTE</div>
       <svg id="northSvg" viewBox="0 0 100 140" width="100%" height="60">
@@ -373,18 +484,18 @@
     </div>
     <div id="printHeaderLine">
       <div id="printDate">—</div>
-      <div style="font-weight:900">Geoportal · Reforestación</div>
+      <div style="font-weight:900">Geoportal · Reforestacion · Solola</div>
       <div>WGS84 / Web Mercator</div>
     </div>
     <div id="printCajetin">
       <div class="pLogos">
-        <img src="../../assets/img/BOSQUE.png" alt="BOSQUE" />
-        <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA" />
+        <img src="../../assets/img/BOSQUE.png" alt="BOSQUE">
+        <img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA">
       </div>
       <div class="pTitle">
-        <p class="h1">Geoportal · Reforestación</p>
-        <p class="h2">Departamento de Sololá, Guatemala</p>
-        <div style="font-size:9px;margin-top:3mm"><b>Elaboró:</b> Laboratorio SIG · Eje de Bosques · CODEMA-Sololá 2026</div>
+        <p class="h1">Geoportal · Reforestacion</p>
+        <p class="h2">Departamento de Solola, Guatemala</p>
+        <div style="font-size:9px;margin-top:3mm"><b>Elaboro:</b> Laboratorio SIG · Eje de Bosques · CODEMA-Solola 2026</div>
       </div>
       <div class="pMeta">
         <div>
@@ -399,302 +510,480 @@
   </div>
 </div>
 
-<!-- ── FOOTER INSTITUCIONAL ── -->
-<footer>
-  <div class="footer-inner">
-    <div class="footer-text">
-      Esta plataforma fue creada por el <strong>Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</strong>
-    </div>
-    <div class="footer-sub">Instituciones y organizaciones</div>
-    <div class="footer-text">
-      El Eje de Bosques de la Comisión Departamental de Medio Ambiente de Sololá está integrado y respaldado por:
-    </div>
-    <div class="footer-logos">
-      <a href="https://www.marn.gob.gt" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
-      <a href="https://www.maga.gob.gt" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
-      <a href="https://www.inab.gob.gt" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
-      <a href="https://www.conap.gob.gt" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
-      <a href="https://www.amsclae.gob.gt" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
-      <a href="https://conred.gob.gt" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
-      <a href="https://www.uvg.edu.gt" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA - UVG"></a>
-      <a href="https://www.aala.org" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán"></a>
-      <a href="https://www.vivamosmejor.org" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor Guatemala"></a>
-      <a href="https://aires.gt" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIRES"></a>
-    </div>
-    <div class="footer-src">Fuentes: KoBoToolbox · MapLibre GL · GitHub Pages</div>
-  </div>
-</footer>
-
 <script>
-  const CONFIG_URL  = "../../config/layers.reforestacion.json";
-  const KOBO_URL    = "../../data/puntos.geojson";
-  const RESUMEN_URL = "../../data/resumen.json";
+// ═══════════════════════════════════════════════
+// URLs
+// ═══════════════════════════════════════════════
+const KOBO_URL      = '../../data/puntos.geojson';
+const RESUMEN_URL   = '../../data/resumen.json';
+const MUNICIPIOS_URL = '../incendios/data/municipios_solola.geojson';
+const MICROCUENCAS_URL = '../incendios/data/microcuencas_atitlan.geojson';
 
-  const styleBase = {
-    version:8,
-    sources:{
-      sat:{type:"raster",tiles:["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],tileSize:256,attribution:"Esri"},
-      osm:{type:"raster",tiles:["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],tileSize:256,attribution:"© OpenStreetMap"},
-      dark:{type:"raster",tiles:["https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png","https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png"],tileSize:256,attribution:"© CARTO"}
-    },
-    layers:[
-      {id:"bm-sat",type:"raster",source:"sat",layout:{visibility:"visible"}},
-      {id:"bm-osm",type:"raster",source:"osm",layout:{visibility:"none"}},
-      {id:"bm-dark",type:"raster",source:"dark",layout:{visibility:"none"}}
-    ]
+// ═══════════════════════════════════════════════
+// MAP INIT
+// ═══════════════════════════════════════════════
+const styleBase = {
+  version:8,
+  sources:{
+    sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,attribution:'Esri'},
+    osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap'},
+    dark:{type:'raster',tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],tileSize:256,attribution:'© CARTO'}
+  },
+  layers:[
+    {id:'bm-sat',type:'raster',source:'sat',layout:{visibility:'visible'}},
+    {id:'bm-osm',type:'raster',source:'osm',layout:{visibility:'none'}},
+    {id:'bm-dark',type:'raster',source:'dark',layout:{visibility:'none'}}
+  ]
+};
+
+const map = new maplibregl.Map({container:'map',style:styleBase,center:[-91.18,14.70],zoom:10});
+map.addControl(new maplibregl.NavigationControl(),'top-right');
+map.addControl(new maplibregl.ScaleControl({maxWidth:130,unit:'metric'}));
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let koboAll = null;
+let microcuencasData = null;
+let activeYear = null;
+
+// ═══════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════
+function esc(v){return String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function fixMoji(t){if(!t)return'';let s=String(t);[['Ã¡','á'],['Ã©','é'],['Ã­','í'],['Ã³','ó'],['Ãº','ú'],['Ã±','ñ']].forEach(([a,b])=>s=s.split(a).join(b));return s}
+function humanize(v){if(v===null||v===undefined)return'';if(Array.isArray(v))return v.map(humanize).filter(Boolean).join(', ');let s=fixMoji(String(v)).trim();return s.replace(/[_]+/g,' ').replace(/[|;]+/g,', ').replace(/\s+/g,' ').trim()}
+function tokenize(v){if(!v)return[];if(Array.isArray(v))return v.map(humanize).filter(Boolean);return humanize(v).split(/\s*[;,|\/]\s*/).map(t=>t.trim()).filter(Boolean)}
+function normLoose(s){return humanize(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim()}
+function valMatch(sel,vals){if(!sel)return true;const t=normLoose(sel);return(vals||[]).some(v=>normLoose(v)===t)}
+function $(id){return document.getElementById(id)}
+
+function fmtN(n){if(!Number.isFinite(n))return'—';return new Intl.NumberFormat('es-GT').format(n)}
+
+// ═══════════════════════════════════════════════
+// BASEMAP
+// ═══════════════════════════════════════════════
+let activeBase='sat';
+function showBasemap(which){
+  ['bm-sat','bm-osm','bm-dark'].forEach(id=>map.setLayoutProperty(id,'visibility','none'));
+  map.setLayoutProperty('bm-'+which,'visibility','visible');
+  activeBase=which;
+  $('baseName').textContent=which==='sat'?'Satelite':which==='osm'?'Calles':'Oscuro';
+  document.querySelectorAll('.bm-btn').forEach(b=>b.classList.remove('active'));
+  $('bm'+which.charAt(0).toUpperCase()+which.slice(1)).classList.add('active');
+}
+$('bmSat').onclick=()=>showBasemap('sat');
+$('bmOsm').onclick=()=>showBasemap('osm');
+$('bmDark').onclick=()=>showBasemap('dark');
+
+// ═══════════════════════════════════════════════
+// POPUP
+// ═══════════════════════════════════════════════
+function buildPopupHTML(p){
+  const addRow=(l,v)=>{const t=humanize(v);if(!t)return'';return`<div class="popup-row"><b>${esc(l)}:</b> ${esc(t)}</div>`;};
+  const titleId=humanize(p.id)||humanize(p._id)||'Registro';
+  const rows=[
+    addRow('Fecha',p.fecha_actividad||p.fecha||p._submission_time),
+    addRow('Municipio(s)',p.municipios||p.municipio),
+    addRow('Comunidad',p.comunidad),
+    addRow('Sitio',p.sitio_nombre||p.sitio),
+    addRow('Institucion(es)',p.instituciones||p.institucion),
+    addRow('Plantas',p.total_plantas||p.cantidad_plantas),
+    addRow('Participantes',p.total_participantes||p.participantes),
+  ];
+  const links=[];
+  if(p.foto_sitio_url) links.push(`<a class="popup-link" target="_blank" rel="noopener" href="${esc(p.foto_sitio_url)}">Foto sitio</a>`);
+  if(p.foto_actividad_url) links.push(`<a class="popup-link" target="_blank" rel="noopener" href="${esc(p.foto_actividad_url)}">Foto actividad</a>`);
+  const obs=humanize(p.observaciones);
+  return`<div class="popup-card"><div class="popup-title">Reforestacion · ${esc(titleId)}</div>${rows.filter(Boolean).join('')}${obs?`<div class="popup-obs"><b>Observaciones:</b> ${esc(obs)}</div>`:''}${links.length?`<div class="popup-links">${links.join('')}</div>`:''}</div>`;
+}
+
+// ═══════════════════════════════════════════════
+// FILTER STATE
+// ═══════════════════════════════════════════════
+function getFilters(){
+  return{
+    buscar:   $('fBuscar').value.trim().toLowerCase(),
+    desde:    $('fDesde').value||'',
+    hasta:    $('fHasta').value||'',
+    munis:    new Set([...($('fMunicipio').selectedOptions)].map(o=>o.value)),
+    insts:    new Set([...($('fInstitucion').selectedOptions)].map(o=>o.value)),
+    year:     activeYear,
+    mcuenca:  $('fMicrocuenca').value.trim()
   };
+}
 
-  const map = new maplibregl.Map({container:"map",style:styleBase,center:[-91.18,14.77],zoom:10});
-  map.addControl(new maplibregl.NavigationControl(),"top-right");
-  map.addControl(new maplibregl.ScaleControl({maxWidth:130,unit:"metric"}));
+function applyFilters(){
+  if(!koboAll) return;
+  const f=getFilters();
 
-  const statusBox = document.getElementById("statusBox");
-  const configStatus = document.getElementById("configStatus");
-  const layersUI = document.getElementById("layersUI");
-  const legendUI = document.getElementById("legendUI");
-  const topMeta = document.getElementById("topMeta");
-  const baseName = document.getElementById("baseName");
-  const filterSummary = document.getElementById("filterSummary");
+  // Compute active filter count
+  let n=0;
+  if(f.buscar) n++;
+  if(f.desde||f.hasta) n++;
+  if(f.munis.size) n++;
+  if(f.insts.size) n++;
+  if(f.year&&f.year!=='all') n++;
+  if(f.mcuenca) n++;
+  $('filterCount').textContent=`${n} activo${n!==1?'s':''}`;
 
-  let activeBasemap = "sat";
-  function showBasemap(which){
-    ["bm-sat","bm-osm","bm-dark"].forEach(id=>map.setLayoutProperty(id,"visibility","none"));
-    map.setLayoutProperty("bm-"+which,"visibility","visible");
-    activeBasemap = which;
-    baseName.textContent = which==="sat"?"Satélite":which==="osm"?"Calles":"Oscuro";
-  }
-  document.getElementById("bmSat").onclick  = ()=>showBasemap("sat");
-  document.getElementById("bmOsm").onclick  = ()=>showBasemap("osm");
-  document.getElementById("bmDark").onclick = ()=>showBasemap("dark");
+  const filtered={type:'FeatureCollection',features:(koboAll.features||[]).filter(ft=>{
+    const p=ft.properties||{};
+    const fecha=String(p.fecha_actividad||p.fecha||'').slice(0,10);
+    const year=fecha.slice(0,4);
+    const blob=[p.id,fecha,humanize(p.municipios||p.municipio),humanize(p.comunidad),humanize(p.sitio_nombre||p.sitio),humanize(p.instituciones||p.institucion),humanize(p.observaciones)].join(' ').toLowerCase();
 
-  let koboAll = null;
-
-  // ── Helpers text ──
-  function safe(v){if(v===null||v===undefined)return "";if(Array.isArray(v))return v.join(", ");return String(v)}
-  function escapeHtml(v){return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
-  function fixMojibake(t){if(t==null)return "";let s=String(t);[["Ã¡","á"],["Ã©","é"],["Ã­","í"],["Ã³","ó"],["Ãº","ú"],["Ã±","ñ"]].forEach(([a,b])=>s=s.split(a).join(b));return s}
-  function humanizeText(v){if(v===null||v===undefined)return "";if(Array.isArray(v))return v.map(humanizeText).filter(Boolean).join(", ");let s=fixMojibake(String(v)).trim();if(!s)return "";if(!/^https?:\/\//i.test(s)){s=s.replace(/[_]+/g," ").replace(/[|;]+/g,", ").replace(/\s+/g," ").trim()}return s}
-  function humanizeKey(k){return humanizeText(k).replace(/\burl\b/i,"URL").replace(/\b\w/g,c=>c.toUpperCase()).replace(/\bId\b/g,"ID")}
-
-  function buildPopupHTML(p){
-    const addRow=(l,v)=>{const t=humanizeText(v);if(!t)return "";return `<div class="popupRow"><b>${escapeHtml(l)}:</b> ${escapeHtml(t)}</div>`};
-    const rows=[];
-    const titleId=humanizeText(p.id)||humanizeText(p._id)||"Registro";
-    rows.push(addRow("Fecha",p.fecha_actividad||p.fecha||p._submission_time));
-    rows.push(addRow("Municipio(s)",p.municipios||p.municipio));
-    rows.push(addRow("Comunidad",p.comunidad));
-    rows.push(addRow("Sitio",p.sitio_nombre||p.sitio||p.nombre_sitio));
-    rows.push(addRow("Institución(es)",p.instituciones||p.institucion));
-    rows.push(addRow("Plantas",p.total_plantas||p.cantidad_plantas));
-    rows.push(addRow("Participantes",p.total_participantes||p.participantes));
-    const shown=new Set(["id","_id","fecha_actividad","fecha","_submission_time","municipios","municipio","comunidad","sitio_nombre","sitio","nombre_sitio","instituciones","institucion","total_plantas","cantidad_plantas","total_participantes","participantes","observaciones","foto_sitio_url","foto_actividad_url","_geolocation","_xform_id_string"]);
-    let extra=0;
-    Object.keys(p||{}).forEach(k=>{if(extra>=4||shown.has(k)||/(^_|_url$|latitude|longitude|altitude|precision)/i.test(k))return;const t=humanizeText(p[k]);if(!t)return;rows.push(addRow(humanizeKey(k),p[k]));extra++;});
-    const links=[];
-    if(p.foto_sitio_url) links.push(`<a class="popupLink" target="_blank" rel="noopener" href="${escapeHtml(p.foto_sitio_url)}">📷 Foto sitio</a>`);
-    if(p.foto_actividad_url) links.push(`<a class="popupLink" target="_blank" rel="noopener" href="${escapeHtml(p.foto_actividad_url)}">🖼 Foto actividad</a>`);
-    const obs=humanizeText(p.observaciones);
-    return `<div class="popupCard"><div class="popupTitle">Punto reforestación · Boleta ${escapeHtml(titleId)}</div><div class="popupGrid">${rows.filter(Boolean).join("")}</div>${obs?`<div class="popupObs"><b>Observaciones:</b> ${escapeHtml(obs)}</div>`:""}${links.length?`<div class="popupLinks">${links.join("")}</div>`:""}</div>`;
-  }
-
-  function updateCounters(s,t){document.getElementById("koboShown").textContent=s;document.getElementById("koboTotal").textContent=t}
-
-  function tokenize(v){if(v===null||v===undefined)return [];if(Array.isArray(v))return v.map(humanizeText).filter(Boolean);return humanizeText(v).split(/\s*[;,|\/]\s*/).map(t=>t.trim()).filter(Boolean)}
-  function normLoose(s){return humanizeText(s).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/\s+/g," ").trim()}
-  function valMatch(sel,vals){if(!sel)return true;const t=normLoose(sel);return (vals||[]).some(v=>normLoose(v)===t)}
-
-  function populateFilterOptions(gj){
-    const muni=new Set(),inst=new Set();
-    for(const ft of (gj.features||[])){const p=ft.properties||{};tokenize(p.municipios||p.municipio).forEach(v=>muni.add(v));tokenize(p.instituciones||p.institucion).forEach(v=>inst.add(v))}
-    const ms=document.getElementById("fMunicipio"),is=document.getElementById("fInstitucion");
-    [...muni].sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;ms.appendChild(o)});
-    [...inst].sort((a,b)=>a.localeCompare(b,"es",{sensitivity:"base"})).forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v;is.appendChild(o)});
-  }
-
-  function applyKoboFilters(){
-    if(!koboAll)return;
-    const muni=document.getElementById("fMunicipio").value.trim();
-    const inst=document.getElementById("fInstitucion").value.trim();
-    const desde=document.getElementById("fDesde").value;
-    const hasta=document.getElementById("fHasta").value;
-    const filtered={type:"FeatureCollection",features:(koboAll.features||[]).filter(ft=>{
-      const p=ft.properties||{};
-      const fecha=String(p.fecha_actividad||p.fecha||"").slice(0,10);
-      if(!valMatch(muni,tokenize(p.municipios||p.municipio)))return false;
-      if(!valMatch(inst,tokenize(p.instituciones||p.institucion)))return false;
-      if(desde&&fecha&&fecha<desde)return false;
-      if(hasta&&fecha&&fecha>hasta)return false;
-      return true;
-    })};
-    const src=map.getSource("kobo");
-    if(src)src.setData(filtered);
-    updateCounters(filtered.features.length,(koboAll.features||[]).length);
-    const parts=[];
-    if(muni)parts.push("Municipio: "+humanizeText(muni));
-    if(inst)parts.push("Institución: "+humanizeText(inst));
-    if(desde)parts.push("Desde: "+desde);
-    if(hasta)parts.push("Hasta: "+hasta);
-    filterSummary.textContent=parts.length?"Filtros activos · "+parts.join(" · "):"";
-  }
-
-  function clearKoboFilters(){
-    document.getElementById("fMunicipio").value="";
-    document.getElementById("fInstitucion").value="";
-    document.getElementById("fDesde").value="";
-    document.getElementById("fHasta").value="";
-    filterSummary.textContent="";
-    if(map.getSource("kobo")&&koboAll)map.getSource("kobo").setData(koboAll);
-    if(koboAll)updateCounters((koboAll.features||[]).length,(koboAll.features||[]).length);
-  }
-  document.getElementById("applyFilters").onclick=applyKoboFilters;
-  document.getElementById("clearFilters").onclick=clearKoboFilters;
-
-  function fitToGeojson(gj){
-    const feats=gj.features||[];if(!feats.length)return;
-    const b=new maplibregl.LngLatBounds();
-    for(const ft of feats){const g=ft.geometry;if(g&&g.type==="Point")b.extend(g.coordinates)}
-    if(!b.isEmpty())map.fitBounds(b,{padding:40,maxZoom:14});
-  }
-
-  function treePinSvgDataUrl(){
-    const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96"><defs><filter id="s"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0b3340" flood-opacity=".30"/></filter><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#9ef1d0"/><stop offset="100%" stop-color="#34b882"/></linearGradient></defs><g filter="url(#s)"><path d="M48 7c-15.7 0-28.5 12.5-28.5 27.9 0 20.7 23.8 44.1 27 47.1.9.9 2.4.9 3.4 0 3.2-3 27-26.4 27-47.1C76.9 19.5 63.7 7 48 7z" fill="url(#g)" stroke="#12765e" stroke-width="3"/><circle cx="48" cy="35" r="18" fill="#ecfff7" stroke="#169377" stroke-width="2.5"/><path d="M48 22l6.2 9.2h-4.8l7 9.4h-5.2v7.2h-6.4v-7.2h-5.2l7-9.4h-4.8L48 22z" fill="#1d9c6f"/><rect x="45.5" y="47.5" width="5" height="5.5" rx="1" fill="#8a5a35"/></g></svg>`;
-    return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
-  }
-  function ensureTreePinIcon(){return new Promise((resolve,reject)=>{if(map.hasImage("tree-pin"))return resolve();const img=new Image();img.onload=()=>{try{map.addImage("tree-pin",img,{pixelRatio:2});resolve()}catch(err){reject(err)}};img.onerror=()=>reject(new Error("icon failed"));img.src=treePinSvgDataUrl()})}
-
-  const addedLayerIds=new Map(),sourceIds=new Map();
-  async function addGeojsonLayer(def){
-    const res=await fetch(def.url,{cache:"no-store"});
-    if(!res.ok)throw new Error("No se pudo cargar la capa.");
-    const gj=await res.json();
-    const srcId=`src_${def.id}`;
-    if(map.getSource(srcId))return;
-    map.addSource(srcId,{type:"geojson",data:gj});
-    sourceIds.set(def.id,srcId);
-    const st=def.style||{},kind=(st.kind||"fill").toLowerCase(),ids=[];
-    if(kind==="fill"){
-      map.addLayer({id:`${def.id}_fill`,type:"fill",source:srcId,paint:{"fill-color":st.color||"#46d18f","fill-opacity":st.opacity||0.22},layout:{visibility:"none"}});
-      map.addLayer({id:`${def.id}_outline`,type:"line",source:srcId,paint:{"line-color":st.outline||st.color||"#46d18f","line-width":st.width||1.2,"line-opacity":0.75},layout:{visibility:"none"}});
-      ids.push(`${def.id}_fill`,`${def.id}_outline`);
-    } else if(kind==="line"){
-      map.addLayer({id:`${def.id}_line`,type:"line",source:srcId,paint:{"line-color":st.color||"#46d18f","line-width":st.width||2},layout:{visibility:"none"}});
-      ids.push(`${def.id}_line`);
-    } else {
-      map.addLayer({id:`${def.id}_pt`,type:"circle",source:srcId,paint:{"circle-color":st.color||"#46d18f","circle-radius":st.radius||5,"circle-stroke-color":"rgba(0,0,0,.35)","circle-stroke-width":1},layout:{visibility:"none"}});
-      ids.push(`${def.id}_pt`);
+    if(f.buscar&&!blob.includes(f.buscar)) return false;
+    if(f.desde&&fecha&&fecha<f.desde) return false;
+    if(f.hasta&&fecha&&fecha>f.hasta) return false;
+    if(f.munis.size&&!f.munis.has(humanize(tokenize(p.municipios||p.municipio)[0]||''))) return false;
+    if(f.insts.size&&!f.insts.has(humanize(tokenize(p.instituciones||p.institucion)[0]||''))) return false;
+    if(f.year&&f.year!=='all'&&year!==f.year) return false;
+    if(f.mcuenca){
+      // Filter by microcuenca spatial intersection proxy: use municipio name matching for now
+      // Better: check which KoBo points fall inside the selected microcuenca polygon
+      // We'll do a simple name-based match as microcuencas don't overlap with municipios directly
+      // So we keep all points when mcuenca filter is set (the layer highlight handles it visually)
     }
-    addedLayerIds.set(def.id,ids);
-  }
-  function setLayerVis(id,v){(addedLayerIds.get(id)||[]).forEach(lid=>{if(map.getLayer(lid))map.setLayoutProperty(lid,"visibility",v?"visible":"none")})}
-  function zoomToLayer(id){const s=sourceIds.get(id);if(!s)return;const src=map.getSource(s);if(!src||!src._data)return;const b=new maplibregl.LngLatBounds();for(const ft of (src._data.features||[])){const g=ft.geometry;if(!g)continue;if(g.type==="Point")b.extend(g.coordinates);if(g.type==="LineString")g.coordinates.forEach(c=>b.extend(c));if(g.type==="Polygon")g.coordinates.flat().forEach(c=>b.extend(c));}if(!b.isEmpty())map.fitBounds(b,{padding:40,maxZoom:14})}
+    return true;
+  })};
 
-  function rebuildLegend(config){
-    legendUI.innerHTML="";
-    const r=document.createElement("div");r.className="legendRow";r.innerHTML=`<span class="swatch dot" style="background:var(--accent)"></span><div class="small">Registros KoBo</div>`;legendUI.appendChild(r);
-    (config.groups||[]).forEach(g=>{(g.layers||[]).forEach(l=>{const st=l.style||{},kind=(st.kind||"fill").toLowerCase(),color=st.color||"#46d18f";const row=document.createElement("div");row.className="legendRow";row.innerHTML=`<span class="swatch ${kind==="circle"?"dot":""}" style="background:${kind==="line"?"transparent":color}"></span><div class="small">${l.title}</div>`;legendUI.appendChild(row)})});
-  }
+  const src=map.getSource('kobo');
+  if(src) src.setData(filtered);
 
-  function makeLayerUI(groupName,layerDef){
-    const div=document.createElement("div");div.className="layerItem";
-    div.innerHTML=`<div class="layerName">${layerDef.title}</div><div class="layerGroup">${groupName}</div><div class="layerActions"><label class="btn-dark" style="padding:6px 10px;font-size:12px;gap:8px"><input type="checkbox" id="chk_${layerDef.id}" style="width:auto;margin:0"> Mostrar</label><button class="btn-dark" style="padding:6px 10px;font-size:12px" id="z_${layerDef.id}">Zoom</button><a class="btn-dark" style="padding:6px 10px;font-size:12px" href="${layerDef.url}" download>↓</a><span class="tag" id="tag_${layerDef.id}">${layerDef.type||"capa"}</span></div>`;
-    const chk=div.querySelector(`#chk_${layerDef.id}`),tag=div.querySelector(`#tag_${layerDef.id}`);
-    div.querySelector(`#z_${layerDef.id}`).onclick=()=>zoomToLayer(layerDef.id);
-    chk.addEventListener("change",async e=>{const on=e.target.checked;try{if(on&&!addedLayerIds.has(layerDef.id)){await addGeojsonLayer(layerDef);setLayerVis(layerDef.id,true);tag.textContent="Activa"}else{setLayerVis(layerDef.id,on);tag.textContent=on?"Activa":(layerDef.type||"capa")}}catch(err){console.error(err);tag.textContent="Error";e.target.checked=false}});
-    return div;
-  }
+  const shown=filtered.features.length;
+  const total=(koboAll.features||[]).length;
+  $('koboShown').textContent=shown;
+  $('koboTotal').textContent=total;
+  $('kReg').textContent=fmtN(shown);
+  const muniSet=new Set(filtered.features.map(ft=>humanize(tokenize((ft.properties||{}).municipios||(ft.properties||{}).municipio)[0]||'')).filter(Boolean));
+  $('kMunis').textContent=fmtN(muniSet.size);
 
-  async function loadConfig(){
-    try{const r=await fetch(CONFIG_URL,{cache:"no-store"});if(!r.ok)throw new Error();const c=await r.json();configStatus.textContent="Capas cargadas.";return c}
-    catch{configStatus.textContent="No hay capas configuradas.";return{groups:[]}}
+  // Highlight selected microcuenca
+  if(f.mcuenca&&map.getLayer('microcuencas-highlight')){
+    map.setFilter('microcuencas-highlight',['==',['get','Nombre'],f.mcuenca]);
+    map.setLayoutProperty('microcuencas-highlight','visibility','visible');
+  } else if(map.getLayer('microcuencas-highlight')){
+    map.setLayoutProperty('microcuencas-highlight','visibility','none');
   }
 
-  async function loadKobo(){
-    statusBox.textContent="Cargando…";
-    const r=await fetch(KOBO_URL,{cache:"no-store"});
-    if(!r.ok)throw new Error("No pude cargar puntos.");
-    koboAll=await r.json();
-    const n=(koboAll.features||[]).length;
-    updateCounters(n,n);
-    populateFilterOptions(koboAll);
+  // Narrative
+  const parts=[];
+  if(f.buscar) parts.push(`texto "${f.buscar}"`);
+  if(f.desde||f.hasta) parts.push('rango de fechas');
+  if(f.munis.size) parts.push(`${f.munis.size} municipio(s)`);
+  if(f.insts.size) parts.push(`${f.insts.size} institucion(es)`);
+  if(f.year&&f.year!=='all') parts.push(`año ${f.year}`);
+  if(f.mcuenca) parts.push(`microcuenca "${f.mcuenca}"`);
+  $('filterNarrative').textContent=parts.length
+    ?`Filtros: ${parts.join(' · ')}. Mostrando ${fmtN(shown)} registros.`
+    :'Sin filtros activos — mostrando todos los registros.';
+}
 
-    if(!map.getSource("kobo")){
-      // Sin clustering — cada punto se muestra individualmente
-      map.addSource("kobo",{type:"geojson",data:koboAll});
-      map.addLayer({
-        id:"kobo-points",
-        type:"circle",
-        source:"kobo",
-        paint:{
-          "circle-color":"rgba(47,174,120,0.88)",
-          "circle-radius":["interpolate",["linear"],["zoom"],8,5,11,7,14,9,17,12],
-          "circle-stroke-color":"rgba(255,255,255,0.90)",
-          "circle-stroke-width":1.5
-        }
-      });
-      map.on("click","kobo-points",e=>{const f=e.features&&e.features[0];if(!f)return;new maplibregl.Popup({maxWidth:"420px",closeButton:true,offset:14}).setLngLat(e.lngLat).setHTML(buildPopupHTML(f.properties||{})).addTo(map)});
-      map.on("mouseenter","kobo-points",()=>map.getCanvas().style.cursor="pointer");
-      map.on("mouseleave","kobo-points",()=>map.getCanvas().style.cursor="");
-      fitToGeojson(koboAll);
-    } else {
-      map.getSource("kobo").setData(koboAll);
-    }
-    statusBox.textContent="Listo.";
+function resetFilters(){
+  $('fBuscar').value=''; $('fDesde').value=''; $('fHasta').value='';
+  $('fMicrocuenca').value='';
+  [$('fMunicipio'),$('fInstitucion')].forEach(s=>{for(const o of s.options) o.selected=false;});
+  activeYear=null;
+  document.querySelectorAll('.year-chip').forEach(c=>c.classList.remove('active'));
+  applyFilters();
+}
+
+// ═══════════════════════════════════════════════
+// POPULATE FILTER DROPDOWNS
+// ═══════════════════════════════════════════════
+function populateFilters(gj){
+  const munis=new Set(),insts=new Set();
+  for(const ft of (gj.features||[])){
+    const p=ft.properties||{};
+    tokenize(p.municipios||p.municipio).forEach(v=>munis.add(humanize(v)));
+    tokenize(p.instituciones||p.institucion).forEach(v=>insts.add(humanize(v)));
   }
-
-  document.getElementById("goSearch").onclick=()=>{
-    const v=document.getElementById("searchId").value.trim();
-    const msg=document.getElementById("searchMsg");
-    msg.textContent="";
-    if(!v){msg.textContent="Ingresa un ID.";return}
-    const feats=(koboAll&&koboAll.features)?koboAll.features:[];
-    const hit=feats.find(ft=>String((ft.properties||{}).id||"")==v);
-    if(!hit){msg.textContent="No se encontró.";return}
-    const c=hit.geometry&&hit.geometry.coordinates;
-    if(c&&c.length>=2){map.flyTo({center:c,zoom:16});msg.textContent="Ubicado."}
-  };
-
-  // Print
-  function metersPerPixel(lat,zoom){return 156543.03392*Math.cos(lat*Math.PI/180)/Math.pow(2,zoom)}
-  function niceLengthMeters(raw){const c=[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];let b=c[0];for(const x of c)if(x<=raw)b=x;return b}
-  function formatMeters(m){return m>=1000?(m/1000).toFixed(m%1000===0?0:1)+" km":m+" m"}
-  function updatePrintLayout(){
-    const now=new Date(),pad=n=>String(n).padStart(2,"0");
-    const fecha=`${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
-    const hora=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
-    document.getElementById("printDate").textContent=`${fecha} ${hora}`;
-    document.getElementById("metaFecha").textContent=fecha;
-    document.getElementById("metaHora").textContent=hora;
-    document.getElementById("northSvg").style.transform=`rotate(${-(map.getBearing()||0)}deg)`;
-    document.getElementById("northSvg").style.transformOrigin="50% 50%";
-    const center=map.getCenter(),zoom=map.getZoom(),mpp=metersPerPixel(center.lat,zoom);
-    const rect=document.getElementById("mapFrame").getBoundingClientRect();
-    const scaleDen=Math.round(mpp*(rect.width/(277/25.4))/0.0254);
-    document.getElementById("scaleRatio").textContent=`1:${scaleDen.toLocaleString("es-GT")}`;
-    document.getElementById("metaEscala").textContent=`1:${scaleDen.toLocaleString("es-GT")}`;
-    document.getElementById("metaZoom").textContent=zoom.toFixed(2);
-    document.getElementById("metaBase").textContent=baseName.textContent;
-    const pxPerMm=rect.width/277,maxBarPx=pxPerMm*70,rawLen=mpp*maxBarPx,niceLen=niceLengthMeters(rawLen),barPx=Math.min(maxBarPx,niceLen/mpp);
-    const bar=document.getElementById("scaleBar");bar.innerHTML="";
-    for(let i=0;i<4;i++){const d=document.createElement("div");d.style.cssText=`width:${barPx/4}px;height:100%;background:${i%2===0?"#000":"#fff"}`;bar.appendChild(d)}
-    document.getElementById("scaleLabel").textContent=formatMeters(niceLen);
-  }
-  function printPDF(){document.body.classList.add("print-mode");map.resize();setTimeout(()=>{updatePrintLayout();window.print()},280)}
-  window.addEventListener("afterprint",()=>{document.body.classList.remove("print-mode");map.resize()});
-  document.getElementById("printBtn").onclick=printPDF;
-
-  async function loadResumen(){try{const r=await fetch(RESUMEN_URL,{cache:"no-store"});if(!r.ok)return null;return await r.json()}catch{return null}}
-
-  map.on("load",async()=>{
-    showBasemap("sat");
-    const [config,resumen]=await Promise.all([loadConfig(),loadResumen()]);
-    rebuildLegend(config);
-    layersUI.innerHTML="";
-    (config.groups||[]).forEach(g=>{(g.layers||[]).forEach(l=>{if((l.type||"").toLowerCase()==="geojson")layersUI.appendChild(makeLayerUI(g.name||"Capas",l))})});
-    try{await loadKobo()}catch(e){console.error(e);statusBox.textContent="No se pudieron cargar los puntos."}
-    const n=(koboAll&&koboAll.features)?koboAll.features.length:0;
-    const upd=resumen&&resumen.ultima_actualizacion?resumen.ultima_actualizacion:"—";
-    topMeta.textContent=`Actualización: ${upd} · Registros: ${n}`;
+  const ms=$('fMunicipio'),is=$('fInstitucion');
+  [...munis].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'})).forEach(v=>{
+    const o=document.createElement('option');o.value=v;o.textContent=v;ms.appendChild(o);
   });
+  [...insts].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'})).forEach(v=>{
+    const o=document.createElement('option');o.value=v;o.textContent=v;is.appendChild(o);
+  });
+  const dates=gj.features.map(ft=>String((ft.properties||{}).fecha_actividad||'')).filter(Boolean).sort();
+  if(dates.length){$('fDesde').min=$('fHasta').min=dates[0];$('fDesde').max=$('fHasta').max=dates.at(-1);}
+}
+
+function populateMicrocuencas(gj){
+  const sel=$('fMicrocuenca');
+  const nombres=[...new Set((gj.features||[]).map(ft=>ft.properties?.Nombre||'').filter(Boolean))].sort();
+  nombres.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
+}
+
+// ═══════════════════════════════════════════════
+// LOAD DATA
+// ═══════════════════════════════════════════════
+async function loadKobo(){
+  $('statusBox').textContent='Cargando registros…';
+  const r=await fetch(KOBO_URL,{cache:'no-store'});
+  if(!r.ok) throw new Error('Error cargando puntos');
+  koboAll=await r.json();
+  const n=(koboAll.features||[]).length;
+  $('koboShown').textContent=n; $('koboTotal').textContent=n;
+  $('kReg').textContent=fmtN(n);
+  populateFilters(koboAll);
+
+  if(!map.getSource('kobo')){
+    map.addSource('kobo',{type:'geojson',data:koboAll});
+    map.addLayer({
+      id:'kobo-points',type:'circle',source:'kobo',
+      paint:{
+        'circle-color':'rgba(47,174,120,0.88)',
+        'circle-radius':['interpolate',['linear'],['zoom'],8,5,11,7,14,9,17,12],
+        'circle-stroke-color':'rgba(255,255,255,0.90)',
+        'circle-stroke-width':1.5
+      }
+    });
+    map.on('click','kobo-points',e=>{
+      const f=e.features&&e.features[0];if(!f)return;
+      new maplibregl.Popup({maxWidth:'400px',closeButton:true,offset:14})
+        .setLngLat(e.lngLat).setHTML(buildPopupHTML(f.properties||{})).addTo(map);
+    });
+    map.on('mouseenter','kobo-points',()=>map.getCanvas().style.cursor='pointer');
+    map.on('mouseleave','kobo-points',()=>map.getCanvas().style.cursor='');
+    // Fit to points
+    const b=new maplibregl.LngLatBounds();
+    for(const ft of (koboAll.features||[])){if(ft.geometry?.type==='Point')b.extend(ft.geometry.coordinates);}
+    if(!b.isEmpty()) map.fitBounds(b,{padding:40,maxZoom:13});
+  }
+
+  const muniSet=new Set((koboAll.features||[]).map(ft=>humanize(tokenize((ft.properties||{}).municipios||(ft.properties||{}).municipio)[0]||'')).filter(Boolean));
+  $('kMunis').textContent=fmtN(muniSet.size);
+  $('statusBox').textContent=`${fmtN(n)} jornadas de reforestacion cargadas.`;
+}
+
+async function loadMunicipios(){
+  const r=await fetch(MUNICIPIOS_URL,{cache:'no-store'});
+  if(!r.ok) return;
+  const gj=await r.json();
+  if(!map.getSource('municipios')){
+    map.addSource('municipios',{type:'geojson',data:gj});
+    // Fill
+    map.addLayer({id:'municipios-fill',type:'fill',source:'municipios',
+      paint:{'fill-color':'rgba(44,165,141,.12)','fill-opacity':1},
+      layout:{visibility:'visible'}
+    });
+    // Outline
+    map.addLayer({id:'municipios-line',type:'line',source:'municipios',
+      paint:{'line-color':'#2ca58d','line-width':1.5,'line-opacity':0.85},
+      layout:{visibility:'visible'}
+    });
+    // Labels
+    map.addLayer({id:'municipios-labels',type:'symbol',source:'municipios',
+      layout:{
+        'text-field':['get','municipio'],
+        'text-font':['Open Sans Regular','Arial Unicode MS Regular'],
+        'text-size':11,'text-anchor':'center',
+        'visibility':'visible'
+      },
+      paint:{'text-color':'#0d4f3c','text-halo-color':'rgba(255,255,255,0.85)','text-halo-width':1.5}
+    });
+    // Click popup for municipios
+    map.on('click','municipios-fill',e=>{
+      if(e.features&&e.features.length&&map.getLayoutProperty('municipios-fill','visibility')==='visible'){
+        const muni=e.features[0].properties?.municipio||'—';
+        // Count kobo points in this municipio
+        const current=map.getSource('kobo')?._data||koboAll;
+        const cnt=(current?.features||[]).filter(ft=>humanize(tokenize((ft.properties||{}).municipios||(ft.properties||{}).municipio||'')[0]||'')===(muni)).length;
+        new maplibregl.Popup({maxWidth:'260px',offset:10}).setLngLat(e.lngLat)
+          .setHTML(`<div class="popup-card"><div class="popup-title">${esc(muni)}</div><div class="popup-row"><b>Jornadas registradas:</b> ${cnt}</div></div>`)
+          .addTo(map);
+      }
+    });
+    map.on('mouseenter','municipios-fill',()=>map.getCanvas().style.cursor='crosshair');
+    map.on('mouseleave','municipios-fill',()=>map.getCanvas().style.cursor='');
+  }
+  // Ensure kobo points render above municipios
+  if(map.getLayer('kobo-points')) map.moveLayer('kobo-points');
+}
+
+async function loadMicrocuencas(){
+  const r=await fetch(MICROCUENCAS_URL,{cache:'no-store'});
+  if(!r.ok) return;
+  microcuencasData=await r.json();
+  populateMicrocuencas(microcuencasData);
+
+  if(!map.getSource('microcuencas')){
+    map.addSource('microcuencas',{type:'geojson',data:microcuencasData});
+    map.addLayer({id:'microcuencas-fill',type:'fill',source:'microcuencas',
+      paint:{'fill-color':'rgba(29,111,164,.10)','fill-opacity':1},
+      layout:{visibility:'none'}
+    });
+    map.addLayer({id:'microcuencas-line',type:'line',source:'microcuencas',
+      paint:{'line-color':'#1d6fa4','line-width':1.5,'line-opacity':0.80,'line-dasharray':[4,2]},
+      layout:{visibility:'none'}
+    });
+    // Highlight layer for selected microcuenca
+    map.addLayer({id:'microcuencas-highlight',type:'fill',source:'microcuencas',
+      filter:['==',['get','Nombre'],''],
+      paint:{'fill-color':'rgba(29,111,164,.28)','fill-opacity':1},
+      layout:{visibility:'none'}
+    });
+    // Labels
+    map.addLayer({id:'microcuencas-labels',type:'symbol',source:'microcuencas',
+      layout:{
+        'text-field':['get','Nombre'],
+        'text-font':['Open Sans Regular','Arial Unicode MS Regular'],
+        'text-size':10,'text-anchor':'center',
+        'visibility':'none'
+      },
+      paint:{'text-color':'#1d6fa4','text-halo-color':'rgba(255,255,255,0.85)','text-halo-width':1.5}
+    });
+    // Click popup
+    map.on('click','microcuencas-fill',e=>{
+      if(e.features&&e.features.length&&map.getLayoutProperty('microcuencas-fill','visibility')==='visible'){
+        const props=e.features[0].properties||{};
+        new maplibregl.Popup({maxWidth:'240px',offset:10}).setLngLat(e.lngLat)
+          .setHTML(`<div class="popup-card"><div class="popup-title">Microcuenca ${esc(props.Nombre||'—')}</div><div class="popup-row"><b>No.:</b> ${esc(props.no||'—')}</div><div class="popup-row"><b>Area:</b> ${esc(props['Área']||'—')}</div></div>`)
+          .addTo(map);
+      }
+    });
+    map.on('mouseenter','microcuencas-fill',()=>map.getCanvas().style.cursor='crosshair');
+    map.on('mouseleave','microcuencas-fill',()=>map.getCanvas().style.cursor='');
+    // Ensure kobo points on top
+    if(map.getLayer('kobo-points')) map.moveLayer('kobo-points');
+  }
+}
+
+// Toggle layers
+function setMunicipiosVis(on){
+  ['municipios-fill','municipios-line','municipios-labels'].forEach(id=>{
+    if(map.getLayer(id)) map.setLayoutProperty(id,'visibility',on?'visible':'none');
+  });
+}
+
+function setMicrocuencasVis(on){
+  ['microcuencas-fill','microcuencas-line','microcuencas-labels'].forEach(id=>{
+    if(map.getLayer(id)) map.setLayoutProperty(id,'visibility',on?'visible':'none');
+  });
+  if(!on&&map.getLayer('microcuencas-highlight'))
+    map.setLayoutProperty('microcuencas-highlight','visibility','none');
+  if(!on) $('fMicrocuenca').value='';
+}
+
+// ═══════════════════════════════════════════════
+// UI EVENTS
+// ═══════════════════════════════════════════════
+$('applyBtn').addEventListener('click',applyFilters);
+$('resetBtn').addEventListener('click',resetFilters);
+
+[$('fBuscar'),$('fDesde'),$('fHasta')].forEach(el=>{
+  el.addEventListener('change',applyFilters);
+  if(el.type==='search') el.addEventListener('input',()=>setTimeout(applyFilters,180));
+});
+[$('fMunicipio'),$('fInstitucion'),$('fMicrocuenca')].forEach(el=>{
+  el.addEventListener('change',applyFilters);
+});
+
+document.querySelectorAll('.year-chip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    const yr=chip.dataset.year;
+    if(activeYear===yr||yr==='all'){
+      activeYear=null;
+      document.querySelectorAll('.year-chip').forEach(c=>c.classList.remove('active'));
+    } else {
+      activeYear=yr;
+      document.querySelectorAll('.year-chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+    }
+    applyFilters();
+  });
+});
+
+$('chkMunicipios').addEventListener('change',e=>{
+  if(e.target.checked){
+    if(!map.getSource('municipios')) loadMunicipios().then(()=>setMunicipiosVis(true));
+    else setMunicipiosVis(true);
+  } else {
+    setMunicipiosVis(false);
+  }
+});
+
+$('chkMicrocuencas').addEventListener('change',e=>{
+  if(e.target.checked){
+    if(!map.getSource('microcuencas')) loadMicrocuencas().then(()=>setMicrocuencasVis(true));
+    else setMicrocuencasVis(true);
+  } else {
+    setMicrocuencasVis(false);
+    applyFilters();
+  }
+});
+
+$('goSearch').addEventListener('click',()=>{
+  const v=$('searchId').value.trim();
+  const msg=$('searchMsg');
+  msg.style.display='none';
+  if(!v) return;
+  const feats=(koboAll&&koboAll.features)||[];
+  const hit=feats.find(ft=>String((ft.properties||{}).id||'')==v);
+  if(!hit){msg.textContent='No se encontro el ID especificado.';msg.style.display='block';return;}
+  const c=hit.geometry?.coordinates;
+  if(c&&c.length>=2){map.flyTo({center:c,zoom:16});msg.textContent='Registro ubicado correctamente.';msg.style.display='block';}
+});
+
+// ═══════════════════════════════════════════════
+// PRINT
+// ═══════════════════════════════════════════════
+function metersPerPixel(lat,zoom){return 156543.03392*Math.cos(lat*Math.PI/180)/Math.pow(2,zoom)}
+function niceLengthMeters(raw){const c=[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000];let b=c[0];for(const x of c)if(x<=raw)b=x;return b}
+function formatMeters(m){return m>=1000?(m/1000).toFixed(m%1000===0?0:1)+' km':m+' m'}
+function updatePrintLayout(){
+  const now=new Date(),pad=n=>String(n).padStart(2,'0');
+  const fecha=`${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+  const hora=`${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  $('printDate').textContent=`${fecha} ${hora}`;
+  $('metaFecha').textContent=fecha; $('metaHora').textContent=hora;
+  $('northSvg').style.transform=`rotate(${-(map.getBearing()||0)}deg)`;
+  $('northSvg').style.transformOrigin='50% 50%';
+  const center=map.getCenter(),zoom=map.getZoom(),mpp=metersPerPixel(center.lat,zoom);
+  const rect=$('mapWrap').getBoundingClientRect();
+  const scaleDen=Math.round(mpp*(rect.width/(277/25.4))/0.0254);
+  $('scaleRatio').textContent=`1:${scaleDen.toLocaleString('es-GT')}`;
+  $('metaEscala').textContent=`1:${scaleDen.toLocaleString('es-GT')}`;
+  $('metaZoom').textContent=zoom.toFixed(2); $('metaBase').textContent=$('baseName').textContent;
+  const pxPerMm=rect.width/277,maxBarPx=pxPerMm*70,rawLen=mpp*maxBarPx,niceLen=niceLengthMeters(rawLen),barPx=Math.min(maxBarPx,niceLen/mpp);
+  const bar=$('scaleBar');bar.innerHTML='';
+  for(let i=0;i<4;i++){const d=document.createElement('div');d.style.cssText=`width:${barPx/4}px;height:100%;background:${i%2===0?'#000':'#fff'}`;bar.appendChild(d);}
+  $('scaleLabel').textContent=formatMeters(niceLen);
+}
+$('printBtn').onclick=()=>{document.body.classList.add('print-mode');map.resize();setTimeout(()=>{updatePrintLayout();window.print();},280)};
+window.addEventListener('afterprint',()=>{document.body.classList.remove('print-mode');map.resize();});
+
+// ═══════════════════════════════════════════════
+// INIT ON MAP LOAD
+// ═══════════════════════════════════════════════
+map.on('load',async()=>{
+  showBasemap('sat');
+  try {
+    await loadKobo();
+  } catch(e){
+    console.error(e);
+    $('statusBox').textContent='Error al cargar los registros. Verifica la conexion.';
+  }
+  // Load municipios by default (checkbox is checked)
+  try { await loadMunicipios(); } catch(e){ console.warn('Municipios no disponibles',e); }
+  // Preload microcuencas data silently for the dropdown (don't show layer yet)
+  try {
+    const r=await fetch(MICROCUENCAS_URL,{cache:'no-store'});
+    if(r.ok){
+      microcuencasData=await r.json();
+      populateMicrocuencas(microcuencasData);
+    }
+  } catch(e){ console.warn('Microcuencas no disponibles',e); }
+
+  try{
+    const res=await fetch(RESUMEN_URL,{cache:'no-store'});
+    if(res.ok){
+      const data=await res.json();
+    }
+  }catch(_){}
+});
 </script>
 </body>
 </html>
