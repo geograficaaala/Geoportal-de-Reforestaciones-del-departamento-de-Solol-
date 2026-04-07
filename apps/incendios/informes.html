@@ -97,6 +97,13 @@
     .mini .v{font-size:15px;font-weight:800;color:var(--fire2)}
     .hint{font-size:11px;color:var(--muted);background:rgba(255,255,255,.62);border:1px dashed rgba(180,80,20,.18);border-radius:10px;padding:8px 10px;line-height:1.35}
     .alert{font-size:11px;color:#92400e;background:#fffbeb;border:1px solid #fcd34d;border-radius:10px;padding:8px 10px;line-height:1.3}
+    /* MONTH CHIPS */
+    .month-chips-wrap{display:flex;flex-direction:column;gap:5px}
+    .month-chips{display:flex;gap:5px;flex-wrap:wrap}
+    .month-chip{display:inline-flex;align-items:center;justify-content:center;padding:4px 9px;border:1px solid rgba(180,80,20,.22);border-radius:999px;background:#fff;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;transition:all .13s;white-space:nowrap}
+    .month-chip:hover{background:rgba(254,215,170,.5);border-color:var(--fire2);color:var(--fire2)}
+    .month-chip.active{background:linear-gradient(135deg,var(--fire2),var(--fire3));border-color:var(--fire2);color:#fff;box-shadow:0 3px 10px rgba(234,88,12,.25)}
+    .month-chips-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.02em}
 
     /* PREVIEW */
     .preview-shell{padding:12px;display:grid;gap:10px}
@@ -224,6 +231,10 @@
           <label>Fecha final</label>
           <input type="date" id="hasta"/>
         </div>
+      </div>
+      <div class="month-chips-wrap" style="margin-top:8px">
+        <span class="month-chips-label">Acceso rapido por mes (temporada de incendios)</span>
+        <div class="month-chips" id="monthChips"></div>
       </div>
       <div class="field" style="margin-top:8px">
         <label>Zona de analisis</label>
@@ -635,10 +646,59 @@ function withBusy(buttons, working, label){
 /* =============================================
    GEO LAYERS — point-in-polygon zone assignment
    ============================================= */
+/* =============================================
+   REPO BASE DETECTION (same pattern as reforestacion)
+   ============================================= */
+function detectRepoBase(){
+  try{
+    const path=location.pathname||"";
+    const host=location.hostname||"";
+    const parts=path.split("/").filter(Boolean);
+    if(host.endsWith("github.io")&&parts.length) return "/"+parts[0];
+    return "";
+  }catch(_){return "";}
+}
+const REPO_BASE=detectRepoBase();
+const REMOTE_PAGES_BASE="https://geograficaaala.github.io/Geoportal-de-Reforestaciones-del-departamento-de-Solol-";
+const REMOTE_RAW_BASE="https://raw.githubusercontent.com/geograficaaala/Geoportal-de-Reforestaciones-del-departamento-de-Solol-/refs/heads/main";
+
 const LAYER_SOURCES = {
-  muni:  { url:"./data/municipios_solola.geojson",    label:"Municipio",        nameFields:["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","NAME","name"] },
-  micro: { url:"./data/microcuencas_atitlan.geojson", label:"Microcuenca",      nameFields:["MICROCUENCA","microcuenca","NOMBRE","Nombre","nombre","NAME","name"] },
-  ap:    { url:"./data/areas_protegidas.geojson",     label:"Area protegida",   nameFields:["NOM_AREA","NOMBRE","Nombre","nombre","NAME","name"] }
+  muni:  {
+    urls:[
+      `${REPO_BASE}/apps/incendios/data/municipios_solola.geojson`,
+      "./data/municipios_solola.geojson",
+      "../incendios/data/municipios_solola.geojson",
+      "../../apps/incendios/data/municipios_solola.geojson",
+      `${REMOTE_PAGES_BASE}/apps/incendios/data/municipios_solola.geojson`,
+      `${REMOTE_RAW_BASE}/apps/incendios/data/municipios_solola.geojson`
+    ],
+    label:"Municipio",
+    nameFields:["NOMBRE","Nombre","nombre","MUNICIPIO","municipio","NOM_MUNI","NAME","name"]
+  },
+  micro: {
+    urls:[
+      `${REPO_BASE}/apps/incendios/data/microcuencas_atitlan.geojson`,
+      "./data/microcuencas_atitlan.geojson",
+      "../incendios/data/microcuencas_atitlan.geojson",
+      "../../apps/incendios/data/microcuencas_atitlan.geojson",
+      `${REMOTE_PAGES_BASE}/apps/incendios/data/microcuencas_atitlan.geojson`,
+      `${REMOTE_RAW_BASE}/apps/incendios/data/microcuencas_atitlan.geojson`
+    ],
+    label:"Microcuenca",
+    nameFields:["MICROCUENCA","microcuenca","NOMBRE","Nombre","nombre","NAME","name"]
+  },
+  ap: {
+    urls:[
+      `${REPO_BASE}/apps/incendios/data/areas_protegidas.geojson`,
+      "./data/areas_protegidas.geojson",
+      "../incendios/data/areas_protegidas.geojson",
+      "../../apps/incendios/data/areas_protegidas.geojson",
+      `${REMOTE_PAGES_BASE}/apps/incendios/data/areas_protegidas.geojson`,
+      `${REMOTE_RAW_BASE}/apps/incendios/data/areas_protegidas.geojson`
+    ],
+    label:"Area protegida",
+    nameFields:["NOM_AREA","NOMBRE","Nombre","nombre","NAME","name"]
+  }
 };
 
 const polyCache = {};  // mode -> { items:[{name,bbox,poly}], label }
@@ -677,12 +737,17 @@ async function loadLayer(mode){
   if(polyCache[mode]) return polyCache[mode];
   const src = LAYER_SOURCES[mode];
   let gj;
-  try{
-    const r = await fetch(src.url,{cache:"force-cache"});
-    if(!r.ok) throw new Error("HTTP "+r.status);
-    gj = await r.json();
-  }catch(e){
-    console.warn("No se pudo cargar capa",mode,e.message);
+  const errors=[];
+  for(const url of src.urls){
+    try{
+      const r = await fetch(url,{cache:"force-cache"});
+      if(!r.ok){errors.push(`${url} → HTTP ${r.status}`);continue;}
+      gj = await r.json();
+      break;
+    }catch(e){errors.push(`${url} → ${e.message}`);}
+  }
+  if(!gj){
+    console.warn("No se pudo cargar capa",mode,errors.slice(0,3).join(" | "));
     polyCache[mode] = {items:[], label:src.label};
     return polyCache[mode];
   }
@@ -1668,6 +1733,58 @@ async function exportWord(){
 
 
 /* =============================================
+   MONTH CHIPS — temporada de incendios nov 2025 → abr 2026
+   ============================================= */
+const SEASON_MONTHS = [
+  {label:"Nov 2025", desde:"2025-11-01", hasta:"2025-11-30"},
+  {label:"Dic 2025", desde:"2025-12-01", hasta:"2025-12-31"},
+  {label:"Ene 2026", desde:"2026-01-01", hasta:"2026-01-31"},
+  {label:"Feb 2026", desde:"2026-02-01", hasta:"2026-02-28"},
+  {label:"Mar 2026", desde:"2026-03-01", hasta:"2026-03-31"},
+  {label:"Abr 2026", desde:"2026-04-01", hasta:"2026-04-30"}
+];
+
+function buildMonthChips(){
+  const wrap = document.getElementById("monthChips");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+  // "Todo el periodo" chip
+  const all = document.createElement("button");
+  all.type = "button";
+  all.className = "month-chip";
+  all.textContent = "Todo el período";
+  all.addEventListener("click", ()=>{
+    // Set full season range
+    els.desde.value = "2025-11-01";
+    els.hasta.value = new Date().toISOString().slice(0,10);
+    wrap.querySelectorAll(".month-chip").forEach(c=>c.classList.remove("active"));
+    all.classList.add("active");
+  });
+  wrap.appendChild(all);
+
+  SEASON_MONTHS.forEach(m=>{
+    // Only show months up to current date
+    const mesStart = new Date(m.desde);
+    if(mesStart > new Date()) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "month-chip";
+    btn.textContent = m.label;
+    btn.dataset.desde = m.desde;
+    btn.dataset.hasta = m.hasta;
+    btn.addEventListener("click",()=>{
+      wrap.querySelectorAll(".month-chip").forEach(c=>c.classList.remove("active"));
+      btn.classList.add("active");
+      els.desde.value = m.desde;
+      // hasta = min(mes fin, today)
+      const hoy = new Date().toISOString().slice(0,10);
+      els.hasta.value = m.hasta > hoy ? hoy : m.hasta;
+    });
+    wrap.appendChild(btn);
+  });
+}
+
+/* =============================================
    INIT
    ============================================= */
 // Seed dates: default to last 30 days
@@ -1677,6 +1794,9 @@ async function exportWord(){
   if(!els.desde.value) els.desde.value = d30.toISOString().slice(0,10);
   if(!els.hasta.value) els.hasta.value = now.toISOString().slice(0,10);
 })();
+
+// Build month chips
+buildMonthChips();
 
 // When zona type changes: load that layer, populate item selector, clear old selection
 els.zona.addEventListener("change", async ()=>{
@@ -1697,11 +1817,27 @@ els.zona.addEventListener("change", async ()=>{
 els.btnCSV.addEventListener("click",exportCSV);
 els.btnJSON.addEventListener("click",exportJSON);
 
-// Preload default layer (municipios) on page load so selector is ready
+// Preload all layers on startup
 (async()=>{
-  const layerData = await loadLayer("muni");
-  populateZonaItem(layerData);
-  if(layerData.items.length) els.chipData.textContent = `Capa lista: ${layerData.items.length} municipios`;
+  try{
+    const [muniData, microData, apData] = await Promise.all([
+      loadLayer("muni"),
+      loadLayer("micro"),
+      loadLayer("ap")
+    ]);
+    // Default: show municipio layer in selector
+    populateZonaItem(muniData);
+    const bits=[];
+    if(muniData.items.length) bits.push(`${muniData.items.length} municipios`);
+    if(microData.items.length) bits.push(`${microData.items.length} microcuencas`);
+    if(apData.items.length) bits.push(`${apData.items.length} áreas protegidas`);
+    els.chipData.textContent = bits.length
+      ? `Capas listas: ${bits.join(" · ")}`
+      : "Capas no disponibles — se usará zona de la API";
+  }catch(e){
+    console.warn("Error precargando capas:", e.message);
+    els.chipData.textContent = "Sin capas precargadas";
+  }
 })();
 
 })();
