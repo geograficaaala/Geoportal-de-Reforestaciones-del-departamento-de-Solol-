@@ -17400,6 +17400,375 @@
         "foto_actividad_url": "",
         "observaciones": ""
       }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.149564,
+          14.748101
+        ]
+      },
+      "properties": {
+        "id": "677293056",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-22",
+        "submission_time": "2026-02-22T06:56:45",
+        "encuestador": "José Lisandro Alvarado Pol",
+        "municipios": [
+          "panajachel"
+        ],
+        "comunidad": "Caserío San Luis",
+        "sitio_nombre": "Terreno de don Lenchi",
+        "instituciones": [
+          "amigos_lago_atitlan"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 23,
+        "tenencia": "privada",
+        "mujeres": 2,
+        "hombres": 6,
+        "ninas": 0,
+        "ninos": 0,
+        "total_participantes": 8,
+        "total_plantas": 100,
+        "precision_gps": 20.9,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.120204,
+          14.740749
+        ]
+      },
+      "properties": {
+        "id": "677672532",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-22",
+        "submission_time": "2026-02-23T00:16:31",
+        "encuestador": "José Lisandro Alvarado Pol",
+        "municipios": [
+          "san_andres_semetabaj"
+        ],
+        "comunidad": "Panimaché",
+        "sitio_nombre": "Parcelamiento 01",
+        "instituciones": [
+          "amigos_lago_atitlan"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 34,
+        "tenencia": "comunal",
+        "mujeres": 2,
+        "hombres": 7,
+        "ninas": 20,
+        "ninos": 17,
+        "total_participantes": 46,
+        "total_plantas": 367,
+        "precision_gps": 0.0,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.211577,
+          14.800931
+        ]
+      },
+      "properties": {
+        "id": "679327842",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-24",
+        "submission_time": "2026-02-24T21:23:56",
+        "encuestador": "Lisandro",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Chuaxic",
+        "sitio_nombre": "Caserío Chui Manzana",
+        "instituciones": [
+          "amigos_lago_atitlan"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 34,
+        "tenencia": "comunal",
+        "mujeres": 2,
+        "hombres": 1,
+        "ninas": 34,
+        "ninos": 10,
+        "total_participantes": 47,
+        "total_plantas": 367,
+        "precision_gps": 0.0,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": "Los árboles tenian plaga"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.160046,
+          14.741729
+        ]
+      },
+      "properties": {
+        "id": "679342035",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-24",
+        "submission_time": "2026-02-24T22:07:21",
+        "encuestador": "Laura Mendoza",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Monte mercedes",
+        "sitio_nombre": "Sacsiguan",
+        "instituciones": [
+          "conap_drac"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 10000,
+        "tenencia": "privada",
+        "mujeres": 20,
+        "hombres": 30,
+        "ninas": 0,
+        "ninos": 0,
+        "total_participantes": 50,
+        "total_plantas": 1111,
+        "precision_gps": 100.0,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679342035/attachments/attGLNz6xZF4DHWswL2DayB2/",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159716,
+          14.743467
+        ]
+      },
+      "properties": {
+        "id": "679342069",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-24",
+        "submission_time": "2026-02-24T22:07:33",
+        "encuestador": "Eliceo Locon",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Aldea San Juan Argueta",
+        "sitio_nombre": "",
+        "instituciones": [
+          "inab"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 500,
+        "tenencia": "privada",
+        "mujeres": 5,
+        "hombres": 3,
+        "ninas": 10,
+        "ninos": 15,
+        "total_participantes": 33,
+        "total_plantas": 180,
+        "precision_gps": 20.4,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159817,
+          14.743407
+        ]
+      },
+      "properties": {
+        "id": "679342598",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-03",
+        "submission_time": "2026-02-24T22:08:55",
+        "encuestador": "María Benito",
+        "municipios": [
+          "solola"
+        ],
+        "comunidad": "Solola",
+        "sitio_nombre": "Chuaxiq",
+        "instituciones": [
+          "maga"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 200,
+        "tenencia": "comunal",
+        "mujeres": 23,
+        "hombres": 32,
+        "ninas": 2,
+        "ninos": 1,
+        "total_participantes": 58,
+        "total_plantas": 200,
+        "precision_gps": 14.5,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679342598/attachments/attsdumSVXGQZPtMdJEsduRz/",
+        "foto_actividad_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679342598/attachments/atte4oEDNH9oX2To2JmWfxLi/",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159328,
+          14.760693
+        ]
+      },
+      "properties": {
+        "id": "679342950",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-24",
+        "submission_time": "2026-02-24T22:10:16",
+        "encuestador": "Mervin Pérez",
+        "municipios": [
+          "panajachel"
+        ],
+        "comunidad": "Casco urbano",
+        "sitio_nombre": "",
+        "instituciones": [
+          "amsclae"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 300,
+        "tenencia": "privada",
+        "mujeres": 2,
+        "hombres": 5,
+        "ninas": 1,
+        "ninos": 2,
+        "total_participantes": 10,
+        "total_plantas": 30,
+        "precision_gps": 0.0,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159328,
+          14.760093
+        ]
+      },
+      "properties": {
+        "id": "679343409",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-24",
+        "submission_time": "2026-02-24T22:11:13",
+        "encuestador": "Edy Otzin",
+        "municipios": [
+          "santa_maria_visitacion"
+        ],
+        "comunidad": "Montecristo",
+        "sitio_nombre": "Montecristo",
+        "instituciones": [
+          "vivamos_mejor"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 425,
+        "tenencia": "privada",
+        "mujeres": 5,
+        "hombres": 3,
+        "ninas": 18,
+        "ninos": 16,
+        "total_participantes": 42,
+        "total_plantas": 40,
+        "precision_gps": 0.0,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "https://kf.kobotoolbox.org/api/v2/assets/aVgHNW8FwpBj9LacCCi5rx/data/679343409/attachments/attU6WeqTTZtpVi8ATuWMcN5/",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -91.159328,
+          14.760693
+        ]
+      },
+      "properties": {
+        "id": "679343616",
+        "fuente": "kobo",
+        "fecha_actividad": "2026-02-24",
+        "submission_time": "2026-02-24T22:11:49",
+        "encuestador": "Ronny Sarbelio Velasco Maldonado",
+        "municipios": [
+          "santa_lucia_utatlan"
+        ],
+        "comunidad": "Novillero",
+        "sitio_nombre": "",
+        "instituciones": [
+          "maga"
+        ],
+        "institucion_resp_otro": "",
+        "area_m2": 1000,
+        "tenencia": "privada",
+        "mujeres": 2,
+        "hombres": 2,
+        "ninas": 1,
+        "ninos": 1,
+        "total_participantes": 6,
+        "total_plantas": 1000,
+        "precision_gps": 0.0,
+        "origen_planton": "",
+        "origen_planton_otro": "",
+        "autoriza_fotos": "yes",
+        "foto_sitio_url": "",
+        "foto_actividad_url": "",
+        "observaciones": ""
+      }
     }
   ]
 }
