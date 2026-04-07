@@ -398,6 +398,7 @@
       <div class="btns-row">
         <button class="btn btn-primary" id="btnGenerar">Generar vista previa</button>
         <button class="btn btn-outline" id="btnPrint">Descargar PDF</button>
+        <button class="btn btn-soft" id="btnWORD">Descargar Word</button>
       </div>
       <div class="btns-row" style="margin-top:7px">
         <button class="btn btn-soft" id="btnCSV">Exportar CSV</button>
@@ -405,7 +406,7 @@
         <button class="btn btn-soft" id="btnRecargar" type="button">Recargar datos</button>
       </div>
       <div class="hint" style="margin-top:8px">
-        Usa <strong>Ctrl+P</strong> → <strong>Guardar como PDF</strong> y desactiva encabezados/pies del navegador.
+        Las exportaciones a <strong>PDF</strong> y <strong>Word</strong> se descargan directamente con la vista previa actual.
       </div>
     </div>
   </aside>
@@ -420,6 +421,7 @@
       <div class="btns-row">
         <button class="btn btn-primary" id="btnGenerar2">Generar vista previa</button>
         <button class="btn btn-outline" id="btnPrint2">Descargar PDF</button>
+        <button class="btn btn-soft" id="btnWORD2">Descargar Word</button>
       </div>
     </div>
     <div id="warnBox" class="alert-box" style="display:none"></div>
@@ -551,7 +553,7 @@ const els={
   secOperativo:$("secOperativo"),secGraficas:$("secGraficas"),secObservaciones:$("secObservaciones"),secTabla:$("secTabla"),
   firmante:$("firmante"),destinatario:$("destinatario"),notaTecnica:$("notaTecnica"),
   btnGenerar:$("btnGenerar"),btnGenerar2:$("btnGenerar2"),btnPrint:$("btnPrint"),btnPrint2:$("btnPrint2"),
-  btnCSV:$("btnCSV"),btnJSON:$("btnJSON"),
+  btnWORD:$("btnWORD"),btnWORD2:$("btnWORD2"),btnCSV:$("btnCSV"),btnJSON:$("btnJSON"),
   pages:$("pages"),chipData:$("chipData"),warnBox:$("warnBox"),
   mini_reg:$("mini_reg"),mini_pla:$("mini_pla"),mini_par:$("mini_par"),mini_area:$("mini_area"),mini_periodo:$("mini_periodo")
 };
@@ -1206,6 +1208,108 @@ function schedulePreview(delay=180){
   previewTimer=setTimeout(()=>{try{generatePreview();}catch(e){console.error(e);}},delay);
 }
 
+
+function buildReportBaseName(){
+  const today=new Date().toISOString().slice(0,10);
+  const parts=["informe_reforestacion",today];
+  const muni=selectedValues(els.municipio).filter(v=>v!=="__all__");
+  const micro=selectedValues(els.microcuenca).filter(v=>v!=="__all__");
+  if(muni.length===1) parts.push(slugify(muni[0]).slice(0,36));
+  if(micro.length===1) parts.push(slugify(micro[0]).slice(0,36));
+  return parts.join("_").replace(/_+/g,"_");
+}
+function setButtonsBusy(buttons,busy,label){
+  (buttons||[]).filter(Boolean).forEach(btn=>{
+    if(busy){
+      btn.dataset.prevText=btn.textContent;
+      btn.disabled=true;
+      if(label) btn.textContent=label;
+    }else{
+      btn.disabled=false;
+      if(btn.dataset.prevText) btn.textContent=btn.dataset.prevText;
+      delete btn.dataset.prevText;
+    }
+  });
+}
+function wait(ms){ return new Promise(resolve=>setTimeout(resolve,ms)); }
+async function waitForImages(root){
+  const imgs=[...(root?.querySelectorAll?.("img")||[])].filter(img=>!img.complete);
+  if(!imgs.length) return;
+  await Promise.all(imgs.map(img=>new Promise(resolve=>{
+    img.addEventListener("load",resolve,{once:true});
+    img.addEventListener("error",resolve,{once:true});
+  })));
+}
+function buildWordHTML(){
+  const pagesHTML=els.pages.innerHTML;
+  return `<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>${buildReportBaseName()}</title>
+<style>
+  @page { size: A4; margin: 10mm; }
+  body { font-family: "Times New Roman", Times, serif; margin: 0; color: #000; background: #fff; }
+  .pages { display: block; }
+  .page { width: auto !important; min-height: auto !important; border: none !important; box-shadow: none !important; margin: 0 0 12mm 0 !important; padding: 0 !important; page-break-after: always; break-after: page; background: #fff !important; }
+  .page:last-child { page-break-after: auto; break-after: auto; }
+  .report { font-family: "Times New Roman", Times, serif; font-size: 10.5pt; line-height: 1.55; color: #000; }
+  .report p { margin: 0 0 7pt; text-align: justify; }
+  .report ul { margin: 0 0 7pt 18pt; padding: 0; }
+  .report li { margin: 0 0 3pt; text-align: justify; }
+  .report table { width: 100%; border-collapse: collapse; font-size: 9.5pt; margin: 0 0 8pt; }
+  .report th, .report td { border: 1px solid #000; padding: 4pt 5pt; vertical-align: top; }
+  .report th { background: #f3f3f3; font-weight: 700; text-align: center; }
+  .report .small { font-size: 9pt; line-height: 1.35; }
+  .report .muted { color: #333; }
+  .report .center { text-align: center; }
+  .report .right { text-align: right; }
+  .report .section-title { font-weight: 700; text-transform: uppercase; margin: 0 0 5pt; letter-spacing: .02em; font-size: 10pt; border-bottom: 1px solid #000; padding-bottom: 2pt; }
+  .report .subsection { font-weight: 700; margin: 0 0 4pt; font-size: 10pt; }
+  .report-header { display: grid; grid-template-columns: 22mm 1fr 22mm; gap: 5mm; align-items: center; margin-bottom: 8pt; border-bottom: 1.5px solid #000; padding-bottom: 5pt; }
+  .logo-box { width: 22mm; height: 22mm; display: grid; place-items: center; border: 1px solid #ccc; overflow: hidden; background: #fff; }
+  .logo-box img { width: 100%; height: 100%; object-fit: contain; }
+  .logo-fallback { font-size: 7.5pt; text-align: center; line-height: 1.1; padding: 2mm; color: #555; }
+  .head-text { text-align: center; line-height: 1.25; }
+  .head-text .line { font-weight: 700; font-size: 10pt; text-transform: uppercase; }
+  .head-text .line.sub { font-weight: 400; text-transform: none; font-size: 9.5pt; }
+  .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6pt; margin-bottom: 7pt; }
+  .meta-item { border: 1px solid #000; padding: 4pt 5pt; }
+  .meta-item .k { font-weight: 700; display: block; font-size: 9.5pt; }
+  .meta-item .v { font-size: 9.5pt; }
+  .cover-box { border: 1px solid #000; padding: 9pt 11pt; margin-top: 9pt; margin-bottom: 6pt; }
+  .chart-wrap, .chart-box, .chart-card, .chart-container { margin: 6pt 0 8pt; border: 1px solid #ccc; padding: 8pt; background: #fff; page-break-inside: avoid; break-inside: avoid; }
+  .chart-title-rpt { font-weight: 700; font-size: 9.5pt; text-align: center; margin-bottom: 4pt; color: #333; }
+  .chart-note { font-size: 8.5pt; color: #555; line-height: 1.3; margin-top: 4pt; text-align: justify; }
+  .footer-line { margin-top: 8pt; border-top: 1px solid #000; padding-top: 3pt; display: flex; justify-content: space-between; gap: 8pt; font-size: 8.5pt; color: #000; }
+  .footer-logos-rpt { display: flex; flex-wrap: wrap; gap: 3mm; align-items: center; justify-content: center; margin-top: 6pt; padding-top: 5pt; border-top: 1px solid #ccc; }
+  .footer-logos-rpt img { max-height: 10mm; width: auto; object-fit: contain; }
+  canvas { max-width: 100% !important; height: auto !important; }
+</style>
+</head>
+<body>
+<div class="pages">${pagesHTML}</div>
+</body>
+</html>`;
+}
+async function exportWord(){
+  const btns=[els.btnWORD,els.btnWORD2];
+  setButtonsBusy(btns,true,"Descargando Word...");
+  try{
+    generatePreview();
+    await wait(220);
+    await waitForImages(els.pages);
+    const html=buildWordHTML();
+    downloadBlob(buildReportBaseName()+".doc",html,"application/msword;charset=utf-8");
+    setWarning("");
+  }catch(err){
+    console.error(err);
+    setWarning("No se pudo descargar el archivo Word. Intenta recargar la página y volver a generar la vista previa.");
+  }finally{
+    setButtonsBusy(btns,false);
+  }
+}
+
 /* ══ EXPORTS ══ */
 function csvEscape(v){const s=String(v??"");return/[",;\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
 function downloadBlob(filename,text,type){const blob=new Blob([text],{type});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),500);}
@@ -1223,12 +1327,15 @@ function exportJSON(){
 }
 
 async function exportPDF(){
+  const btns=[els.btnPrint,els.btnPrint2];
+  setButtonsBusy(btns,true,"Descargando PDF...");
   generatePreview();
   if(typeof html2pdf!=="function"){
+    setButtonsBusy(btns,false);
     setWarning("No se pudo preparar la descarga del PDF porque la librería de exportación no está disponible en este navegador.");
     return;
   }
-  const filename=`informe_reforestacion_${new Date().toISOString().slice(0,10)}.pdf`;
+  const filename=`${buildReportBaseName()}.pdf`;
   const opt={
     margin:[0,0,0,0],
     filename,
@@ -1240,11 +1347,14 @@ async function exportPDF(){
   const prevWarning=els.warnBox.textContent;
   setWarning("Preparando PDF para descarga...");
   try{
+    await waitForImages(els.pages);
     await html2pdf().set(opt).from(els.pages).save();
     setWarning(prevWarning||"");
   }catch(err){
     console.error(err);
     setWarning("No se pudo descargar el PDF. Verifica tu conexión o intenta recargar la página.");
+  }finally{
+    setButtonsBusy(btns,false);
   }
 }
 
@@ -1314,6 +1424,7 @@ async function init(){
 
 [els.btnGenerar,els.btnGenerar2].forEach(b=>b.addEventListener("click",generatePreview));
 [els.btnPrint,els.btnPrint2].forEach(b=>b.addEventListener("click",exportPDF));
+[els.btnWORD,els.btnWORD2].filter(Boolean).forEach(b=>b.addEventListener("click",exportWord));
 els.btnCSV.addEventListener("click",exportCSV);
 els.btnJSON.addEventListener("click",exportJSON);
 if(els.btnAplicarFiltros) els.btnAplicarFiltros.addEventListener("click",()=>{updateFilterSummary();generatePreview();});
