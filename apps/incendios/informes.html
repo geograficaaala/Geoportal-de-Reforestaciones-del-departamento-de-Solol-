@@ -7,6 +7,8 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <style>
     :root{
@@ -311,12 +313,11 @@
         <button class="btn btn-outline" id="btnPDF">Descargar PDF</button>
       </div>
       <div class="btns-row" style="margin-top:6px">
-        <button class="btn btn-ghost" id="btnWORD">Descargar Word</button>
         <button class="btn btn-ghost" id="btnCSV">Exportar CSV</button>
         <button class="btn btn-ghost" id="btnJSON">Exportar JSON</button>
       </div>
       <div class="hint" style="margin-top:8px">
-        El PDF se descarga directamente desde el navegador en formato A4, sin abrir la ventana de impresion.
+        El PDF se descarga directamente desde el navegador en formato A4, con texto seleccionable y gráficas embebidas.
       </div>
     </div>
 
@@ -342,7 +343,6 @@
       <div class="btns-row">
         <button class="btn btn-primary" id="btnGenerar2">Generar vista previa</button>
         <button class="btn btn-outline" id="btnPDF2">Descargar PDF</button>
-        <button class="btn btn-ghost" id="btnWORD2">Descargar Word</button>
       </div>
     </div>
 
@@ -1447,72 +1447,148 @@ function exportJSON(){
 }
 
 
+
+function pdfTextContent(el){
+  return String(el?.innerText || el?.textContent || "")
+    .replace(/ /g," ")
+    .replace(/\s+
+/g,"
+")
+    .replace(/
+{3,}/g,"
+
+")
+    .trim();
+}
+function pdfCellText(el){
+  return String(el?.innerText || el?.textContent || "")
+    .replace(/ /g," ")
+    .replace(/\s+/g," ")
+    .trim();
+}
+function pdfTableWidths(count){
+  if(count>=10) return ["auto","auto","*","*","*","*","auto","auto","auto","auto"].slice(0,count);
+  if(count===9) return ["auto","auto","*","*","*","*","auto","auto","auto"];
+  if(count===8) return ["auto","*","*","*","*","auto","auto","auto"];
+  if(count===7) return ["*","*","*","*","auto","auto","auto"];
+  if(count===6) return ["*","*","*","auto","auto","auto"];
+  if(count===5) return ["*","*","auto","auto","auto"];
+  if(count===4) return ["*","*","auto","auto"];
+  if(count===3) return ["*","auto","auto"];
+  return Array.from({length:count},()=>"*");
+}
+function pdfParseMetaGrid(el, accentColor){
+  const items=[...el.querySelectorAll('.meta-item')].map(item=>{
+    const k=pdfTextContent(item.querySelector('.k'));
+    const v=pdfTextContent(item.querySelector('.v'));
+    return {stack:[
+      {text:k, style:'metaLabel', color:accentColor},
+      {text:v||'—', style:'metaValue'}
+    ], margin:[0,0,0,6]};
+  });
+  const rows=[];
+  for(let i=0;i<items.length;i+=2) rows.push([items[i], items[i+1]||{text:''}]);
+  return {
+    margin:[0,0,0,10],
+    table:{widths:['*','*'], body:rows},
+    layout:{hLineWidth:()=>0,vLineWidth:()=>0,paddingLeft:()=>0,paddingRight:()=>10,paddingTop:()=>0,paddingBottom:()=>2}
+  };
+}
+function pdfParseTable(tableEl, accentColor){
+  const headers=[...tableEl.querySelectorAll('thead th')].map(pdfCellText);
+  const bodyRows=[...tableEl.querySelectorAll('tbody tr')].map(tr=>[...tr.children].map(pdfCellText));
+  const body=[];
+  if(headers.length) body.push(headers.map(h=>({text:h, style:'tableHeader', fillColor:'#fff1e8', color:accentColor})));
+  bodyRows.forEach(row=>body.push(row.map(c=>({text:c||'—', style:'tableCell'}))));
+  const cols=(body[0]||bodyRows[0]||[]).length || 1;
+  return {
+    margin:[0,4,0,10],
+    fontSize: cols>=9 ? 6.2 : (cols>=7 ? 6.8 : 8),
+    table:{headerRows: headers.length?1:0, widths: pdfTableWidths(cols), body: body.length?body:[[ {text:'Sin registros', colSpan:cols, alignment:'center', style:'tableCell'}, ...Array.from({length:cols-1},()=>({text:''})) ]]},
+    layout:{hLineColor:(i)=> i===0 ? '#f0d7c2' : '#f4e6db', vLineColor:()=> '#fbefe7', hLineWidth:()=>0.6, vLineWidth:()=>0.4, paddingLeft:()=>4, paddingRight:()=>4, paddingTop:()=>3, paddingBottom:()=>3, fillColor:(rowIndex)=> rowIndex>0 && rowIndex%2===0 ? '#fffaf6' : null}
+  };
+}
+function pdfImageBlock(img, fit){ const src=img?.getAttribute?.('src') || img?.src; if(!src) return null; return {image:src, fit:fit, alignment:'center', margin:[0,4,0,4]}; }
+function pdfParseChart(el){
+  const title=pdfTextContent(el.querySelector('.fig-title'));
+  const note=pdfTextContent(el.querySelector('.fig-note'));
+  const imgs=[...el.querySelectorAll('img')].filter(img=>img.getAttribute('src')||img.src);
+  const out=[];
+  if(title) out.push({text:title, style:'figureTitle'});
+  if(imgs.length===1){ const item=pdfImageBlock(imgs[0],[510,255]); if(item) out.push(item); }
+  else if(imgs.length>=2){
+    out.push({columns: imgs.slice(0,2).map(img=>({width:'*', ...pdfImageBlock(img,[245,180])})), columnGap:12, margin:[0,2,0,2]});
+    if(imgs.length>2) imgs.slice(2).forEach(img=>{ const item=pdfImageBlock(img,[510,220]); if(item) out.push(item); });
+  }
+  if(note) out.push({text:note, style:'figureNote'});
+  return out;
+}
+function pdfParseNodeList(parent, opts){
+  const out=[];
+  for(const child of [...parent.children]){
+    if(child.classList?.contains('report-header') || child.classList?.contains('footer-line') || child.classList?.contains('footer-logos-rpt')) continue;
+    if(child.classList?.contains('meta-grid')){ if(opts.includeMeta){ out.push(pdfParseMetaGrid(child, opts.accentColor)); opts.includeMeta=false; } continue; }
+    if(child.classList?.contains('chart-rpt')){ out.push(...pdfParseChart(child)); continue; }
+    if(child.tagName==='TABLE'){ out.push(pdfParseTable(child, opts.accentColor)); continue; }
+    if(child.classList?.contains('cover-box')){ const stack=pdfParseNodeList(child,{includeMeta:false, accentColor:opts.accentColor}); if(stack.length) out.push({stack, style:'box'}); continue; }
+    if(child.tagName==='P'){
+      const text=pdfTextContent(child); if(!text) continue;
+      if(child.classList.contains('section-title')) out.push({text, style: child.classList.contains('center') ? 'sectionTitleCenter' : 'sectionTitle'});
+      else if(child.classList.contains('small') || child.classList.contains('muted')) out.push({text, style:'smallText'});
+      else out.push({text, style:'paragraph'});
+      continue;
+    }
+    if(child.children?.length){ const nested=pdfParseNodeList(child,{includeMeta:false, accentColor:opts.accentColor}); if(nested.length) out.push(...nested); else { const text=pdfTextContent(child); if(text) out.push({text, style:'paragraph'}); } continue; }
+    const text=pdfTextContent(child); if(text) out.push({text, style:'paragraph'});
+  }
+  return out;
+}
+async function exportPdfFromPreview(opts){
+  const snapshot = await buildExportSnapshot();
+  if(!snapshot) throw new Error('No hay contenido listo para exportar.');
+  const pages=[...snapshot.querySelectorAll('.page')];
+  if(!pages.length) throw new Error('No se pudo preparar la vista previa del informe.');
+  if(!window.pdfMake) throw new Error('La librería de exportación PDF no está disponible.');
+  const firstHeader=pages[0].querySelector('.report-header');
+  const headerImgs=[...firstHeader?.querySelectorAll('img')||[]];
+  const headLines=[...firstHeader?.querySelectorAll('.line')||[]].map(pdfTextContent).filter(Boolean);
+  const leftLogo=headerImgs[0]?.getAttribute('src') || headerImgs[0]?.src || null;
+  const rightLogo=headerImgs[1]?.getAttribute('src') || headerImgs[1]?.src || null;
+  const footerLabel=pdfTextContent(snapshot.querySelector('.footer-line span')) || opts.footerLabel || '';
+  const content=[];
+  pages.forEach((page,pageIndex)=>{ if(pageIndex>0) content.push({text:'', pageBreak:'before', margin:[0,0,0,0]}); const report=page.querySelector('.report')||page; content.push(...pdfParseNodeList(report,{includeMeta:pageIndex===0, accentColor:opts.accentColor})); });
+  const docDefinition={
+    pageSize:'A4', pageMargins:[34,74,34,40],
+    info:{title:opts.fileName, author:'ChatGPT', subject:opts.title, creator:'ChatGPT'},
+    defaultStyle:{font:'Roboto', fontSize:9.5, lineHeight:1.24, color:'#1f2937'},
+    styles:{headerLine:{fontSize:10.5,bold:true,alignment:'center',color:opts.accentColor},headerSub:{fontSize:8.6,alignment:'center',color:'#4b5563'},sectionTitle:{fontSize:11.5,bold:true,color:opts.accentColor,margin:[0,8,0,4]},sectionTitleCenter:{fontSize:13,bold:true,color:opts.accentColor,alignment:'center',margin:[0,8,0,6]},paragraph:{fontSize:9.4,lineHeight:1.28,margin:[0,0,0,6],alignment:'justify'},smallText:{fontSize:7.8,color:'#59636e',margin:[0,0,0,5]},metaLabel:{fontSize:7.7,bold:true},metaValue:{fontSize:9.3,color:'#111827'},tableHeader:{fontSize:7.8,bold:true},tableCell:{fontSize:7.3},figureTitle:{fontSize:9,bold:true,italics:true,alignment:'center',margin:[0,6,0,4]},figureNote:{fontSize:7.6,italics:true,color:'#59636e',margin:[0,3,0,8],alignment:'center'},box:{margin:[0,4,0,10], fillColor:'#fff9f4'}},
+    header:function(){ return {margin:[34,16,34,6], columns:[leftLogo ? {image:leftLogo, fit:[54,28], margin:[0,0,6,0]} : {text:''}, {width:'*', stack:headLines.map((line,idx)=>({text:line, style: idx<2 ? 'headerLine' : 'headerSub'}))}, rightLogo ? {image:rightLogo, fit:[54,28], alignment:'right', margin:[6,0,0,0]} : {text:''}]}; },
+    footer:function(currentPage,pageCount){ return {margin:[34,8,34,10], columns:[{text:footerLabel, fontSize:7.4, color:'#6b7280'},{text:`Página ${currentPage} de ${pageCount}`, alignment:'right', fontSize:7.4, color:'#6b7280'}]}; },
+    content
+  };
+  window.pdfMake.createPdf(docDefinition).download(opts.fileName + '.pdf');
+}
+
 async function exportPDF(){
   if(state.exportingPDF) return;
   state.exportingPDF = true;
   const btns = [els.btnPDF, els.btnPDF2];
-  withBusy(btns, true, 'Descargando PDF...');
+  withBusy(btns, true, "Descargando PDF...");
   try{
-    const snapshot = await buildExportSnapshot();
-    if(!snapshot){ alert('No hay detecciones para exportar con los filtros actuales.'); return; }
-    const pages = Array.from(snapshot.querySelectorAll('.page'));
-    if(!pages.length) throw new Error('No se pudo preparar la vista previa del informe.');
-    const { jsPDF } = window.jspdf || {};
-    if(!jsPDF || !window.html2canvas) throw new Error('No se pudo cargar la librería de exportación PDF.');
-    const stage=document.createElement('div');
-    stage.style.position='fixed';
-    stage.style.left='-100000px';
-    stage.style.top='0';
-    stage.style.width='230mm';
-    stage.style.padding='0';
-    stage.style.margin='0';
-    stage.style.background='#ffffff';
-    stage.style.zIndex='-1';
-    stage.appendChild(snapshot);
-    document.body.appendChild(stage);
-    try{
-      await waitForImages(stage);
-      await settleForExport(140);
-      const pdf = new jsPDF({orientation:'p', unit:'mm', format:'a4', compress:true, putOnlyUsedFonts:true});
-      const pageW=210, pageH=297, margin=5;
-      for(let i=0;i<pages.length;i++){
-        const page=pages[i];
-        const canvas = await window.html2canvas(page, {
-          scale: 1.9,
-          useCORS: true,
-          backgroundColor: '#ffffff',
-          logging: false,
-          scrollX: 0,
-          scrollY: 0,
-          imageTimeout: 0,
-          windowWidth: page.scrollWidth,
-          windowHeight: page.scrollHeight
-        });
-        const imgData = canvas.toDataURL('image/png');
-        if(i>0) pdf.addPage('a4','p');
-        let imgW=pageW-margin*2;
-        let imgH=(canvas.height*imgW)/canvas.width;
-        if(imgH>pageH-margin*2){
-          imgH=pageH-margin*2;
-          imgW=(canvas.width*imgH)/canvas.height;
-        }
-        const x=(pageW-imgW)/2;
-        const y=(pageH-imgH)/2;
-        pdf.addImage(imgData, 'PNG', x, y, imgW, imgH, undefined, 'FAST');
-      }
-      pdf.save(buildReportBaseName()+'.pdf');
-    }finally{
-      stage.remove();
-    }
+    await exportPdfFromPreview({
+      fileName: buildReportBaseName(),
+      title: "Informe de incendios forestales",
+      accentColor: "#9a3412",
+      footerLabel: "Laboratorio SIG · Eje de Bosques · CODEMA-Sololá"
+    });
   }catch(e){
     console.error(e);
-    alert('No se pudo descargar el PDF: ' + e.message);
+    alert("No se pudo descargar el PDF: " + e.message);
   }finally{
     state.exportingPDF = false;
     withBusy(btns, false);
   }
 }
-
 
 
 function buildWordHTML(pagesHTML){
@@ -1618,7 +1694,6 @@ els.zona.addEventListener("change", async ()=>{
 // Events
 [els.btnGenerar,els.btnGenerar2].forEach(b=>b.addEventListener("click",generatePreview));
 [els.btnPDF,els.btnPDF2].forEach(b=>b.addEventListener("click",exportPDF));
-[els.btnWORD,els.btnWORD2].forEach(b=>b.addEventListener("click",exportWord));
 els.btnCSV.addEventListener("click",exportCSV);
 els.btnJSON.addEventListener("click",exportJSON);
 
