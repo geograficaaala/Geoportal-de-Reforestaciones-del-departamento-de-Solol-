@@ -1,9 +1,9 @@
 {
-  "ultima_actualizacion": "2026-04-07T01:24:58Z",
+  "ultima_actualizacion": "2025-11-30T00:00:00Z",
   "kpis": {
-    "total_boletas": 9,
-    "total_plantas": 3395,
-    "total_participantes": 300,
-    "total_area_m2": 12516
+    "total_boletas": 300,
+    "total_plantas": 55672,
+    "total_participantes": 2000,
+    "total_area_m2": 272903
   }
 }
