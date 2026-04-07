@@ -182,8 +182,8 @@
 <header>
   <div class="header-wrap">
     <div class="brand-logos">
-      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/BOSQUE.png" alt="Eje de Bosques"></a>
-      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../assets/img/CODEMA%20(2).png" alt="CODEMA Solola"></a>
+      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../BOSQUE.png" alt="Eje de Bosques"></a>
+      <a href="https://codema.solola.gob.gt" target="_blank" rel="noopener"><img src="../../CODEMA%20%282%29.png" alt="CODEMA Solola"></a>
     </div>
     <div class="title-wrap">
       <div class="title-main">Centro de Informes · Anomalias Termicas FIRMS NRT · Solola</div>
@@ -391,8 +391,8 @@
    CONFIG
    ============================================= */
 const PROXY_BASE = "https://royal-dust-e52cfirms-proxy-solola.sgeograficaaala.workers.dev";
-const LOGO_LEFT  = "../../assets/img/BOSQUE.png";
-const LOGO_RIGHT = "../../assets/img/CODEMA%20(2).png";
+const LOGO_LEFT  = "../../BOSQUE.png";
+const LOGO_RIGHT = "../../CODEMA%20%282%29.png";
 
 const INSTITUTION_LOGOS = [
   { src:"../../marn.png",    alt:"MARN"        },
@@ -494,6 +494,7 @@ async function ensurePreviewReady(){
   await generatePreview();
   return state.lastFiltered.length > 0;
 }
+
 function waitForImages(container){
   const imgs = Array.from(container.querySelectorAll('img'));
   return Promise.all(imgs.map(img => {
@@ -504,6 +505,119 @@ function waitForImages(container){
     });
   }));
 }
+const EXPORT_IMAGE_CACHE = new Map();
+function nextFrame(){ return new Promise(resolve=>requestAnimationFrame(()=>resolve())); }
+async function settleForExport(ms=280){ await sleep(ms); await nextFrame(); await nextFrame(); }
+function toAbsoluteUrl(url){ try{return new URL(url, window.location.href).href;}catch(_){return url;} }
+function blobToDataURL(blob){ return new Promise((resolve,reject)=>{ const reader=new FileReader(); reader.onload=()=>resolve(reader.result); reader.onerror=reject; reader.readAsDataURL(blob); }); }
+async function fetchImageAsDataURL(url){
+  const abs = toAbsoluteUrl(url);
+  if(EXPORT_IMAGE_CACHE.has(abs)) return EXPORT_IMAGE_CACHE.get(abs);
+  const pending = fetch(abs).then(r=>{ if(!r.ok) throw new Error(`No se pudo cargar ${abs}`); return r.blob(); }).then(blobToDataURL).catch(()=>null);
+  EXPORT_IMAGE_CACHE.set(abs, pending);
+  return pending;
+}
+async function preloadExportImages(){
+  const urls = [LOGO_LEFT, LOGO_RIGHT, ...INSTITUTION_LOGOS.map(item=>item.src)];
+  await Promise.all(urls.map(fetchImageAsDataURL));
+}
+function replaceCanvasesWithImages(root){
+  [...(root?.querySelectorAll?.('canvas')||[])].forEach((canvas, idx)=>{
+    try{
+      const img=document.createElement('img');
+      img.src=canvas.toDataURL('image/png');
+      img.alt=canvas.getAttribute('aria-label')||`Gráfica ${idx+1}`;
+      img.style.display='block';
+      img.style.width='100%';
+      img.style.maxWidth='100%';
+      img.style.height='auto';
+      canvas.replaceWith(img);
+    }catch(_){ }
+  });
+}
+async function inlineImages(root){
+  const imgs=[...(root?.querySelectorAll?.('img')||[])];
+  await Promise.all(imgs.map(async img=>{
+    const src=img.getAttribute('src')||img.currentSrc;
+    if(!src || String(src).startsWith('data:')) return;
+    const dataUrl=await fetchImageAsDataURL(src);
+    if(dataUrl) img.setAttribute('src', dataUrl);
+  }));
+}
+function dataUrlParts(dataUrl){
+  const match=String(dataUrl||'').match(/^data:([^;,]+)(;charset=[^;,]+)?;base64,(.+)$/);
+  if(!match) return null;
+  return { mime:match[1]||'application/octet-stream', base64:match[3]||'' };
+}
+function mimeExt(mime){
+  const map={'image/png':'png','image/jpeg':'jpg','image/jpg':'jpg','image/gif':'gif','image/webp':'webp','image/svg+xml':'svg'};
+  return map[mime]||'bin';
+}
+function wrapBase64(str){ return String(str||'').replace(/(.{76})/g,'$1\r\n'); }
+function utf8ToBase64(str){
+  const bytes=new TextEncoder().encode(String(str||''));
+  let binary='';
+  const chunk=0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){ binary+=String.fromCharCode(...bytes.subarray(i,i+chunk)); }
+  return btoa(binary);
+}
+function buildMhtml(html, resources){
+  const boundary=`----=NextPart_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+  const out=[];
+  out.push('MIME-Version: 1.0');
+  out.push(`Content-Type: multipart/related; boundary="${boundary}"; type="text/html"`);
+  out.push('');
+  out.push(`--${boundary}`);
+  out.push('Content-Type: text/html; charset="utf-8"');
+  out.push('Content-Transfer-Encoding: base64');
+  out.push('Content-Location: file:///C:/report.html');
+  out.push('');
+  out.push(wrapBase64(utf8ToBase64(html)));
+  out.push('');
+  (resources||[]).forEach(res=>{
+    out.push(`--${boundary}`);
+    out.push(`Content-Location: ${res.location}`);
+    out.push(`Content-Type: ${res.mime}`);
+    out.push('Content-Transfer-Encoding: base64');
+    out.push('');
+    out.push(wrapBase64(res.base64));
+    out.push('');
+  });
+  out.push(`--${boundary}--`);
+  out.push('');
+  return out.join('\r\n');
+}
+async function buildExportSnapshot(){
+  const ok = await ensurePreviewReady();
+  if(!ok) return null;
+  await settleForExport(420);
+  await waitForImages(els.pages);
+  const wrapper=document.createElement('div');
+  wrapper.className='pages';
+  wrapper.innerHTML=els.pages.innerHTML;
+  replaceCanvasesWithImages(wrapper);
+  await preloadExportImages();
+  await inlineImages(wrapper);
+  return wrapper;
+}
+async function buildWordDocument(snapshot){
+  const clone=snapshot.cloneNode(true);
+  const resources=[];
+  let idx=0;
+  for(const img of [...clone.querySelectorAll('img')]){
+    const src=img.getAttribute('src')||img.currentSrc;
+    if(!src) continue;
+    let dataUrl=src;
+    if(!String(dataUrl).startsWith('data:')) dataUrl=await fetchImageAsDataURL(dataUrl);
+    const parts=dataUrlParts(dataUrl);
+    if(!parts) continue;
+    const location=`file:///C:/report_assets/image_${idx++}.${mimeExt(parts.mime)}`;
+    img.setAttribute('src', location);
+    resources.push({location,mime:parts.mime,base64:parts.base64});
+  }
+  return buildMhtml(buildWordHTML(clone.innerHTML), resources);
+}
+
 function withBusy(buttons, working, label){
   buttons.forEach(btn => {
     if(!btn) return;
@@ -1332,39 +1446,64 @@ function exportJSON(){
     "application/json;charset=utf-8");
 }
 
+
 async function exportPDF(){
   if(state.exportingPDF) return;
   state.exportingPDF = true;
   const btns = [els.btnPDF, els.btnPDF2];
   withBusy(btns, true, 'Descargando PDF...');
   try{
-    const ok = await ensurePreviewReady();
-    if(!ok){ alert('No hay detecciones para exportar con los filtros actuales.'); return; }
-    const pages = Array.from(document.querySelectorAll('#pages .page'));
-    if(!pages.length){ alert('Genera la vista previa primero.'); return; }
-    await waitForImages(els.pages);
-    await sleep(350);
+    const snapshot = await buildExportSnapshot();
+    if(!snapshot){ alert('No hay detecciones para exportar con los filtros actuales.'); return; }
+    const pages = Array.from(snapshot.querySelectorAll('.page'));
+    if(!pages.length) throw new Error('No se pudo preparar la vista previa del informe.');
     const { jsPDF } = window.jspdf || {};
-    if(!jsPDF || !window.html2canvas) throw new Error('No se pudo cargar la libreria de exportacion PDF.');
-    const pdf = new jsPDF({orientation:'p', unit:'mm', format:'a4', compress:true, putOnlyUsedFonts:true});
-    for(let i=0;i<pages.length;i++){
-      const page = pages[i];
-      const canvas = await window.html2canvas(page, {
-        scale: 2.2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        imageTimeout: 0,
-        windowWidth: document.documentElement.scrollWidth,
-        windowHeight: document.documentElement.scrollHeight
-      });
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
-      if(i>0) pdf.addPage('a4','p');
-      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297, undefined, 'FAST');
+    if(!jsPDF || !window.html2canvas) throw new Error('No se pudo cargar la librería de exportación PDF.');
+    const stage=document.createElement('div');
+    stage.style.position='fixed';
+    stage.style.left='-100000px';
+    stage.style.top='0';
+    stage.style.width='230mm';
+    stage.style.padding='0';
+    stage.style.margin='0';
+    stage.style.background='#ffffff';
+    stage.style.zIndex='-1';
+    stage.appendChild(snapshot);
+    document.body.appendChild(stage);
+    try{
+      await waitForImages(stage);
+      await settleForExport(140);
+      const pdf = new jsPDF({orientation:'p', unit:'mm', format:'a4', compress:true, putOnlyUsedFonts:true});
+      const pageW=210, pageH=297, margin=5;
+      for(let i=0;i<pages.length;i++){
+        const page=pages[i];
+        const canvas = await window.html2canvas(page, {
+          scale: 1.9,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          scrollX: 0,
+          scrollY: 0,
+          imageTimeout: 0,
+          windowWidth: page.scrollWidth,
+          windowHeight: page.scrollHeight
+        });
+        const imgData = canvas.toDataURL('image/png');
+        if(i>0) pdf.addPage('a4','p');
+        let imgW=pageW-margin*2;
+        let imgH=(canvas.height*imgW)/canvas.width;
+        if(imgH>pageH-margin*2){
+          imgH=pageH-margin*2;
+          imgW=(canvas.width*imgH)/canvas.height;
+        }
+        const x=(pageW-imgW)/2;
+        const y=(pageH-imgH)/2;
+        pdf.addImage(imgData, 'PNG', x, y, imgW, imgH, undefined, 'FAST');
+      }
+      pdf.save(buildReportBaseName()+'.pdf');
+    }finally{
+      stage.remove();
     }
-    pdf.save(buildReportBaseName()+'.pdf');
   }catch(e){
     console.error(e);
     alert('No se pudo descargar el PDF: ' + e.message);
@@ -1374,12 +1513,15 @@ async function exportPDF(){
   }
 }
 
-function buildWordHTML(){
-  const pagesHTML = els.pages.innerHTML;
+
+
+function buildWordHTML(pagesHTML){
   return `<!doctype html>
-<html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" lang="es">
 <head>
 <meta charset="utf-8">
+<meta name="ProgId" content="Word.Document">
+<meta name="Generator" content="Microsoft Word 15">
 <title>${buildReportBaseName()}</title>
 <style>
   @page { size: A4; margin: 10mm; }
@@ -1420,7 +1562,7 @@ function buildWordHTML(){
   .footer-line { margin-top: 8pt; border-top: 1px solid #000; padding-top: 3pt; display: flex; justify-content: space-between; gap: 8pt; font-size: 8.5pt; color: #000; }
   .footer-logos-rpt { display: flex; flex-wrap: wrap; gap: 3mm; align-items: center; justify-content: center; margin-top: 6pt; padding-top: 5pt; border-top: 1px solid #ccc; }
   .footer-logos-rpt img { max-height: 10mm; width: auto; object-fit: contain; }
-  canvas { max-width: 100% !important; height: auto !important; }
+  img { max-width: 100%; }
 </style>
 </head>
 <body>
@@ -1435,11 +1577,10 @@ async function exportWord(){
   const btns = [els.btnWORD, els.btnWORD2];
   withBusy(btns, true, 'Descargando Word...');
   try{
-    const ok = await ensurePreviewReady();
-    if(!ok){ alert('No hay detecciones para exportar con los filtros actuales.'); return; }
-    await waitForImages(els.pages);
-    const html = buildWordHTML();
-    dlBlob(buildReportBaseName()+'.doc', html, 'application/msword;charset=utf-8');
+    const snapshot = await buildExportSnapshot();
+    if(!snapshot){ alert('No hay detecciones para exportar con los filtros actuales.'); return; }
+    const mhtml = await buildWordDocument(snapshot);
+    dlBlob(buildReportBaseName()+'.doc', '\ufeff'+mhtml, 'application/msword;charset=utf-8');
   }catch(e){
     console.error(e);
     alert('No se pudo descargar el archivo Word: ' + e.message);
@@ -1448,6 +1589,7 @@ async function exportWord(){
     withBusy(btns, false);
   }
 }
+
 
 /* =============================================
    INIT
