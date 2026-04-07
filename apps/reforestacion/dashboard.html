@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
@@ -15,710 +15,444 @@
 
   <style>
     :root {
-      --ink:       #0a1a14;
-      --ink2:      #1f3329;
-      --ink3:      #3d5c4a;
-      --muted:     #6b8070;
-      --muted2:    #92a89a;
-      --border:    rgba(15,50,30,.12);
-      --border2:   rgba(15,50,30,.07);
-      --surface:   #f5f7f5;
-      --surface2:  #edf1ed;
-      --white:     #ffffff;
-      --accent:    #1e7a50;
-      --accent2:   #2ca06a;
-      --accent3:   #58c491;
-      --teal:      #1a7070;
-      --amber:     #b56a1e;
-      --red:       #a33030;
-      --mono:      'IBM Plex Mono', monospace;
-      --sans:      'IBM Plex Sans', system-ui, sans-serif;
-      --serif:     'Fraunces', Georgia, serif;
+      --green-deep:   #0d4f3c;
+      --green-mid:    #1a7a58;
+      --green-light:  #2ca58d;
+      --green-pale:   #e6f5f0;
+      --blue-mid:     #1d6fa4;
+      --blue-pale:    #e8f3fc;
+      --amber:        #e8973a;
+      --amber-pale:   #fef4e7;
+      --surface:      #f8faf9;
+      --white:        #ffffff;
+      --text-dark:    #0d1f1a;
+      --text-mid:     #3a5248;
+      --text-soft:    #6b8278;
+      --border:       rgba(13,79,60,.10);
+      --border2:      rgba(13,79,60,.06);
+      --shadow-sm:    0 2px 12px rgba(0,0,0,.07);
+      --shadow-md:    0 8px 28px rgba(0,0,0,.09);
+      --radius-lg:    1.25rem;
+      --radius-md:    .875rem;
+      --radius-sm:    .5rem;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html { scroll-behavior: smooth; }
-
     body {
-      font-family: var(--sans);
+      font-family: 'Inter', system-ui, sans-serif;
       background: var(--surface);
-      color: var(--ink);
+      color: var(--text-dark);
       font-size: 13px;
       line-height: 1.5;
-      min-height: 100vh;
     }
-
     a { color: inherit; text-decoration: none; }
 
     /* ── TOPBAR ── */
     .topbar {
-      position: sticky;
-      top: 0; left: 0; right: 0;
-      z-index: 200;
-      background: var(--ink);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      padding: 0 1.5rem;
-      height: 56px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
+      position: sticky; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(13,79,60,.97);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      padding: .75rem 1.25rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      box-shadow: 0 2px 20px rgba(0,0,0,.20);
     }
-    .topbar-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .logos {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-    }
-    .logos img {
-      height: 32px;
-      width: auto;
-      object-fit: contain;
-      background: #fff;
-      border-radius: .25rem;
-      padding: 3px 5px;
+    .topbar-left { display: flex; align-items: center; gap: .875rem; min-width: 0; }
+    .brand-logos { display: flex; align-items: center; gap: .5rem; flex-shrink: 0; }
+    .brand-logos img {
+      height: 36px; width: auto; object-fit: contain;
+      background: #fff; border-radius: .375rem; padding: 3px 6px;
+      box-shadow: 0 1px 5px rgba(0,0,0,.15);
     }
     .topbar-title {
-      font-family: var(--serif);
-      font-size: 1rem;
-      font-weight: 300;
-      color: rgba(255,255,255,.88);
-      letter-spacing: .01em;
+      font-family: 'DM Serif Display', serif;
+      font-size: .95rem; font-weight: 400; color: rgba(255,255,255,.92);
     }
-    .topbar-title strong {
-      font-weight: 700;
-      color: #fff;
-    }
-    .topbar-meta {
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-    }
-    .badge {
-      font-family: var(--mono);
-      font-size: .68rem;
-      font-weight: 500;
-      color: rgba(255,255,255,.55);
-      background: rgba(255,255,255,.07);
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: .2rem;
-      padding: .2rem .5rem;
-      letter-spacing: .02em;
-    }
-    .badge.live { color: #58c491; border-color: rgba(88,196,145,.30); background: rgba(88,196,145,.08); }
-    .badge .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; display: inline-block; margin-right: .3rem; animation: pulse 2s ease infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-    .nav-btns {
-      display: flex;
-      align-items: center;
-      gap: .375rem;
-    }
+    .topbar-title strong { font-weight: 700; color: #fff; }
+    .nav-btns { display: flex; align-items: center; gap: .375rem; flex-shrink: 0; }
     .nav-btn {
-      font-family: var(--sans);
-      font-size: .75rem;
-      font-weight: 500;
-      color: rgba(255,255,255,.65);
-      background: transparent;
-      border: 1px solid rgba(255,255,255,.10);
-      border-radius: .25rem;
-      padding: .3rem .7rem;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: .35rem;
-      transition: all .15s;
+      font-size: .75rem; font-weight: 500;
+      color: rgba(255,255,255,.75); background: rgba(255,255,255,.10);
+      border: 1px solid rgba(255,255,255,.14); border-radius: .35rem;
+      padding: .35rem .75rem; cursor: pointer;
+      display: inline-flex; align-items: center; gap: .35rem;
+      text-decoration: none; transition: all .14s; white-space: nowrap;
     }
-    .nav-btn:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.88); }
-    .nav-btn.primary { background: var(--accent); border-color: var(--accent2); color: #fff; }
-    .nav-btn.primary:hover { background: var(--accent2); }
+    .nav-btn:hover { background: rgba(255,255,255,.18); color: #fff; }
+    .nav-btn.primary { background: var(--green-mid); border-color: var(--green-light); color: #fff; }
+    .nav-btn.primary:hover { background: var(--green-light); }
 
     /* ── LAYOUT ── */
-    .shell {
+    .app-layout {
       display: grid;
-      grid-template-columns: 260px 1fr;
-      min-height: calc(100vh - 56px);
+      grid-template-columns: 280px 1fr;
+      min-height: calc(100vh - 58px);
       align-items: start;
     }
 
     /* ── SIDEBAR ── */
-    aside {
-      position: sticky;
-      top: 56px;
-      height: calc(100vh - 56px);
+    aside.sidebar {
+      position: sticky; top: 58px;
+      height: calc(100vh - 58px);
       overflow-y: auto;
-      border-right: 1px solid var(--border);
       background: var(--white);
-      padding: 1.25rem 1rem;
-      display: flex;
-      flex-direction: column;
-      gap: .75rem;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
     }
-    aside::-webkit-scrollbar { width: 4px; }
-    aside::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+    aside.sidebar::-webkit-scrollbar { width: 4px; }
+    aside.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-    .sidebar-section {
+    .sidebar-inner { padding: 1rem; display: flex; flex-direction: column; gap: .75rem; }
+
+    .sb-section {
       border: 1px solid var(--border);
-      border-radius: .375rem;
+      border-radius: var(--radius-sm);
       overflow: hidden;
     }
-    .sidebar-section-head {
-      padding: .6rem .8rem;
-      background: var(--surface2);
+    .sb-head {
+      padding: .55rem .75rem;
+      background: linear-gradient(180deg, #f0f7f4, #e8f4ef);
       border-bottom: 1px solid var(--border);
-      font-family: var(--mono);
-      font-size: .67rem;
-      font-weight: 600;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      color: var(--ink3);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: .67rem; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: var(--green-deep);
+      cursor: default;
     }
-    .sidebar-section-body {
-      padding: .75rem .8rem;
-      display: flex;
-      flex-direction: column;
-      gap: .6rem;
+    .sb-head .badge-count {
+      background: var(--green-pale); border: 1px solid rgba(13,79,60,.18);
+      border-radius: 999px; padding: .1rem .45rem;
+      font-size: .63rem; font-weight: 700; color: var(--green-deep);
     }
+    .sb-body { padding: .75rem; display: flex; flex-direction: column; gap: .55rem; }
+
+    .field { display: flex; flex-direction: column; gap: .25rem; }
     .field label {
-      display: block;
-      font-family: var(--mono);
-      font-size: .65rem;
-      font-weight: 500;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: .3rem;
+      font-size: .67rem; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase;
+      color: var(--text-soft);
     }
-    .field input, .field select {
+    .field input[type="date"],
+    .field input[type="search"],
+    .field input[type="number"],
+    .field select {
       width: 100%;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: .25rem;
+      border-radius: .35rem;
       padding: .45rem .6rem;
-      font-family: var(--sans);
+      font-family: 'Inter', sans-serif;
       font-size: .78rem;
-      color: var(--ink);
+      color: var(--text-dark);
       outline: none;
-      transition: border-color .14s;
+      transition: border-color .14s, box-shadow .14s;
     }
     .field input:focus, .field select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(30,122,80,.12);
+      border-color: var(--green-mid);
+      box-shadow: 0 0 0 2.5px rgba(26,122,88,.14);
     }
-    .field select[multiple] { min-height: 72px; }
-    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
-    .check-label {
-      display: flex;
-      align-items: center;
-      gap: .5rem;
-      font-size: .75rem;
-      color: var(--ink3);
-      cursor: pointer;
-    }
-    .check-label input { accent-color: var(--accent); flex-shrink: 0; }
+    .field select[multiple] { min-height: 80px; padding: .35rem; }
+    .field select[multiple] option { padding: .3rem .4rem; border-radius: .2rem; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; }
 
-    .quick-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .3rem;
+    .check-row {
+      display: flex; align-items: center; gap: .45rem;
+      font-size: .75rem; color: var(--text-mid); cursor: pointer;
+      padding: .3rem 0;
     }
+    .check-row input { accent-color: var(--green-mid); flex-shrink: 0; }
+
+    .quick-chips { display: flex; flex-wrap: wrap; gap: .3rem; }
     .chip {
-      font-family: var(--mono);
-      font-size: .65rem;
-      font-weight: 500;
-      padding: .25rem .55rem;
+      font-size: .67rem; font-weight: 600;
+      padding: .28rem .6rem;
       border: 1px solid var(--border);
-      border-radius: .2rem;
-      background: var(--surface2);
-      color: var(--ink3);
-      cursor: pointer;
-      transition: all .12s;
-    }
-    .chip:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-    .btn-row { display: flex; gap: .4rem; flex-wrap: wrap; }
-    .btn {
-      font-family: var(--sans);
-      font-size: .72rem;
-      font-weight: 600;
-      padding: .38rem .75rem;
-      border-radius: .25rem;
-      border: 1px solid var(--border);
-      background: var(--surface2);
-      color: var(--ink3);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: .35rem;
-      transition: all .14s;
-    }
-    .btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
-    .btn.accent { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn.accent:hover { background: var(--ink2); border-color: var(--ink2); }
-
-    .mini-kpis {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: .4rem;
-    }
-    .mini-kpi {
-      border: 1px solid var(--border);
-      border-radius: .25rem;
-      padding: .5rem .6rem;
+      border-radius: 999px;
       background: var(--surface);
+      color: var(--text-mid);
+      cursor: pointer; transition: all .12s;
     }
-    .mini-kpi-label {
-      font-family: var(--mono);
-      font-size: .6rem;
-      font-weight: 500;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: .15rem;
+    .chip:hover, .chip.active {
+      background: var(--green-deep); border-color: var(--green-deep); color: #fff;
     }
-    .mini-kpi-value {
-      font-family: var(--mono);
-      font-size: .95rem;
-      font-weight: 600;
-      color: var(--ink);
+
+    .btn-row { display: flex; gap: .375rem; flex-wrap: wrap; }
+    .sb-btn {
+      font-size: .72rem; font-weight: 600;
+      padding: .4rem .75rem; border-radius: .35rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-mid);
+      cursor: pointer; display: inline-flex; align-items: center; gap: .3rem;
+      transition: all .13s;
     }
-    .narrative {
-      font-size: .72rem;
-      color: var(--muted);
-      line-height: 1.5;
-      padding: .5rem;
-      background: var(--surface2);
-      border-radius: .25rem;
+    .sb-btn:hover { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
+    .sb-btn.accent { background: var(--green-mid); border-color: var(--green-mid); color: #fff; }
+    .sb-btn.accent:hover { background: var(--green-deep); border-color: var(--green-deep); }
+
+    .mini-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; }
+    .mini-kpi {
+      border: 1px solid var(--border); border-radius: .35rem;
+      padding: .55rem .6rem; background: var(--surface);
+    }
+    .mini-kpi-label { font-size: .62rem; font-weight: 600; color: var(--text-soft); margin-bottom: .1rem; text-transform: uppercase; letter-spacing: .04em; }
+    .mini-kpi-value { font-size: 1rem; font-weight: 700; color: var(--green-deep); font-family: 'DM Serif Display', serif; }
+
+    .filter-narrative {
+      font-size: .7rem; color: var(--text-soft); line-height: 1.5;
+      padding: .45rem .55rem;
+      background: var(--green-pale); border-radius: .3rem;
+      border: 1px solid rgba(13,79,60,.08);
+    }
+
+    .note-box {
+      font-size: .69rem; color: var(--text-soft); line-height: 1.55;
+      padding: .5rem .6rem;
+      background: var(--surface); border-radius: .3rem;
       border: 1px solid var(--border2);
     }
+    .note-box strong { color: var(--green-deep); }
 
-    /* ── MAIN CONTENT ── */
-    main {
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 1.25rem;
+    /* ── MAIN ── */
+    main.content {
+      padding: 1.125rem;
+      display: flex; flex-direction: column; gap: 1.125rem;
       min-width: 0;
-    }
-
-    /* ── STATUS BAR ── */
-    .statusbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      padding: .5rem .875rem;
-      background: var(--white);
-      border: 1px solid var(--border);
-      border-radius: .375rem;
-      flex-wrap: wrap;
-    }
-    .statusbar-left {
-      font-family: var(--mono);
-      font-size: .68rem;
-      color: var(--muted);
-    }
-    .statusbar-left strong { color: var(--ink); }
-    .statusbar-right {
-      font-family: var(--mono);
-      font-size: .68rem;
-      color: var(--muted);
-      display: flex;
-      align-items: center;
-      gap: .75rem;
-    }
-    .src-tag {
-      padding: .15rem .45rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: .2rem;
-      color: var(--ink3);
     }
 
     /* ── KPI GRID ── */
     .kpi-grid {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
+      grid-template-columns: repeat(6, minmax(0,1fr));
       gap: .75rem;
     }
-    .kpi-card {
+    .kpi {
       background: var(--white);
       border: 1px solid var(--border);
-      border-radius: .375rem;
+      border-radius: var(--radius-md);
       padding: .875rem .875rem .75rem;
-      position: relative;
-      overflow: hidden;
+      position: relative; overflow: hidden;
+      box-shadow: var(--shadow-sm);
     }
-    .kpi-card::after {
+    .kpi::after {
       content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, var(--accent), var(--accent3));
+      position: absolute; bottom: 0; left: 0; right: 0; height: 2.5px;
+      background: linear-gradient(90deg, var(--green-deep), var(--green-light));
     }
     .kpi-label {
-      font-family: var(--mono);
-      font-size: .62rem;
-      font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: .45rem;
+      font-size: .62rem; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--text-soft); margin-bottom: .4rem;
     }
     .kpi-value {
-      font-family: var(--serif);
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: var(--ink);
-      line-height: 1;
-      margin-bottom: .35rem;
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.7rem; font-weight: 700; color: var(--green-deep);
+      line-height: 1; margin-bottom: .3rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-    .kpi-note {
-      font-family: var(--mono);
-      font-size: .62rem;
-      color: var(--muted2);
-      line-height: 1.35;
-    }
+    .kpi-note { font-size: .63rem; color: var(--text-soft); line-height: 1.35; }
     .kpi-eq {
-      font-family: var(--mono);
-      font-size: .6rem;
-      color: var(--accent);
-      font-weight: 600;
-      margin-top: .2rem;
+      font-size: .6rem; color: var(--green-mid); font-weight: 600;
+      margin-top: .2rem; font-style: italic;
     }
 
-    /* ── PANELS ── */
-    .row-2 { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1.25rem; }
-    .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
-    .row-2eq { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
-    .row-3x { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 1.25rem; }
+    /* ── CARDS ── */
+    .row-2   { display: grid; grid-template-columns: 1.1fr .9fr; gap: 1.125rem; }
+    .row-3   { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.125rem; }
+    .row-2eq { display: grid; grid-template-columns: 1fr 1fr; gap: 1.125rem; }
+    .row-3x  { display: grid; grid-template-columns: 1.35fr 1fr 1fr; gap: 1.125rem; }
 
-    .panel {
+    .card {
       background: var(--white);
       border: 1px solid var(--border);
-      border-radius: .375rem;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
     }
-    .panel-head {
+    .card-head {
       padding: .75rem 1rem;
       border-bottom: 1px solid var(--border2);
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: .75rem;
-      background: linear-gradient(180deg, var(--white) 0%, var(--surface) 100%);
+      background: linear-gradient(180deg, var(--white) 0%, rgba(230,245,240,.25) 100%);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: .75rem;
     }
-    .panel-title {
-      font-family: var(--serif);
-      font-size: .95rem;
-      font-weight: 700;
-      color: var(--ink2);
-      line-height: 1.2;
-      margin-bottom: .15rem;
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: .95rem; font-weight: 700; color: var(--green-deep);
+      line-height: 1.2; margin-bottom: .15rem;
     }
-    .panel-sub {
-      font-size: .7rem;
-      color: var(--muted);
-      line-height: 1.4;
+    .card-sub { font-size: .7rem; color: var(--text-soft); line-height: 1.4; }
+    .card-pill {
+      font-size: .62rem; font-weight: 600; white-space: nowrap;
+      padding: .22rem .6rem;
+      background: var(--green-pale); border: 1px solid rgba(13,79,60,.12);
+      border-radius: 999px; color: var(--green-deep); flex-shrink: 0;
     }
-    .panel-pill {
-      font-family: var(--mono);
-      font-size: .63rem;
-      font-weight: 500;
-      white-space: nowrap;
-      padding: .22rem .55rem;
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: .2rem;
-      color: var(--ink3);
-      flex-shrink: 0;
+    .eq-badge {
+      font-size: .62rem; font-weight: 700; font-style: italic;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      max-width: 52%;
+      padding: .25rem .6rem;
+      background: var(--green-pale); border: 1px solid rgba(26,122,88,.18);
+      border-radius: 999px; color: var(--green-deep); flex-shrink: 0;
     }
-    .eq-block {
-      font-family: var(--mono);
-      font-size: .68rem;
-      color: var(--accent);
-      font-weight: 600;
-      padding: .3rem .6rem;
-      background: rgba(30,122,80,.06);
-      border: 1px solid rgba(30,122,80,.14);
-      border-radius: .25rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 50%;
-    }
-    .panel-body {
-      padding: .875rem 1rem;
-      flex: 1;
-    }
-    .chart-wrap {
-      position: relative;
-      height: 270px;
-    }
+    .card-body { padding: .875rem 1rem; flex: 1; }
+
+    .chart-wrap { position: relative; height: 260px; }
     .chart-wrap.sm { height: 210px; }
-    .chart-wrap.lg { height: 320px; }
+    .chart-wrap.lg { height: 310px; }
     canvas { width: 100% !important; height: 100% !important; }
 
     /* ── MAP ── */
     #dashMap {
-      width: 100%;
-      height: 360px;
-      border-radius: 0;
+      width: 100%; height: 360px;
     }
-    .leaflet-container { background: #1a1a1a; }
-    .leaflet-control-attribution { background: rgba(0,0,0,.6) !important; color: rgba(255,255,255,.6) !important; font-size: 9px !important; }
-    .leaflet-control-attribution a { color: rgba(255,255,255,.7) !important; }
+    .leaflet-container { background: #1a2e1a; font-family: 'Inter', sans-serif; }
+    .leaflet-control-attribution {
+      background: rgba(0,0,0,.55) !important;
+      color: rgba(255,255,255,.55) !important;
+      font-size: 9px !important;
+    }
+    .leaflet-control-attribution a { color: rgba(255,255,255,.65) !important; }
+    .leaflet-popup-content-wrapper {
+      border-radius: .5rem !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,.18) !important;
+      border: 1px solid var(--border) !important;
+    }
+    .leaflet-popup-tip-container { display: none; }
     .map-legend {
-      padding: .5rem .875rem;
-      background: var(--surface2);
+      padding: .45rem .875rem;
       border-top: 1px solid var(--border2);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      flex-wrap: wrap;
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      background: linear-gradient(180deg, rgba(230,245,240,.4), rgba(230,245,240,.1));
     }
     .legend-item {
-      display: flex;
-      align-items: center;
-      gap: .35rem;
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: var(--muted);
+      display: flex; align-items: center; gap: .35rem;
+      font-size: .67rem; color: var(--text-soft); font-weight: 500;
     }
-    .legend-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
-    /* ── STATS TABLE ── */
-    .stats-rows {
-      display: flex;
-      flex-direction: column;
-      gap: 0;
-    }
+    /* ── STATS ── */
+    .stats-list { display: flex; flex-direction: column; gap: 0; }
     .stat-row {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: .75rem;
-      align-items: baseline;
-      padding: .5rem 0;
+      display: grid; grid-template-columns: 1fr auto;
+      gap: .75rem; align-items: center;
+      padding: .45rem 0;
       border-bottom: 1px solid var(--border2);
     }
     .stat-row:last-child { border-bottom: none; }
-    .stat-name {
-      font-size: .72rem;
-      color: var(--ink3);
-      font-weight: 500;
-    }
-    .stat-sub {
-      font-family: var(--mono);
-      font-size: .6rem;
-      color: var(--muted2);
-    }
-    .stat-val {
-      font-family: var(--mono);
-      font-size: .8rem;
-      font-weight: 600;
-      color: var(--ink);
-      text-align: right;
-    }
+    .stat-name { font-size: .72rem; color: var(--text-mid); font-weight: 500; }
+    .stat-sub  { font-size: .62rem; color: var(--text-soft); }
+    .stat-val  { font-size: .8rem; font-weight: 700; color: var(--green-deep); text-align: right; }
 
     /* ── INSIGHTS ── */
-    .insight-cards {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
-    }
-    .insight-card {
+    .insights-list { display: flex; flex-direction: column; gap: .5rem; }
+    .insight {
       padding: .65rem .75rem;
       border: 1px solid var(--border);
-      border-left: 3px solid var(--accent3);
-      border-radius: 0 .25rem .25rem 0;
-      background: linear-gradient(90deg, rgba(88,196,145,.04), transparent 40%);
+      border-left: 3px solid var(--green-light);
+      border-radius: 0 .35rem .35rem 0;
+      background: linear-gradient(90deg, rgba(230,245,240,.5), transparent 40%);
     }
-    .insight-card h4 {
-      font-family: var(--mono);
-      font-size: .62rem;
-      font-weight: 600;
-      letter-spacing: .06em;
-      text-transform: uppercase;
-      color: var(--accent);
-      margin-bottom: .3rem;
+    .insight h4 {
+      font-size: .63rem; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase;
+      color: var(--green-mid); margin-bottom: .28rem;
     }
-    .insight-card p {
-      font-size: .72rem;
-      color: var(--ink3);
-      line-height: 1.5;
-    }
-    .insight-card code {
-      font-family: var(--mono);
-      font-size: .67rem;
-      font-weight: 600;
-      color: var(--teal);
-      background: rgba(26,112,112,.07);
-      border: 1px solid rgba(26,112,112,.14);
-      padding: .05rem .3rem;
-      border-radius: .15rem;
+    .insight p { font-size: .72rem; color: var(--text-mid); line-height: 1.5; }
+    .insight code {
+      font-size: .67rem; font-weight: 700; color: var(--blue-mid);
+      background: var(--blue-pale); border: 1px solid rgba(29,111,164,.14);
+      padding: .05rem .3rem; border-radius: .2rem;
+      font-family: ui-monospace, Menlo, Consolas, monospace;
     }
 
     /* ── TABLE ── */
     .table-toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: .75rem;
-      margin-bottom: .75rem;
-      flex-wrap: wrap;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: .75rem; margin-bottom: .75rem; flex-wrap: wrap;
     }
-    .table-meta {
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: var(--muted);
-    }
+    .table-meta { font-size: .7rem; color: var(--text-soft); }
     .table-wrap {
-      border: 1px solid var(--border);
-      border-radius: .25rem;
-      overflow: auto;
-      max-height: 340px;
+      border: 1px solid var(--border); border-radius: .4rem;
+      overflow: auto; max-height: 340px;
     }
     table { width: 100%; border-collapse: collapse; min-width: 860px; }
     thead th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: var(--surface2);
+      position: sticky; top: 0; z-index: 2;
+      background: linear-gradient(180deg, #f0f7f4, #e8f2ee);
       border-bottom: 1px solid var(--border);
-      font-family: var(--mono);
-      font-size: .63rem;
-      font-weight: 600;
-      letter-spacing: .05em;
-      text-transform: uppercase;
-      color: var(--ink3);
-      text-align: left;
-      padding: .55rem .75rem;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
+      font-size: .67rem; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase;
+      color: var(--green-deep); text-align: left;
+      padding: .55rem .75rem; cursor: pointer; user-select: none; white-space: nowrap;
     }
-    thead th:hover { background: rgba(30,122,80,.07); }
+    thead th:hover { background: var(--green-pale); }
     tbody td {
-      padding: .55rem .75rem;
-      border-bottom: 1px solid var(--border2);
-      color: var(--ink3);
-      font-size: .72rem;
-      vertical-align: middle;
+      padding: .55rem .75rem; border-bottom: 1px solid var(--border2);
+      color: var(--text-mid); font-size: .72rem; vertical-align: middle;
     }
-    tbody tr:hover { background: rgba(30,122,80,.03); }
-    td.num {
-      text-align: right;
-      font-family: var(--mono);
-      font-size: .7rem;
-      font-weight: 500;
-    }
+    tbody tr:hover { background: rgba(230,245,240,.45); }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--green-deep); }
     .muni-tag {
-      font-family: var(--mono);
-      font-size: .62rem;
-      font-weight: 500;
-      padding: .15rem .45rem;
-      background: rgba(30,122,80,.08);
-      border: 1px solid rgba(30,122,80,.16);
-      border-radius: .2rem;
-      color: var(--accent);
-      white-space: nowrap;
+      font-size: .63rem; font-weight: 600;
+      padding: .18rem .5rem;
+      background: var(--green-pale); border: 1px solid rgba(13,79,60,.14);
+      border-radius: 999px; color: var(--green-deep);
     }
-    .table-foot {
-      font-family: var(--mono);
-      font-size: .63rem;
-      color: var(--muted2);
-      margin-top: .5rem;
-    }
+    .table-foot { font-size: .65rem; color: var(--text-soft); margin-top: .5rem; }
     .empty-state {
-      text-align: center;
-      padding: 2rem;
-      font-family: var(--mono);
-      font-size: .72rem;
-      color: var(--muted);
-      background: var(--surface2);
-      border-radius: .25rem;
+      text-align: center; padding: 2rem;
+      font-size: .75rem; color: var(--text-soft);
+      background: var(--surface); border-radius: .35rem;
+      border: 1px dashed var(--border);
     }
 
-    /* ── FOOTER ── */
+    /* ── FOOTER (original style) ── */
     .dash-footer {
-      background: var(--ink);
-      color: rgba(255,255,255,.5);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: 2rem 1.5rem 1.5rem;
+      box-shadow: var(--shadow-sm);
       text-align: center;
-      grid-column: 1 / -1;
+      margin: 0 1.125rem 1.125rem;
     }
-    .footer-title {
-      font-family: var(--serif);
-      font-size: .95rem;
-      font-weight: 300;
-      color: rgba(255,255,255,.7);
-      margin-bottom: .25rem;
-    }
-    .footer-sub {
-      font-family: var(--mono);
-      font-size: .65rem;
-      color: rgba(255,255,255,.35);
-      margin-bottom: 1.5rem;
+    .dash-footer-title { font-family: 'DM Serif Display', serif; font-size: 1rem; color: var(--green-deep); margin-bottom: .2rem; }
+    .dash-footer-sub { font-size: .78rem; color: var(--text-soft); margin-bottom: 1.25rem; }
+    .partners-label {
+      font-size: .68rem; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--text-soft); margin-bottom: 1rem;
     }
     .footer-logos {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .875rem;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 1.5rem;
+      display: flex; flex-wrap: wrap; gap: .875rem;
+      justify-content: center; align-items: center; margin-bottom: 1.25rem;
     }
-    .footer-logos a { display: inline-flex; align-items: center; }
+    .footer-logos a { display: inline-flex; align-items: center; text-decoration: none; }
     .footer-logos img {
-      max-height: 36px;
-      width: auto;
-      max-width: 140px;
-      object-fit: contain;
-      filter: grayscale(100%) brightness(1.8) opacity(.55);
-      transition: filter .2s;
+      max-height: 46px; width: auto; max-width: 160px;
+      object-fit: contain; filter: grayscale(15%);
+      transition: filter .15s, transform .15s;
     }
-    .footer-logos a:hover img { filter: grayscale(0%) opacity(1); }
-    .footer-copy {
-      font-family: var(--mono);
-      font-size: .6rem;
-      color: rgba(255,255,255,.22);
-      border-top: 1px solid rgba(255,255,255,.06);
-      padding-top: 1rem;
-    }
+    .footer-logos a:hover img { filter: grayscale(0%); transform: translateY(-2px); }
+    .dash-footer-copy { font-size: .72rem; color: var(--text-soft); }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 1400px) {
-      .kpi-grid { grid-template-columns: repeat(3, 1fr); }
-    }
+    @media (max-width: 1400px) { .kpi-grid { grid-template-columns: repeat(3,minmax(0,1fr)); } }
     @media (max-width: 1100px) {
-      .shell { grid-template-columns: 1fr; }
-      aside { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
-      .row-2, .row-3, .row-2eq, .row-3x { grid-template-columns: 1fr; }
+      .app-layout { grid-template-columns: 1fr; }
+      aside.sidebar { position: static; height: auto; border-right: none; border-bottom: 1px solid var(--border); }
+      .row-2,.row-3,.row-2eq,.row-3x { grid-template-columns: 1fr; }
     }
     @media (max-width: 780px) {
-      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .kpi-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
       .topbar-title { display: none; }
     }
-
     @media print {
-      .topbar, aside, .nav-btns { display: none !important; }
-      .shell { grid-template-columns: 1fr; }
+      .topbar, aside.sidebar { display: none !important; }
+      .app-layout { grid-template-columns: 1fr; }
       body { background: #fff; }
-      .panel { box-shadow: none; }
+      .card { box-shadow: none; }
       .chart-wrap { height: 200px; }
       #dashMap { height: 240px; }
     }
@@ -726,44 +460,42 @@
 </head>
 <body>
 
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <div class="logos">
-        <img src="../../BOSQUE.png" alt="Eje de Bosques">
-        <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
-      </div>
-      <div class="topbar-title">
-        <strong>Dashboard Analítico</strong> · Reforestación Sololá
-      </div>
-      <span class="badge live"><span class="dot"></span><span id="liveBadge">cargando…</span></span>
-      <span class="badge" id="countBadge">— registros</span>
-      <span class="badge" id="dateBadge">—</span>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="brand-logos">
+      <img src="../../BOSQUE.png" alt="Eje de Bosques">
+      <img src="../../CODEMA%20%282%29.png" alt="CODEMA Sololá">
     </div>
-    <nav class="nav-btns">
-      <a class="nav-btn" href="./index.html"><i class="bi bi-arrow-left"></i> Módulo</a>
-      <a class="nav-btn" href="../../index.html"><i class="bi bi-house"></i> Inicio</a>
-      <a class="nav-btn" href="./geoportal.html"><i class="bi bi-map"></i> Geoportal</a>
-      <a class="nav-btn" href="./informes.html"><i class="bi bi-journal-text"></i> Informes</a>
-      <button class="nav-btn primary" id="refreshBtn" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
-    </nav>
-  </header>
+    <div class="topbar-title">
+      <strong>Dashboard Analítico</strong> · Reforestación Sololá
+    </div>
+  </div>
+  <nav class="nav-btns">
+    <a class="nav-btn" href="./index.html"><i class="bi bi-arrow-left"></i> Módulo</a>
+    <a class="nav-btn" href="../../index.html"><i class="bi bi-house"></i> Inicio</a>
+    <a class="nav-btn" href="./geoportal.html"><i class="bi bi-map"></i> Geoportal</a>
+    <a class="nav-btn" href="./informes.html"><i class="bi bi-journal-text"></i> Informes</a>
+    <button class="nav-btn primary" id="refreshBtn" type="button"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
+  </nav>
+</header>
 
-  <div class="shell">
+<div class="app-layout">
 
-    <!-- SIDEBAR -->
-    <aside>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-inner">
 
       <!-- Filtros -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-head">
-          <span>Parámetros de filtro</span>
-          <span id="filterBadge" style="font-size:.6rem;padding:.1rem .35rem;background:rgba(30,122,80,.12);border:1px solid rgba(30,122,80,.2);border-radius:.15rem;color:var(--accent);font-weight:700;">0</span>
+      <div class="sb-section">
+        <div class="sb-head">
+          Filtros de análisis
+          <span class="badge-count" id="filterCount">0 activos</span>
         </div>
-        <div class="sidebar-section-body">
+        <div class="sb-body">
           <div class="field">
-            <label>Búsqueda de texto</label>
-            <input id="fBuscar" type="search" placeholder="Comunidad, sitio, notas…">
+            <label>Búsqueda</label>
+            <input id="fBuscar" type="search" placeholder="Comunidad, sitio, observaciones…">
           </div>
           <div class="field-row">
             <div class="field">
@@ -777,338 +509,311 @@
           </div>
           <div class="field">
             <label>Municipio(s)</label>
-            <select id="fMunicipio" multiple></select>
+            <select id="fMunicipio" multiple size="6"></select>
           </div>
           <div class="field">
             <label>Institución(es)</label>
-            <select id="fInstitucion" multiple></select>
-          </div>
-          <div class="field">
-            <label>Tenencia</label>
-            <select id="fTenencia" multiple></select>
+            <select id="fInstitucion" multiple size="5"></select>
           </div>
           <div class="field">
             <label>Mínimo de plantas</label>
-            <input id="fMinPlantas" type="number" min="0" step="1" placeholder="0">
+            <input id="fMinPlantas" type="number" min="0" step="1" placeholder="Sin límite">
           </div>
-          <label class="check-label"><input type="checkbox" id="fSoloFotos"> Solo con fotos autorizadas</label>
-          <label class="check-label"><input type="checkbox" id="fSoloArea"> Solo con área > 0 m²</label>
+          <label class="check-row"><input type="checkbox" id="fSoloFotos"> Solo registros con fotos</label>
+          <label class="check-row"><input type="checkbox" id="fSoloArea"> Solo registros con área &gt; 0</label>
           <div class="quick-chips">
-            <span class="chip" data-range="all">Todo</span>
+            <span class="chip" data-range="all">Todo el período</span>
             <span class="chip" data-range="30">30 días</span>
             <span class="chip" data-range="90">90 días</span>
             <span class="chip" data-range="year">Año actual</span>
           </div>
           <div class="btn-row">
-            <button class="btn accent" id="applyFiltersBtn" type="button"><i class="bi bi-funnel"></i> Aplicar</button>
-            <button class="btn" id="resetFiltersBtn" type="button"><i class="bi bi-x"></i> Limpiar</button>
+            <button class="sb-btn accent" id="applyBtn" type="button"><i class="bi bi-funnel-fill"></i> Aplicar</button>
+            <button class="sb-btn" id="resetBtn" type="button"><i class="bi bi-x-circle"></i> Limpiar</button>
           </div>
-          <div class="narrative" id="filterNarrative">Sin filtros activos.</div>
+          <div class="filter-narrative" id="filterNarrative">Sin filtros activos — mostrando el total de registros.</div>
         </div>
       </div>
 
       <!-- Resumen -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-head">
-          <span>Resumen filtrado</span>
-          <span id="scopePill" style="font-size:.6rem;color:var(--muted)">global</span>
+      <div class="sb-section">
+        <div class="sb-head">
+          Resumen del período
+          <span id="scopePill" style="font-size:.63rem;color:var(--text-soft);font-weight:400;text-transform:none;letter-spacing:0">global</span>
         </div>
-        <div class="sidebar-section-body">
+        <div class="sb-body">
           <div class="mini-kpis">
-            <div class="mini-kpi"><div class="mini-kpi-label">n</div><div class="mini-kpi-value" id="sReg">0</div></div>
-            <div class="mini-kpi"><div class="mini-kpi-label">Plantas</div><div class="mini-kpi-value" id="sPlantas">0</div></div>
-            <div class="mini-kpi"><div class="mini-kpi-label">Área (m²)</div><div class="mini-kpi-value" id="sArea">0</div></div>
-            <div class="mini-kpi"><div class="mini-kpi-label">Partic.</div><div class="mini-kpi-value" id="sPart">0</div></div>
+            <div class="mini-kpi"><div class="mini-kpi-label">Registros</div><div class="mini-kpi-value" id="sReg">—</div></div>
+            <div class="mini-kpi"><div class="mini-kpi-label">Plantas</div><div class="mini-kpi-value" id="sPlantas">—</div></div>
+            <div class="mini-kpi"><div class="mini-kpi-label">Área m²</div><div class="mini-kpi-value" id="sArea">—</div></div>
+            <div class="mini-kpi"><div class="mini-kpi-label">Participantes</div><div class="mini-kpi-value" id="sPart">—</div></div>
           </div>
         </div>
       </div>
 
       <!-- Exportar -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-head">Exportación</div>
-        <div class="sidebar-section-body">
+      <div class="sb-section">
+        <div class="sb-head">Exportar datos filtrados</div>
+        <div class="sb-body">
           <div class="btn-row">
-            <button class="btn accent" id="exportCsvBtn" type="button"><i class="bi bi-download"></i> CSV</button>
-            <button class="btn" id="exportJsonBtn" type="button"><i class="bi bi-download"></i> JSON</button>
+            <button class="sb-btn accent" id="exportCsvBtn" type="button"><i class="bi bi-file-earmark-spreadsheet"></i> CSV</button>
+            <button class="sb-btn" id="exportJsonBtn" type="button"><i class="bi bi-file-earmark-code"></i> JSON</button>
           </div>
         </div>
       </div>
 
-      <!-- Notas metodológicas -->
-      <div class="sidebar-section">
-        <div class="sidebar-section-head">Notas metodológicas</div>
-        <div class="sidebar-section-body">
-          <div class="narrative">
-            <strong>ρ̄</strong> = Σ plantas / Σ área (m²), densidad ponderada.<br>
-            <strong>β̂</strong> = regresión OLS por mínimos cuadrados ordinarios.<br>
-            <strong>R²</strong> = coeficiente de determinación (bondad de ajuste).<br>
-            <strong>HHI</strong> = Σ(sᵢ)² índice Herfindahl–Hirschman de concentración.<br>
-            <strong>IQR</strong> = Q₃ − Q₁; atípicos > Q₃ + 1.5·IQR.<br>
-            Datos: KoBoToolbox vía GitHub Actions (sincronización horaria).
+      <!-- Metodología -->
+      <div class="sb-section">
+        <div class="sb-head">Indicadores y metodología</div>
+        <div class="sb-body">
+          <div class="note-box">
+            <strong>ρ̄</strong> = Plantas totales / Área total (densidad ponderada)<br>
+            <strong>ε</strong> = Plantas / Participantes (eficiencia de jornada)<br>
+            <strong>OLS</strong> = regresión por mínimos cuadrados ordinarios<br>
+            <strong>R²</strong> = coeficiente de determinación<br>
+            <strong>HHI</strong> = índice de concentración territorial Herfindahl–Hirschman<br>
+            <strong>IQR</strong> = rango intercuartílico; atípicos &gt; Q₃ + 1.5·IQR
           </div>
         </div>
       </div>
 
-    </aside>
-
-    <!-- MAIN -->
-    <main>
-
-      <!-- Status -->
-      <div class="statusbar">
-        <div class="statusbar-left">
-          <span id="statusText">Cargando datos…</span>
-        </div>
-        <div class="statusbar-right">
-          <span class="src-tag">puntos.geojson</span>
-          <span class="src-tag">resumen.json</span>
-          <span id="statusRight" style="color:var(--muted2)">—</span>
-        </div>
-      </div>
-
-      <!-- KPIs -->
-      <section class="kpi-grid">
-        <article class="kpi-card">
-          <div class="kpi-label">Registros · n</div>
-          <div class="kpi-value" id="kReg">—</div>
-          <div class="kpi-note" id="kRegNote">—</div>
-        </article>
-        <article class="kpi-card">
-          <div class="kpi-label">Total plantas · Σ</div>
-          <div class="kpi-value" id="kPlantas">—</div>
-          <div class="kpi-note" id="kPlantasNote">—</div>
-        </article>
-        <article class="kpi-card">
-          <div class="kpi-label">Participantes · Σ</div>
-          <div class="kpi-value" id="kPart">—</div>
-          <div class="kpi-note" id="kPartNote">—</div>
-        </article>
-        <article class="kpi-card">
-          <div class="kpi-label">Área reportada · Σ m²</div>
-          <div class="kpi-value" id="kArea">—</div>
-          <div class="kpi-note" id="kAreaNote">—</div>
-        </article>
-        <article class="kpi-card">
-          <div class="kpi-label">Densidad · ρ̄ (pl/m²)</div>
-          <div class="kpi-value" id="kDens">—</div>
-          <div class="kpi-eq" id="kDensEq">ρ̄ = Σpl / Σm²</div>
-        </article>
-        <article class="kpi-card">
-          <div class="kpi-label">Eficiencia · pl/part.</div>
-          <div class="kpi-value" id="kEfic">—</div>
-          <div class="kpi-eq" id="kEficEq">ε = Σpl / Σpart</div>
-        </article>
-      </section>
-
-      <!-- Mapa + Temporal -->
-      <section class="row-2">
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Distribución espacial de registros</div>
-              <div class="panel-sub">Mapa satelital — puntos individuales sin agrupamiento</div>
-            </div>
-            <span class="panel-pill" id="mapPill">0 pt</span>
-          </div>
-          <div id="dashMap"></div>
-          <div class="map-legend">
-            <div class="legend-item"><span class="legend-dot" style="background:#58c491;border:1.5px solid rgba(255,255,255,.5)"></span> Reforestación verificada</div>
-            <div class="legend-item"><span class="legend-dot" style="background:#e8a030;border:1.5px solid rgba(255,255,255,.5)"></span> Sin coordenadas válidas (excluido)</div>
-            <div class="legend-item" id="mapMetaLegend" style="margin-left:auto;"></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Serie temporal de actividad</div>
-              <div class="panel-sub">Registros, plantas y participantes por fecha</div>
-            </div>
-            <span class="panel-pill" id="temporalPill">—</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap lg"><canvas id="chartTemporal"></canvas></div>
-            <div class="table-foot" id="temporalFoot" style="margin-top:.5rem">—</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Municipios + Tenencia + Instituciones -->
-      <section class="row-3">
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Plantas por municipio</div>
-              <div class="panel-sub">Contribución territorial al total</div>
-            </div>
-            <span class="panel-pill" id="muniPill">—</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap sm"><canvas id="chartMunicipios"></canvas></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Régimen de tenencia</div>
-              <div class="panel-sub">Distribución relativa de registros</div>
-            </div>
-            <span class="panel-pill" id="tenenciaPill">—</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap sm"><canvas id="chartTenencia"></canvas></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Participantes por institución</div>
-              <div class="panel-sub">Aporte institucional acumulado</div>
-            </div>
-            <span class="panel-pill" id="instPill">—</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap sm"><canvas id="chartInstituciones"></canvas></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Scatter área vs plantas + scatter part vs plantas -->
-      <section class="row-2eq">
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Regresión: Área → Plantas</div>
-              <div class="panel-sub">OLS mínimos cuadrados · y = β₀ + β₁·x</div>
-            </div>
-            <div class="eq-block" id="eqAreaPlantas">y = β₀ + β₁x</div>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="chartAreaPlantas"></canvas></div>
-            <div class="table-foot" id="eqAreaNote" style="margin-top:.5rem">—</div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Regresión: Participantes → Plantas</div>
-              <div class="panel-sub">OLS mínimos cuadrados · y = β₀ + β₁·x</div>
-            </div>
-            <div class="eq-block" id="eqPartPlantas">y = β₀ + β₁x</div>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap"><canvas id="chartPartPlantas"></canvas></div>
-            <div class="table-foot" id="eqPartNote" style="margin-top:.5rem">—</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Histograma + Estadísticos + Insights -->
-      <section class="row-3x">
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Histograma de plantas por registro</div>
-              <div class="panel-sub">Distribución de frecuencias · clases Sturges</div>
-            </div>
-            <span class="panel-pill" id="histPill">—</span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap sm"><canvas id="chartHistPlantas"></canvas></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Estadísticos descriptivos</div>
-              <div class="panel-sub">Resumen de tendencia central y dispersión</div>
-            </div>
-          </div>
-          <div class="panel-body" style="overflow-y:auto;max-height:320px;">
-            <div class="stats-rows" id="statsList"></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-head">
-            <div>
-              <div class="panel-title">Lecturas analíticas</div>
-              <div class="panel-sub">Interpretación exploratoria automatizada</div>
-            </div>
-          </div>
-          <div class="panel-body" style="overflow-y:auto;max-height:320px;">
-            <div class="insight-cards" id="insightsBox"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Tabla -->
-      <section class="panel">
-        <div class="panel-head">
-          <div>
-            <div class="panel-title">Registros individuales</div>
-            <div class="panel-sub">Ordenable por columna · valores normalizados</div>
-          </div>
-          <span class="panel-pill" id="tablePill">0 filas</span>
-        </div>
-        <div class="panel-body">
-          <div class="table-toolbar">
-            <div class="table-meta" id="tableMeta">—</div>
-            <div class="btn-row">
-              <button class="btn" id="toggleTop10Btn" type="button"><i class="bi bi-trophy"></i> Top 10</button>
-              <button class="btn" id="showAllRowsBtn" type="button"><i class="bi bi-list"></i> Ver todos</button>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table id="recordsTable">
-              <thead>
-                <tr>
-                  <th data-sort="fecha">Fecha</th>
-                  <th data-sort="municipio">Municipio</th>
-                  <th data-sort="comunidad">Comunidad</th>
-                  <th data-sort="sitio">Sitio</th>
-                  <th data-sort="tenencia">Tenencia</th>
-                  <th data-sort="plantas">Plantas</th>
-                  <th data-sort="participantes">Part.</th>
-                  <th data-sort="area">Área m²</th>
-                  <th data-sort="densidad">ρ pl/m²</th>
-                  <th data-sort="institucion">Institución</th>
-                </tr>
-              </thead>
-              <tbody id="recordsTbody"></tbody>
-            </table>
-          </div>
-          <div class="table-foot" id="tableFoot">—</div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-
-  <!-- FOOTER -->
-  <footer class="dash-footer">
-    <div class="footer-title">Plataforma digital del Eje de Bosques · Dashboard de Reforestación</div>
-    <div class="footer-sub">Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
-    <div class="footer-logos">
-      <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
-      <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
-      <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
-      <a href="https://conap.gob.gt/" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
-      <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
-      <a href="https://conred.gob.gt/" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
-      <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA UVG"></a>
-      <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago"></a>
-      <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor"></a>
-      <a href="https://www.airguatemala.org/" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIR Guatemala"></a>
     </div>
-    <div class="footer-copy">© 2026 · Laboratorio SIG · Eje de Bosques · CODEMA Sololá</div>
-  </footer>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <!-- KPIs -->
+    <section class="kpi-grid">
+      <article class="kpi">
+        <div class="kpi-label">Registros · n</div>
+        <div class="kpi-value" id="kReg">—</div>
+        <div class="kpi-note" id="kRegNote">—</div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-label">Total plantas · Σ</div>
+        <div class="kpi-value" id="kPlantas">—</div>
+        <div class="kpi-note" id="kPlantasNote">—</div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-label">Participantes · Σ</div>
+        <div class="kpi-value" id="kPart">—</div>
+        <div class="kpi-note" id="kPartNote">—</div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-label">Área reportada · Σ m²</div>
+        <div class="kpi-value" id="kArea">—</div>
+        <div class="kpi-note" id="kAreaNote">—</div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-label">Densidad · ρ̄ pl/m²</div>
+        <div class="kpi-value" id="kDens">—</div>
+        <div class="kpi-eq" id="kDensEq">ρ̄ = Σpl / Σm²</div>
+      </article>
+      <article class="kpi">
+        <div class="kpi-label">Eficiencia · pl/part.</div>
+        <div class="kpi-value" id="kEfic">—</div>
+        <div class="kpi-eq" id="kEficEq">ε = Σpl / Σpart.</div>
+      </article>
+    </section>
+
+    <!-- Mapa + Temporal -->
+    <section class="row-2">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Distribución espacial de registros</div>
+            <div class="card-sub">Vista satelital — cada punto representa una jornada de reforestación</div>
+          </div>
+          <span class="card-pill" id="mapPill">— pt</span>
+        </div>
+        <div id="dashMap"></div>
+        <div class="map-legend">
+          <div class="legend-item"><span class="legend-dot" style="background:#2ca58d;border:1.5px solid rgba(255,255,255,.6)"></span>Jornada registrada</div>
+          <div class="legend-item" id="mapMeta" style="margin-left:auto;font-size:.63rem;color:var(--text-soft)"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Actividad de reforestación en el tiempo</div>
+            <div class="card-sub">Plantas reforestadas y jornadas acumuladas por fecha</div>
+          </div>
+          <span class="card-pill" id="temporalPill">— fechas</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap lg"><canvas id="chartTemporal"></canvas></div>
+          <div class="table-foot" id="temporalFoot" style="margin-top:.5rem">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Municipios + Tenencia + Instituciones -->
+    <section class="row-3">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Plantas por municipio</div>
+            <div class="card-sub">Contribución territorial al total del período</div>
+          </div>
+          <span class="card-pill" id="muniPill">—</span>
+        </div>
+        <div class="card-body"><div class="chart-wrap sm"><canvas id="chartMunicipios"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Régimen de tenencia</div>
+            <div class="card-sub">Distribución relativa de registros por tipo</div>
+          </div>
+          <span class="card-pill" id="tenenciaPill">—</span>
+        </div>
+        <div class="card-body"><div class="chart-wrap sm"><canvas id="chartTenencia"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Participantes por institución</div>
+            <div class="card-sub">Aporte institucional acumulado al esfuerzo colectivo</div>
+          </div>
+          <span class="card-pill" id="instPill">—</span>
+        </div>
+        <div class="card-body"><div class="chart-wrap sm"><canvas id="chartInstituciones"></canvas></div></div>
+      </div>
+    </section>
+
+    <!-- Regresiones -->
+    <section class="row-2eq">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Regresión: Área → Plantas</div>
+            <div class="card-sub">OLS — mínimos cuadrados ordinarios</div>
+          </div>
+          <span class="eq-badge" id="eqAreaPlantas">ŷ = β₀ + β₁·x</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartAreaPlantas"></canvas></div>
+          <div class="table-foot" id="eqAreaNote" style="margin-top:.5rem">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Regresión: Participantes → Plantas</div>
+            <div class="card-sub">OLS — intensidad y eficiencia de jornadas</div>
+          </div>
+          <span class="eq-badge" id="eqPartPlantas">ŷ = β₀ + β₁·x</span>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap"><canvas id="chartPartPlantas"></canvas></div>
+          <div class="table-foot" id="eqPartNote" style="margin-top:.5rem">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Histograma + Stats + Insights -->
+    <section class="row-3x">
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Distribución de plantas por jornada</div>
+            <div class="card-sub">Histograma por clases Sturges con curva de densidad</div>
+          </div>
+          <span class="card-pill" id="histPill">—</span>
+        </div>
+        <div class="card-body"><div class="chart-wrap sm"><canvas id="chartHistPlantas"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Estadísticos descriptivos</div>
+            <div class="card-sub">Tendencia central, dispersión y concentración</div>
+          </div>
+        </div>
+        <div class="card-body" style="overflow-y:auto;max-height:310px;">
+          <div class="stats-list" id="statsList"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">Lecturas analíticas</div>
+            <div class="card-sub">Interpretación exploratoria automatizada</div>
+          </div>
+        </div>
+        <div class="card-body" style="overflow-y:auto;max-height:310px;">
+          <div class="insights-list" id="insightsList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tabla -->
+    <section class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">Registros individuales</div>
+          <div class="card-sub">Ordenable por columna · valores normalizados · exportable</div>
+        </div>
+        <span class="card-pill" id="tablePill">— filas</span>
+      </div>
+      <div class="card-body">
+        <div class="table-toolbar">
+          <div class="table-meta" id="tableMeta">—</div>
+          <div class="btn-row">
+            <button class="sb-btn" id="top10Btn" type="button"><i class="bi bi-trophy"></i> Top 10</button>
+            <button class="sb-btn" id="allRowsBtn" type="button"><i class="bi bi-list"></i> Ver todos</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="recordsTable">
+            <thead><tr>
+              <th data-sort="fecha">Fecha</th>
+              <th data-sort="municipio">Municipio</th>
+              <th data-sort="comunidad">Comunidad</th>
+              <th data-sort="sitio">Sitio</th>
+              <th data-sort="tenencia">Tenencia</th>
+              <th data-sort="plantas">Plantas</th>
+              <th data-sort="participantes">Participantes</th>
+              <th data-sort="area">Área m²</th>
+              <th data-sort="densidad">ρ pl/m²</th>
+              <th data-sort="institucion">Institución</th>
+            </tr></thead>
+            <tbody id="recordsTbody"></tbody>
+          </table>
+        </div>
+        <div class="table-foot" id="tableFoot">—</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- FOOTER ORIGINAL -->
+<footer class="dash-footer">
+  <div class="dash-footer-title">Plataforma digital del Eje de Bosques · Sololá</div>
+  <div class="dash-footer-sub">Laboratorio SIG · Eje de Bosques · Comisión Departamental de Medio Ambiente de Sololá 2026</div>
+  <div class="partners-label">Instituciones y organizaciones que integran el Eje de Bosques</div>
+  <div class="footer-logos">
+    <a href="https://www.marn.gob.gt/" target="_blank" rel="noopener"><img src="../../marn.png" alt="MARN"></a>
+    <a href="https://www.maga.gob.gt/" target="_blank" rel="noopener"><img src="../../maga.png" alt="MAGA"></a>
+    <a href="https://www.inab.gob.gt/" target="_blank" rel="noopener"><img src="../../inab.png" alt="INAB"></a>
+    <a href="https://conap.gob.gt/" target="_blank" rel="noopener"><img src="../../conap.png" alt="CONAP"></a>
+    <a href="https://www.amsclae.gob.gt/" target="_blank" rel="noopener"><img src="../../amsclae.png" alt="AMSCLAE"></a>
+    <a href="https://conred.gob.gt/" target="_blank" rel="noopener"><img src="../../conred.png" alt="CONRED"></a>
+    <a href="https://www.uvg.edu.gt/investigacion/cea/" target="_blank" rel="noopener"><img src="../../cea.png" alt="CEA UVG"></a>
+    <a href="https://amigosdeatitlan.org/" target="_blank" rel="noopener"><img src="../../aala_logo.png" alt="Amigos del Lago de Atitlán"></a>
+    <a href="https://vivamosmejor.org.gt/" target="_blank" rel="noopener"><img src="../../vivamos.png" alt="Vivamos Mejor"></a>
+    <a href="https://www.airguatemala.org/" target="_blank" rel="noopener"><img src="../../aires.png" alt="AIR Guatemala"></a>
+  </div>
+  <div class="dash-footer-copy">© 2026 · Laboratorio SIG · Eje de Bosques · CODEMA Sololá</div>
+</footer>
 
 <script>
-// ============================================================
+// ═══════════════════════════════════════════════════════════════════
 // CONFIG
-// ============================================================
+// ═══════════════════════════════════════════════════════════════════
 const DATA_URL    = '../../data/puntos.geojson';
 const RESUMEN_URL = '../../data/resumen.json';
 
@@ -1116,33 +821,22 @@ const state = {
   all: [], filtered: [], resumen: null, charts: {},
   map: null, mapLayer: null,
   sort: { key: 'fecha', dir: 'desc' },
-  tableMode: 'all',
-  loading: false
+  tableMode: 'all'
 };
 
-// ============================================================
-// MUNICIPIO / INSTITUCIÓN LABELS
-// ============================================================
+// ═══════════════════════════════════════════════════════════════════
+// MUNICIPIO / INSTITUCIÓN DISPLAY MAPS
+// ═══════════════════════════════════════════════════════════════════
 const MUNI_MAP = {
-  'panajachel':'Panajachel',
-  'san_andres_semetabaj':'San Andrés Semetabaj',
-  'solola':'Sololá',
-  'concepcion':'Concepción',
-  'nahuala':'Nahualá',
-  'santa_catarina_palopo':'Santa Catarina Palopó',
-  'santa_lucia_utatlan':'Santa Lucía Utatlán',
-  'santiago_atitlan':'Santiago Atitlán',
-  'san_antonio_palopo':'San Antonio Palopó',
-  'san_jose_chacaya':'San José Chacayá',
-  'san_juan_la_laguna':'San Juan La Laguna',
-  'san_lucas_toliman':'San Lucas Tolimán',
-  'san_marcos_la_laguna':'San Marcos La Laguna',
-  'san_pablo_la_laguna':'San Pablo La Laguna',
-  'san_pedro_la_laguna':'San Pedro La Laguna',
-  'santa_clara_la_laguna':'Santa Clara La Laguna',
-  'santa_cruz_la_laguna':'Santa Cruz La Laguna',
-  'santa_maria_visitacion':'Santa María Visitación',
-  'santa_maria_visitación':'Santa María Visitación'
+  'panajachel':'Panajachel','san_andres_semetabaj':'San Andrés Semetabaj',
+  'solola':'Sololá','concepcion':'Concepción','nahuala':'Nahualá',
+  'santa_catarina_palopo':'Santa Catarina Palopó','santa_lucia_utatlan':'Santa Lucía Utatlán',
+  'santiago_atitlan':'Santiago Atitlán','san_antonio_palopo':'San Antonio Palopó',
+  'san_jose_chacaya':'San José Chacayá','san_juan_la_laguna':'San Juan La Laguna',
+  'san_lucas_toliman':'San Lucas Tolimán','san_marcos_la_laguna':'San Marcos La Laguna',
+  'san_pablo_la_laguna':'San Pablo La Laguna','san_pedro_la_laguna':'San Pedro La Laguna',
+  'santa_clara_la_laguna':'Santa Clara La Laguna','santa_cruz_la_laguna':'Santa Cruz La Laguna',
+  'santa_maria_visitacion':'Santa María Visitación','santa_maria_visitación':'Santa María Visitación'
 };
 const INST_MAP = { 'amigos_lago_atitlan':'Amigos del Lago de Atitlán' };
 const VAL_MAP = {
@@ -1151,25 +845,35 @@ const VAL_MAP = {
   'municipal':'Municipal','comunitaria':'Comunitaria','colectiva':'Colectiva'
 };
 
-// ============================================================
-// UTILS: formatting
-// ============================================================
+// ═══════════════════════════════════════════════════════════════════
+// CHART PALETTE — original greens
+// ═══════════════════════════════════════════════════════════════════
+const PAL = ['#0d4f3c','#1a7a58','#2ca58d','#3fa2e0','#54c59e','#66cad8','#7eddbf','#9ce6ee','#e8973a','#d95b5b'];
+const PALΑ = (i, a=0.75) => {
+  const c = PAL[i % PAL.length];
+  const r = parseInt(c.slice(1,3),16), g = parseInt(c.slice(3,5),16), b = parseInt(c.slice(5,7),16);
+  return `rgba(${r},${g},${b},${a})`;
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════════
 const ES_MO = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
 function maybeFixMojibake(str) {
   if(typeof str !== 'string') return str;
   const s = str.trim();
-  if(!/Ã.|Â|â€™|â€œ|â€|ðŸ|�/.test(s)) return s;
+  if(!/Ã.|Â|â€/.test(s)) return s;
   try {
     const bytes = Uint8Array.from([...s].map(c=>c.charCodeAt(0)&255));
     const dec = new TextDecoder('utf-8',{fatal:false}).decode(bytes);
-    if(dec && dec !== s && !/�/.test(dec)) return dec;
+    if(dec && dec !== s && !/\uFFFD/.test(dec)) return dec;
   } catch(_) {}
   return s;
 }
 
-function titleCase(str) {
-  return String(str||'').split(' ').filter(Boolean).map(w => {
+function titleCase(s) {
+  return String(s||'').split(' ').filter(Boolean).map(w => {
     if(/^(de|del|la|las|los|y|e|en|a|al)$/i.test(w)) return w.toLowerCase();
     if(/^[A-ZÁÉÍÓÚÑ]{2,}$/.test(w)) return w;
     return w[0].toUpperCase() + w.slice(1).toLowerCase();
@@ -1191,13 +895,13 @@ function cleanToken(raw, field='') {
   return s;
 }
 
-function formatLabel(raw, field='') {
+function fmtLabel(raw, field='') {
   if(Array.isArray(raw)) return raw.map(v=>cleanToken(v,field)).filter(Boolean).join(', ');
   const v = cleanToken(raw, field);
   return typeof v === 'number' ? v.toString() : v;
 }
 
-function num(val) {
+function toNum(val) {
   if(val == null || val === '') return NaN;
   if(typeof val === 'number') return Number.isFinite(val) ? val : NaN;
   const t = String(val).trim().replace(/,/g,'');
@@ -1205,262 +909,217 @@ function num(val) {
   return Number.isFinite(n) ? n : NaN;
 }
 
-function toISODate(value) {
-  if(!value) return '';
-  if(typeof value === 'string') {
-    const m = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+function toISODate(v) {
+  if(!v) return '';
+  if(typeof v === 'string') {
+    const m = v.match(/^(\d{4})-(\d{2})-(\d{2})/);
     if(m) return `${m[1]}-${m[2]}-${m[3]}`;
   }
-  const d = new Date(value);
+  const d = new Date(v);
   return isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10);
 }
-
 function parseDate(v) {
   const iso = toISODate(v);
   if(!iso) return null;
   const d = new Date(iso + 'T00:00:00');
   return isNaN(d.getTime()) ? null : d;
 }
-
 function fmtDate(v) {
   const d = v instanceof Date ? v : parseDate(v);
   if(!d) return '—';
   return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
 }
-
 function fmtDateLong(v) {
   const d = v instanceof Date ? v : parseDate(v);
   if(!d) return '—';
   return `${d.getDate()} ${ES_MO[d.getMonth()]} ${d.getFullYear()}`;
 }
-
 function fmtN(n, dec=0) {
   if(!Number.isFinite(n)) return '—';
   return new Intl.NumberFormat('es-GT',{maximumFractionDigits:dec}).format(n);
 }
-
 function fmtD(n, dec=2) {
   if(!Number.isFinite(n)) return '—';
   return new Intl.NumberFormat('es-GT',{minimumFractionDigits:0,maximumFractionDigits:dec}).format(n);
 }
-
 function pct(n, total, dec=1) {
   if(!Number.isFinite(n)||!Number.isFinite(total)||total<=0) return '—';
   return `${fmtD((n/total)*100,dec)}%`;
 }
-
 function nvl(v, fb='—') {
   return (v==null||v===''||(typeof v==='number'&&!Number.isFinite(v))) ? fb : v;
 }
-
 function esc(s) {
   return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
-// ============================================================
-// UTILS: statistics
-// ============================================================
-function sum(arr)    { return arr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0); }
-function mean(arr)   { const v=arr.filter(Number.isFinite); return v.length ? sum(v)/v.length : NaN; }
-function median(arr) {
-  const v=arr.filter(Number.isFinite).slice().sort((a,b)=>a-b);
+// stats
+function sum(a)    { return a.reduce((s,x)=>s+(Number.isFinite(x)?x:0),0); }
+function mean(a)   { const v=a.filter(Number.isFinite); return v.length?sum(v)/v.length:NaN; }
+function median(a) {
+  const v=a.filter(Number.isFinite).slice().sort((a,b)=>a-b);
   if(!v.length) return NaN;
   const m=Math.floor(v.length/2);
-  return v.length%2 ? v[m] : (v[m-1]+v[m])/2;
+  return v.length%2?v[m]:(v[m-1]+v[m])/2;
 }
-function std(arr) {
-  const v=arr.filter(Number.isFinite);
+function std(a) {
+  const v=a.filter(Number.isFinite);
   if(v.length<2) return NaN;
   const m=mean(v);
-  return Math.sqrt(v.reduce((a,x)=>a+Math.pow(x-m,2),0)/(v.length-1));
+  return Math.sqrt(v.reduce((s,x)=>s+Math.pow(x-m,2),0)/(v.length-1));
 }
-function quantile(arr, q) {
-  const v=arr.filter(Number.isFinite).slice().sort((a,b)=>a-b);
+function quantile(a,q) {
+  const v=a.filter(Number.isFinite).slice().sort((a,b)=>a-b);
   if(!v.length) return NaN;
   if(v.length===1) return v[0];
-  const pos=(v.length-1)*q;
-  const base=Math.floor(pos);
-  const rest=pos-base;
+  const pos=(v.length-1)*q, base=Math.floor(pos), rest=pos-base;
   return v[base]+rest*((v[base+1]??v[base])-v[base]);
 }
-function vrange(arr) {
-  const v=arr.filter(Number.isFinite);
-  return v.length ? [Math.min(...v),Math.max(...v)] : [NaN,NaN];
+function vrange(a) {
+  const v=a.filter(Number.isFinite);
+  return v.length?[Math.min(...v),Math.max(...v)]:[NaN,NaN];
 }
 
-function olsRegression(points) {
-  const pts=points.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
-  if(pts.length<2) return null;
-  const xs=pts.map(p=>p.x), ys=pts.map(p=>p.y);
+function olsRegression(pts) {
+  const ps=pts.filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y));
+  if(ps.length<2) return null;
+  const xs=ps.map(p=>p.x), ys=ps.map(p=>p.y);
   const xm=mean(xs), ym=mean(ys);
   let num=0, den=0;
-  for(const p of pts){ num+=(p.x-xm)*(p.y-ym); den+=Math.pow(p.x-xm,2); }
+  for(const p of ps){ num+=(p.x-xm)*(p.y-ym); den+=Math.pow(p.x-xm,2); }
   if(den===0) return null;
   const b1=num/den, b0=ym-b1*xm;
-  const yhat=pts.map(p=>b1*p.x+b0);
-  let ssRes=0, ssTot=0;
-  for(let i=0;i<pts.length;i++){
-    ssRes+=Math.pow(pts[i].y-yhat[i],2);
-    ssTot+=Math.pow(pts[i].y-ym,2);
-  }
-  const r2=ssTot===0?1:(1-ssRes/ssTot);
+  const yhat=ps.map(p=>b1*p.x+b0);
+  let ssR=0, ssT=0;
+  for(let i=0;i<ps.length;i++){ ssR+=Math.pow(ps[i].y-yhat[i],2); ssT+=Math.pow(ps[i].y-ym,2); }
+  const r2=ssT===0?1:(1-ssR/ssT);
   const [xMin,xMax]=vrange(xs);
-  return { b0, b1, r2, n:pts.length, line:[{x:xMin,y:b1*xMin+b0},{x:xMax,y:b1*xMax+b0}] };
+  return { b0,b1,r2,n:ps.length,line:[{x:xMin,y:b1*xMin+b0},{x:xMax,y:b1*xMax+b0}] };
+}
+function eqStr(reg, yN='ŷ', xN='x') {
+  if(!reg) return `${yN} = β₀ + β₁·${xN}`;
+  const sign=reg.b0>=0?'+':'−';
+  return `${yN} = ${fmtD(reg.b1,4)}·${xN} ${sign} ${fmtD(Math.abs(reg.b0),2)}  (R²=${fmtD(reg.r2,3)}, n=${reg.n})`;
 }
 
-function eqLabel(reg, yName='y', xName='x') {
-  if(!reg) return `${yName} = β₀ + β₁·${xName}  [n/d]`;
-  const b1=fmtD(reg.b1,4), bAbs=fmtD(Math.abs(reg.b0),2), sign=reg.b0>=0?'+':'−';
-  return `${yName} = ${b1}·${xName} ${sign} ${bAbs}   R²=${fmtD(reg.r2,3)}   n=${reg.n}`;
-}
-
-function histogram(values) {
-  const v=values.filter(x=>Number.isFinite(x)&&x>=0).slice().sort((a,b)=>a-b);
+function histogram(vals) {
+  const v=vals.filter(x=>Number.isFinite(x)&&x>=0).slice().sort((a,b)=>a-b);
   if(!v.length) return {labels:[],counts:[]};
-  const [minV,maxV]=[v[0],v[v.length-1]];
-  if(minV===maxV) return {labels:[`${fmtN(minV)}`],counts:[v.length]};
-  const bins=Math.max(3,Math.min(12,Math.ceil(1+3.322*Math.log10(v.length)))); // Sturges
-  const w=(maxV-minV)/bins;
+  const [lo,hi]=[v[0],v[v.length-1]];
+  if(lo===hi) return {labels:[fmtN(lo)],counts:[v.length]};
+  const bins=Math.max(3,Math.min(12,Math.ceil(1+3.322*Math.log10(v.length))));
+  const w=(hi-lo)/bins;
   const counts=new Array(bins).fill(0);
-  const edges=new Array(bins+1).fill(0).map((_,i)=>minV+i*w);
-  for(const x of v){ let i=Math.floor((x-minV)/w); if(i>=bins) i=bins-1; counts[i]++; }
-  const labels=counts.map((_,i)=>`${fmtN(Math.round(edges[i]))}–${fmtN(Math.round(edges[i+1]))}`);
-  return {labels,counts};
+  const edges=Array.from({length:bins+1},(_,i)=>lo+i*w);
+  for(const x of v){ let i=Math.min(Math.floor((x-lo)/w),bins-1); counts[i]++; }
+  return {labels:counts.map((_,i)=>`${fmtN(Math.round(edges[i]))}–${fmtN(Math.round(edges[i+1]))}`),counts,edges};
 }
 
-function groupSum(records, keyFn, valFn) {
+function groupSum(recs, kFn, vFn) {
   const m=new Map();
-  for(const r of records){
-    const k=keyFn(r)||'Sin dato';
-    const v=valFn?valFn(r):1;
+  for(const r of recs){
+    const k=kFn(r)||'Sin dato'; const v=vFn?vFn(r):1;
     m.set(k,(m.get(k)||0)+(Number.isFinite(v)?v:0));
   }
   return m;
 }
-function groupCount(records, keyFn) { return groupSum(records,keyFn,()=>1); }
-function sortDesc(m, n) {
-  const a=[...m.entries()].sort((a,b)=>b[1]-a[1]);
-  return Number.isFinite(n)?a.slice(0,n):a;
-}
+function groupCount(recs,kFn){ return groupSum(recs,kFn,()=>1); }
+function sortDesc(m,n){ const a=[...m.entries()].sort((a,b)=>b[1]-a[1]); return Number.isFinite(n)?a.slice(0,n):a; }
 
-// ============================================================
-// DATA LOADING + NORMALIZE
-// ============================================================
+// ═══════════════════════════════════════════════════════════════════
+// DATA LOAD + NORMALIZE
+// ═══════════════════════════════════════════════════════════════════
 async function fetchJSON(url) {
-  const r = await fetch(url, {cache:'no-store'});
-  if(!r.ok) throw new Error(`HTTP ${r.status} → ${url}`);
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok) throw new Error(`HTTP ${r.status}`);
   return r.json();
 }
 
 async function loadData() {
-  if(state.loading) return;
-  state.loading = true;
-  document.getElementById('statusText').textContent = 'Cargando datos desde KoBo…';
+  const st=$('statusEl');
+  if(st) st.textContent='Actualizando…';
   try {
-    const [gj, resumen] = await Promise.all([
-      fetchJSON(DATA_URL),
-      fetchJSON(RESUMEN_URL).catch(()=>null)
-    ]);
-    state.all = normalizeGeoJSON(gj);
-    state.resumen = resumen;
+    const [gj,resumen]=await Promise.all([fetchJSON(DATA_URL),fetchJSON(RESUMEN_URL).catch(()=>null)]);
+    state.all=normalizeGeoJSON(gj);
+    state.resumen=resumen;
     populateFilters(state.all);
     applyFilters();
     updateGlobalBadges();
-    document.getElementById('statusText').innerHTML =
-      `Datos cargados · <strong>${fmtN(state.all.length)}</strong> registros`;
-    document.getElementById('liveBadge').textContent = 'en línea';
   } catch(err) {
     console.error(err);
-    document.getElementById('statusText').textContent = `Error: ${err.message}`;
-    document.getElementById('liveBadge').textContent = 'error';
     renderEmpty(err.message);
-  } finally {
-    state.loading = false;
   }
 }
 
 function normalizeGeoJSON(gj) {
-  return (gj?.features ?? []).map((f,i) => {
-    const p = f?.properties ?? {};
-    const coords = f?.geometry?.coordinates ?? [];
-    const lon = num(coords[0]), lat = num(coords[1]);
-
-    const fechaISO = toISODate(p.fecha_actividad);
-    const fechaObj = parseDate(fechaISO);
-    const municipios = Array.isArray(p.municipios)
-      ? p.municipios.map(v=>formatLabel(v,'municipios')).filter(Boolean)
-      : [formatLabel(p.municipios,'municipios')].filter(Boolean);
-    const instituciones = Array.isArray(p.instituciones)
-      ? p.instituciones.map(v=>formatLabel(v,'instituciones')).filter(Boolean)
-      : [formatLabel(p.instituciones,'instituciones')].filter(Boolean);
-
-    const comunidad = formatLabel(p.comunidad,'comunidad');
-    const sitio = formatLabel(p.sitio_nombre,'sitio_nombre');
-    const tenencia = formatLabel(p.tenencia,'tenencia');
-    const observaciones = formatLabel(p.observaciones,'observaciones');
-    const autorizaFotos = formatLabel(p.autoriza_fotos,'autoriza_fotos');
-
-    const plantas = num(p.total_plantas);
-    const participantes = num(p.total_participantes);
-    const area = num(p.area_m2);
-    const densidad = (Number.isFinite(plantas)&&Number.isFinite(area)&&area>0) ? plantas/area : NaN;
-    const plantasPorPart = (Number.isFinite(plantas)&&Number.isFinite(participantes)&&participantes>0) ? plantas/participantes : NaN;
-
-    const muni = municipios[0] || 'Sin dato';
-    const inst = instituciones[0] || (formatLabel(p.institucion_resp_otro,'institucion_resp_otro')||'Sin dato');
-
-    const blob = [p.id,fechaISO,muni,municipios.join(' '),comunidad,sitio,inst,instituciones.join(' '),tenencia,observaciones]
-      .map(v=>formatLabel(v)).join(' ').toLowerCase();
-
+  return (gj?.features??[]).map((f,i)=>{
+    const p=f?.properties??{};
+    const coords=f?.geometry?.coordinates??[];
+    const lon=toNum(coords[0]), lat=toNum(coords[1]);
+    const fechaISO=toISODate(p.fecha_actividad);
+    const fechaObj=parseDate(fechaISO);
+    const municipios=Array.isArray(p.municipios)
+      ?p.municipios.map(v=>fmtLabel(v,'municipios')).filter(Boolean)
+      :[fmtLabel(p.municipios,'municipios')].filter(Boolean);
+    const instituciones=Array.isArray(p.instituciones)
+      ?p.instituciones.map(v=>fmtLabel(v,'instituciones')).filter(Boolean)
+      :[fmtLabel(p.instituciones,'instituciones')].filter(Boolean);
+    const comunidad=fmtLabel(p.comunidad,'comunidad');
+    const sitio=fmtLabel(p.sitio_nombre,'sitio_nombre');
+    const tenencia=fmtLabel(p.tenencia,'tenencia');
+    const observaciones=fmtLabel(p.observaciones,'observaciones');
+    const autorizaFotos=fmtLabel(p.autoriza_fotos,'autoriza_fotos');
+    const plantas=toNum(p.total_plantas);
+    const participantes=toNum(p.total_participantes);
+    const area=toNum(p.area_m2);
+    const densidad=(Number.isFinite(plantas)&&Number.isFinite(area)&&area>0)?plantas/area:NaN;
+    const ppp=(Number.isFinite(plantas)&&Number.isFinite(participantes)&&participantes>0)?plantas/participantes:NaN;
+    const muni=municipios[0]||'Sin dato';
+    const inst=instituciones[0]||(fmtLabel(p.institucion_resp_otro,'institucion_resp_otro')||'Sin dato');
+    const blob=[p.id,fechaISO,muni,municipios.join(' '),comunidad,sitio,inst,instituciones.join(' '),tenencia,observaciones].map(v=>fmtLabel(v)).join(' ').toLowerCase();
     return {
-      _idx:i, id:String(p.id??''),
-      fechaISO, fechaObj, fechaLabel:fmtDate(fechaObj),
-      municipio:muni, municipios, comunidad, sitio,
-      institucion:inst, instituciones, tenencia, observaciones,
-      autorizaFotos, hasFotos:['Sí','yes','si','sí'].includes(String(autorizaFotos)),
-      fotoSitio:String(p.foto_sitio_url||'').trim(),
-      fotoActividad:String(p.foto_actividad_url||'').trim(),
+      _idx:i,id:String(p.id??''),fechaISO,fechaObj,fechaLabel:fmtDate(fechaObj),
+      municipio:muni,municipios,comunidad,sitio,
+      institucion:inst,instituciones,tenencia,observaciones,
+      autorizaFotos,hasFotos:['Sí','yes','si','sí'].includes(String(autorizaFotos).toLowerCase()),
       plantas:Number.isFinite(plantas)?plantas:0,
       participantes:Number.isFinite(participantes)?participantes:0,
       area:Number.isFinite(area)?area:0,
-      densidad, plantasPorPart,
+      densidad,ppp,
       lat:Number.isFinite(lat)?lat:NaN,
       lon:Number.isFinite(lon)?lon:NaN,
-      raw:p, blob
+      raw:p,blob
     };
   });
 }
 
-// ============================================================
+// ═══════════════════════════════════════════════════════════════════
 // FILTERS
-// ============================================================
-function populateFilters(records) {
-  const munis = [...new Set(records.map(r=>r.municipio).filter(Boolean))].sort(locSort);
-  const insts = [...new Set(records.map(r=>r.institucion).filter(Boolean))].sort(locSort);
-  const tens  = [...new Set(records.map(r=>r.tenencia).filter(Boolean))].sort(locSort);
-  fillSelect($('fMunicipio'), munis);
-  fillSelect($('fInstitucion'), insts);
-  fillSelect($('fTenencia'), tens);
-  const dates = records.map(r=>r.fechaISO).filter(Boolean).sort();
-  if(dates.length) {
-    $('fDesde').min=$('fHasta').min=dates[0];
-    $('fDesde').max=$('fHasta').max=dates.at(-1);
+// ═══════════════════════════════════════════════════════════════════
+function populateFilters(recs) {
+  const munis=[...new Set(recs.map(r=>r.municipio).filter(Boolean))].sort(locSort);
+  const insts=[...new Set(recs.map(r=>r.institucion).filter(Boolean))].sort(locSort);
+  fillSel($('fMunicipio'),munis);
+  fillSel($('fInstitucion'),insts);
+  const dates=recs.map(r=>r.fechaISO).filter(Boolean).sort();
+  if(dates.length){
+    ['fDesde','fHasta'].forEach(id=>{$( id).min=dates[0];$(id).max=dates.at(-1);});
   }
 }
 
-function fillSelect(sel, vals) {
+function fillSel(sel,vals) {
   const prev=new Set([...sel.options].filter(o=>o.selected).map(o=>o.value));
   sel.innerHTML='';
   for(const v of vals){
     const o=document.createElement('option');
-    o.value=v; o.textContent=v; if(prev.has(v)) o.selected=true;
+    o.value=v;o.textContent=v;if(prev.has(v))o.selected=true;
     sel.appendChild(o);
   }
 }
 
-function selVals(sel) { return [...sel.selectedOptions].map(o=>o.value); }
-function locSort(a,b) { return String(a).localeCompare(String(b),'es',{sensitivity:'base'}); }
-function $(id)        { return document.getElementById(id); }
+function selVals(sel){ return [...sel.selectedOptions].map(o=>o.value); }
+function locSort(a,b){ return String(a).localeCompare(String(b),'es',{sensitivity:'base'}); }
+function $(id){ return document.getElementById(id); }
 
 function getFilters() {
   return {
@@ -1469,7 +1128,6 @@ function getFilters() {
     hasta:    $('fHasta').value||'',
     munis:    new Set(selVals($('fMunicipio'))),
     insts:    new Set(selVals($('fInstitucion'))),
-    tens:     new Set(selVals($('fTenencia'))),
     minPl:    $('fMinPlantas').value===''?null:Math.max(0,Number($('fMinPlantas').value)),
     soloFotos:$('fSoloFotos').checked,
     soloArea: $('fSoloArea').checked
@@ -1484,40 +1142,38 @@ function applyFilters() {
     if(f.hasta&&r.fechaISO&&r.fechaISO>f.hasta) return false;
     if(f.munis.size&&!f.munis.has(r.municipio)) return false;
     if(f.insts.size&&!f.insts.has(r.institucion)) return false;
-    if(f.tens.size&&!f.tens.has(r.tenencia)) return false;
     if(f.minPl!=null&&r.plantas<f.minPl) return false;
     if(f.soloFotos&&!r.hasFotos) return false;
     if(f.soloArea&&!(r.area>0)) return false;
     return true;
   });
-  updateFilterUI(f, state.filtered.length);
+  updateFilterUI(f);
   renderDashboard();
 }
 
 function resetFilters() {
-  $('fBuscar').value=''; $('fDesde').value=''; $('fHasta').value=''; $('fMinPlantas').value='';
-  $('fSoloFotos').checked=false; $('fSoloArea').checked=false;
-  for(const s of [$('fMunicipio'),$('fInstitucion'),$('fTenencia')]) for(const o of s.options) o.selected=false;
+  $('fBuscar').value='';$('fDesde').value='';$('fHasta').value='';$('fMinPlantas').value='';
+  $('fSoloFotos').checked=false;$('fSoloArea').checked=false;
+  [$('fMunicipio'),$('fInstitucion')].forEach(s=>{for(const o of s.options)o.selected=false;});
   state.tableMode='all';
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
   applyFilters();
 }
 
-function updateFilterUI(f, count) {
+function updateFilterUI(f) {
   const active=[];
-  if(f.buscar) active.push('texto');
+  if(f.buscar) active.push('búsqueda');
   if(f.desde||f.hasta) active.push('fecha');
-  if(f.munis.size) active.push(`municipio(${f.munis.size})`);
-  if(f.insts.size) active.push(`institución(${f.insts.size})`);
-  if(f.tens.size) active.push(`tenencia(${f.tens.size})`);
-  if(f.minPl!=null) active.push('mín.plantas');
-  if(f.soloFotos) active.push('fotos');
-  if(f.soloArea) active.push('área');
-  $('filterBadge').textContent=active.length;
+  if(f.munis.size) active.push(`municipio (${f.munis.size})`);
+  if(f.insts.size) active.push(`institución (${f.insts.size})`);
+  if(f.minPl!=null) active.push('mín. plantas');
+  if(f.soloFotos) active.push('con fotos');
+  if(f.soloArea) active.push('con área');
+  $('filterCount').textContent=`${active.length} activo${active.length!==1?'s':''}`;
   $('filterNarrative').textContent=active.length
-    ? `Filtros activos: ${active.join(', ')}. Resultado: ${fmtN(count)} registros.`
-    : 'Sin filtros activos.';
+    ?`Filtros: ${active.join(', ')}. Resultado: ${fmtN(state.filtered.length)} registros.`
+    :'Sin filtros activos — mostrando el total de registros.';
   $('scopePill').textContent=active.length?'filtrado':'global';
-  // sidebar mini kpis
   const d=state.filtered;
   $('sReg').textContent=fmtN(d.length);
   $('sPlantas').textContent=fmtN(sum(d.map(r=>r.plantas)));
@@ -1526,20 +1182,15 @@ function updateFilterUI(f, count) {
 }
 
 function updateGlobalBadges() {
-  $('countBadge').textContent=`${fmtN(state.all.length)} registros`;
   const r=state.resumen;
   if(r?.ultima_actualizacion) {
-    $('dateBadge').textContent=`Sync: ${fmtDateLong(r.ultima_actualizacion)}`;
-  } else {
-    const max=state.all.map(x=>x.fechaObj).filter(Boolean).sort((a,b)=>b-a)[0];
-    $('dateBadge').textContent=max?`última: ${fmtDateLong(max)}`:'—';
+    // Only shown if explicitly needed — keeping topbar clean
   }
-  $('statusRight').textContent=`n=${fmtN(state.all.length)}`;
 }
 
-// ============================================================
-// RENDER DASHBOARD
-// ============================================================
+// ═══════════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════════
 function renderDashboard() {
   const d=state.filtered;
   renderKPIs(d);
@@ -1552,12 +1203,8 @@ function renderDashboard() {
 
 function renderEmpty(msg) {
   state.filtered=[];
-  renderKPIs([]);
-  renderMap([]);
-  renderCharts([]);
-  renderStats([]);
-  renderInsights([],{error:msg});
-  renderTable([]);
+  ['kReg','kPlantas','kPart','kArea','kDens','kEfic'].forEach(id=>$(id).textContent='—');
+  $('insightsList').innerHTML=`<div class="empty-state">No se pudo cargar la información: ${esc(msg)}</div>`;
 }
 
 // ── KPIs ──
@@ -1572,40 +1219,35 @@ function renderKPIs(d) {
   const promPl=mean(d.map(r=>r.plantas));
   const medPl=median(d.map(r=>r.plantas));
   const promPart=mean(d.map(r=>r.participantes));
+  const areaV=d.map(r=>r.area).filter(v=>v>0);
 
   $('kReg').textContent=fmtN(n);
-  $('kRegNote').textContent=n?`${munis.size} municipio(s) cubiertos`:'—';
+  $('kRegNote').textContent=n?`${munis.size} municipio(s) cubiertos`:'Sin registros';
   $('kPlantas').textContent=fmtN(plantas);
-  $('kPlantasNote').textContent=Number.isFinite(promPl)?`x̄=${fmtD(promPl,1)}  med=${fmtD(medPl,1)}`:'—';
+  $('kPlantasNote').textContent=Number.isFinite(promPl)?`x̄=${fmtD(promPl,1)}  m̃=${fmtD(medPl,1)}`:'—';
   $('kPart').textContent=fmtN(part);
-  $('kPartNote').textContent=Number.isFinite(promPart)?`x̄=${fmtD(promPart,1)} por registro`:'—';
+  $('kPartNote').textContent=Number.isFinite(promPart)?`x̄=${fmtD(promPart,1)} por jornada`:'—';
   $('kArea').textContent=`${fmtN(area)} m²`;
-  const areaValid=d.map(r=>r.area).filter(v=>v>0);
-  $('kAreaNote').textContent=areaValid.length?`x̄=${fmtD(mean(areaValid),1)} m² (con área)`:'—';
+  $('kAreaNote').textContent=areaV.length?`x̄=${fmtD(mean(areaV),1)} m² (jornadas con área)`:'Sin área reportada';
   $('kDens').textContent=fmtD(densPond,2);
   $('kDensEq').textContent=`ρ̄ = ${fmtN(plantas)} / ${fmtN(area)} m²`;
   $('kEfic').textContent=fmtD(efic,2);
   $('kEficEq').textContent=`ε = ${fmtN(plantas)} / ${fmtN(part)} part.`;
 }
 
-// ── MAP (Satellite, individual dots) ──
+// ── MAP — satellite, individual circleMarkers ──
 function ensureMap() {
   if(state.map) return state.map;
-  const map=L.map('dashMap',{
-    zoomControl:true, preferCanvas:true, attributionControl:true
-  }).setView([14.77,-91.18],10);
-
-  // Satellite tile (ESRI World Imagery — free, no API key needed)
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  const map=L.map('dashMap',{zoomControl:true,preferCanvas:true,attributionControl:true}).setView([14.70,-91.18],10);
+  // ESRI satellite
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
     maxZoom:19,
-    attribution:'Tiles &copy; Esri &mdash; Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    attribution:'Tiles © Esri — Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
   }).addTo(map);
-
-  // Labels overlay on satellite
+  // Labels overlay
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{
-    maxZoom:19, pane:'overlayPane', opacity:0.85
+    maxZoom:19,opacity:.85
   }).addTo(map);
-
   state.mapLayer=L.layerGroup().addTo(map);
   state.map=map;
   return map;
@@ -1614,108 +1256,74 @@ function ensureMap() {
 function renderMap(d) {
   const map=ensureMap();
   state.mapLayer.clearLayers();
-
   let count=0;
   for(const r of d) {
     if(!Number.isFinite(r.lat)||!Number.isFinite(r.lon)) continue;
-
-    // Individual circle marker — no clustering
-    const marker=L.circleMarker([r.lat,r.lon],{
-      radius:5,
-      fillColor:'#58c491',
+    L.circleMarker([r.lat,r.lon],{
+      radius:6,
+      fillColor:'#2ca58d',
       fillOpacity:.88,
-      color:'rgba(255,255,255,.7)',
+      color:'rgba(255,255,255,.80)',
       weight:1.5
-    });
-
-    marker.bindPopup(`
-      <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#0a1a14;line-height:1.6;min-width:180px">
-        <div style="font-family:'IBM Plex Sans',sans-serif;font-size:12px;font-weight:700;color:#1e7a50;margin-bottom:4px">${esc(r.municipio)}</div>
-        <div><span style="color:#6b8070">Fecha:</span> ${esc(r.fechaLabel)}</div>
-        <div><span style="color:#6b8070">Sitio:</span> ${esc(nvl(r.sitio,''))}</div>
-        <div><span style="color:#6b8070">Comunidad:</span> ${esc(nvl(r.comunidad,''))}</div>
-        <div style="margin-top:4px;display:grid;grid-template-columns:1fr 1fr;gap:4px">
-          <div style="background:#f5f7f5;padding:3px 6px;border-radius:3px"><span style="color:#6b8070;font-size:10px">PLANTAS</span><br><strong>${fmtN(r.plantas)}</strong></div>
-          <div style="background:#f5f7f5;padding:3px 6px;border-radius:3px"><span style="color:#6b8070;font-size:10px">ÁREA m²</span><br><strong>${fmtD(r.area,0)}</strong></div>
+    }).bindPopup(`
+      <div style="font-family:'Inter',sans-serif;font-size:12px;color:#0d1f1a;line-height:1.55;min-width:190px">
+        <div style="font-weight:700;color:#0d4f3c;font-size:13px;margin-bottom:5px">${esc(r.municipio)}</div>
+        <div><b>Fecha:</b> ${esc(r.fechaLabel)}</div>
+        ${r.sitio?`<div><b>Sitio:</b> ${esc(r.sitio)}</div>`:''}
+        ${r.comunidad?`<div><b>Comunidad:</b> ${esc(r.comunidad)}</div>`:''}
+        <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:5px">
+          <div style="background:#e6f5f0;border-radius:5px;padding:4px 7px;text-align:center">
+            <div style="font-size:10px;color:#6b8278;font-weight:600">PLANTAS</div>
+            <div style="font-weight:700;font-size:14px;color:#0d4f3c">${fmtN(r.plantas)}</div>
+          </div>
+          <div style="background:#e6f5f0;border-radius:5px;padding:4px 7px;text-align:center">
+            <div style="font-size:10px;color:#6b8278;font-weight:600">ÁREA m²</div>
+            <div style="font-weight:700;font-size:14px;color:#0d4f3c">${fmtD(r.area,0)}</div>
+          </div>
         </div>
-        ${Number.isFinite(r.densidad)?`<div style="margin-top:4px;font-size:10px;color:#6b8070">ρ = ${fmtD(r.densidad,3)} pl/m²</div>`:''}
+        ${Number.isFinite(r.densidad)?`<div style="margin-top:5px;font-size:11px;color:#6b8278;font-style:italic">ρ = ${fmtD(r.densidad,3)} pl/m²</div>`:''}
       </div>
-    `,{maxWidth:260});
-
-    marker.addTo(state.mapLayer);
+    `,{maxWidth:260}).addTo(state.mapLayer);
     count++;
   }
-
   $('mapPill').textContent=`${fmtN(count)} pt`;
-  $('mapMetaLegend').innerHTML=`<span style="font-family:var(--mono);font-size:.62rem;color:var(--muted2)">${fmtN(count)} de ${fmtN(d.length)} con coord.</span>`;
-
+  $('mapMeta').textContent=`${fmtN(count)} de ${fmtN(d.length)} jornadas con coordenadas`;
   if(count) {
-    const coords=d.filter(r=>Number.isFinite(r.lat)&&Number.isFinite(r.lon)).map(r=>[r.lat,r.lon]);
-    const minLat=Math.min(...coords.map(c=>c[0])), maxLat=Math.max(...coords.map(c=>c[0]));
-    const minLon=Math.min(...coords.map(c=>c[1])), maxLon=Math.max(...coords.map(c=>c[1]));
-    map.fitBounds([[minLat,minLon],[maxLat,maxLon]],{padding:[20,20],maxZoom:14});
-  } else {
-    map.setView([14.77,-91.18],10);
-  }
-  setTimeout(()=>map.invalidateSize(),60);
+    const lats=d.filter(r=>Number.isFinite(r.lat)).map(r=>r.lat);
+    const lons=d.filter(r=>Number.isFinite(r.lon)).map(r=>r.lon);
+    map.fitBounds([[Math.min(...lats),Math.min(...lons)],[Math.max(...lats),Math.max(...lons)]],{padding:[20,20],maxZoom:14});
+  } else { map.setView([14.70,-91.18],10); }
+  setTimeout(()=>map.invalidateSize(),80);
 }
 
-// ── CHARTS ──
-const PALETTE=['#1e7a50','#2ca06a','#58c491','#1a7070','#3fa0a0','#8fd4d4','#b56a1e','#e0a04a','#a33030','#d46060'];
-
-function chartOpts() {
+// ── CHART BASE OPTIONS ──
+function baseOpts() {
   return {
-    responsive:true, maintainAspectRatio:false,
-    animation:{duration:600,easing:'easeOutQuart'},
+    responsive:true,maintainAspectRatio:false,
+    animation:{duration:550,easing:'easeOutQuart'},
     plugins:{
-      legend:{
-        labels:{
-          color:'#3d5c4a', boxWidth:9, boxHeight:9,
-          usePointStyle:true, pointStyle:'circle', padding:12,
-          font:{family:"'IBM Plex Sans',sans-serif", size:11, weight:'500'}
-        }
-      },
-      tooltip:{
-        backgroundColor:'rgba(10,26,20,.95)',
-        titleColor:'rgba(255,255,255,.9)',
-        bodyColor:'rgba(255,255,255,.65)',
-        borderColor:'rgba(88,196,145,.25)',
-        borderWidth:1,
-        padding:10, cornerRadius:4,
-        titleFont:{family:"'IBM Plex Mono',monospace", weight:'600', size:11},
-        bodyFont:{family:"'IBM Plex Mono',monospace", size:10}
-      }
+      legend:{labels:{color:'#3a5248',boxWidth:10,boxHeight:10,usePointStyle:true,pointStyle:'circle',padding:14,font:{family:"'Inter',sans-serif",size:11,weight:'600'}}},
+      tooltip:{backgroundColor:'rgba(13,31,26,.96)',titleColor:'#e6f5f0',bodyColor:'rgba(230,245,240,.82)',borderColor:'rgba(44,165,141,.28)',borderWidth:1,padding:11,cornerRadius:6,titleFont:{family:"'Inter',sans-serif",weight:'700',size:12},bodyFont:{family:"'Inter',sans-serif",size:11}}
     },
     scales:{
-      x:{ticks:{color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10}},grid:{color:'rgba(15,50,30,.05)'},border:{color:'rgba(15,50,30,.08)'}},
-      y:{ticks:{color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10}},grid:{color:'rgba(15,50,30,.05)'},border:{color:'rgba(15,50,30,.08)'}}
+      x:{ticks:{color:'#6b8278',font:{family:"'Inter',sans-serif",size:11}},grid:{color:'rgba(13,79,60,.05)'},border:{color:'rgba(13,79,60,.07)'}},
+      y:{ticks:{color:'#6b8278',font:{family:"'Inter',sans-serif",size:11}},grid:{color:'rgba(13,79,60,.05)'},border:{color:'rgba(13,79,60,.07)'}}
     }
   };
 }
 
-function mkChart(key, canvasId, cfg) {
-  if(state.charts[key]) { try{state.charts[key].destroy();}catch(_){} }
-  const el=$(canvasId); if(!el) return;
-  state.charts[key]=new Chart(el.getContext('2d'), cfg);
+function mkChart(key, id, cfg) {
+  if(state.charts[key]) try{state.charts[key].destroy();}catch(_){}
+  const el=$(id); if(!el) return;
+  state.charts[key]=new Chart(el.getContext('2d'),cfg);
 }
 
-function emptyChart(key, canvasId, label) {
-  const opts=chartOpts();
-  opts.plugins.legend.display=false;
-  opts.scales={x:{display:false},y:{display:false}};
-  mkChart(key, canvasId, {
-    type:'bar',
-    data:{labels:[''],datasets:[{data:[0],backgroundColor:'rgba(15,50,30,.05)',borderRadius:4}]},
+function emptyChart(key, id, label) {
+  const opts=baseOpts();
+  opts.plugins.legend.display=false; opts.scales={x:{display:false},y:{display:false}};
+  mkChart(key,id,{type:'bar',data:{labels:[''],datasets:[{data:[0],backgroundColor:'rgba(13,79,60,.06)',borderRadius:6}]},
     options:{...opts,plugins:{...opts.plugins,tooltip:{enabled:false}}},
-    plugins:[{id:'empty',afterDraw(c){
-      const{ctx,chartArea:ca}=c; if(!ca) return;
-      ctx.save();
-      ctx.fillStyle='#92a89a';
-      ctx.font="500 12px 'IBM Plex Mono',monospace";
-      ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(label,(ca.left+ca.right)/2,(ca.top+ca.bottom)/2);
-      ctx.restore();
-    }}]
+    plugins:[{id:'empty',afterDraw(c){const{ctx,chartArea:ca}=c;if(!ca)return;ctx.save();ctx.fillStyle='#92a89a';ctx.font="500 13px 'Inter',sans-serif";ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,(ca.left+ca.right)/2,(ca.top+ca.bottom)/2);ctx.restore();}}]
   });
 }
 
@@ -1724,54 +1332,88 @@ function renderCharts(d) {
   renderMunicipios(d);
   renderTenencia(d);
   renderInstituciones(d);
-  renderScatterAreaPl(d);
-  renderScatterPartPl(d);
+  renderScatterArea(d);
+  renderScatterPart(d);
   renderHist(d);
 }
 
+// ── TEMPORAL — aggregated by month for smoother curves, with cumulative area ──
 function renderTemporal(d) {
-  const byDate=new Map();
+  // Group by month (YYYY-MM) for less noise
+  const byMonth=new Map();
   for(const r of d) {
-    const k=r.fechaISO||'Sin fecha';
-    if(!byDate.has(k)) byDate.set(k,{reg:0,plantas:0,part:0});
-    const o=byDate.get(k);
-    o.reg+=1; o.plantas+=r.plantas; o.part+=r.participantes;
+    if(!r.fechaISO) continue;
+    const key=r.fechaISO.slice(0,7); // YYYY-MM
+    if(!byMonth.has(key)) byMonth.set(key,{plantas:0,reg:0,part:0});
+    const o=byMonth.get(key);
+    o.plantas+=r.plantas; o.reg+=1; o.part+=r.participantes;
   }
-  const rows=[...byDate.entries()].sort((a,b)=>String(a[0]).localeCompare(String(b[0])));
-  const labels=rows.map(([k])=>k==='Sin fecha'?'Sin fecha':fmtDate(k));
+  const rows=[...byMonth.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+  // cumulative plants
+  let cum=0;
+  const cumPlantas=rows.map(([,v])=>{cum+=v.plantas;return cum;});
+  const labels=rows.map(([k])=>{const[y,m]=k.split('-');return `${ES_MO[parseInt(m,10)-1]} ${y}`;});
+  const plantas=rows.map(([,v])=>v.plantas);
   const regs=rows.map(([,v])=>v.reg);
-  const pls=rows.map(([,v])=>v.plantas);
-  const parts=rows.map(([,v])=>v.part);
-  $('temporalPill').textContent=rows.length?`${fmtN(rows.length)} fechas`:'Sin datos';
+
+  $('temporalPill').textContent=rows.length?`${fmtN(rows.length)} meses`:'Sin datos';
   if(!rows.length){ emptyChart('temporal','chartTemporal','Sin datos temporales'); $('temporalFoot').textContent='—'; return; }
-  const opts=chartOpts();
+
+  const opts=baseOpts();
   opts.interaction={mode:'index',intersect:false};
-  opts.scales.y.beginAtZero=true;
-  opts.scales.y.title={display:true,text:'Registros / Participantes',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10}};
   opts.plugins.legend.display=true;
+
   mkChart('temporal','chartTemporal',{
-    type:'line',
+    type:'bar',
     data:{labels,datasets:[
-      {label:'Registros',data:regs,borderColor:'#1e7a50',backgroundColor:'rgba(30,122,80,.10)',fill:true,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#1e7a50',pointBorderColor:'#fff',pointBorderWidth:1.5,yAxisID:'y'},
-      {label:'Plantas',data:pls,borderColor:'#58c491',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,borderDash:[5,3],pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#58c491',pointBorderColor:'#fff',pointBorderWidth:1.5,yAxisID:'y1'},
-      {label:'Participantes',data:parts,borderColor:'#3fa0a0',backgroundColor:'transparent',fill:false,tension:.3,borderWidth:2,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#3fa0a0',pointBorderColor:'#fff',pointBorderWidth:1.5,yAxisID:'y'}
+      {
+        type:'line', label:'Acumulado de plantas',
+        data:cumPlantas,
+        borderColor:'#0d4f3c', backgroundColor:'rgba(13,79,60,.08)',
+        fill:true, tension:.45, borderWidth:2.5,
+        pointRadius:3, pointHoverRadius:5,
+        pointBackgroundColor:'#0d4f3c', pointBorderColor:'#fff', pointBorderWidth:1.5,
+        yAxisID:'y1', order:0
+      },
+      {
+        type:'bar', label:'Plantas por mes',
+        data:plantas,
+        backgroundColor:'rgba(44,165,141,.65)',
+        borderColor:'rgba(44,165,141,.85)',
+        borderWidth:1, borderRadius:4,
+        yAxisID:'y', order:1
+      },
+      {
+        type:'line', label:'Jornadas por mes',
+        data:regs,
+        borderColor:'#e8973a', backgroundColor:'transparent',
+        fill:false, tension:.45, borderWidth:2,
+        borderDash:[5,3],
+        pointRadius:3, pointHoverRadius:5,
+        pointBackgroundColor:'#e8973a', pointBorderColor:'#fff', pointBorderWidth:1.5,
+        yAxisID:'y2', order:0
+      }
     ]},
-    options:{...opts,scales:{
-      x:opts.scales.x,
-      y:{...opts.scales.y,beginAtZero:true,position:'left',title:{display:true,text:'Reg / Part.',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10}}},
-      y1:{...opts.scales.y,beginAtZero:true,position:'right',grid:{drawOnChartArea:false,color:'rgba(15,50,30,.05)'},title:{display:true,text:'Plantas',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10}}}
-    }}
+    options:{
+      ...opts,
+      scales:{
+        x:{...opts.scales.x,ticks:{...opts.scales.x.ticks,maxRotation:35}},
+        y:{...opts.scales.y,beginAtZero:true,position:'left',title:{display:true,text:'Plantas / mes',color:'#6b8278',font:{family:"'Inter',sans-serif",size:10,weight:'600'}}},
+        y1:{...opts.scales.y,beginAtZero:true,position:'right',grid:{drawOnChartArea:false,color:'rgba(13,79,60,.05)'},title:{display:true,text:'Acumulado',color:'#6b8278',font:{family:"'Inter',sans-serif",size:10,weight:'600'}}},
+        y2:{...opts.scales.y,beginAtZero:true,position:'right',display:false,grid:{drawOnChartArea:false}}
+      }
+    }
   });
-  const maxPl=Math.max(...pls), idxMax=pls.indexOf(maxPl);
-  $('temporalFoot').textContent=`Pico: ${fmtN(maxPl)} plantas en ${labels[idxMax]} · Cobertura: ${fmtN(rows.length)} fecha(s)`;
+  const maxPl=Math.max(...plantas), idxMax=plantas.indexOf(maxPl);
+  $('temporalFoot').textContent=`Mes pico: ${labels[idxMax]} con ${fmtN(maxPl)} plantas · Total acumulado: ${fmtN(cumPlantas.at(-1))} plantas en ${fmtN(rows.length)} meses.`;
 }
 
 function renderMunicipios(d) {
   const m=groupSum(d,r=>r.municipio,r=>r.plantas);
   const rows=sortDesc(m,10);
   $('muniPill').textContent=`${fmtN(m.size)} municipios`;
-  if(!rows.length){ emptyChart('munis','chartMunicipios','Sin datos'); return; }
-  const opts=chartOpts();
+  if(!rows.length){emptyChart('munis','chartMunicipios','Sin datos');return;}
+  const opts=baseOpts();
   opts.indexAxis='y'; opts.scales.x.beginAtZero=true;
   opts.plugins.legend.display=false;
   opts.plugins.tooltip.callbacks={label:ctx=>` ${fmtN(ctx.raw)} plantas`};
@@ -1779,9 +1421,9 @@ function renderMunicipios(d) {
   mkChart('munis','chartMunicipios',{
     type:'bar',
     data:{labels:rows.map(r=>r[0]),datasets:[{label:'Plantas',data:rows.map(r=>r[1]),
-      backgroundColor:PALETTE.slice(0,rows.length),
-      borderColor:PALETTE.slice(0,rows.length).map(c=>c),
-      borderWidth:0, borderRadius:{topRight:4,bottomRight:4}}]},
+      backgroundColor:rows.map((_,i)=>PAL[i%PAL.length]),
+      borderColor:rows.map((_,i)=>PAL[i%PAL.length]),
+      borderWidth:0,borderRadius:{topRight:5,bottomRight:5}}]},
     options:opts
   });
 }
@@ -1790,16 +1432,16 @@ function renderTenencia(d) {
   const m=groupCount(d,r=>r.tenencia||'Sin dato');
   const rows=sortDesc(m);
   $('tenenciaPill').textContent=rows.length?`${fmtN(rows.length)} categorías`:'—';
-  if(!rows.length){ emptyChart('ten','chartTenencia','Sin datos'); return; }
-  const vals=rows.map(r=>r[1]);
-  const total=sum(vals);
-  const opts=chartOpts();
-  opts.scales={}; opts.plugins.legend.position='bottom';
+  if(!rows.length){emptyChart('ten','chartTenencia','Sin datos');return;}
+  const vals=rows.map(r=>r[1]); const total=sum(vals);
+  const opts=baseOpts();
+  opts.scales={};
+  opts.plugins.legend={...opts.plugins.legend,position:'bottom'};
   opts.plugins.tooltip.callbacks={label:ctx=>` ${ctx.label}: ${fmtN(ctx.raw)} (${(ctx.raw/total*100).toFixed(1)}%)`};
   mkChart('ten','chartTenencia',{
     type:'doughnut',
-    data:{labels:rows.map(r=>r[0]),datasets:[{data:vals,backgroundColor:PALETTE,borderColor:'#fff',borderWidth:2,hoverOffset:6}]},
-    options:{...opts,cutout:'60%',plugins:{...opts.plugins,legend:{...opts.plugins.legend,position:'bottom',labels:{...opts.plugins.legend.labels,boxWidth:8,boxHeight:8}}}}
+    data:{labels:rows.map(r=>r[0]),datasets:[{data:vals,backgroundColor:PAL.slice(0,rows.length),borderColor:'#fff',borderWidth:2.5,hoverOffset:7}]},
+    options:{...opts,cutout:'62%'}
   });
 }
 
@@ -1807,70 +1449,76 @@ function renderInstituciones(d) {
   const m=groupSum(d,r=>r.institucion,r=>r.participantes);
   const rows=sortDesc(m,8);
   $('instPill').textContent=`${fmtN(m.size)} instituciones`;
-  if(!rows.length){ emptyChart('inst','chartInstituciones','Sin datos'); return; }
-  const opts=chartOpts();
+  if(!rows.length){emptyChart('inst','chartInstituciones','Sin datos');return;}
+  const opts=baseOpts();
   opts.plugins.legend.display=false; opts.scales.y.beginAtZero=true;
   opts.plugins.tooltip.callbacks={label:ctx=>` ${fmtN(ctx.raw)} participantes`};
-  opts.scales.x.ticks={...opts.scales.x.ticks,maxRotation:25,font:{family:"'IBM Plex Mono',monospace",size:10}};
+  opts.scales.x.ticks={...opts.scales.x.ticks,maxRotation:28,font:{family:"'Inter',sans-serif",size:10}};
   mkChart('inst','chartInstituciones',{
     type:'bar',
     data:{labels:rows.map(r=>r[0]),datasets:[{label:'Participantes',data:rows.map(r=>r[1]),
-      backgroundColor:'rgba(30,122,80,.75)',borderColor:'#1e7a50',borderWidth:1,borderRadius:{topLeft:4,topRight:4}}]},
+      backgroundColor:rows.map((_,i)=>PALΑ(i,.78)),
+      borderColor:PAL.slice(0,rows.length),
+      borderWidth:1,borderRadius:{topLeft:5,topRight:5}}]},
     options:opts
   });
 }
 
-function renderScatterAreaPl(d) {
+function renderScatterArea(d) {
   const pts=d.filter(r=>r.area>0&&r.plantas>=0).map(r=>({x:r.area,y:r.plantas,muni:r.municipio,sitio:r.sitio}));
   const reg=olsRegression(pts);
-  const eq=eqLabel(reg,'plantas','área');
-  $('eqAreaPlantas').textContent=eq;
+  $('eqAreaPlantas').textContent=eqStr(reg,'plantas','área');
   $('eqAreaNote').textContent=pts.length
-    ? `OLS sobre n=${fmtN(pts.length)} registros con área>0. ${reg?`R²=${fmtD(reg.r2,4)} · β₁=${fmtD(reg.b1,4)} · β₀=${fmtD(reg.b0,2)}`:'Datos insuficientes para ajuste.'}`
-    : 'Sin registros con área válida.';
-  if(!pts.length){ emptyChart('areaPl','chartAreaPlantas','Sin datos'); return; }
-  const opts=chartOpts();
-  opts.scales.x.title={display:true,text:'Área (m²)',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10,weight:'600'}};
-  opts.scales.y.title={display:true,text:'Plantas',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10,weight:'600'}};
+    ?`OLS sobre ${fmtN(pts.length)} jornadas con área > 0. ${reg?`R²=${fmtD(reg.r2,4)}  β₁=${fmtD(reg.b1,4)}  β₀=${fmtD(reg.b0,2)}`:'Datos insuficientes.'}`
+    :'Sin jornadas con área válida.';
+  if(!pts.length){emptyChart('areaPl','chartAreaPlantas','Sin datos');return;}
+  const opts=baseOpts();
+  opts.scales.x.title={display:true,text:'Área (m²)',color:'#6b8278',font:{family:"'Inter',sans-serif",size:11,weight:'600'}};
+  opts.scales.y.title={display:true,text:'Plantas',color:'#6b8278',font:{family:"'Inter',sans-serif",size:11,weight:'600'}};
   opts.scales.x.beginAtZero=true; opts.scales.y.beginAtZero=true;
   opts.plugins.tooltip.callbacks={label:ctx=>{
-    if(ctx.dataset.label?.startsWith('OLS')) return ` ${ctx.dataset.label}`;
-    return ` Área: ${fmtD(ctx.raw.x,1)} m² · Plantas: ${fmtN(ctx.raw.y)} · ${ctx.raw.muni||''}`;
+    if(ctx.dataset.label?.startsWith('Tendencia')) return ` ${ctx.dataset.label}`;
+    return ` Área: ${fmtD(ctx.raw.x,1)} m²  Plantas: ${fmtN(ctx.raw.y)}  (${ctx.raw.muni||''})`;
   }};
   mkChart('areaPl','chartAreaPlantas',{
     type:'scatter',
     data:{datasets:[
-      {label:'Registros',data:pts.map(p=>({x:p.x,y:p.y,muni:p.muni,sitio:p.sitio})),
-        pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'rgba(30,122,80,.72)',pointBorderColor:'rgba(255,255,255,.8)',pointBorderWidth:1.5},
-      ...(reg?[{label:`OLS  R²=${fmtD(reg.r2,3)}`,data:reg.line,showLine:true,pointRadius:0,borderWidth:2,borderDash:[6,3],borderColor:'#e0a04a',backgroundColor:'transparent',tension:0}]:[])
+      {label:'Jornadas',data:pts.map(p=>({x:p.x,y:p.y,muni:p.muni})),
+        pointRadius:5.5,pointHoverRadius:7.5,
+        pointBackgroundColor:'rgba(26,122,88,.72)',pointBorderColor:'rgba(255,255,255,.85)',pointBorderWidth:1.5},
+      ...(reg?[{label:`Tendencia OLS  R²=${fmtD(reg.r2,3)}`,data:reg.line,
+        showLine:true,pointRadius:0,borderWidth:2.5,borderDash:[6,3],
+        borderColor:'#e8973a',backgroundColor:'transparent',tension:0}]:[])
     ]},
     options:opts
   });
 }
 
-function renderScatterPartPl(d) {
+function renderScatterPart(d) {
   const pts=d.filter(r=>r.participantes>0&&r.plantas>=0).map(r=>({x:r.participantes,y:r.plantas,muni:r.municipio}));
   const reg=olsRegression(pts);
-  const eq=eqLabel(reg,'plantas','part.');
-  $('eqPartPlantas').textContent=eq;
+  $('eqPartPlantas').textContent=eqStr(reg,'plantas','part.');
   $('eqPartNote').textContent=pts.length
-    ? `OLS sobre n=${fmtN(pts.length)} registros con participantes>0. ${reg?`R²=${fmtD(reg.r2,4)} · β₁=${fmtD(reg.b1,4)} · β₀=${fmtD(reg.b0,2)}`:'Datos insuficientes.'}`
-    : 'Sin registros válidos.';
-  if(!pts.length){ emptyChart('partPl','chartPartPlantas','Sin datos'); return; }
-  const opts=chartOpts();
-  opts.scales.x.title={display:true,text:'Participantes',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10,weight:'600'}};
-  opts.scales.y.title={display:true,text:'Plantas',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10,weight:'600'}};
+    ?`OLS sobre ${fmtN(pts.length)} jornadas con participantes > 0. ${reg?`R²=${fmtD(reg.r2,4)}  β₁=${fmtD(reg.b1,4)}  β₀=${fmtD(reg.b0,2)}`:'Datos insuficientes.'}`
+    :'Sin jornadas válidas.';
+  if(!pts.length){emptyChart('partPl','chartPartPlantas','Sin datos');return;}
+  const opts=baseOpts();
+  opts.scales.x.title={display:true,text:'Participantes',color:'#6b8278',font:{family:"'Inter',sans-serif",size:11,weight:'600'}};
+  opts.scales.y.title={display:true,text:'Plantas',color:'#6b8278',font:{family:"'Inter',sans-serif",size:11,weight:'600'}};
   opts.scales.x.beginAtZero=true; opts.scales.y.beginAtZero=true;
   opts.plugins.tooltip.callbacks={label:ctx=>{
-    if(ctx.dataset.label?.startsWith('OLS')) return ` ${ctx.dataset.label}`;
-    return ` Part.: ${fmtN(ctx.raw.x)} · Plantas: ${fmtN(ctx.raw.y)} · ${ctx.raw.muni||''}`;
+    if(ctx.dataset.label?.startsWith('Tendencia')) return ` ${ctx.dataset.label}`;
+    return ` Part.: ${fmtN(ctx.raw.x)}  Plantas: ${fmtN(ctx.raw.y)}  (${ctx.raw.muni||''})`;
   }};
   mkChart('partPl','chartPartPlantas',{
     type:'scatter',
     data:{datasets:[
-      {label:'Registros',data:pts.map(p=>({x:p.x,y:p.y,muni:p.muni})),
-        pointRadius:5,pointHoverRadius:7,pointBackgroundColor:'rgba(26,112,112,.72)',pointBorderColor:'rgba(255,255,255,.8)',pointBorderWidth:1.5},
-      ...(reg?[{label:`OLS  R²=${fmtD(reg.r2,3)}`,data:reg.line,showLine:true,pointRadius:0,borderWidth:2,borderDash:[6,3],borderColor:'#d46060',backgroundColor:'transparent',tension:0}]:[])
+      {label:'Jornadas',data:pts.map(p=>({x:p.x,y:p.y,muni:p.muni})),
+        pointRadius:5.5,pointHoverRadius:7.5,
+        pointBackgroundColor:'rgba(44,165,141,.72)',pointBorderColor:'rgba(255,255,255,.85)',pointBorderWidth:1.5},
+      ...(reg?[{label:`Tendencia OLS  R²=${fmtD(reg.r2,3)}`,data:reg.line,
+        showLine:true,pointRadius:0,borderWidth:2.5,borderDash:[6,3],
+        borderColor:'#1d6fa4',backgroundColor:'transparent',tension:0}]:[])
     ]},
     options:opts
   });
@@ -1879,21 +1527,44 @@ function renderScatterPartPl(d) {
 function renderHist(d) {
   const vals=d.map(r=>r.plantas).filter(v=>Number.isFinite(v)&&v>=0);
   const h=histogram(vals);
-  $('histPill').textContent=h.labels.length?`${fmtN(h.labels.length)} clases (Sturges)`:'Sin datos';
-  if(!h.labels.length){ emptyChart('hist','chartHistPlantas','Sin datos'); return; }
-  const opts=chartOpts();
-  opts.plugins.legend.display=false;
+  $('histPill').textContent=h.labels.length?`${fmtN(h.labels.length)} clases (Sturges)`:'—';
+  if(!h.labels.length){emptyChart('hist','chartHistPlantas','Sin datos');return;}
+  // compute KDE for overlay
+  const mu=mean(vals), sg=std(vals);
+  const opts=baseOpts();
+  opts.plugins.legend.display=true;
   opts.scales.y.beginAtZero=true;
-  opts.scales.y.title={display:true,text:'Frecuencia',color:'#6b8070',font:{family:"'IBM Plex Mono',monospace",size:10}};
-  opts.scales.x.ticks={...opts.scales.x.ticks,maxRotation:30};
-  opts.plugins.tooltip.callbacks={label:ctx=>` ${fmtN(ctx.raw)} registros`};
-  const colors=h.counts.map((_,i)=>{
+  opts.scales.y.title={display:true,text:'Frecuencia',color:'#6b8278',font:{family:"'Inter',sans-serif",size:10,weight:'600'}};
+  opts.scales.x.ticks={...opts.scales.x.ticks,maxRotation:30,font:{family:"'Inter',sans-serif",size:10}};
+  opts.plugins.tooltip.callbacks={label:ctx=>ctx.dataset.type==='line'?` Densidad: ${fmtD(ctx.raw.y,4)}`:(` ${fmtN(ctx.raw)} registros`)};
+  const histColors=h.counts.map((_,i)=>{
     const t=i/Math.max(h.counts.length-1,1);
-    return `rgba(${Math.round(30+t*40)},${Math.round(122+t*60)},${Math.round(80+t*65)},.80)`;
+    const r=Math.round(13+t*(44-13)),g=Math.round(79+t*(165-79)),b=Math.round(60+t*(141-60));
+    return `rgba(${r},${g},${b},.78)`;
   });
+  // Normal KDE approximation
+  let kdeData=[];
+  if(Number.isFinite(mu)&&Number.isFinite(sg)&&sg>0&&h.edges) {
+    const n=vals.length;
+    kdeData=h.labels.map((_,i)=>{
+      const x=(h.edges[i]+h.edges[i+1])/2;
+      const gauss=Math.exp(-0.5*Math.pow((x-mu)/sg,2))/(sg*Math.sqrt(2*Math.PI));
+      return {x:h.labels[i],y:gauss*n*(h.edges[1]-h.edges[0])};
+    });
+  }
   mkChart('hist','chartHistPlantas',{
     type:'bar',
-    data:{labels:h.labels,datasets:[{label:'Frecuencia',data:h.counts,backgroundColor:colors,borderColor:'rgba(15,50,30,.15)',borderWidth:1,borderRadius:{topLeft:3,topRight:3},borderSkipped:false}]},
+    data:{labels:h.labels,datasets:[
+      {label:'Frecuencia',data:h.counts,
+        backgroundColor:histColors,borderColor:'rgba(13,79,60,.18)',borderWidth:1,
+        borderRadius:{topLeft:4,topRight:4},borderSkipped:false,order:1},
+      ...(kdeData.length?[{
+        type:'line',label:'Distribución normal',
+        data:kdeData.map(p=>p.y),
+        borderColor:'#0d4f3c',backgroundColor:'transparent',
+        borderWidth:2.5,pointRadius:0,tension:.45,fill:false,order:0
+      }]:[])
+    ]},
     options:opts
   });
 }
@@ -1904,38 +1575,36 @@ function renderStats(d) {
   const pt=d.map(r=>r.participantes).filter(Number.isFinite);
   const ar=d.map(r=>r.area).filter(v=>Number.isFinite(v)&&v>0);
   const dn=d.map(r=>r.densidad).filter(Number.isFinite);
-  const pp=d.map(r=>r.plantasPorPart).filter(Number.isFinite);
+  const pp=d.map(r=>r.ppp).filter(Number.isFinite);
   const [minPl,maxPl]=vrange(pl);
   const [minAr,maxAr]=vrange(ar);
   const muniPl=sortDesc(groupSum(d,r=>r.municipio,r=>r.plantas));
-  const topMuni=muniPl[0];
-  const totPl=sum(pl);
+  const topMuni=muniPl[0]; const totPl=sum(pl);
   const hhi=totPl?muniPl.reduce((a,[,v])=>a+Math.pow(v/totPl,2),0):NaN;
   const dates=d.map(r=>r.fechaObj).filter(Boolean).sort((a,b)=>a-b);
-  const cadencia=[];
-  for(let i=1;i<dates.length;i++){const dd=(dates[i]-dates[i-1])/86400000;if(Number.isFinite(dd)&&dd>=0)cadencia.push(dd);}
+  const cad=[];
+  for(let i=1;i<dates.length;i++){const dd=(dates[i]-dates[i-1])/86400000;if(Number.isFinite(dd)&&dd>=0)cad.push(dd);}
   const q1=quantile(pl,.25),q3=quantile(pl,.75);
 
   const rows=[
     {n:'x̄ plantas',s:'promedio aritmético',v:fmtD(mean(pl),2)},
-    {n:'m̃ plantas',s:'mediana',v:fmtD(median(pl),2)},
+    {n:'m̃ plantas',s:'mediana (robusto)',v:fmtD(median(pl),2)},
     {n:'s plantas',s:'desviación estándar (n−1)',v:fmtD(std(pl),2)},
-    {n:'Q₁ plantas',s:'percentil 25',v:fmtD(q1,1)},
-    {n:'Q₃ plantas',s:'percentil 75',v:fmtD(q3,1)},
+    {n:'Q₁ – Q₃ plantas',s:'percentiles 25 y 75',v:`${fmtD(q1,1)} – ${fmtD(q3,1)}`},
     {n:'IQR plantas',s:'Q₃ − Q₁',v:fmtD(q3-q1,1)},
-    {n:'Rango plantas',s:'mín – máx',v:`${fmtN(minPl)} – ${fmtN(maxPl)}`},
-    {n:'x̄ participantes',s:'promedio por registro',v:fmtD(mean(pt),2)},
-    {n:'x̄ área',s:'m² (solo con área>0)',v:Number.isFinite(mean(ar))?`${fmtD(mean(ar),1)} m²`:'—'},
+    {n:'Rango',s:'mínimo – máximo',v:`${fmtN(minPl)} – ${fmtN(maxPl)}`},
+    {n:'x̄ participantes',s:'promedio por jornada',v:fmtD(mean(pt),2)},
+    {n:'x̄ área',s:'m² · solo jornadas con área',v:Number.isFinite(mean(ar))?`${fmtD(mean(ar),1)} m²`:'—'},
     {n:'Rango área',s:'mín – máx m²',v:Number.isFinite(minAr)?`${fmtD(minAr,1)} – ${fmtD(maxAr,1)} m²`:'—'},
-    {n:'ρ̄ densidad',s:'x̄ plantas/m² (simple)',v:fmtD(mean(dn),4)},
-    {n:'ε̄ eficiencia',s:'x̄ plantas/participante',v:fmtD(mean(pp),3)},
+    {n:'ρ̄ densidad media',s:'plantas/m² (simple)',v:fmtD(mean(dn),4)},
+    {n:'ε̄ eficiencia media',s:'plantas/participante',v:fmtD(mean(pp),3)},
     {n:'Municipio líder',s:topMuni?`${pct(topMuni[1],totPl)} del total`:'—',v:topMuni?topMuni[0]:'—'},
     {n:'HHI territorial',s:'concentración 0–1',v:fmtD(hhi,4)},
-    {n:'Cadencia media',s:'días entre jornadas',v:cadencia.length?`${fmtD(mean(cadencia),1)} días`:'—'}
+    {n:'Cadencia media',s:'días entre jornadas',v:cad.length?`${fmtD(mean(cad),1)} días`:'—'}
   ];
-  const el=$('statsList');
-  el.innerHTML='';
-  if(!d.length){ el.innerHTML='<div class="empty-state">Sin datos con los filtros actuales.</div>'; return; }
+
+  const el=$('statsList'); el.innerHTML='';
+  if(!d.length){el.innerHTML='<div class="empty-state">Sin datos con los filtros actuales.</div>';return;}
   for(const r of rows){
     el.insertAdjacentHTML('beforeend',`
       <div class="stat-row">
@@ -1946,15 +1615,13 @@ function renderStats(d) {
 }
 
 // ── INSIGHTS ──
-function renderInsights(d, extra={}) {
-  const box=$('insightsBox'); box.innerHTML='';
-  if(extra.error){box.innerHTML=`<div class="empty-state">Error: ${esc(extra.error)}</div>`;return;}
-  if(!d.length){box.innerHTML='<div class="empty-state">Sin registros para generar análisis.</div>';return;}
+function renderInsights(d) {
+  const box=$('insightsList'); box.innerHTML='';
+  if(!d.length){box.innerHTML='<div class="empty-state">Sin registros para generar lecturas analíticas.</div>';return;}
 
   const pl=d.map(r=>r.plantas);
   const muniPl=sortDesc(groupSum(d,r=>r.municipio,r=>r.plantas));
-  const topMuni=muniPl[0];
-  const totPl=sum(pl);
+  const topMuni=muniPl[0]; const totPl=sum(pl);
   const regPart=olsRegression(d.filter(r=>r.participantes>0).map(r=>({x:r.participantes,y:r.plantas})));
   const regArea=olsRegression(d.filter(r=>r.area>0).map(r=>({x:r.area,y:r.plantas})));
   const q3=quantile(pl,.75),iqr=q3-quantile(pl,.25);
@@ -1963,49 +1630,44 @@ function renderInsights(d, extra={}) {
   const hhi=totPl?muniPl.reduce((a,[,v])=>a+Math.pow(v/totPl,2),0):NaN;
 
   const cards=[];
+
   if(topMuni){
-    const nivel=topMuni[1]/totPl>.6?'alta':'moderada';
-    cards.push({
-      t:'Concentración territorial',
-      p:`<strong>${esc(topMuni[0])}</strong> concentra <code>${pct(topMuni[1],totPl)}</code> del total de plantas (${fmtN(topMuni[1])}). HHI = <code>${fmtD(hhi,4)}</code> — concentración ${nivel}.`
-    });
+    const nivel=topMuni[1]/totPl>.6?'alta':topMuni[1]/totPl>.4?'moderada':'baja';
+    cards.push({t:'Concentración territorial',p:`<strong>${esc(topMuni[0])}</strong> concentra <code>${pct(topMuni[1],totPl)}</code> del total de plantas registradas en el período seleccionado (${fmtN(topMuni[1])} unidades). Índice HHI = <code>${fmtD(hhi,4)}</code> — concentración ${nivel}.`});
   }
+
   if(regPart){
     const str=regPart.r2>=.7?'fuerte':regPart.r2>=.4?'moderada':regPart.r2>=.15?'débil':'muy baja';
-    cards.push({
-      t:'Asociación participantes → plantas (OLS)',
-      p:`Ajuste lineal ${str}: R² = <code>${fmtD(regPart.r2,4)}</code>. β₁ = <code>${fmtD(regPart.b1,4)}</code> plantas por participante adicional. n = ${fmtN(regPart.n)}.`
-    });
+    cards.push({t:'Asociación participantes → plantas (OLS)',p:`Ajuste lineal con asociación ${str}: R² = <code>${fmtD(regPart.r2,4)}</code>. Por cada participante adicional se estiman <code>${fmtD(regPart.b1,3)}</code> plantas adicionales (β₁). n = ${fmtN(regPart.n)} jornadas.`});
   } else {
-    cards.push({t:'Asociación participantes → plantas',p:'Variación insuficiente para ajuste OLS confiable (pocos datos o varianza nula).'});
+    cards.push({t:'Asociación participantes → plantas',p:'Variación insuficiente para ajuste OLS confiable. Se requieren más jornadas con variación en participantes.'});
   }
+
   if(regArea){
     const str=regArea.r2>=.7?'fuerte':regArea.r2>=.4?'moderada':regArea.r2>=.15?'débil':'muy baja';
-    cards.push({
-      t:'Asociación área → plantas (OLS)',
-      p:`Ajuste lineal ${str}: R² = <code>${fmtD(regArea.r2,4)}</code>. β₁ = <code>${fmtD(regArea.b1,4)}</code> plantas por m² adicional. n = ${fmtN(regArea.n)}. Útil para verificar coherencia de densidades reportadas.`
-    });
+    cards.push({t:'Asociación área → plantas (OLS)',p:`Ajuste lineal ${str}: R² = <code>${fmtD(regArea.r2,4)}</code>. Por cada m² adicional se estiman <code>${fmtD(regArea.b1,4)}</code> plantas. Útil para verificar coherencia en las densidades reportadas. n = ${fmtN(regArea.n)}.`});
   }
+
   if(outliers.length){
     const top=outliers.slice().sort((a,b)=>b.plantas-a.plantas)[0];
-    cards.push({
-      t:`Atípicos superiores · Regla IQR (n=${outliers.length})`,
-      p:`Umbral: Q₃ + 1.5·IQR = <code>${fmtD(fence,1)}</code> plantas. Registro más alto: <strong>${fmtN(top.plantas)}</strong> en ${esc(top.municipio)} (${esc(top.fechaLabel)}). Revisar para validar datos.`
-    });
+    cards.push({t:`Jornadas atípicas · Regla IQR (n = ${outliers.length})`,p:`Umbral superior: Q₃ + 1.5·IQR = <code>${fmtD(fence,1)}</code> plantas. Jornada de mayor magnitud: <strong>${fmtN(top.plantas)}</strong> plantas en <strong>${esc(top.municipio)}</strong> (${esc(top.fechaLabel)}). Conviene verificar la coherencia de estos registros.`});
   } else {
-    cards.push({t:'Atípicos superiores · Regla IQR',p:`No se detectan valores por encima de Q₃ + 1.5·IQR = <code>${fmtD(fence,1)}</code>. Distribución sin colas extremas en el filtro actual.`});
+    cards.push({t:'Jornadas atípicas · Regla IQR',p:`No se detectan valores por encima del umbral Q₃ + 1.5·IQR = <code>${fmtD(fence,1)}</code>. La distribución de plantas no presenta colas extremas con los filtros actuales.`});
   }
+
+  const dn=d.map(r=>r.densidad).filter(Number.isFinite);
+  if(dn.length){
+    cards.push({t:'Densidad de plantación',p:`La densidad media de plantación es <code>${fmtD(mean(dn),3)} pl/m²</code> (mediana <code>${fmtD(median(dn),3)}</code>). Comparar entre tipos de tenencia puede revelar diferencias en la intensidad de intervención.`});
+  }
+
   if(state.resumen?.kpis){
     const k=state.resumen.kpis;
-    cards.push({
-      t:'Contraste con resumen.json (portal)',
-      p:`Portal reporta: <code>${fmtN(Number(k.total_boletas||0))}</code> boletas · <code>${fmtN(Number(k.total_plantas||0))}</code> plantas · <code>${fmtN(Number(k.total_participantes||0))}</code> participantes · <code>${fmtN(Number(k.total_area_m2||0))}</code> m².`
-    });
+    cards.push({t:'Acumulado histórico registrado',p:`El Eje de Bosques reporta un total acumulado de <strong>${fmtN(Number(k.total_boletas||0))} jornadas</strong>, <strong>${fmtN(Number(k.total_plantas||0))} plantas</strong>, <strong>${fmtN(Number(k.total_participantes||0))} participantes</strong> y <strong>${fmtN(Number(k.total_area_m2||0))} m²</strong> de área intervenida.`});
   }
 
   for(const c of cards.slice(0,6)){
     box.insertAdjacentHTML('beforeend',`
-      <div class="insight-card">
+      <div class="insight">
         <h4>${esc(c.t)}</h4>
         <p>${c.p}</p>
       </div>`);
@@ -2015,8 +1677,7 @@ function renderInsights(d, extra={}) {
 // ── TABLE ──
 function sortedRows(d) {
   const rows=d.slice();
-  const {key,dir}=state.sort;
-  const mul=dir==='asc'?1:-1;
+  const {key,dir}=state.sort; const mul=dir==='asc'?1:-1;
   rows.sort((a,b)=>{
     let va,vb;
     switch(key){
@@ -2043,11 +1704,11 @@ function sortedRows(d) {
 function renderTable(d) {
   const rows=sortedRows(d);
   $('tablePill').textContent=`${fmtN(rows.length)} filas`;
-  $('tableMeta').textContent=`${fmtN(d.length)} registros filtrados`;
-  $('tableFoot').textContent=state.tableMode==='top10'?'Top 10 por plantas.':'Todos los registros filtrados.';
+  $('tableMeta').textContent=`${fmtN(d.length)} jornadas en el período seleccionado`;
+  $('tableFoot').textContent=state.tableMode==='top10'?'Mostrando las 10 jornadas con mayor número de plantas.':'Mostrando todas las jornadas filtradas.';
   const tbody=$('recordsTbody'); tbody.innerHTML='';
   if(!rows.length){
-    tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state">Sin registros en la selección actual.</div></td></tr>`;
+    tbody.innerHTML=`<tr><td colspan="10"><div class="empty-state">Sin jornadas que mostrar con los filtros actuales.</div></td></tr>`;
     return;
   }
   for(const r of rows){
@@ -2067,9 +1728,16 @@ function renderTable(d) {
   }
 }
 
+function updateSortIndicators() {
+  const labels={fecha:'Fecha',municipio:'Municipio',comunidad:'Comunidad',sitio:'Sitio',tenencia:'Tenencia',plantas:'Plantas',participantes:'Participantes',area:'Área m²',densidad:'ρ pl/m²',institucion:'Institución'};
+  document.querySelectorAll('#recordsTable thead th[data-sort]').forEach(th=>{
+    const k=th.dataset.sort;
+    th.textContent=k===state.sort.key?`${labels[k]} ${state.sort.dir==='asc'?'▲':'▼'}`:labels[k];
+  });
+}
+
 // ── EXPORT ──
 function csvEsc(v){const s=(v==null)?'':String(v);return/[",\n;]/.test(s)?`"${s.replace(/"/g,'""')}"`:s;}
-
 function exportCSV() {
   const rows=sortedRows(state.filtered);
   if(!rows.length){alert('Sin datos filtrados.');return;}
@@ -2079,31 +1747,27 @@ function exportCSV() {
     lines.push([r.id,r.fechaISO,r.municipio,r.comunidad,r.sitio,r.tenencia,r.institucion,
       r.plantas,r.participantes,r.area,
       Number.isFinite(r.densidad)?r.densidad.toFixed(6):'',
-      Number.isFinite(r.plantasPorPart)?r.plantasPorPart.toFixed(6):'',
+      Number.isFinite(r.ppp)?r.ppp.toFixed(6):'',
       Number.isFinite(r.lat)?r.lat:'',Number.isFinite(r.lon)?r.lon:'',
       r.autorizaFotos,r.observaciones].map(csvEsc).join(','));
   }
-  dl(`dashboard_reforestacion_${new Date().toISOString().slice(0,10)}.csv`,lines.join('\n'),'text/csv;charset=utf-8');
+  dl(`reforestacion_sola_${new Date().toISOString().slice(0,10)}.csv`,lines.join('\n'),'text/csv;charset=utf-8');
 }
-
 function exportJSON() {
   const rows=sortedRows(state.filtered).map(r=>({
     id:r.id,fecha_actividad:r.fechaISO,municipio:r.municipio,comunidad:r.comunidad,
     sitio_nombre:r.sitio,tenencia:r.tenencia,institucion:r.institucion,
     total_plantas:r.plantas,total_participantes:r.participantes,area_m2:r.area,
     rho_plantas_m2:Number.isFinite(r.densidad)?+r.densidad.toFixed(6):null,
-    epsilon_plantas_part:Number.isFinite(r.plantasPorPart)?+r.plantasPorPart.toFixed(6):null,
+    epsilon_plantas_part:Number.isFinite(r.ppp)?+r.ppp.toFixed(6):null,
     coordenadas:(Number.isFinite(r.lon)&&Number.isFinite(r.lat))?[r.lon,r.lat]:null,
     autoriza_fotos:r.autorizaFotos,observaciones:r.observaciones
   }));
-  dl(`dashboard_reforestacion_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(rows,null,2),'application/json;charset=utf-8');
+  dl(`reforestacion_sola_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(rows,null,2),'application/json;charset=utf-8');
 }
-
 function dl(name,text,type){
-  const b=new Blob([text],{type});
-  const u=URL.createObjectURL(b);
-  const a=document.createElement('a'); a.href=u; a.download=name; a.click();
-  setTimeout(()=>URL.revokeObjectURL(u),1000);
+  const b=new Blob([text],{type}),u=URL.createObjectURL(b),a=document.createElement('a');
+  a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);
 }
 
 // ── UI SETUP ──
@@ -2122,40 +1786,37 @@ function setQuickRange(mode) {
   $('fHasta').value=toISODate(maxD);
 }
 
-function updateSortIndicators() {
-  document.querySelectorAll('#recordsTable thead th[data-sort]').forEach(th=>{
-    const k=th.dataset.sort;
-    const labels={fecha:'Fecha',municipio:'Municipio',comunidad:'Comunidad',sitio:'Sitio',tenencia:'Tenencia',plantas:'Plantas',participantes:'Part.',area:'Área m²',densidad:'ρ pl/m²',institucion:'Institución'};
-    th.textContent=k===state.sort.key?`${labels[k]} ${state.sort.dir==='asc'?'↑':'↓'}`:labels[k];
-  });
-}
-
 function setupUI() {
-  $('applyFiltersBtn').addEventListener('click', ()=>applyFilters());
-  $('resetFiltersBtn').addEventListener('click', resetFilters);
-  $('refreshBtn').addEventListener('click', loadData);
-  $('exportCsvBtn').addEventListener('click', exportCSV);
-  $('exportJsonBtn').addEventListener('click', exportJSON);
-  $('toggleTop10Btn').addEventListener('click', ()=>{state.tableMode='top10';renderTable(state.filtered);});
-  $('showAllRowsBtn').addEventListener('click', ()=>{state.tableMode='all';renderTable(state.filtered);});
+  $('applyBtn').addEventListener('click',()=>applyFilters());
+  $('resetBtn').addEventListener('click',resetFilters);
+  $('refreshBtn').addEventListener('click',loadData);
+  $('exportCsvBtn').addEventListener('click',exportCSV);
+  $('exportJsonBtn').addEventListener('click',exportJSON);
+  $('top10Btn').addEventListener('click',()=>{state.tableMode='top10';renderTable(state.filtered);});
+  $('allRowsBtn').addEventListener('click',()=>{state.tableMode='all';renderTable(state.filtered);});
 
-  const liveEls=[$('fBuscar'),$('fDesde'),$('fHasta'),$('fMinPlantas'),$('fSoloFotos'),$('fSoloArea'),$('fMunicipio'),$('fInstitucion'),$('fTenencia')];
+  const liveEls=[$('fBuscar'),$('fDesde'),$('fHasta'),$('fMinPlantas'),$('fSoloFotos'),$('fSoloArea'),$('fMunicipio'),$('fInstitucion')];
   for(const el of liveEls){
     el.addEventListener('change',()=>applyFilters());
     if(el.tagName==='INPUT'&&(el.type==='search'||el.type==='number')){
-      el.addEventListener('input',debounce(()=>applyFilters(),200));
+      el.addEventListener('input',debounce(()=>applyFilters(),220));
     }
   }
 
   document.querySelectorAll('.chip[data-range]').forEach(c=>{
-    c.addEventListener('click',()=>{setQuickRange(c.dataset.range);applyFilters();});
+    c.addEventListener('click',()=>{
+      document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      setQuickRange(c.dataset.range);
+      applyFilters();
+    });
   });
 
   document.querySelectorAll('#recordsTable thead th[data-sort]').forEach(th=>{
     th.addEventListener('click',()=>{
       const k=th.dataset.sort;
       if(state.sort.key===k) state.sort.dir=state.sort.dir==='asc'?'desc':'asc';
-      else{state.sort.key=k;state.sort.dir=['fecha','plantas','participantes','area','densidad'].includes(k)?'desc':'asc';}
+      else{state.sort.key=k;state.sort.dir=['plantas','participantes','area','densidad'].includes(k)?'desc':'asc';}
       renderTable(state.filtered);
       updateSortIndicators();
     });
@@ -2163,7 +1824,6 @@ function setupUI() {
   updateSortIndicators();
 }
 
-// ── BOOT ──
 setupUI();
 loadData();
 window.refoDash={state,loadData,applyFilters,resetFilters};
